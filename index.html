@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>室內設計案件總控系統</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f7f5;--surface:#fff;--border:#e8e5e0;
+  --text:#1a1a1a;--text2:#6b6560;--text3:#9c9690;
+  --purple:#534AB7;--pl:#EEEDFE;--pd:#3C3489;
+  --teal:#1D9E75;--tl:#E1F5EE;--td:#085041;
+  --amber:#BA7517;--al:#FAEEDA;--ad:#633806;
+  --red:#E24B4A;--rl:#FCEBEB;--rd:#791F1F;
+  --green:#639922;--gl:#EAF3DE;--gd:#27500A;
+  --r:8px;--rl2:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:40px;width:360px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.login-logo{font-size:22px;font-weight:700;margin-bottom:6px}.login-logo span{color:var(--purple)}
+.login-sub{font-size:13px;color:var(--text2);margin-bottom:28px}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:11px 20px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);cursor:pointer;font-size:14px;font-family:inherit;font-weight:500}
+.google-btn:hover{background:var(--bg)}
+#pending-screen{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:1000}
+.pending-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:40px;width:380px;text-align:center}
+#app-screen{display:none}
+.app{display:flex;flex-direction:column;min-height:100vh}
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.25rem;display:flex;align-items:center;gap:1rem;height:50px;position:sticky;top:0;z-index:50}
+.logo{font-size:15px;font-weight:600;white-space:nowrap}.logo span{color:var(--purple)}
+.nav-tabs{display:flex;gap:1px;overflow-x:auto;flex:1}
+.nav-tab{padding:5px 12px;font-size:13px;border:none;background:none;cursor:pointer;border-radius:var(--r);color:var(--text2);white-space:nowrap;font-family:inherit}
+.nav-tab:hover{background:var(--bg);color:var(--text)}
+.nav-tab.active{background:var(--pl);color:var(--pd);font-weight:500}
+.admin-only{display:none}.admin-only.show{display:inline-block}
+.topnav-right{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.user-avatar{width:30px;height:30px;border-radius:50%;border:1px solid var(--border)}
+.user-name{font-size:12px;color:var(--text2);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sync-ind{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0}
+.main{flex:1;padding:1.25rem;max-width:1400px;margin:0 auto;width:100%}
+.panel{display:none}.panel.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:1.25rem}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:14px 16px}
+.stat-n{font-size:24px;font-weight:600;line-height:1}.stat-l{font-size:12px;color:var(--text2);margin-top:4px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);overflow:hidden;margin-bottom:1rem}
+.card-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:14px;font-weight:500}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:8px 12px;font-size:11px;color:var(--text2);font-weight:500;border-bottom:1px solid var(--border);background:var(--bg);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafaf8}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.b-prog{background:var(--pl);color:var(--pd)}.b-done{background:var(--gl);color:var(--gd)}
+.b-wait{background:var(--al);color:var(--ad)}.b-stop{background:var(--rl);color:var(--rd)}
+.b-design{background:#F0EDFB;color:#4A3FA0}.b-new{background:var(--tl);color:var(--td)}
+.pend{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;border-radius:8px;font-size:10px;font-weight:600;margin-left:3px;vertical-align:middle}
+.pend-r{background:var(--rl);color:var(--rd)}.pend-g{background:var(--gl);color:var(--gd)}
+.status-sel{font-size:11px;padding:2px 8px;border-radius:20px;border:none;cursor:pointer;font-family:inherit;font-weight:500}
+.btn{padding:6px 14px;border-radius:var(--r);font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;border:1px solid var(--border);background:var(--surface);color:var(--text)}
+.btn:hover{background:var(--bg)}
+.btn-p{background:var(--purple);color:#fff;border-color:var(--purple)}.btn-p:hover{background:var(--pd)}
+.btn-sm{padding:3px 9px;font-size:12px}.btn-danger{background:var(--rl);color:var(--rd);border-color:var(--rl)}
+input[type=text],input[type=date],select,textarea{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;background:var(--surface);color:var(--text)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
+
+/* ── Design Progress ── */
+.design-proj-row{border:1px solid var(--border);border-radius:var(--rl2);margin-bottom:8px;overflow:hidden}
+.design-proj-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:var(--surface);user-select:none}
+.design-proj-hdr:hover{background:var(--bg)}
+.design-proj-arrow{font-size:12px;transition:transform .2s;flex-shrink:0}
+.design-proj-arrow.open{transform:rotate(90deg)}
+.design-proj-name{font-size:13px;font-weight:500;flex:1}
+.design-warn{font-size:11px;color:var(--rd);margin-left:4px}
+.design-proj-body{display:none;overflow-x:auto;border-top:1px solid var(--border)}
+.design-proj-body.open{display:block}
+.design-tbl{width:100%;border-collapse:collapse;table-layout:fixed}
+.design-tbl th{padding:7px 10px;background:var(--bg);border:1px solid var(--border);font-weight:500;font-size:11px;color:var(--text2);text-align:center;white-space:nowrap;position:relative;min-width:80px}
+.design-tbl th .col-resize{position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;background:transparent}
+.design-tbl th .col-resize:hover{background:var(--purple);opacity:.3}
+.design-tbl th input.col-name-edit{border:none;background:transparent;font-size:11px;font-weight:500;color:var(--text2);width:100%;text-align:center;font-family:inherit;padding:0}
+.design-tbl th input.col-name-edit:focus{outline:none;background:var(--pl)}
+.design-tbl td{border:1px solid var(--border);padding:0}
+.design-tbl td.name-cell{padding:8px 12px;font-size:13px;font-weight:500;white-space:nowrap;background:var(--bg)}
+.design-tbl td input{border:none;padding:6px 8px;font-size:12px;width:100%;background:transparent;font-family:inherit}
+.design-tbl td input:focus{outline:none;background:var(--pl)}
+.design-tbl td.empty-cell{background:#fff8f8}
+.design-add-col{padding:4px 8px;font-size:11px;color:var(--text3);cursor:pointer;border:1px dashed var(--border);border-radius:var(--r);white-space:nowrap}
+.design-add-col:hover{color:var(--purple);border-color:var(--purple)}
+
+/* ── Week view ── */
+.wctrl{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
+.seg{display:flex;gap:2px;background:var(--border);border-radius:var(--r);padding:2px}
+.seg button{padding:5px 12px;font-size:12px;border:none;background:none;cursor:pointer;border-radius:6px;color:var(--text2);font-family:inherit;font-weight:500}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.nav-row{display:flex;align-items:center;gap:6px}
+.nav-btn{width:28px;height:28px;border:1px solid var(--border);background:var(--surface);border-radius:var(--r);cursor:pointer;font-size:14px;color:var(--text2);display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:var(--bg)}
+.wk-lbl{font-size:13px;font-weight:500;min-width:150px;text-align:center;cursor:pointer;padding:4px 8px;border-radius:var(--r)}
+.wk-lbl:hover{background:var(--bg)}
+.wtbl-wrap{overflow:auto;max-height:calc(100vh - 180px);border:1px solid var(--border);border-radius:var(--rl2)}
+.wtbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;min-width:700px}
+.wtbl th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500;position:sticky;top:0;z-index:10}
+.wtbl th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
+.wtbl td{padding:4px;border:1px solid var(--border);vertical-align:top;background:var(--surface)}
+/* Fixed row height: each site has 2 rows, each row fixed height */
+.wtbl td.ev-cell{height:52px;overflow:hidden}
+.wtbl td.tc{background:#faf9ff}
+.wtbl th.th-t{color:var(--purple);font-weight:600}
+.site-hd{background:var(--bg)!important;font-size:12px;font-weight:500;padding:8px 10px!important;vertical-align:middle;width:100px;position:sticky;left:0;z-index:5;border-right:2px solid var(--border)}
+
+/* Event row */
+.ev-row{display:flex;align-items:center;gap:2px;margin-bottom:2px}
+.ev-row:hover .ev-del{opacity:.6}
+.ev-field{font-size:11px;cursor:text;padding:2px 4px;border-radius:3px;min-width:20px;line-height:1.5;background:rgba(255,255,255,0.6);color:inherit}
+.ev-field:hover{background:rgba(255,255,255,.9)}
+.ev-field[contenteditable=true]{outline:1.5px solid rgba(0,0,0,.2);background:#fff;min-width:44px}
+.ev-chip{display:inline-flex;align-items:center;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.ev-chip:hover{opacity:.85}
+.ev-chip.sel{outline:2px solid var(--purple);outline-offset:1px}
+.ev-del{opacity:0;font-size:11px;padding:1px 3px;cursor:pointer;border:none;background:none;color:inherit;line-height:1;flex-shrink:0}
+.ev-del:hover{opacity:1!important}
+
+/* Stage search - opens UPWARD */
+.add-ev-wrap{position:relative}
+.add-ev-btn{color:var(--text3);font-size:11px;padding:2px 5px;cursor:pointer;display:inline-block;border-radius:3px}
+.add-ev-btn:hover{color:var(--purple);background:var(--pl)}
+.stage-search-box{position:absolute;bottom:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 -4px 16px rgba(0,0,0,.12);min-width:170px;z-index:300}
+.stage-search-input{width:100%;padding:6px 10px;border:none;border-bottom:1px solid var(--border);font-size:12px;font-family:inherit;border-radius:var(--r) var(--r) 0 0}
+.stage-search-input:focus{outline:none;background:var(--pl)}
+.stage-search-list{max-height:150px;overflow-y:auto}
+.stage-search-item{padding:6px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)}
+.stage-search-item:last-child{border-bottom:none}
+.stage-search-item:hover,.stage-search-item.hi{background:var(--pl);color:var(--pd)}
+
+/* Bible */
+.bible-wrap{display:grid;grid-template-columns:240px 1fr;gap:1rem;min-height:500px}
+.bible-stages{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);overflow:hidden}
+.bst-item{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;cursor:pointer}
+.bst-item:last-child{border-bottom:none}
+.bst-item:hover{background:var(--bg)}
+.bst-item.active{background:var(--pl);color:var(--pd);font-weight:500}
+.bst-item.drag-enabled{cursor:grab}
+.bst-item.dragging{opacity:.4}
+.bst-item.drag-over{border-top:2px solid var(--purple)}
+.drag-handle{color:var(--text3);font-size:14px;flex-shrink:0;display:none}
+.drag-mode .drag-handle{display:inline}
+.bst-name{flex:1;font-size:12px}
+.bst-cnt{font-size:10px;background:var(--bg);color:var(--text2);padding:1px 6px;border-radius:10px;flex-shrink:0}
+.bible-detail{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:16px}
+.phase-section{margin-bottom:16px}
+.phase-title{font-size:11px;font-weight:600;letter-spacing:.5px;padding:6px 0;border-bottom:2px solid var(--border);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.phase-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.bib-item-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.bib-item-row:last-child{border-bottom:none}
+.bib-item-num{font-size:11px;color:var(--text3);min-width:22px}
+.bib-item-text{flex:1;font-size:13px}
+.bib-item-del{color:var(--text3);cursor:pointer;font-size:15px;padding:0 4px;border:none;background:none}
+.bib-item-del:hover{color:var(--red)}
+.bib-add-row{display:flex;gap:8px;margin-top:8px}
+.ws-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.ws-tab{padding:4px 12px;font-size:12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:none;font-family:inherit;color:var(--text2)}
+.ws-tab.active{background:var(--pl);color:var(--pd);border-color:var(--pl)}
+.ws-cl-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)}
+.ws-cl-item:last-child{border-bottom:none}
+.ws-cl-item input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--purple);flex-shrink:0}
+.ws-cl-item label{font-size:13px;cursor:pointer;flex:1;line-height:1.4}
+.ws-cl-item.done label{text-decoration:line-through;color:var(--text3)}
+
+/* Members */
+.member-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.member-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0}
+.member-info{flex:1;min-width:120px}
+.member-name{font-size:13px;font-weight:500}
+.member-email{font-size:11px;color:var(--text2)}
+.role-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.role-admin{background:var(--pl);color:var(--pd)}
+.role-staff{background:var(--gl);color:var(--gd)}
+.role-pending{background:var(--al);color:var(--ad)}
+
+/* Modal */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:300;padding:1rem}
+.mo-box{background:var(--surface);border-radius:var(--rl2);padding:20px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.mo-title{font-size:15px;font-weight:600;margin-bottom:4px}
+.mo-sub{font-size:12px;color:var(--text2);margin-bottom:12px}
+.mo-footer{margin-top:14px;display:flex;gap:8px;justify-content:flex-end}
+.pb-wrap{background:var(--bg);border-radius:4px;height:4px;margin-bottom:12px}
+.pb-fill{height:4px;border-radius:4px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.empty{text-align:center;padding:2rem;color:var(--text3);font-size:13px}
+.flex{display:flex;align-items:center;gap:8px}
+.flex-sb{display:flex;align-items:center;justify-content:space-between;gap:8px}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">空間<span>總控</span></div>
+    <div class="login-sub">室內設計案件管理系統</div>
+    <button class="google-btn" onclick="signInWithGoogle()">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      使用 Google 帳號登入
+    </button>
+  </div>
+</div>
+
+<div id="pending-screen">
+  <div class="pending-box">
+    <div style="font-size:40px;margin-bottom:16px">⏳</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:8px">等待主管審核</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:20px">帳號已送出申請，請等待主管核准</div>
+    <div id="pending-email" style="font-size:12px;color:var(--text3);margin-bottom:20px"></div>
+    <button class="btn" onclick="signOut()">登出</button>
+  </div>
+</div>
+
+<div id="app-screen">
+<div class="app">
+  <nav class="topnav">
+    <div class="logo">空間<span>總控</span></div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="overview">案件總覽</button>
+      <button class="nav-tab" data-tab="design">設計進度</button>
+      <button class="nav-tab" data-tab="progress">工程進度</button>
+      <button class="nav-tab" data-tab="bible">施工寶典</button>
+      <button class="nav-tab admin-only" data-tab="members">成員管理</button>
+    </div>
+    <div class="topnav-right">
+      <div class="sync-ind"><div class="sync-dot" id="sdot"></div><span id="slbl">連線中</span></div>
+      <img class="user-avatar" id="user-avatar" src="" style="display:none">
+      <span class="user-name" id="user-name"></span>
+      <button class="btn btn-sm" onclick="signOut()">登出</button>
+    </div>
+  </nav>
+  <main class="main">
+    <div id="panel-overview" class="panel active"></div>
+    <div id="panel-design" class="panel"></div>
+    <div id="panel-progress" class="panel"></div>
+    <div id="panel-bible" class="panel"></div>
+    <div id="panel-members" class="panel"></div>
+  </main>
+</div>
+</div>
+
+<div id="modal" class="mo" style="display:none" onclick="closeMo()">
+  <div class="mo-box" onclick="event.stopPropagation()" id="mo-content"></div>
+</div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
+import{getFirestore,collection,doc,addDoc,updateDoc,deleteDoc,setDoc,getDoc,onSnapshot,serverTimestamp,getDocs,writeBatch}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,signOut as fbSignOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
+
+const FC={apiKey:"AIzaSyA6W_C2H84heiVwDe_a6ElMwuEjvbR0aRo",authDomain:"have000.firebaseapp.com",projectId:"have000",storageBucket:"have000.firebasestorage.app",messagingSenderId:"758420593792",appId:"1:758420593792:web:29f485e949eca0ce031a65"};
+const app=initializeApp(FC);
+const db=getFirestore(app);
+const auth=getAuth(app);
+const provider=new GoogleAuthProvider();
+
+let currentUser=null,currentRole=null;
+let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[]};
+let activePanel='overview',calMode='week',weekOffset=0,selectedTag=null;
+let activeBibleStage=null,activeBibleWs=null,bibleView='edit',dragSrc=null,dragModeOn=false;
+let openPicker=null;
+let expandedProjs={};
+let designCols=null; // loaded from firebase
+
+const $=id=>document.getElementById(id);
+const STATUS_OPTS=[
+  {v:'design',l:'設計中',bg:'#F0EDFB',color:'#4A3FA0'},
+  {v:'prog',l:'施工中',bg:'var(--pl)',color:'var(--pd)'},
+  {v:'wait',l:'待確認',bg:'var(--al)',color:'var(--ad)'},
+  {v:'done',l:'已完工',bg:'var(--gl)',color:'var(--gd)'},
+  {v:'stop',l:'暫停',bg:'var(--rl)',color:'var(--rd)'},
+];
+const SCOLS=["#EEEDFE","#E1F5EE","#FAEEDA","#FCEBEB","#E6F1FB","#EAF3DE","#FBEAF0","#F1EFE8"];
+const STCS=["#3C3489","#085041","#633806","#791F1F","#0C447C","#27500A","#72243E","#444441"];
+function sc(i){return SCOLS[i%SCOLS.length]}function tc(i){return STCS[i%STCS.length]}
+function statusInfo(v){return STATUS_OPTS.find(o=>o.v===v)||STATUS_OPTS[0]}
+function isAdmin(){return currentRole==='admin'}
+const DEFAULT_DESIGN_COLS=['會議人員','平面圖','客變圖','3D圖','施工圖','報價單'];
+
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r}
+function isSameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+function fmtDate(d){return`${d.getMonth()+1}/${d.getDate()}`}
+function fmtDay(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function today(){return new Date()}
+function getWeekDates(){const b=today();const dow=b.getDay();const diff=dow===0?-6:1-dow;const mon=addDays(b,diff+weekOffset*7);return Array.from({length:7},(_,i)=>addDays(mon,i));}
+
+function getBibleStages(){
+  if(S.bibleOrder&&S.bibleOrder.length)return S.bibleOrder;
+  return Object.keys(S.bible).filter(k=>k!=='__order__');
+}
+function getBiblePhaseItems(stage,phase){const b=S.bible[stage];return(b&&b[phase])?b[phase]:[];}
+function getAllBibleItems(stage){const b=S.bible[stage]||{before:[],during:[],after:[]};return[...(b.before||[]),...(b.during||[]),...(b.after||[])];}
+function pendingCount(projId,stage){
+  if(!stage)return null;
+  const items=getAllBibleItems(stage);if(!items.length)return null;
+  const stored=S.checks[`${projId}_${stage}`]||[];
+  return items.length-items.filter((_,i)=>stored[i]?.done).length;
+}
+function pendBadge(n){
+  if(n===null)return'';
+  if(n===0)return`<span class="pend pend-g">✓</span>`;
+  return`<span class="pend pend-r">${n}</span>`;
+}
+function setSynced(){$('sdot').style.background='#1D9E75';$('slbl').textContent='已同步'}
+function setSyncing(){$('sdot').style.background='var(--amber)';$('slbl').textContent='同步中'}
+function setOffline(){$('sdot').style.background='var(--red)';$('slbl').textContent='離線'}
+
+// ── Auth ──
+window.signInWithGoogle=async function(){
+  try{await signInWithPopup(auth,provider);}catch(e){alert('登入失敗：'+e.message);}
+}
+window.signOut=async function(){await fbSignOut(auth);location.reload();}
+
+onAuthStateChanged(auth,async user=>{
+  if(!user){
+    $('login-screen').style.display='flex';
+    $('pending-screen').style.display='none';
+    $('app-screen').style.display='none';
+    return;
+  }
+  currentUser=user;
+  const memberRef=doc(db,'members',user.uid);
+  const memberSnap=await getDoc(memberRef);
+  if(!memberSnap.exists()){
+    const membersSnap=await getDocs(collection(db,'members'));
+    const hasAdmin=membersSnap.docs.some(d=>d.data().role==='admin');
+    const role=hasAdmin?'pending':'admin';
+    await setDoc(memberRef,{uid:user.uid,name:user.displayName,email:user.email,photoURL:user.photoURL,role,createdAt:serverTimestamp()});
+    currentRole=role;
+  }else{currentRole=memberSnap.data().role;}
+  if(currentRole==='pending'){
+    $('login-screen').style.display='none';
+    $('pending-screen').style.display='flex';
+    $('app-screen').style.display='none';
+    $('pending-email').textContent=user.email;
+    return;
+  }
+  $('login-screen').style.display='none';
+  $('pending-screen').style.display='none';
+  $('app-screen').style.display='block';
+  if(user.photoURL){$('user-avatar').src=user.photoURL;$('user-avatar').style.display='block';}
+  $('user-name').textContent=user.displayName?.split(' ')[0]||user.email;
+  if(isAdmin())document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('show'));
+  initListeners();
+});
+
+function initListeners(){
+  onSnapshot(collection(db,'projects'),snap=>{S.projects=snap.docs.map(d=>({id:d.id,...d.data()}));renderActive();setSynced();},()=>setOffline());
+  onSnapshot(collection(db,'checks'),snap=>{S.checks={};snap.docs.forEach(d=>{S.checks[d.id]=d.data().items||[]});renderActive();});
+  onSnapshot(collection(db,'bible'),snap=>{
+    S.bible={};S.bibleOrder=[];
+    snap.docs.forEach(d=>{if(d.id==='__order__'){S.bibleOrder=d.data().order||[];}else{S.bible[d.id]=d.data();}});
+    const allStages=Object.keys(S.bible).filter(k=>k!=='__order__');
+    allStages.forEach(s=>{if(!S.bibleOrder.includes(s))S.bibleOrder.push(s);});
+    renderActive();
+  });
+  onSnapshot(collection(db,'members'),snap=>{S.members=snap.docs.map(d=>({id:d.id,...d.data()}));renderActive();});
+  onSnapshot(doc(db,'settings','designCols'),snap=>{
+    if(snap.exists()){designCols=snap.data().cols||DEFAULT_DESIGN_COLS;}
+    else{designCols=DEFAULT_DESIGN_COLS;}
+    renderActive();
+  });
+}
+
+document.querySelectorAll('.nav-tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');activePanel=t.dataset.tab;
+    $(`panel-${activePanel}`).classList.add('active');renderActive();
+  });
+});
+function renderActive(){
+  if(activePanel==='overview')renderOverview();
+  else if(activePanel==='design')renderDesign();
+  else if(activePanel==='progress')renderProgress();
+  else if(activePanel==='bible')renderBible();
+  else if(activePanel==='members')renderMembers();
+}
+
+// ── Overview ──
+function renderOverview(){
+  const el=$('panel-overview');
+  const inDesign=S.projects.filter(p=>p.status==='design').length;
+  const inProg=S.projects.filter(p=>p.status==='prog').length;
+  const done=S.projects.filter(p=>p.status==='done').length;
+  el.innerHTML=`
+  <div class="stats">
+    <div class="stat"><div class="stat-n" style="color:#4A3FA0">${inDesign}</div><div class="stat-l">設計中</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--purple)">${inProg}</div><div class="stat-l">施工中</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--green)">${done}</div><div class="stat-l">已完工</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--red)">${S.members.filter(m=>m.role==='pending').length}</div><div class="stat-l">待審核</div></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">所有案件</span>
+      ${isAdmin()?`<button class="btn btn-p btn-sm" onclick="showAddProject()">＋ 新增案件</button>`:''}
+    </div>
+    ${S.projects.length===0?`<div class="empty">尚無案件</div>`:`
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>案件名稱</th><th>業主</th><th>類型</th><th>設計師</th><th>預算</th><th>完工日</th><th>狀態</th>${isAdmin()?'<th></th>':''}</tr></thead>
+      <tbody>${S.projects.map(p=>{
+        const si=statusInfo(p.status);
+        return`<tr>
+          <td><strong style="font-weight:500">${p.name}</strong></td>
+          <td>${p.owner||''}</td><td style="color:var(--text2)">${p.type||''}</td>
+          <td>${p.designer||''}</td><td>${p.budget||''}</td>
+          <td style="color:var(--text2)">${p.finish||''}</td>
+          <td>${isAdmin()?`<select class="status-sel" style="background:${si.bg};color:${si.color}" onchange="updateStatus('${p.id}',this.value)">
+            ${STATUS_OPTS.map(o=>`<option value="${o.v}" ${p.status===o.v?'selected':''}>${o.l}</option>`).join('')}
+          </select>`:`<span class="badge" style="background:${si.bg};color:${si.color}">${si.l}</span>`}</td>
+          ${isAdmin()?`<td><button class="btn btn-sm" onclick="deleteProject('${p.id}')">刪除</button></td>`:''}
+        </tr>`;}).join('')}</tbody>
+    </table></div>`}
+  </div>`;
+}
+window.updateStatus=async function(projId,v){setSyncing();await updateDoc(doc(db,'projects',projId),{status:v});setSynced();}
+
+// ── Design Progress ──
+function getDesignCols(){return designCols||DEFAULT_DESIGN_COLS;}
+
+function renderDesign(){
+  const el=$('panel-design');
+  const cols=getDesignCols();
+  const allProjs=S.projects.filter(p=>p.status==='design'||p.status==='prog'||p.status==='wait');
+  el.innerHTML=`
+  <div class="flex-sb" style="margin-bottom:1rem">
+    <span style="font-size:14px;font-weight:500">設計進度</span>
+    <div class="flex">
+      ${isAdmin()&&cols.length<10?`<button class="btn btn-sm" onclick="addDesignCol()">＋ 新增欄位</button>`:''}
+    </div>
+  </div>
+  ${allProjs.length===0?`<div class="empty">尚無設計中或施工中案件</div>`:''}
+  ${allProjs.map(p=>{
+    const dp=p.designProgress||{};
+    const missingCount=cols.filter(c=>!dp[c]||dp[c].trim()==='').length;
+    const isOpen=expandedProjs[p.id]||false;
+    return`<div class="design-proj-row">
+      <div class="design-proj-hdr" onclick="toggleDesignProj('${p.id}')">
+        <span class="design-proj-arrow ${isOpen?'open':''}">▶</span>
+        <span class="design-proj-name">${p.name}</span>
+        ${missingCount>0?`<span class="design-warn">⚠ ${missingCount} 項未填</span>`:'<span style="font-size:11px;color:var(--teal)">✓ 已填齊</span>'}
+        <span style="font-size:11px;color:var(--text3)">${statusInfo(p.status).l}</span>
+      </div>
+      <div class="design-proj-body ${isOpen?'open':''}">
+        <div style="overflow-x:auto">
+        <table class="design-tbl" id="dtbl-${p.id}">
+          <thead><tr>
+            ${cols.map((c,ci)=>`<th style="width:${p.colWidths?.[ci]||120}px" data-proj="${p.id}" data-ci="${ci}">
+              ${isAdmin()?`<input class="col-name-edit" value="${c}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c}</span>`}
+              ${isAdmin()?`<div class="col-resize" onmousedown="startColResize(event,'${p.id}',${ci})"></div>`:''}
+            </th>`).join('')}
+          </tr></thead>
+          <tbody><tr>
+            ${cols.map((c,ci)=>{
+              const val=dp[c]||'';
+              const isEmpty=!val.trim();
+              return`<td class="${isEmpty?'empty-cell':''}">
+                <input type="text" value="${val}" placeholder="—" ${!isAdmin()&&p.status!=='design'?'':''}
+                  onblur="saveDesignField('${p.id}','${c}',this.value)"
+                  onkeydown="if(event.key==='Enter')this.blur()">
+              </td>`;}).join('')}
+          </tr></tbody>
+        </table>
+        </div>
+      </div>
+    </div>`;}).join('')}`;
+}
+
+window.toggleDesignProj=function(projId){
+  expandedProjs[projId]=!expandedProjs[projId];
+  renderDesign();
+}
+window.saveDesignField=async function(projId,col,val){
+  const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
+  const dp={...(proj.designProgress||{}),[col]:val};
+  await updateDoc(doc(db,'projects',projId),{designProgress:dp});
+}
+window.saveColName=async function(ci,val){
+  if(!isAdmin())return;
+  const cols=[...getDesignCols()];cols[ci]=val||`欄位${ci+1}`;
+  setSyncing();await setDoc(doc(db,'settings','designCols'),{cols});setSynced();
+}
+window.addDesignCol=async function(){
+  if(!isAdmin())return;
+  const cols=[...getDesignCols()];
+  if(cols.length>=10)return alert('最多10個欄位');
+  cols.push(`欄位${cols.length+1}`);
+  setSyncing();await setDoc(doc(db,'settings','designCols'),{cols});setSynced();
+}
+
+// Column resize
+let resizing=null;
+window.startColResize=function(e,projId,ci){
+  e.preventDefault();
+  const startX=e.clientX;
+  const proj=S.projects.find(p=>p.id===projId);
+  const startW=(proj?.colWidths?.[ci])||120;
+  resizing={projId,ci,startX,startW};
+  document.onmousemove=function(me){
+    if(!resizing)return;
+    const newW=Math.max(60,resizing.startW+(me.clientX-resizing.startX));
+    const tbl=$(`dtbl-${resizing.projId}`);
+    if(tbl){const ths=tbl.querySelectorAll('th');if(ths[resizing.ci])ths[resizing.ci].style.width=newW+'px';}
+  };
+  document.onmouseup=async function(){
+    if(!resizing)return;
+    const tbl=$(`dtbl-${resizing.projId}`);
+    const proj2=S.projects.find(p=>p.id===resizing.projId);
+    if(tbl&&proj2){
+      const ths=tbl.querySelectorAll('th');
+      const widths=Array.from(ths).map(th=>parseInt(th.style.width)||120);
+      await updateDoc(doc(db,'projects',resizing.projId),{colWidths:widths});
+    }
+    resizing=null;document.onmousemove=null;document.onmouseup=null;
+  };
+}
+
+// ── Progress ──
+function renderProgress(){
+  const el=$('panel-progress');
+  const stages=getBibleStages();
+  const weekDays=getWeekDates();
+  // Determine which projects to show:
+  // - status=prog always show
+  // - status=done: show only if this week has any schedule entries OR week is in the past relative to completion
+  // - show if the week contains past data
+  const todayDate=today();
+  const weekStart=weekDays[0];
+  const weekEnd=weekDays[6];
+
+  function shouldShowProject(p){
+    if(p.status==='prog')return true;
+    if(p.status==='design'||p.status==='wait'||p.status==='stop')return false;
+    if(p.status==='done'){
+      // Show if this week has schedule data
+      return(p.schedule||[]).some(e=>{
+        const d=new Date(e.date+'T00:00:00');
+        return d>=weekStart&&d<=weekEnd;
+      });
+    }
+    return false;
+  }
+
+  el.innerHTML=`
+  <div class="wctrl">
+    <div class="seg">
+      <button class="${calMode==='week'?'on':''}" onclick="setCalMode('week')">週視圖</button>
+      <button class="${calMode==='day'?'on':''}" onclick="setCalMode('day')">今日總覽</button>
+    </div>
+    ${calMode==='week'?`<div class="nav-row">
+      <button class="nav-btn" onclick="changeWeek(-1)">‹</button>
+      <span class="wk-lbl" onclick="openDatePicker()" title="點擊選擇日期">
+        ${weekDays[0].getFullYear()}年 ${fmtDate(weekDays[0])} – ${fmtDate(weekDays[6])} 📅
+      </span>
+      <input type="date" id="week-date-picker" style="position:fixed;opacity:0;pointer-events:none;width:0;height:0" onchange="jumpToDate(this.value)">
+      <button class="nav-btn" onclick="changeWeek(1)">›</button>
+    </div>`:''}
+  </div>
+  ${stages.length===0?`<div class="empty">請先至「施工寶典」新增工程階段</div>`:''}
+  ${calMode==='week'?renderWeekView(shouldShowProject):renderDayView()}`;
+}
+
+function renderWeekView(shouldShow){
+  const days=getWeekDates();const td=today();
+  const WD=['日','一','二','三','四','五','六'];
+  const projs=S.projects.filter(shouldShow);
+  if(!projs.length)return`<div class="empty">尚無進行中案件</div>`;
+  const hint=selectedTag?`<div style="background:var(--pl);color:var(--pd);padding:6px 10px;border-radius:var(--r);margin-bottom:8px;font-size:12px">已選取色塊 — Ctrl+點格子複製，點空白取消</div>`:'';
+
+  function renderCell(p,pi,d,rowIdx){
+    const isT=isSameDay(d,td);const ds=fmtDay(d);
+    const allEvs=(p.schedule||[]).filter(e=>e.date===ds);
+    const isOpen=openPicker&&openPicker.projId===p.id&&openPicker.ds===ds&&openPicker.row===rowIdx;
+    const isDone=p.status==='done';
+    return`<td class="ev-cell ${isT?'tc':''}" onclick="handleCellBg(event,'${p.id}','${ds}')">
+      ${allEvs.map((ev,ei)=>{
+        if(rowIdx===0&&ei>=2)return'';
+        if(rowIdx===1&&ei<2)return'';
+        const pn=pendingCount(p.id,ev.stage);
+        const isSel=selectedTag&&selectedTag.projId===p.id&&selectedTag.ds===ds&&selectedTag.ei===ei;
+        return`<div class="ev-row">
+          <span class="ev-field" data-proj="${p.id}" data-ds="${ds}" data-ei="${ei}" data-field="time"
+            ondblclick="event.stopPropagation();startFieldEdit(this)"
+            onclick="event.stopPropagation()">${ev.time||''}</span>
+          <span class="ev-chip${isSel?' sel':''}" style="background:${sc(pi)};color:${tc(pi)}"
+            onclick="event.stopPropagation();handleChipClick(event,'${p.id}','${ds}',${ei},'${ev.stage||''}')">${ev.label||ev.stage||'?'}${pendBadge(pn)}</span>
+          <span class="ev-field" data-proj="${p.id}" data-ds="${ds}" data-ei="${ei}" data-field="note"
+            ondblclick="event.stopPropagation();startFieldEdit(this)"
+            onclick="event.stopPropagation()">${ev.note||''}</span>
+          ${!isDone?`<button class="ev-del" onclick="event.stopPropagation();removeEv('${p.id}','${ds}',${ei})">×</button>`:''}
+        </div>`;}).join('')}
+      ${rowIdx===1&&!isDone?`<div class="add-ev-wrap">
+        <span class="add-ev-btn" onclick="event.stopPropagation();togglePicker('${p.id}','${ds}',1)">＋ 新增</span>
+        ${isOpen?`<div class="stage-search-box" onclick="event.stopPropagation()">
+          <input type="text" class="stage-search-input" placeholder="打關鍵字…" id="ssi-${p.id}-${ds}"
+            oninput="filterStages('${p.id}','${ds}')"
+            onkeydown="handleStageKey(event,'${p.id}','${ds}')">
+          <div class="stage-search-list" id="ssl-${p.id}-${ds}">
+            ${getBibleStages().map(s=>`<div class="stage-search-item" onclick="addEvFromStage('${p.id}','${ds}','${s}')">${s}</div>`).join('')}
+          </div>
+        </div>`:''}
+      </div>`:''}
+    </td>`;
+  }
+
+  return`${hint}<div class="wtbl-wrap"><table class="wtbl">
+  <thead><tr>
+    <th class="site-hd" style="width:100px">工地</th>
+    ${days.map(d=>{const isT=isSameDay(d,td);return`<th class="${isT?'th-t':''}">${d.getFullYear()}<br>${d.getMonth()+1}/${d.getDate()}<br><span style="font-weight:400;font-size:10px">週${WD[d.getDay()]}</span></th>`;}).join('')}
+  </tr></thead>
+  <tbody>
+  ${projs.map((p,pi)=>`
+    <tr>
+      <td class="site-hd" style="color:${tc(pi)}" rowspan="2">
+        ${p.name}
+        ${p.status==='done'?`<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">已完工</span>`:''}
+      </td>
+      ${days.map(d=>renderCell(p,pi,d,0)).join('')}
+    </tr>
+    <tr>${days.map(d=>renderCell(p,pi,d,1)).join('')}</tr>
+  `).join('')}
+  </tbody></table></div>
+  <div style="font-size:11px;color:var(--text2);margin-top:8px">色塊單擊=checklist；Ctrl+單擊=複製；雙擊白格=編輯文字</div>`;
+}
+
+window.filterStages=function(projId,ds){
+  const inp=$(`ssi-${projId}-${ds}`);const list=$(`ssl-${projId}-${ds}`);
+  if(!inp||!list)return;
+  const val=inp.value.toLowerCase().trim();
+  const stages=getBibleStages();
+  const filtered=val?stages.filter(s=>s.toLowerCase().includes(val)):stages;
+  list.innerHTML=filtered.map(s=>`<div class="stage-search-item" onclick="addEvFromStage('${projId}','${ds}','${s}')">${s}</div>`).join('');
+  if(filtered.length)list.querySelectorAll('.stage-search-item')[0]?.classList.add('hi');
+}
+window.handleStageKey=function(e,projId,ds){
+  const list=$(`ssl-${projId}-${ds}`);
+  if(e.key==='Enter'){
+    const hi=list?.querySelector('.stage-search-item.hi')||list?.querySelector('.stage-search-item');
+    if(hi){addEvFromStage(projId,ds,hi.textContent.trim());}
+  }else if(e.key==='Escape'){openPicker=null;renderProgress();}
+}
+window.togglePicker=function(projId,ds,row=0){
+  if(openPicker&&openPicker.projId===projId&&openPicker.ds===ds){openPicker=null;}
+  else{openPicker={projId,ds,row};}
+  renderProgress();
+  if(openPicker){setTimeout(()=>{const inp=$(`ssi-${projId}-${ds}`);if(inp)inp.focus();},50);}
+}
+window.addEvFromStage=async function(projId,ds,stage){
+  openPicker=null;
+  const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
+  const schedule=[...(proj.schedule||[]),{date:ds,stage,label:stage,time:'',note:''}];
+  setSyncing();await updateDoc(doc(db,'projects',projId),{schedule});setSynced();
+}
+window.handleCellBg=function(e,projId,ds){
+  if(e.ctrlKey&&selectedTag){copyTagToCell(projId,ds);return;}
+  selectedTag=null;openPicker=null;renderProgress();
+}
+window.handleChipClick=function(e,projId,ds,ei,stage){
+  if(e.ctrlKey){selectedTag={projId,ds,ei,stage};renderProgress();return;}
+  if(selectedTag){selectedTag=null;renderProgress();return;}
+  if(stage&&getBibleStages().includes(stage)){
+    const proj=S.projects.find(p=>p.id===projId);
+    openCheckMo(projId,stage,stage,proj?.name||'');
+  }
+}
+async function copyTagToCell(toProjId,toDs){
+  if(!selectedTag)return;
+  const srcProj=S.projects.find(p=>p.id===selectedTag.projId);if(!srcProj)return;
+  const ev=(srcProj.schedule||[]).filter(e=>e.date===selectedTag.ds)[selectedTag.ei];if(!ev)return;
+  const toProj=S.projects.find(p=>p.id===toProjId);if(!toProj)return;
+  const schedule=[...(toProj.schedule||[]),{...ev,date:toDs}];
+  setSyncing();await updateDoc(doc(db,'projects',toProjId),{schedule});setSynced();
+  selectedTag=null;
+}
+window.removeEv=async function(projId,ds,ei){
+  const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
+  const dayEvs=(proj.schedule||[]).filter(e=>e.date===ds);
+  const toRemove=dayEvs[ei];if(!toRemove)return;
+  const idx=(proj.schedule||[]).indexOf(toRemove);
+  const ns=[...(proj.schedule||[]).slice(0,idx),...(proj.schedule||[]).slice(idx+1)];
+  setSyncing();await updateDoc(doc(db,'projects',projId),{schedule:ns});setSynced();
+}
+window.startFieldEdit=function(span){
+  const projId=span.dataset.proj;const ds=span.dataset.ds;
+  const ei=parseInt(span.dataset.ei);const field=span.dataset.field;
+  const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
+  const dayEvs=(proj.schedule||[]).filter(e=>e.date===ds);
+  const ev=dayEvs[ei];if(!ev)return;
+  const original=ev[field]||'';
+  span.contentEditable='true';span.focus();
+  const range=document.createRange();range.selectNodeContents(span);
+  const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);
+  function save(){
+    span.contentEditable='false';
+    const newVal=span.textContent.trim();
+    if(newVal===original)return;
+    const allSched=[...(proj.schedule||[])];
+    const absIdx=allSched.indexOf(ev);if(absIdx<0)return;
+    allSched[absIdx]={...ev,[field]:newVal};
+    setSyncing();updateDoc(doc(db,'projects',projId),{schedule:allSched}).then(()=>setSynced());
+  }
+  span.onblur=save;
+  span.onkeydown=ke=>{if(ke.key==='Enter'){ke.preventDefault();span.blur();}if(ke.key==='Escape'){span.textContent=original;span.contentEditable='false';}};
+}
+window.openDatePicker=function(){
+  const p=$('week-date-picker');if(!p)return;
+  p.style.cssText='position:fixed;top:60px;left:50%;transform:translateX(-50%);opacity:1;pointer-events:auto;z-index:999;width:auto;height:auto';
+  try{p.showPicker();}catch(e){p.click();}
+  p.onblur=()=>{p.style.cssText='position:fixed;opacity:0;pointer-events:none;width:0;height:0';}
+}
+window.jumpToDate=function(dateStr){
+  if(!dateStr)return;
+  const target=new Date(dateStr+'T00:00:00');
+  const base=today();const dow=base.getDay();const diff=dow===0?-6:1-dow;
+  const thisMon=addDays(base,diff);
+  const targetDow=target.getDay();const targetDiff=targetDow===0?-6:1-targetDow;
+  const targetMon=addDays(target,targetDiff);
+  weekOffset=Math.round((targetMon.getTime()-thisMon.getTime())/(7*24*60*60*1000));
+  renderProgress();
+}
+function renderDayView(){
+  const td=today();const ds=fmtDay(td);
+  const projs=S.projects.filter(p=>p.status==='prog');
+  let html=`<div style="font-size:14px;font-weight:500;margin-bottom:12px">${td.getFullYear()}年${td.getMonth()+1}月${td.getDate()}日 工地動態</div>`;
+  let hasAny=false;
+  projs.forEach((p,pi)=>{
+    const evs=(p.schedule||[]).filter(e=>e.date===ds);
+    if(!evs.length)return;hasAny=true;
+    html+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:14px 16px;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:500;margin-bottom:8px;color:${tc(pi)}">${p.name}</div>
+      ${evs.map(ev=>{const pn=pendingCount(p.id,ev.stage);
+        return`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
+          ${ev.time?`<span style="font-size:11px;color:var(--text2)">${ev.time}</span>`:''}
+          <span style="background:${sc(pi)};color:${tc(pi)};padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer"
+            onclick="openCheckMo('${p.id}','${ev.stage}','${ev.label||ev.stage}','${p.name}')">${ev.label||ev.stage}</span>
+          ${ev.note?`<span style="font-size:11px;color:var(--text2)">${ev.note}</span>`:''}
+          ${pendBadge(pn)}
+        </div>`;}).join('')}
+    </div>`;
+  });
+  if(!hasAny)html+=`<div class="empty">今日無工地排程</div>`;
+  return html;
+}
+window.openCheckMo=function(projId,stage,label,projName){
+  if(!stage)return;
+  const allItems=getAllBibleItems(stage);
+  if(!allItems.length){alert('此階段尚無項目');return;}
+  const key=`${projId}_${stage}`;const stored=S.checks[key]||[];
+  const merged=allItems.map((t,i)=>({text:t,done:stored[i]?.done||false}));
+  const done=merged.filter(x=>x.done).length;const pct=Math.round(done/merged.length*100);
+  $('mo-content').innerHTML=`
+    <div class="mo-title">${label}</div>
+    <div class="mo-sub">${projName} — ${done}/${merged.length} 完成</div>
+    <div class="pb-wrap"><div class="pb-fill" style="width:${pct}%;background:${pct===100?'var(--teal)':'var(--purple)'}"></div></div>
+    ${merged.map((item,i)=>`<div class="ws-cl-item ${item.done?'done':''}">
+      <input type="checkbox" id="ck${i}" ${item.done?'checked':''} onchange="toggleCheck('${projId}','${stage}',${i},this.checked)">
+      <label for="ck${i}">${item.text}</label>
+    </div>`).join('')}
+    <div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;
+  $('modal').style.display='flex';
+}
+window.closeMo=function(){$('modal').style.display='none';}
+window.toggleCheck=async function(projId,stage,idx,checked){
+  setSyncing();
+  const allItems=getAllBibleItems(stage);
+  const key=`${projId}_${stage}`;
+  const stored=[...(S.checks[key]||allItems.map(t=>({text:t,done:false})))];
+  while(stored.length<allItems.length)stored.push({done:false});
+  stored[idx]={...stored[idx],done:checked};
+  try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}
+}
+
+// ── Bible ──
+function renderBible(){
+  const el=$('panel-bible');
+  const stages=getBibleStages();
+  if(stages.length&&(!activeBibleStage||!stages.includes(activeBibleStage)))activeBibleStage=stages[0];
+  const progProjs=S.projects.filter(p=>p.status==='prog');
+  if(!activeBibleWs&&progProjs.length)activeBibleWs=progProjs[0]?.id||null;
+  el.innerHTML=`
+  <div class="flex-sb" style="margin-bottom:1rem">
+    <div>
+      <div style="font-size:15px;font-weight:600">施工寶典</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px">新增階段後可在工程進度中選取，自動帶入待辦清單</div>
+    </div>
+    <div class="flex">
+      <div class="seg">
+        <button class="${bibleView==='edit'?'on':''}" onclick="setBibleView('edit')">編輯清單</button>
+        <button class="${bibleView==='worksite'?'on':''}" onclick="setBibleView('worksite')">工地勾選</button>
+      </div>
+      ${isAdmin()?`
+        <button class="btn btn-sm ${dragModeOn?'btn-p':''}" onclick="toggleDragMode()" title="開啟後可拖拉排序">
+          ${dragModeOn?'✓ 排序中':'⠿ 編輯順序'}
+        </button>
+        <button class="btn btn-p btn-sm" onclick="showAddStage()">＋ 新增階段</button>
+      `:''}
+    </div>
+  </div>
+  <div class="bible-wrap">
+    <div class="bible-stages ${dragModeOn?'drag-mode':''}">
+      ${stages.length===0?`<div style="padding:14px;font-size:12px;color:var(--text3);text-align:center">尚無階段</div>`:''}
+      ${stages.map((s,i)=>`<div class="bst-item ${s===activeBibleStage?'active':''} ${dragModeOn?'drag-enabled':''}"
+        ${dragModeOn?`draggable="true" ondragstart="bsDragStart(event,'${s}')" ondragover="bsDragOver(event,'${s}')" ondrop="bsDrop(event,'${s}')" ondragend="bsDragEnd()"`:''} 
+        onclick="setActiveStage('${s}')">
+        <span class="drag-handle">⠿</span>
+        <span class="bst-name">${String(i+1).padStart(2,'0')}. ${s}</span>
+        <span class="bst-cnt">${getAllBibleItems(s).length}</span>
+      </div>`).join('')}
+    </div>
+    <div class="bible-detail">
+      ${activeBibleStage?renderBibleDetail(activeBibleStage):`<div class="empty">請新增工程階段後選取</div>`}
+    </div>
+  </div>`;
+}
+
+window.toggleDragMode=function(){dragModeOn=!dragModeOn;renderBible();}
+
+function renderBibleDetail(stage){
+  if(bibleView==='worksite')return renderBibleWorksite(stage);
+  const phases=[
+    {id:'before',label:'工程前',color:'#BA7517',dot:'var(--amber)'},
+    {id:'during',label:'工程中',color:'#534AB7',dot:'var(--purple)'},
+    {id:'after',label:'工程後',color:'#1D9E75',dot:'var(--teal)'},
+  ];
+  return`
+  <div class="flex-sb" style="margin-bottom:14px">
+    <span style="font-size:14px;font-weight:500">${stage}</span>
+    ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="deleteStage('${stage}')">刪除此階段</button>`:''}
+  </div>
+  ${phases.map(ph=>`<div class="phase-section">
+    <div class="phase-title" style="color:${ph.color}">
+      <span class="phase-dot" style="background:${ph.dot}"></span>
+      ${ph.label}（${getBiblePhaseItems(stage,ph.id).length} 項）
+    </div>
+    ${getBiblePhaseItems(stage,ph.id).map((item,i)=>`
+      <div class="bib-item-row">
+        <span class="bib-item-num">${i+1}</span>
+        <span class="bib-item-text">${item}</span>
+        ${isAdmin()?`<button class="bib-item-del" onclick="delBibleItem('${stage}','${ph.id}',${i})">×</button>`:''}
+      </div>`).join('')}
+    ${isAdmin()?`<div class="bib-add-row">
+      <input type="text" id="bib-new-${ph.id}" placeholder="新增${ph.label}項目…" onkeydown="if(event.key==='Enter')addBibleItem('${stage}','${ph.id}')">
+      <button class="btn btn-p btn-sm" onclick="addBibleItem('${stage}','${ph.id}')">新增</button>
+    </div>`:''}
+  </div>`).join('')}`;
+}
+
+function renderBibleWorksite(stage){
+  const progProjs=S.projects.filter(p=>p.status==='prog');
+  if(!progProjs.length)return`<div class="empty">尚無施工中案件</div>`;
+  if(!activeBibleWs||!progProjs.find(p=>p.id===activeBibleWs))activeBibleWs=progProjs[0].id;
+  const allItems=getAllBibleItems(stage);
+  const key=`${activeBibleWs}_${stage}`;const stored=S.checks[key]||[];
+  const merged=allItems.map((t,i)=>({text:t,done:stored[i]?.done||false}));
+  const done=merged.filter(x=>x.done).length;
+  const curProj=progProjs.find(p=>p.id===activeBibleWs);
+  return`
+  <div style="font-size:14px;font-weight:500;margin-bottom:10px">${stage}</div>
+  <div class="ws-tabs">${progProjs.map(p=>`<button class="ws-tab ${p.id===activeBibleWs?'active':''}" onclick="setActiveWs('${p.id}')">${p.name}</button>`).join('')}</div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:8px">${curProj?.name||''} — ${done}/${merged.length} 完成</div>
+  <div class="pb-wrap"><div class="pb-fill" style="width:${merged.length?Math.round(done/merged.length*100):0}%;background:var(--purple)"></div></div>
+  <div style="margin-top:10px">
+    ${merged.length===0?`<div class="empty" style="padding:1rem">此階段尚無項目</div>`:''}
+    ${merged.map((item,i)=>`<div class="ws-cl-item ${item.done?'done':''}">
+      <input type="checkbox" id="wsck${i}" ${item.done?'checked':''} onchange="toggleCheck('${activeBibleWs}','${stage}',${i},this.checked)">
+      <label for="wsck${i}">${item.text}</label>
+    </div>`).join('')}
+  </div>`;
+}
+
+window.setBibleView=function(v){bibleView=v;renderBible();}
+window.setActiveStage=function(s){if(dragModeOn)return;activeBibleStage=s;renderBible();}
+window.setActiveWs=function(id){activeBibleWs=id;renderBible();}
+window.bsDragStart=function(e,s){if(!dragModeOn)return;dragSrc=s;setTimeout(()=>document.querySelector(`[data-stage="${s}"]`)?.classList.add('dragging'),0);}
+window.bsDragOver=function(e,s){if(!dragModeOn)return;e.preventDefault();document.querySelectorAll('.bst-item').forEach(el=>el.classList.remove('drag-over'));if(s!==dragSrc)document.querySelector(`[data-stage="${s}"]`)?.classList.add('drag-over');}
+window.bsDrop=async function(e,toS){
+  if(!dragModeOn)return;
+  e.preventDefault();if(!dragSrc||dragSrc===toS)return;
+  const order=[...getBibleStages()];const fi=order.indexOf(dragSrc);const ti=order.indexOf(toS);
+  if(fi<0||ti<0)return;order.splice(fi,1);order.splice(ti,0,dragSrc);
+  setSyncing();await setDoc(doc(db,'bible','__order__'),{order});setSynced();
+}
+window.bsDragEnd=function(){document.querySelectorAll('.bst-item').forEach(el=>{el.classList.remove('dragging');el.classList.remove('drag-over');});dragSrc=null;}
+window.addBibleItem=async function(stage,phase){
+  if(!isAdmin())return;
+  const inp=$(`bib-new-${phase}`);if(!inp)return;
+  const text=inp.value.trim();if(!text)return;
+  const data=S.bible[stage]||{before:[],during:[],after:[]};
+  const updated={...data,[phase]:[...(data[phase]||[]),text]};
+  setSyncing();await setDoc(doc(db,'bible',stage),updated);inp.value='';setSynced();
+}
+window.delBibleItem=async function(stage,phase,idx){
+  if(!isAdmin())return;
+  const data=S.bible[stage]||{before:[],during:[],after:[]};
+  const before=data.before||[];const during=data.during||[];
+  const absIdx=(phase==='before'?0:phase==='during'?before.length:before.length+during.length)+idx;
+  const phaseItems=[...(data[phase]||[])];phaseItems.splice(idx,1);
+  const updated={...data,[phase]:phaseItems};
+  setSyncing();await setDoc(doc(db,'bible',stage),updated);
+  const snap=await getDocs(collection(db,'checks'));
+  const batch=writeBatch(db);
+  snap.docs.filter(d=>d.id.endsWith('_'+stage)).forEach(d=>{
+    const arr=d.data().items||[];arr.splice(absIdx,1);
+    batch.set(doc(db,'checks',d.id),{items:arr});
+  });
+  await batch.commit();setSynced();
+}
+window.showAddStage=function(){
+  $('mo-content').innerHTML=`<div class="mo-title">新增工程階段</div>
+    <div style="margin-top:12px"><input id="ns-name" type="text" placeholder="工程階段名稱*（例：拆除工程）"></div>
+    <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="addStage()">新增</button></div>`;
+  $('modal').style.display='flex';setTimeout(()=>$('ns-name')?.focus(),50);
+}
+window.addStage=async function(){
+  if(!isAdmin())return;
+  const name=$('ns-name').value.trim();if(!name)return alert('請填寫階段名稱');
+  if(getBibleStages().includes(name))return alert('此階段已存在');
+  const order=[...getBibleStages(),name];
+  setSyncing();
+  await setDoc(doc(db,'bible',name),{before:[],during:[],after:[]});
+  await setDoc(doc(db,'bible','__order__'),{order});
+  activeBibleStage=name;closeMo();setSynced();
+}
+window.deleteStage=async function(stage){
+  if(!isAdmin())return;
+  if(!confirm(`確定刪除「${stage}」？`))return;
+  const order=getBibleStages().filter(s=>s!==stage);
+  setSyncing();
+  await deleteDoc(doc(db,'bible',stage));
+  await setDoc(doc(db,'bible','__order__'),{order});
+  const snap=await getDocs(collection(db,'checks'));
+  const batch=writeBatch(db);
+  snap.docs.filter(d=>d.id.endsWith('_'+stage)).forEach(d=>batch.delete(doc(db,'checks',d.id)));
+  await batch.commit();activeBibleStage=null;setSynced();
+}
+
+// ── Members ──
+function renderMembers(){
+  if(!isAdmin())return;
+  const el=$('panel-members');
+  const pending=S.members.filter(m=>m.role==='pending');
+  const active=S.members.filter(m=>m.role!=='pending');
+  el.innerHTML=`
+  <div style="font-size:15px;font-weight:600;margin-bottom:1rem">成員管理</div>
+  ${pending.length?`<div style="font-size:13px;font-weight:500;margin-bottom:8px;color:var(--amber)">待審核（${pending.length}）</div>
+  ${pending.map(m=>`<div class="member-card">
+    <img class="member-avatar" src="${m.photoURL||''}" onerror="this.style.display='none'">
+    <div class="member-info"><div class="member-name">${m.name||'未知'}</div><div class="member-email">${m.email}</div></div>
+    <span class="role-badge role-pending">待審核</span>
+    <button class="btn btn-sm btn-p" onclick="approveMember('${m.id}','staff')">核准（員工）</button>
+    <button class="btn btn-sm btn-p" style="background:var(--pd)" onclick="approveMember('${m.id}','admin')">核准（主管）</button>
+    <button class="btn btn-sm btn-danger" onclick="rejectMember('${m.id}')">拒絕</button>
+  </div>`).join('')}`:''}
+  <div style="font-size:13px;font-weight:500;margin-bottom:8px;margin-top:${pending.length?'16px':'0'}">所有成員（${active.length}）</div>
+  ${active.map(m=>`<div class="member-card">
+    <img class="member-avatar" src="${m.photoURL||''}" onerror="this.style.display='none'">
+    <div class="member-info"><div class="member-name">${m.name||'未知'}</div><div class="member-email">${m.email}</div></div>
+    <span class="role-badge ${m.role==='admin'?'role-admin':'role-staff'}">${m.role==='admin'?'主管':'員工'}</span>
+    ${m.uid!==currentUser?.uid?`<select class="btn btn-sm" onchange="changeRole('${m.id}',this.value)">
+      <option value="admin" ${m.role==='admin'?'selected':''}>主管</option>
+      <option value="staff" ${m.role==='staff'?'selected':''}>員工</option>
+    </select>`:'<span style="font-size:11px;color:var(--text3)">（自己）</span>'}
+  </div>`).join('')}`;
+}
+window.approveMember=async function(uid,role){await updateDoc(doc(db,'members',uid),{role});}
+window.rejectMember=async function(uid){if(!confirm('確定拒絕？'))return;await deleteDoc(doc(db,'members',uid));}
+window.changeRole=async function(uid,role){await updateDoc(doc(db,'members',uid),{role});}
+
+// ── Project CRUD ──
+window.showAddProject=function(){
+  if(!isAdmin())return;
+  $('mo-content').innerHTML=`<div class="mo-title">新增案件</div>
+    <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+      <input id="np-name" type="text" placeholder="案件名稱*">
+      <input id="np-owner" type="text" placeholder="業主">
+      <input id="np-type" type="text" placeholder="類型（住宅／商業…）">
+      <input id="np-designer" type="text" placeholder="設計師">
+      <input id="np-budget" type="text" placeholder="預算">
+      <input id="np-finish" type="text" placeholder="預計完工日（2026-12-31）">
+      <select id="np-status"><option value="design">設計中</option><option value="prog">施工中</option><option value="wait">待確認</option><option value="done">已完工</option><option value="stop">暫停</option></select>
+    </div>
+    <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="addProject()">新增</button></div>`;
+  $('modal').style.display='flex';
+}
+window.addProject=async function(){
+  if(!isAdmin())return;
+  const name=$('np-name').value.trim();if(!name)return alert('請填寫案件名稱');
+  setSyncing();
+  await addDoc(collection(db,'projects'),{name,owner:$('np-owner').value.trim(),type:$('np-type').value.trim(),designer:$('np-designer').value.trim(),budget:$('np-budget').value.trim(),finish:$('np-finish').value.trim(),status:$('np-status').value,schedule:[],designProgress:{},createdAt:serverTimestamp()});
+  closeMo();setSynced();
+}
+window.deleteProject=async function(id){
+  if(!isAdmin())return;
+  if(!confirm('確定刪除此案件？'))return;
+  await deleteDoc(doc(db,'projects',id));
+}
+window.setCalMode=function(m){calMode=m;renderProgress();}
+window.changeWeek=function(d){weekOffset+=d;renderProgress();}
+</script>
+</body>
+</html>
