@@ -17,6 +17,8 @@
   --r:8px;--rl2:12px;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+/* Auth screens */
 #login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000}
 .login-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:40px;width:360px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}
 .login-logo{font-size:22px;font-weight:700;margin-bottom:6px}.login-logo span{color:var(--purple)}
@@ -26,6 +28,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #pending-screen{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:1000}
 .pending-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:40px;width:380px;text-align:center}
 #app-screen{display:none}
+
+/* App layout */
 .app{display:flex;flex-direction:column;min-height:100vh}
 .topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.25rem;display:flex;align-items:center;gap:1rem;height:50px;position:sticky;top:0;z-index:50}
 .logo{font-size:15px;font-weight:600;white-space:nowrap}.logo span{color:var(--purple)}
@@ -41,6 +45,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0}
 .main{flex:1;padding:1.25rem;max-width:1400px;margin:0 auto;width:100%}
 .panel{display:none}.panel.active{display:block}
+
+/* Common */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:1.25rem}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:14px 16px}
 .stat-n{font-size:24px;font-weight:600;line-height:1}.stat-l{font-size:12px;color:var(--text2);margin-top:4px}
@@ -65,32 +71,40 @@ tr:hover td{background:#fafaf8}
 .btn-sm{padding:3px 9px;font-size:12px}.btn-danger{background:var(--rl);color:var(--rd);border-color:var(--rl)}
 input[type=text],input[type=date],select,textarea{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;background:var(--surface);color:var(--text)}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
+.flex{display:flex;align-items:center;gap:8px}
+.flex-sb{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.empty{text-align:center;padding:2rem;color:var(--text3);font-size:13px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 
-/* ── Design Progress ── */
+/* Design Progress */
 .design-proj-row{border:1px solid var(--border);border-radius:var(--rl2);margin-bottom:8px;overflow:hidden}
 .design-proj-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:var(--surface);user-select:none}
 .design-proj-hdr:hover{background:var(--bg)}
-.design-proj-arrow{font-size:12px;transition:transform .2s;flex-shrink:0}
+.design-proj-arrow{font-size:12px;transition:transform .2s;flex-shrink:0;color:var(--text3)}
 .design-proj-arrow.open{transform:rotate(90deg)}
 .design-proj-name{font-size:13px;font-weight:500;flex:1}
 .design-warn{font-size:11px;color:var(--rd);margin-left:4px}
-.design-proj-body{display:none;overflow-x:auto;border-top:1px solid var(--border)}
-.design-proj-body.open{display:block}
+/* Sub-section for each field group */
+.design-fields-row{border-top:1px solid var(--border);display:none}
+.design-fields-row.open{display:block}
+.design-fields-hdr{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;background:var(--bg);user-select:none}
+.design-fields-hdr:hover{background:#f0eeec}
+.design-fields-arrow{font-size:11px;transition:transform .2s;color:var(--text3)}
+.design-fields-arrow.open{transform:rotate(90deg)}
+.design-fields-body{display:none;overflow-x:auto;border-top:1px solid var(--border)}
+.design-fields-body.open{display:block}
 .design-tbl{width:100%;border-collapse:collapse;table-layout:fixed}
 .design-tbl th{padding:7px 10px;background:var(--bg);border:1px solid var(--border);font-weight:500;font-size:11px;color:var(--text2);text-align:center;white-space:nowrap;position:relative;min-width:80px}
-.design-tbl th .col-resize{position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;background:transparent}
+.design-tbl th .col-resize{position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize}
 .design-tbl th .col-resize:hover{background:var(--purple);opacity:.3}
-.design-tbl th input.col-name-edit{border:none;background:transparent;font-size:11px;font-weight:500;color:var(--text2);width:100%;text-align:center;font-family:inherit;padding:0}
+.design-tbl th input.col-name-edit{border:none;background:transparent;font-size:11px;font-weight:500;color:var(--text2);width:calc(100% - 10px);text-align:center;font-family:inherit;padding:0}
 .design-tbl th input.col-name-edit:focus{outline:none;background:var(--pl)}
 .design-tbl td{border:1px solid var(--border);padding:0}
-.design-tbl td.name-cell{padding:8px 12px;font-size:13px;font-weight:500;white-space:nowrap;background:var(--bg)}
 .design-tbl td input{border:none;padding:6px 8px;font-size:12px;width:100%;background:transparent;font-family:inherit}
 .design-tbl td input:focus{outline:none;background:var(--pl)}
 .design-tbl td.empty-cell{background:#fff8f8}
-.design-add-col{padding:4px 8px;font-size:11px;color:var(--text3);cursor:pointer;border:1px dashed var(--border);border-radius:var(--r);white-space:nowrap}
-.design-add-col:hover{color:var(--purple);border-color:var(--purple)}
 
-/* ── Week view ── */
+/* Week view */
 .wctrl{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
 .seg{display:flex;gap:2px;background:var(--border);border-radius:var(--r);padding:2px}
 .seg button{padding:5px 12px;font-size:12px;border:none;background:none;cursor:pointer;border-radius:6px;color:var(--text2);font-family:inherit;font-weight:500}
@@ -104,17 +118,16 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .wtbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;min-width:700px}
 .wtbl th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500;position:sticky;top:0;z-index:10}
 .wtbl th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
-.wtbl td{padding:4px;border:1px solid var(--border);vertical-align:top;background:var(--surface)}
-/* Fixed row height: each site has 2 rows, each row fixed height */
-.wtbl td.ev-cell{height:52px;overflow:hidden}
+.wtbl td{padding:3px;border:1px solid var(--border);vertical-align:top;background:var(--surface)}
+.wtbl td.ev-cell{height:50px;overflow:hidden}
 .wtbl td.tc{background:#faf9ff}
 .wtbl th.th-t{color:var(--purple);font-weight:600}
 .site-hd{background:var(--bg)!important;font-size:12px;font-weight:500;padding:8px 10px!important;vertical-align:middle;width:100px;position:sticky;left:0;z-index:5;border-right:2px solid var(--border)}
 
-/* Event row */
+/* Event */
 .ev-row{display:flex;align-items:center;gap:2px;margin-bottom:2px}
 .ev-row:hover .ev-del{opacity:.6}
-.ev-field{font-size:11px;cursor:text;padding:2px 4px;border-radius:3px;min-width:20px;line-height:1.5;background:rgba(255,255,255,0.6);color:inherit}
+.ev-field{font-size:11px;cursor:text;padding:2px 4px;border-radius:3px;min-width:20px;line-height:1.5;background:rgba(255,255,255,.6);color:inherit}
 .ev-field:hover{background:rgba(255,255,255,.9)}
 .ev-field[contenteditable=true]{outline:1.5px solid rgba(0,0,0,.2);background:#fff;min-width:44px}
 .ev-chip{display:inline-flex;align-items:center;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
@@ -122,18 +135,39 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .ev-chip.sel{outline:2px solid var(--purple);outline-offset:1px}
 .ev-del{opacity:0;font-size:11px;padding:1px 3px;cursor:pointer;border:none;background:none;color:inherit;line-height:1;flex-shrink:0}
 .ev-del:hover{opacity:1!important}
-
-/* Stage search - opens UPWARD */
-.add-ev-wrap{position:relative}
-.add-ev-btn{color:var(--text3);font-size:11px;padding:2px 5px;cursor:pointer;display:inline-block;border-radius:3px}
+.add-ev-wrap{position:relative;display:inline-block}
+.add-ev-btn{color:var(--text3);font-size:11px;padding:2px 5px;cursor:pointer;display:inline-block;border-radius:3px;user-select:none}
 .add-ev-btn:hover{color:var(--purple);background:var(--pl)}
-.stage-search-box{position:absolute;bottom:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 -4px 16px rgba(0,0,0,.12);min-width:170px;z-index:300}
-.stage-search-input{width:100%;padding:6px 10px;border:none;border-bottom:1px solid var(--border);font-size:12px;font-family:inherit;border-radius:var(--r) var(--r) 0 0}
-.stage-search-input:focus{outline:none;background:var(--pl)}
+
+/* Stage search popup - opens UP */
+.stage-search-box{position:absolute;bottom:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 -4px 16px rgba(0,0,0,.12);min-width:170px;z-index:400}
+.stage-search-input{width:100%;padding:6px 10px;border:none;border-bottom:1px solid var(--border);font-size:12px;font-family:inherit;border-radius:var(--r) var(--r) 0 0;outline:none}
+.stage-search-input:focus{background:var(--pl)}
 .stage-search-list{max-height:150px;overflow-y:auto}
 .stage-search-item{padding:6px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)}
 .stage-search-item:last-child{border-bottom:none}
 .stage-search-item:hover,.stage-search-item.hi{background:var(--pl);color:var(--pd)}
+
+/* Daily log section */
+.daily-section{margin-top:1rem;border:1px solid var(--border);border-radius:var(--rl2);overflow:hidden}
+.daily-section-hdr{padding:10px 16px;background:var(--bg);font-size:13px;font-weight:500;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.daily-log-table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:700px}
+.daily-log-table th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500;position:sticky;top:0;z-index:10}
+.daily-log-table th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
+.daily-log-table td{padding:3px;border:1px solid var(--border);background:var(--surface);vertical-align:top}
+.daily-log-table td.log-name-cell{background:var(--bg);font-size:12px;font-weight:500;padding:6px 10px;position:sticky;left:0;z-index:5;border-right:2px solid var(--border);width:100px}
+.log-textarea{width:100%;height:48px;border:none;resize:none;font-size:11px;font-family:inherit;padding:4px 6px;background:transparent;color:var(--text);line-height:1.4}
+.log-textarea:focus{outline:none;background:#faf9ff}
+.log-textarea.today{background:#faf9ff}
+
+/* Private todo */
+.private-section{margin-top:1rem;border:1px solid var(--border);border-radius:var(--rl2);overflow:hidden}
+.private-section-hdr{padding:10px 16px;background:#fff8f8;font-size:13px;font-weight:500;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.private-todo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;padding:12px}
+.private-todo-item{display:flex;align-items:flex-start;gap:6px}
+.private-todo-item input[type=checkbox]{margin-top:3px;flex-shrink:0;accent-color:var(--purple)}
+.private-todo-text{flex:1;font-size:12px;border:none;border-bottom:1px solid var(--border);padding:2px 4px;background:transparent;font-family:inherit;color:var(--text)}
+.private-todo-text:focus{outline:none;border-bottom-color:var(--purple)}
 
 /* Bible */
 .bible-wrap{display:grid;grid-template-columns:240px 1fr;gap:1rem;min-height:500px}
@@ -188,10 +222,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .mo-footer{margin-top:14px;display:flex;gap:8px;justify-content:flex-end}
 .pb-wrap{background:var(--bg);border-radius:4px;height:4px;margin-bottom:12px}
 .pb-fill{height:4px;border-radius:4px}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
-.empty{text-align:center;padding:2rem;color:var(--text3);font-size:13px}
-.flex{display:flex;align-items:center;gap:8px}
-.flex-sb{display:flex;align-items:center;justify-content:space-between;gap:8px}
 </style>
 </head>
 <body>
@@ -261,12 +291,12 @@ const auth=getAuth(app);
 const provider=new GoogleAuthProvider();
 
 let currentUser=null,currentRole=null;
-let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[]};
+let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateTodos:[]};
 let activePanel='overview',calMode='week',weekOffset=0,selectedTag=null;
 let activeBibleStage=null,activeBibleWs=null,bibleView='edit',dragSrc=null,dragModeOn=false;
 let openPicker=null;
-let expandedProjs={};
-let designCols=null; // loaded from firebase
+let expandedProjs={},expandedFields={};
+let designCols=null;
 
 const $=id=>document.getElementById(id);
 const STATUS_OPTS=[
@@ -282,6 +312,7 @@ function sc(i){return SCOLS[i%SCOLS.length]}function tc(i){return STCS[i%STCS.le
 function statusInfo(v){return STATUS_OPTS.find(o=>o.v===v)||STATUS_OPTS[0]}
 function isAdmin(){return currentRole==='admin'}
 const DEFAULT_DESIGN_COLS=['會議人員','平面圖','客變圖','3D圖','施工圖','報價單'];
+function getDesignCols(){return designCols||DEFAULT_DESIGN_COLS;}
 
 function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r}
 function isSameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
@@ -362,10 +393,22 @@ function initListeners(){
   });
   onSnapshot(collection(db,'members'),snap=>{S.members=snap.docs.map(d=>({id:d.id,...d.data()}));renderActive();});
   onSnapshot(doc(db,'settings','designCols'),snap=>{
-    if(snap.exists()){designCols=snap.data().cols||DEFAULT_DESIGN_COLS;}
-    else{designCols=DEFAULT_DESIGN_COLS;}
+    designCols=snap.exists()?(snap.data().cols||DEFAULT_DESIGN_COLS):DEFAULT_DESIGN_COLS;
     renderActive();
   });
+  // Daily logs: shared, keyed by date
+  onSnapshot(collection(db,'dailyLogs'),snap=>{
+    S.dailyLogs={};
+    snap.docs.forEach(d=>{S.dailyLogs[d.id]=d.data();});
+    if(activePanel==='progress')renderProgress();
+  });
+  // Private todos: per user
+  if(currentUser){
+    onSnapshot(doc(db,'privateTodos',currentUser.uid),snap=>{
+      S.privateTodos=snap.exists()?(snap.data().items||Array(20).fill({text:'',done:false})):Array(20).fill({text:'',done:false});
+      if(activePanel==='progress')renderProgress();
+    });
+  }
 }
 
 document.querySelectorAll('.nav-tab').forEach(t=>{
@@ -421,61 +464,62 @@ function renderOverview(){
 }
 window.updateStatus=async function(projId,v){setSyncing();await updateDoc(doc(db,'projects',projId),{status:v});setSynced();}
 
-// ── Design Progress ──
-function getDesignCols(){return designCols||DEFAULT_DESIGN_COLS;}
-
+// ── Design ──
 function renderDesign(){
   const el=$('panel-design');
   const cols=getDesignCols();
-  const allProjs=S.projects.filter(p=>p.status==='design'||p.status==='prog'||p.status==='wait');
+  const allProjs=S.projects.filter(p=>['design','prog','wait'].includes(p.status));
   el.innerHTML=`
   <div class="flex-sb" style="margin-bottom:1rem">
     <span style="font-size:14px;font-weight:500">設計進度</span>
-    <div class="flex">
-      ${isAdmin()&&cols.length<10?`<button class="btn btn-sm" onclick="addDesignCol()">＋ 新增欄位</button>`:''}
-    </div>
+    ${isAdmin()&&cols.length<10?`<button class="btn btn-sm" onclick="addDesignCol()">＋ 新增欄位</button>`:''}
   </div>
-  ${allProjs.length===0?`<div class="empty">尚無設計中或施工中案件</div>`:''}
+  ${allProjs.length===0?`<div class="empty">尚無案件</div>`:''}
   ${allProjs.map(p=>{
     const dp=p.designProgress||{};
     const missingCount=cols.filter(c=>!dp[c]||dp[c].trim()==='').length;
-    const isOpen=expandedProjs[p.id]||false;
+    const isProjOpen=expandedProjs[p.id]||false;
+    const isFieldsOpen=expandedFields[p.id]||false;
     return`<div class="design-proj-row">
       <div class="design-proj-hdr" onclick="toggleDesignProj('${p.id}')">
-        <span class="design-proj-arrow ${isOpen?'open':''}">▶</span>
+        <span class="design-proj-arrow ${isProjOpen?'open':''}">▶</span>
         <span class="design-proj-name">${p.name}</span>
-        ${missingCount>0?`<span class="design-warn">⚠ ${missingCount} 項未填</span>`:'<span style="font-size:11px;color:var(--teal)">✓ 已填齊</span>'}
+        ${missingCount>0?`<span class="design-warn">⚠ ${missingCount} 項未填</span>`:`<span style="font-size:11px;color:var(--teal)">✓ 已填齊</span>`}
         <span style="font-size:11px;color:var(--text3)">${statusInfo(p.status).l}</span>
       </div>
-      <div class="design-proj-body ${isOpen?'open':''}">
-        <div style="overflow-x:auto">
-        <table class="design-tbl" id="dtbl-${p.id}">
-          <thead><tr>
-            ${cols.map((c,ci)=>`<th style="width:${p.colWidths?.[ci]||120}px" data-proj="${p.id}" data-ci="${ci}">
-              ${isAdmin()?`<input class="col-name-edit" value="${c}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c}</span>`}
-              ${isAdmin()?`<div class="col-resize" onmousedown="startColResize(event,'${p.id}',${ci})"></div>`:''}
-            </th>`).join('')}
-          </tr></thead>
-          <tbody><tr>
-            ${cols.map((c,ci)=>{
-              const val=dp[c]||'';
-              const isEmpty=!val.trim();
-              return`<td class="${isEmpty?'empty-cell':''}">
-                <input type="text" value="${val}" placeholder="—" ${!isAdmin()&&p.status!=='design'?'':''}
-                  onblur="saveDesignField('${p.id}','${c}',this.value)"
-                  onkeydown="if(event.key==='Enter')this.blur()">
-              </td>`;}).join('')}
-          </tr></tbody>
-        </table>
+      <div class="design-fields-row ${isProjOpen?'open':''}">
+        <div class="design-fields-hdr" onclick="toggleDesignFields('${p.id}')">
+          <span class="design-fields-arrow ${isFieldsOpen?'open':''}">▶</span>
+          <span style="font-size:12px;font-weight:500">設計欄位</span>
+          <span style="font-size:11px;color:var(--text2);margin-left:4px">（${cols.length} 欄）</span>
+        </div>
+        <div class="design-fields-body ${isFieldsOpen?'open':''}">
+          <div style="overflow-x:auto">
+          <table class="design-tbl" id="dtbl-${p.id}">
+            <thead><tr>
+              ${cols.map((c,ci)=>`<th style="width:${p.colWidths?.[ci]||120}px">
+                ${isAdmin()?`<input class="col-name-edit" value="${c}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c}</span>`}
+                ${isAdmin()?`<div class="col-resize" onmousedown="startColResize(event,'${p.id}',${ci})"></div>`:''}
+              </th>`).join('')}
+            </tr></thead>
+            <tbody><tr>
+              ${cols.map((c,ci)=>{
+                const val=dp[c]||'';
+                return`<td class="${!val.trim()?'empty-cell':''}">
+                  <input type="text" value="${val}" placeholder="—"
+                    onblur="saveDesignField('${p.id}','${c}',this.value)"
+                    onkeydown="if(event.key==='Enter')this.blur()">
+                </td>`;}).join('')}
+            </tr></tbody>
+          </table>
+          </div>
         </div>
       </div>
     </div>`;}).join('')}`;
 }
 
-window.toggleDesignProj=function(projId){
-  expandedProjs[projId]=!expandedProjs[projId];
-  renderDesign();
-}
+window.toggleDesignProj=function(projId){expandedProjs[projId]=!expandedProjs[projId];renderDesign();}
+window.toggleDesignFields=function(projId){expandedFields[projId]=!expandedFields[projId];renderDesign();}
 window.saveDesignField=async function(projId,col,val){
   const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
   const dp={...(proj.designProgress||{}),[col]:val};
@@ -493,8 +537,6 @@ window.addDesignCol=async function(){
   cols.push(`欄位${cols.length+1}`);
   setSyncing();await setDoc(doc(db,'settings','designCols'),{cols});setSynced();
 }
-
-// Column resize
 let resizing=null;
 window.startColResize=function(e,projId,ci){
   e.preventDefault();
@@ -524,29 +566,17 @@ window.startColResize=function(e,projId,ci){
 // ── Progress ──
 function renderProgress(){
   const el=$('panel-progress');
-  const stages=getBibleStages();
   const weekDays=getWeekDates();
-  // Determine which projects to show:
-  // - status=prog always show
-  // - status=done: show only if this week has any schedule entries OR week is in the past relative to completion
-  // - show if the week contains past data
-  const todayDate=today();
-  const weekStart=weekDays[0];
-  const weekEnd=weekDays[6];
-
-  function shouldShowProject(p){
+  function shouldShow(p){
     if(p.status==='prog')return true;
-    if(p.status==='design'||p.status==='wait'||p.status==='stop')return false;
     if(p.status==='done'){
-      // Show if this week has schedule data
       return(p.schedule||[]).some(e=>{
         const d=new Date(e.date+'T00:00:00');
-        return d>=weekStart&&d<=weekEnd;
+        return d>=weekDays[0]&&d<=weekDays[6];
       });
     }
     return false;
   }
-
   el.innerHTML=`
   <div class="wctrl">
     <div class="seg">
@@ -555,29 +585,29 @@ function renderProgress(){
     </div>
     ${calMode==='week'?`<div class="nav-row">
       <button class="nav-btn" onclick="changeWeek(-1)">‹</button>
-      <span class="wk-lbl" onclick="openDatePicker()" title="點擊選擇日期">
-        ${weekDays[0].getFullYear()}年 ${fmtDate(weekDays[0])} – ${fmtDate(weekDays[6])} 📅
-      </span>
+      <span class="wk-lbl" onclick="openDatePicker()">${weekDays[0].getFullYear()}年 ${fmtDate(weekDays[0])} – ${fmtDate(weekDays[6])} 📅</span>
       <input type="date" id="week-date-picker" style="position:fixed;opacity:0;pointer-events:none;width:0;height:0" onchange="jumpToDate(this.value)">
       <button class="nav-btn" onclick="changeWeek(1)">›</button>
     </div>`:''}
   </div>
-  ${stages.length===0?`<div class="empty">請先至「施工寶典」新增工程階段</div>`:''}
-  ${calMode==='week'?renderWeekView(shouldShowProject):renderDayView()}`;
+  ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
+  ${calMode==='week'?renderWeekView(shouldShow):renderDayView()}
+  ${calMode==='week'?renderDailyLogSection(weekDays):''}
+  ${renderPrivateTodoSection()}`;
 }
 
 function renderWeekView(shouldShow){
   const days=getWeekDates();const td=today();
   const WD=['日','一','二','三','四','五','六'];
   const projs=S.projects.filter(shouldShow);
-  if(!projs.length)return`<div class="empty">尚無進行中案件</div>`;
+  if(!projs.length)return`<div class="empty">尚無施工中案件</div>`;
   const hint=selectedTag?`<div style="background:var(--pl);color:var(--pd);padding:6px 10px;border-radius:var(--r);margin-bottom:8px;font-size:12px">已選取色塊 — Ctrl+點格子複製，點空白取消</div>`:'';
 
   function renderCell(p,pi,d,rowIdx){
     const isT=isSameDay(d,td);const ds=fmtDay(d);
     const allEvs=(p.schedule||[]).filter(e=>e.date===ds);
-    const isOpen=openPicker&&openPicker.projId===p.id&&openPicker.ds===ds&&openPicker.row===rowIdx;
     const isDone=p.status==='done';
+    const isOpen=openPicker&&openPicker.projId===p.id&&openPicker.ds===ds&&openPicker.row===rowIdx;
     return`<td class="ev-cell ${isT?'tc':''}" onclick="handleCellBg(event,'${p.id}','${ds}')">
       ${allEvs.map((ev,ei)=>{
         if(rowIdx===0&&ei>=2)return'';
@@ -598,7 +628,7 @@ function renderWeekView(shouldShow){
       ${rowIdx===1&&!isDone?`<div class="add-ev-wrap">
         <span class="add-ev-btn" onclick="event.stopPropagation();togglePicker('${p.id}','${ds}',1)">＋ 新增</span>
         ${isOpen?`<div class="stage-search-box" onclick="event.stopPropagation()">
-          <input type="text" class="stage-search-input" placeholder="打關鍵字…" id="ssi-${p.id}-${ds}"
+          <input type="text" class="stage-search-input" id="ssi-${p.id}-${ds}" placeholder="打關鍵字搜尋…"
             oninput="filterStages('${p.id}','${ds}')"
             onkeydown="handleStageKey(event,'${p.id}','${ds}')">
           <div class="stage-search-list" id="ssl-${p.id}-${ds}">
@@ -617,16 +647,99 @@ function renderWeekView(shouldShow){
   <tbody>
   ${projs.map((p,pi)=>`
     <tr>
-      <td class="site-hd" style="color:${tc(pi)}" rowspan="2">
-        ${p.name}
-        ${p.status==='done'?`<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">已完工</span>`:''}
-      </td>
+      <td class="site-hd" style="color:${tc(pi)}" rowspan="2">${p.name}${p.status==='done'?`<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">完工</span>`:''}</td>
       ${days.map(d=>renderCell(p,pi,d,0)).join('')}
     </tr>
     <tr>${days.map(d=>renderCell(p,pi,d,1)).join('')}</tr>
   `).join('')}
   </tbody></table></div>
-  <div style="font-size:11px;color:var(--text2);margin-top:8px">色塊單擊=checklist；Ctrl+單擊=複製；雙擊白格=編輯文字</div>`;
+  <div style="font-size:11px;color:var(--text2);margin-top:8px">色塊單擊=checklist；Ctrl+單擊=複製；雙擊白格=編輯</div>`;
+}
+
+// ── Daily Log Section ──
+function renderDailyLogSection(days){
+  const td=today();
+  const activeMembers=S.members.filter(m=>m.role==='admin'||m.role==='staff');
+  if(!activeMembers.length)return'';
+  const WD=['日','一','二','三','四','五','六'];
+  return`<div class="daily-section" style="margin-top:1rem">
+    <div class="daily-section-hdr">
+      <span>每日施工日誌</span>
+      <span style="font-size:11px;color:var(--text2)">所有人可查看，各自填寫當天記事</span>
+    </div>
+    <div style="overflow-x:auto">
+    <table class="daily-log-table">
+      <thead><tr>
+        <th style="width:100px">成員</th>
+        ${days.map(d=>`<th class="${isSameDay(d,td)?'th-t':''}">${d.getFullYear()}<br>${d.getMonth()+1}/${d.getDate()}<br><span style="font-weight:400;font-size:10px">週${WD[d.getDay()]}</span></th>`).join('')}
+      </tr></thead>
+      <tbody>
+      ${activeMembers.map(m=>`<tr>
+        <td class="log-name-cell">${m.name||m.email?.split('@')[0]||'成員'}</td>
+        ${days.map(d=>{
+          const ds=fmtDay(d);
+          const isT=isSameDay(d,td);
+          const logKey=`${m.uid}_${ds}`;
+          const logVal=S.dailyLogs[logKey]?.text||'';
+          const canEdit=currentUser&&m.uid===currentUser.uid;
+          return`<td style="${isT?'background:#faf9ff':''}">
+            <textarea class="log-textarea${isT?' today':''}"
+              ${canEdit?`onblur="saveDailyLog('${m.uid}','${ds}',this.value)"
+              onkeydown="if(event.key==='Tab'){event.preventDefault();this.blur()}"
+              placeholder="${canEdit?'點此輸入…':''}"`:' readonly'}
+            >${logVal}</textarea>
+          </td>`;}).join('')}
+      </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+window.saveDailyLog=async function(uid,ds,text){
+  if(!currentUser||currentUser.uid!==uid)return;
+  const key=`${uid}_${ds}`;
+  setSyncing();
+  await setDoc(doc(db,'dailyLogs',key),{uid,date:ds,text,updatedAt:serverTimestamp()});
+  setSynced();
+}
+
+// ── Private Todo Section ──
+function renderPrivateTodoSection(){
+  const todos=S.privateTodos.length?S.privateTodos:Array(20).fill({text:'',done:false});
+  return`<div class="private-section" style="margin-top:1rem">
+    <div class="private-section-hdr">
+      🔒 私人代辦事項
+      <span style="font-size:11px;color:var(--text2);font-weight:400">只有你自己看得到</span>
+    </div>
+    <div class="private-todo-grid">
+      ${todos.map((item,i)=>`
+        <div class="private-todo-item">
+          <input type="checkbox" ${item.done?'checked':''} onchange="togglePrivateTodo(${i},this.checked)">
+          <input type="text" class="private-todo-text" value="${(item.text||'').replace(/"/g,'&quot;')}" placeholder="待辦事項…"
+            onblur="savePrivateTodo(${i},this.value)"
+            onkeydown="if(event.key==='Enter')this.blur()"
+            style="${item.done?'text-decoration:line-through;color:var(--text3)':''}">
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+window.savePrivateTodo=async function(idx,text){
+  if(!currentUser)return;
+  const items=[...(S.privateTodos.length?S.privateTodos:Array(20).fill({text:'',done:false}))];
+  while(items.length<20)items.push({text:'',done:false});
+  items[idx]={...items[idx],text};
+  setSyncing();
+  await setDoc(doc(db,'privateTodos',currentUser.uid),{items});
+  setSynced();
+}
+window.togglePrivateTodo=async function(idx,checked){
+  if(!currentUser)return;
+  const items=[...(S.privateTodos.length?S.privateTodos:Array(20).fill({text:'',done:false}))];
+  while(items.length<20)items.push({text:'',done:false});
+  items[idx]={...items[idx],done:checked};
+  await setDoc(doc(db,'privateTodos',currentUser.uid),{items});
 }
 
 window.filterStages=function(projId,ds){
@@ -642,7 +755,7 @@ window.handleStageKey=function(e,projId,ds){
   const list=$(`ssl-${projId}-${ds}`);
   if(e.key==='Enter'){
     const hi=list?.querySelector('.stage-search-item.hi')||list?.querySelector('.stage-search-item');
-    if(hi){addEvFromStage(projId,ds,hi.textContent.trim());}
+    if(hi)addEvFromStage(projId,ds,hi.textContent.trim());
   }else if(e.key==='Escape'){openPicker=null;renderProgress();}
 }
 window.togglePicker=function(projId,ds,row=0){
@@ -675,8 +788,7 @@ async function copyTagToCell(toProjId,toDs){
   const ev=(srcProj.schedule||[]).filter(e=>e.date===selectedTag.ds)[selectedTag.ei];if(!ev)return;
   const toProj=S.projects.find(p=>p.id===toProjId);if(!toProj)return;
   const schedule=[...(toProj.schedule||[]),{...ev,date:toDs}];
-  setSyncing();await updateDoc(doc(db,'projects',toProjId),{schedule});setSynced();
-  selectedTag=null;
+  setSyncing();await updateDoc(doc(db,'projects',toProjId),{schedule});setSynced();selectedTag=null;
 }
 window.removeEv=async function(projId,ds,ei){
   const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
@@ -747,6 +859,7 @@ function renderDayView(){
   if(!hasAny)html+=`<div class="empty">今日無工地排程</div>`;
   return html;
 }
+
 window.openCheckMo=function(projId,stage,label,projName){
   if(!stage)return;
   const allItems=getAllBibleItems(stage);
@@ -787,7 +900,7 @@ function renderBible(){
   <div class="flex-sb" style="margin-bottom:1rem">
     <div>
       <div style="font-size:15px;font-weight:600">施工寶典</div>
-      <div style="font-size:12px;color:var(--text2);margin-top:2px">新增階段後可在工程進度中選取，自動帶入待辦清單</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px">新增階段後可在工程進度選取，自動帶入待辦清單</div>
     </div>
     <div class="flex">
       <div class="seg">
@@ -795,11 +908,8 @@ function renderBible(){
         <button class="${bibleView==='worksite'?'on':''}" onclick="setBibleView('worksite')">工地勾選</button>
       </div>
       ${isAdmin()?`
-        <button class="btn btn-sm ${dragModeOn?'btn-p':''}" onclick="toggleDragMode()" title="開啟後可拖拉排序">
-          ${dragModeOn?'✓ 排序中':'⠿ 編輯順序'}
-        </button>
-        <button class="btn btn-p btn-sm" onclick="showAddStage()">＋ 新增階段</button>
-      `:''}
+        <button class="btn btn-sm ${dragModeOn?'btn-p':''}" onclick="toggleDragMode()">${dragModeOn?'✓ 排序中':'⠿ 編輯順序'}</button>
+        <button class="btn btn-p btn-sm" onclick="showAddStage()">＋ 新增階段</button>`:''}
     </div>
   </div>
   <div class="bible-wrap">
@@ -818,9 +928,6 @@ function renderBible(){
     </div>
   </div>`;
 }
-
-window.toggleDragMode=function(){dragModeOn=!dragModeOn;renderBible();}
-
 function renderBibleDetail(stage){
   if(bibleView==='worksite')return renderBibleWorksite(stage);
   const phases=[
@@ -850,7 +957,6 @@ function renderBibleDetail(stage){
     </div>`:''}
   </div>`).join('')}`;
 }
-
 function renderBibleWorksite(stage){
   const progProjs=S.projects.filter(p=>p.status==='prog');
   if(!progProjs.length)return`<div class="empty">尚無施工中案件</div>`;
@@ -873,15 +979,14 @@ function renderBibleWorksite(stage){
     </div>`).join('')}
   </div>`;
 }
-
 window.setBibleView=function(v){bibleView=v;renderBible();}
 window.setActiveStage=function(s){if(dragModeOn)return;activeBibleStage=s;renderBible();}
 window.setActiveWs=function(id){activeBibleWs=id;renderBible();}
+window.toggleDragMode=function(){dragModeOn=!dragModeOn;renderBible();}
 window.bsDragStart=function(e,s){if(!dragModeOn)return;dragSrc=s;setTimeout(()=>document.querySelector(`[data-stage="${s}"]`)?.classList.add('dragging'),0);}
 window.bsDragOver=function(e,s){if(!dragModeOn)return;e.preventDefault();document.querySelectorAll('.bst-item').forEach(el=>el.classList.remove('drag-over'));if(s!==dragSrc)document.querySelector(`[data-stage="${s}"]`)?.classList.add('drag-over');}
 window.bsDrop=async function(e,toS){
-  if(!dragModeOn)return;
-  e.preventDefault();if(!dragSrc||dragSrc===toS)return;
+  if(!dragModeOn)return;e.preventDefault();if(!dragSrc||dragSrc===toS)return;
   const order=[...getBibleStages()];const fi=order.indexOf(dragSrc);const ti=order.indexOf(toS);
   if(fi<0||ti<0)return;order.splice(fi,1);order.splice(ti,0,dragSrc);
   setSyncing();await setDoc(doc(db,'bible','__order__'),{order});setSynced();
@@ -901,8 +1006,7 @@ window.delBibleItem=async function(stage,phase,idx){
   const before=data.before||[];const during=data.during||[];
   const absIdx=(phase==='before'?0:phase==='during'?before.length:before.length+during.length)+idx;
   const phaseItems=[...(data[phase]||[])];phaseItems.splice(idx,1);
-  const updated={...data,[phase]:phaseItems};
-  setSyncing();await setDoc(doc(db,'bible',stage),updated);
+  setSyncing();await setDoc(doc(db,'bible',stage),{...data,[phase]:phaseItems});
   const snap=await getDocs(collection(db,'checks'));
   const batch=writeBatch(db);
   snap.docs.filter(d=>d.id.endsWith('_'+stage)).forEach(d=>{
@@ -913,7 +1017,7 @@ window.delBibleItem=async function(stage,phase,idx){
 }
 window.showAddStage=function(){
   $('mo-content').innerHTML=`<div class="mo-title">新增工程階段</div>
-    <div style="margin-top:12px"><input id="ns-name" type="text" placeholder="工程階段名稱*（例：拆除工程）"></div>
+    <div style="margin-top:12px"><input id="ns-name" type="text" placeholder="工程階段名稱*"></div>
     <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="addStage()">新增</button></div>`;
   $('modal').style.display='flex';setTimeout(()=>$('ns-name')?.focus(),50);
 }
@@ -982,7 +1086,7 @@ window.showAddProject=function(){
       <input id="np-type" type="text" placeholder="類型（住宅／商業…）">
       <input id="np-designer" type="text" placeholder="設計師">
       <input id="np-budget" type="text" placeholder="預算">
-      <input id="np-finish" type="text" placeholder="預計完工日（2026-12-31）">
+      <input id="np-finish" type="text" placeholder="預計完工日">
       <select id="np-status"><option value="design">設計中</option><option value="prog">施工中</option><option value="wait">待確認</option><option value="done">已完工</option><option value="stop">暫停</option></select>
     </div>
     <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="addProject()">新增</button></div>`;
@@ -996,8 +1100,7 @@ window.addProject=async function(){
   closeMo();setSynced();
 }
 window.deleteProject=async function(id){
-  if(!isAdmin())return;
-  if(!confirm('確定刪除此案件？'))return;
+  if(!isAdmin())return;if(!confirm('確定刪除？'))return;
   await deleteDoc(doc(db,'projects',id));
 }
 window.setCalMode=function(m){calMode=m;renderProgress();}
