@@ -717,47 +717,169 @@ window.saveDailyLog=async function(uid,ds,text){
 // ── Private Todo Section ──
 function renderPrivateTodoSection(){
   if(calMode!=='week')return'';
-  const days=getWeekDates();const td=today();
+  const days=getWeekDates();
+  const td=today();
   const pn=S.privateNotes||{work:{},personal:{}};
-  const WD=['日','一','二','三','四','五','六'];
+  const COLS=[
+    {c:'',l:'無',bg:'#e8e5e0'},
+    {c:'#E24B4A',l:'紅',bg:'#E24B4A'},
+    {c:'#EF9F27',l:'橘',bg:'#EF9F27'},
+    {c:'#1D9E75',l:'綠',bg:'#1D9E75'},
+    {c:'#534AB7',l:'藍',bg:'#534AB7'},
+    {c:'#9c9690',l:'灰',bg:'#9c9690'}
+  ];
+  const sel=S.privateSelected||{};
+  const editing=S.privateEditing||null;
 
-  function makeRow(type,label){
-    let tds='<td class="log-name-cell" style="font-size:11px;color:var(--text2)">'+label+'</td>';
-    days.forEach(d=>{
-      const ds=fmtDay(d);
-      const isT=isSameDay(d,td);
-      const items=(pn[type]&&pn[type][ds])||[];
-      const COLS=[{c:'',l:'無'},{c:'#E24B4A',l:'紅'},{c:'#EF9F27',l:'橘'},{c:'#1D9E75',l:'綠'},{c:'#534AB7',l:'藍'},{c:'#9c9690',l:'灰'}];
-      let inner='';
-      items.forEach((item,i)=>{
-        const color=item.color||'';
-        const dots=COLS.map(col=>'<span onclick="setPrivateNoteColor(\''+type+'\',\''+ds+'\','+i+',\''+col.c+'\')" title="'+col.l+'" style="width:11px;height:11px;border-radius:50%;background:'+(col.c||'#e8e5e0')+';cursor:pointer;display:inline-block;border:1px solid rgba(0,0,0,.15)"></span>').join('');
-        inner+='<div style="margin-bottom:5px;border-left:'+(color?'3px solid '+color:'3px solid transparent')+';padding-left:4px">';
-        inner+='<div style="display:flex;gap:3px;margin-bottom:2px">'+dots+'</div>';
-        inner+='<input type="text" value="'+(item.text||'').replace(/"/g,'&quot;')+'" placeholder="記事…" style="width:100%;border:none;border-bottom:1px solid var(--border);padding:2px 4px;font-size:11px;font-family:inherit;background:transparent;'+(color?'color:'+color:'')+'" onblur="savePrivateNote(\''+type+'\',\''+ds+'\','+i+',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()">';
-        inner+='</div>';
-      });
-      inner+='<button onclick="addPrivateNote(\''+type+'\',\''+ds+'\')" style="font-size:11px;padding:2px 6px;border:1px dashed var(--border);background:none;cursor:pointer;color:var(--text3);width:100%;text-align:left;margin-top:2px;border-radius:3px;font-family:inherit">＋ 新增</button>';
-      tds+='<td style="'+(isT?'background:#fff8f8':'')+' vertical-align:top;padding:4px">'+inner+'</td>';
+  function dotBar(type,ds,idx,curColor){
+    var h='<div style="display:flex;gap:3px;margin-bottom:3px">';
+    COLS.forEach(function(col){
+      var outline=(curColor===col.c&&col.c)?'outline:2px solid #333;outline-offset:1px;':'';
+      h+='<span style="width:13px;height:13px;border-radius:50%;background:'+col.bg+';cursor:pointer;display:inline-block;border:1px solid rgba(0,0,0,.2);'+outline+'" title="'+col.l+'" onclick="pnSetColor(\''+type+'\',\''+ds+'\','+idx+',\''+col.c+'\')"></span>';
     });
-    return '<tr>'+tds+'</tr>';
+    h+='</div>';
+    return h;
   }
 
-  const hiddenCols='<col style="width:100px">'+days.map(()=>'<col>').join('');
-  const tableStyle='width:100%;border-collapse:collapse;table-layout:fixed;min-width:700px';
+  function makeCell(type,ds){
+    var isT=isSameDay(new Date(ds+'T00:00:00'),td);
+    var items=(pn[type]&&pn[type][ds])||[];
+    var selKey=type+'|'+ds;
+    var selIdx=sel[selKey]!=null?sel[selKey]:-1;
+    var h='<td style="vertical-align:top;padding:4px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'">';
+    // Color picker shown only for selected item
+    if(selIdx>=0&&selIdx<items.length){
+      h+=dotBar(type,ds,selIdx,items[selIdx].color||'');
+    }
+    items.forEach(function(item,i){
+      var color=item.color||'';
+      var isSel=selIdx===i;
+      var isEdit=editing&&editing.type===type&&editing.ds===ds&&editing.idx===i;
+      var bg=color?color:'var(--bg)';
+      var textColor=color?'#fff':'var(--text)';
+      var border=isSel?'2px solid var(--purple)':'1.5px solid '+(color||'var(--border)');
+      h+='<div style="background:'+bg+';border:'+border+';color:'+textColor+';padding:3px 8px;border-radius:5px;font-size:11px;margin-bottom:3px;cursor:pointer;user-select:none"'
+        +' onclick="pnSelect(\''+type+'\',\''+ds+'\','+i+')"'
+        +' ondblclick="pnEdit(\''+type+'\',\''+ds+'\','+i+')"'
+        +' draggable="true"'
+        +' ondragstart="pnDragStart(event,\''+type+'\',\''+ds+'\','+i+')"'
+        +' ondragover="event.preventDefault()"'
+        +' ondrop="pnDrop(event,\''+type+'\',\''+ds+'\')"'
+        +'>';
+      if(isEdit){
+        h+='<input type="text" id="pne-'+type+'-'+ds+'-'+i+'" value="'+(item.text||'').replace(/"/g,'&quot;')+'" placeholder="記事…" style="border:none;background:transparent;font-size:11px;font-family:inherit;width:100%;color:inherit;outline:none" onblur="pnSave(\''+type+'\',\''+ds+'\','+i+',this.value)" onkeydown="if(event.key===\'Enter\'||event.key===\'Escape\')this.blur()">';
+      }else{
+        h+=(item.text||'記事…');
+      }
+      h+='</div>';
+    });
+    h+='<button style="font-size:11px;padding:2px 6px;border:1px dashed var(--border);background:none;cursor:pointer;color:var(--text3);width:100%;text-align:left;margin-top:2px;border-radius:3px;font-family:inherit" onclick="pnAdd(\''+type+'\',\''+ds+'\')">＋ 新增</button>';
+    h+='</td>';
+    return h;
+  }
 
-  return '<div style="border-top:3px solid #1a1a1a;margin-top:0"></div>'+
-    '<div class="private-section" style="margin-top:0;border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">'+
-    '<div class="private-section-hdr">🔒 私人記事 <span style="font-size:11px;color:var(--text2);font-weight:400">只有你自己看得到</span></div>'+
-    '<div style="overflow-x:auto">'+
-    '<table style="'+tableStyle+'"><colgroup>'+hiddenCols+'</colgroup>'+
-    '<thead><tr style="height:0;visibility:hidden"><th style="padding:0;width:100px"></th>'+days.map(()=>'<th style="padding:0"></th>').join('')+'</tr></thead>'+
-    '<tbody>'+
-    makeRow('work','工地記事')+
-    '<tr><td colspan="'+(days.length+1)+'" style="padding:0"><div style="border-top:2px solid #1a1a1a"></div></td></tr>'+
-    makeRow('personal','私人記事')+
-    '</tbody></table></div></div>';
+  function makeRow(type,label){
+    var h='<tr><td class="log-name-cell" style="font-size:11px;color:var(--text2)">'+label+'</td>';
+    days.forEach(function(d){ h+=makeCell(type,fmtDay(d)); });
+    h+='</tr>';
+    return h;
+  }
+
+  var hiddenHeader='<tr style="height:0;visibility:hidden"><th style="padding:0;width:100px"></th>'+days.map(function(){return'<th style="padding:0"></th>';}).join('')+'</tr>';
+  var divider='<tr><td colspan="'+(days.length+1)+'" style="padding:0"><div style="border-top:2px solid #1a1a1a"></div></td></tr>';
+  var tblStyle='width:100%;border-collapse:collapse;table-layout:fixed;min-width:700px';
+  var colgroup='<colgroup><col style="width:100px">'+days.map(function(){return'<col>';}).join('')+'</colgroup>';
+
+  return '<div style="border-top:3px solid #1a1a1a"></div>'
+    +'<div class="private-section" style="border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">'
+    +'<div class="private-section-hdr">🔒 私人記事 <span style="font-size:11px;color:var(--text2);font-weight:400">只有你自己看得到</span></div>'
+    +'<div style="overflow-x:auto"><table style="'+tblStyle+'">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
+    +makeRow('work','工地記事')
+    +divider
+    +makeRow('personal','私人記事')
+    +'</tbody></table></div></div>';
 }
+
+let pnDragSrc=null;
+window.pnSelect=function(type,ds,idx){
+  if(!S.privateSelected)S.privateSelected={};
+  var key=type+'|'+ds;
+  if(S.privateSelected[key]===idx){delete S.privateSelected[key];}
+  else{S.privateSelected[key]=idx;}
+  S.privateEditing=null;
+  renderProgress();
+}
+window.pnEdit=function(type,ds,idx){
+  if(!S.privateSelected)S.privateSelected={};
+  S.privateSelected[type+'|'+ds]=idx;
+  S.privateEditing={type,ds,idx};
+  renderProgress();
+  setTimeout(function(){
+    var inp=document.getElementById('pne-'+type+'-'+ds+'-'+idx);
+    if(inp){inp.focus();inp.select();}
+  },30);
+}
+window.pnSave=async function(type,ds,idx,text){
+  if(!currentUser)return;
+  var pn=S.privateNotes||{work:{},personal:{}};
+  var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
+  while(items.length<=idx)items.push({text:'',color:''});
+  items[idx]={...items[idx],text};
+  S.privateNotes={...pn,[type]:{...(pn[type]||{}),[ds]:items}};
+  S.privateEditing=null;
+  setSyncing();
+  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+  setSynced();
+}
+window.pnSetColor=async function(type,ds,idx,color){
+  if(!currentUser)return;
+  var pn=S.privateNotes||{work:{},personal:{}};
+  var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
+  if(!items[idx])return;
+  items[idx]={...items[idx],color};
+  S.privateNotes={...pn,[type]:{...(pn[type]||{}),[ds]:items}};
+  setSyncing();
+  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+  setSynced();
+}
+window.pnAdd=async function(type,ds){
+  if(!currentUser)return;
+  var pn=S.privateNotes||{work:{},personal:{}};
+  var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
+  items.push({text:'',color:''});
+  S.privateNotes={...pn,[type]:{...(pn[type]||{}),[ds]:items}};
+  setSyncing();
+  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+  setSynced();
+}
+window.pnDragStart=function(e,type,ds,idx){pnDragSrc={type,ds,idx};}
+window.pnDrop=async function(e,toType,toDs){
+  e.preventDefault();
+  if(!pnDragSrc||!currentUser)return;
+  var from=pnDragSrc;
+  var pn=S.privateNotes||{work:{},personal:{}};
+  var fromItems=(pn[from.type]&&pn[from.type][from.ds])?[...pn[from.type][from.ds]]:[];
+  var item=fromItems[from.idx];if(!item)return;
+  var toItems=(pn[toType]&&pn[toType][toDs])?[...pn[toType][toDs]]:[];
+  toItems.push({...item});
+  var newPn={...pn,[toType]:{...(pn[toType]||{}),[toDs]:toItems}};
+  if(!e.ctrlKey){
+    fromItems.splice(from.idx,1);
+    newPn[from.type]={...(newPn[from.type]||{}),[from.ds]:fromItems};
+  }
+  S.privateNotes=newPn;
+  await setDoc(doc(db,'privateNotes',currentUser.uid),newPn);
+  pnDragSrc=null;
+  renderProgress();
+}
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.private-section')){
+    if(S.privateSelected&&Object.keys(S.privateSelected).length){
+      S.privateSelected={};S.privateEditing=null;
+      if(activePanel==='progress')renderProgress();
+    }
+  }
+});
 
 async function savePrivateNoteData(){
   if(!currentUser)return;
