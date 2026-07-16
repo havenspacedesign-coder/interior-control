@@ -722,6 +722,14 @@ function renderPrivateTodoSection(){
   const td=today();
   const pn=S.privateNotes||{work:{},personal:{}};
 
+  function renderColorPicker(type,ds,idx,currentColor){
+    const COLS=[{c:'',l:'無'},{c:'#E24B4A',l:'紅'},{c:'#EF9F27',l:'橘'},{c:'#1D9E75',l:'綠'},{c:'#534AB7',l:'藍'},{c:'#9c9690',l:'灰'}];
+    return '<div style="display:flex;gap:4px;margin:4px 0 4px 2px">'+
+      COLS.map(col=>'<span onclick="setPrivateNoteColor(\''+type+'\',\''+ds+'\','+idx+',\''+col.c+'\')" title="'+col.l+
+        '" style="width:14px;height:14px;border-radius:50%;background:'+(col.c||'#e8e5e0')+';cursor:pointer;display:inline-block;border:1.5px solid rgba(0,0,0,.2);'+(currentColor===col.c&&col.c?'outline:2px solid #333;outline-offset:1px':'')+
+        '"></span>').join('')+
+      '</div>';
+  }
   function renderNoteRow(type,label){
     const COLORS=[{c:'',l:'無'},{c:'#E24B4A',l:'紅'},{c:'#EF9F27',l:'橘'},{c:'#1D9E75',l:'綠'},{c:'#534AB7',l:'藍'},{c:'#9c9690',l:'灰'}];
     return`<tr>
@@ -730,35 +738,20 @@ function renderPrivateTodoSection(){
         const ds=fmtDay(d);
         const isT=isSameDay(d,td);
         const items=(pn[type]&&pn[type][ds])||[];
-        const selKey=`${type}_${ds}`;
+        const selKey=type+'_'+ds;
         const selIdx=S.privateSelected&&S.privateSelected[selKey]!=null?S.privateSelected[selKey]:-1;
         return`<td style="${isT?'background:#fff8f8':''}">
           ${items.map((item,i)=>{
             const color=item.color||'';
             const isSel=selIdx===i;
             const isEditing=S.privateEditing&&S.privateEditing.type===type&&S.privateEditing.ds===ds&&S.privateEditing.idx===i;
-            return`<div class="pn-chip ${isSel?'pn-chip-sel':''}"
-              style="background:${color||'var(--bg)'};border:1.5px solid ${color||'var(--border)'};color:${color?'#fff':'var(--text)'};margin-bottom:3px;padding:3px 8px;border-radius:5px;font-size:11px;cursor:pointer;position:relative;user-select:none"
-              onclick="selectPrivateNote(event,'${type}','${ds}',${i})"
-              ondblclick="editPrivateNote(event,'${type}','${ds}',${i})"
-              draggable="true"
-              ondragstart="pnDragStart(event,'${type}','${ds}',${i})"
-              ondragover="pnDragOver(event,'${type}','${ds}')"
-              ondrop="pnDrop(event,'${type}','${ds}')"
-              data-type="${type}" data-ds="${ds}" data-idx="${i}">
-              ${isEditing
-                ?`<input type="text" id="pn-edit-${type}-${ds}-${i}" value="${(item.text||'').replace(/"/g,'&quot;')}"
-                  style="border:none;background:transparent;font-size:11px;font-family:inherit;width:100%;color:inherit;outline:none"
-                  onblur="savePrivateNote('${type}','${ds}',${i},this.value)"
-                  onkeydown="if(event.key==='Enter'||event.key==='Escape')this.blur()">`
-                :`${item.text||'記事…'}`}
-            </div>`;}).join('')}
-          ${isSel&&selIdx>=0?`<div style="display:flex;gap:4px;margin:4px 0 4px 2px">
-            ${COLORS.map(col=>`<span
-              onclick="setPrivateNoteColor('${type}','${ds}',${selIdx},'${col.c}')"
-              title="${col.l}"
-              style="width:14px;height:14px;border-radius:50%;background:${col.c||'#e8e5e0'};cursor:pointer;display:inline-block;border:1.5px solid rgba(0,0,0,.2);${(items[selIdx]?.color||'')===col.c&&col.c?'outline:2px solid #333;outline-offset:1px':''}"></span>`).join('')}
-          </div>`:''}
+            const chipStyle='background:'+(color||'var(--bg)')+';border:1.5px solid '+(color||'var(--border)')+';color:'+(color?'#fff':'var(--text)')+';margin-bottom:3px;padding:3px 8px;border-radius:5px;font-size:11px;cursor:pointer;position:relative;user-select:none';
+            const chipClass='pn-chip'+(isSel?' pn-chip-sel':'');
+            const innerHtml=isEditing
+              ?('<input type="text" id="pn-edit-'+type+'-'+ds+'-'+i+'" value="'+(item.text||'').replace(/"/g,'&quot;')+'" style="border:none;background:transparent;font-size:11px;font-family:inherit;width:100%;color:inherit;outline:none" onblur="savePrivateNote(\''+type+'\',\''+ds+'\','+i+',this.value)" onkeydown="if(event.key===\'Enter\'||event.key===\'Escape\')this.blur()">')
+              :(item.text||'記事…');
+            return '<div class="'+chipClass+'" style="'+chipStyle+'" onclick="selectPrivateNote(event,\''+type+'\',\''+ds+'\','+i+')" ondblclick="editPrivateNote(event,\''+type+'\',\''+ds+'\','+i+')" draggable="true" ondragstart="pnDragStart(event,\''+type+'\',\''+ds+'\','+i+')" ondragover="pnDragOver(event,\''+type+'\',\''+ds+'\')" ondrop="pnDrop(event,\''+type+'\',\''+ds+'\')">'+innerHtml+'</div>';}).join('')}
+          ${isSel&&selIdx>=0?renderColorPicker(type,ds,selIdx,items[selIdx]?.color||''):''}
           <button onclick="addPrivateNote('${type}','${ds}')" style="font-size:11px;padding:2px 6px;border:1px dashed var(--border);background:none;cursor:pointer;color:var(--text3);width:100%;text-align:left;margin-top:2px;border-radius:3px;font-family:inherit">＋ 新增</button>
         </td>`;}).join('')}
     </tr>`;
