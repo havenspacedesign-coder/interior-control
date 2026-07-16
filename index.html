@@ -716,139 +716,49 @@ window.saveDailyLog=async function(uid,ds,text){
 
 // ── Private Todo Section ──
 function renderPrivateTodoSection(){
-  // privateNotes: {work:{date:[{text,done}]}, personal:{date:[{text,done}]}}
-  const days=calMode==='week'?getWeekDates():[today()];
+  if(calMode!=='week')return'';
+  const days=getWeekDates();const td=today();
+  const pn=S.privateNotes||{work:{},personal:{}};
   const WD=['日','一','二','三','四','五','六'];
-  const td=today();
-  const pn=S.privateNotes||{work:{},personal:{}};
 
-  function renderColorPicker(type,ds,idx,currentColor){
-    const COLS=[{c:'',l:'無'},{c:'#E24B4A',l:'紅'},{c:'#EF9F27',l:'橘'},{c:'#1D9E75',l:'綠'},{c:'#534AB7',l:'藍'},{c:'#9c9690',l:'灰'}];
-    return '<div style="display:flex;gap:4px;margin:4px 0 4px 2px">'+
-      COLS.map(col=>'<span onclick="setPrivateNoteColor(\''+type+'\',\''+ds+'\','+idx+',\''+col.c+'\')" title="'+col.l+
-        '" style="width:14px;height:14px;border-radius:50%;background:'+(col.c||'#e8e5e0')+';cursor:pointer;display:inline-block;border:1.5px solid rgba(0,0,0,.2);'+(currentColor===col.c&&col.c?'outline:2px solid #333;outline-offset:1px':'')+
-        '"></span>').join('')+
-      '</div>';
-  }
-  function renderNoteRow(type,label){
-    const COLORS=[{c:'',l:'無'},{c:'#E24B4A',l:'紅'},{c:'#EF9F27',l:'橘'},{c:'#1D9E75',l:'綠'},{c:'#534AB7',l:'藍'},{c:'#9c9690',l:'灰'}];
-    return`<tr>
-      <td class="log-name-cell" style="font-size:11px;color:var(--text2)">${label}</td>
-      ${days.map(d=>{
-        const ds=fmtDay(d);
-        const isT=isSameDay(d,td);
-        const items=(pn[type]&&pn[type][ds])||[];
-        const selKey=type+'_'+ds;
-        const selIdx=S.privateSelected&&S.privateSelected[selKey]!=null?S.privateSelected[selKey]:-1;
-        return`<td style="${isT?'background:#fff8f8':''}">
-          ${items.map((item,i)=>{
-            const color=item.color||'';
-            const isSel=selIdx===i;
-            const isEditing=S.privateEditing&&S.privateEditing.type===type&&S.privateEditing.ds===ds&&S.privateEditing.idx===i;
-            const chipStyle='background:'+(color||'var(--bg)')+';border:1.5px solid '+(color||'var(--border)')+';color:'+(color?'#fff':'var(--text)')+';margin-bottom:3px;padding:3px 8px;border-radius:5px;font-size:11px;cursor:pointer;position:relative;user-select:none';
-            const chipClass='pn-chip'+(isSel?' pn-chip-sel':'');
-            const innerHtml=isEditing
-              ?('<input type="text" id="pn-edit-'+type+'-'+ds+'-'+i+'" value="'+(item.text||'').replace(/"/g,'&quot;')+'" style="border:none;background:transparent;font-size:11px;font-family:inherit;width:100%;color:inherit;outline:none" onblur="savePrivateNote(\''+type+'\',\''+ds+'\','+i+',this.value)" onkeydown="if(event.key===\'Enter\'||event.key===\'Escape\')this.blur()">')
-              :(item.text||'記事…');
-            return '<div class="'+chipClass+'" style="'+chipStyle+'" onclick="selectPrivateNote(event,\''+type+'\',\''+ds+'\','+i+')" ondblclick="editPrivateNote(event,\''+type+'\',\''+ds+'\','+i+')" draggable="true" ondragstart="pnDragStart(event,\''+type+'\',\''+ds+'\','+i+')" ondragover="pnDragOver(event,\''+type+'\',\''+ds+'\')" ondrop="pnDrop(event,\''+type+'\',\''+ds+'\')">'+innerHtml+'</div>';}).join('')}
-          ${isSel&&selIdx>=0?renderColorPicker(type,ds,selIdx,items[selIdx]?.color||''):''}
-          <button onclick="addPrivateNote('${type}','${ds}')" style="font-size:11px;padding:2px 6px;border:1px dashed var(--border);background:none;cursor:pointer;color:var(--text3);width:100%;text-align:left;margin-top:2px;border-radius:3px;font-family:inherit">＋ 新增</button>
-        </td>`;}).join('')}
-    </tr>`;
+  function makeRow(type,label){
+    let tds='<td class="log-name-cell" style="font-size:11px;color:var(--text2)">'+label+'</td>';
+    days.forEach(d=>{
+      const ds=fmtDay(d);
+      const isT=isSameDay(d,td);
+      const items=(pn[type]&&pn[type][ds])||[];
+      const COLS=[{c:'',l:'無'},{c:'#E24B4A',l:'紅'},{c:'#EF9F27',l:'橘'},{c:'#1D9E75',l:'綠'},{c:'#534AB7',l:'藍'},{c:'#9c9690',l:'灰'}];
+      let inner='';
+      items.forEach((item,i)=>{
+        const color=item.color||'';
+        const dots=COLS.map(col=>'<span onclick="setPrivateNoteColor(\''+type+'\',\''+ds+'\','+i+',\''+col.c+'\')" title="'+col.l+'" style="width:11px;height:11px;border-radius:50%;background:'+(col.c||'#e8e5e0')+';cursor:pointer;display:inline-block;border:1px solid rgba(0,0,0,.15)"></span>').join('');
+        inner+='<div style="margin-bottom:5px;border-left:'+(color?'3px solid '+color:'3px solid transparent')+';padding-left:4px">';
+        inner+='<div style="display:flex;gap:3px;margin-bottom:2px">'+dots+'</div>';
+        inner+='<input type="text" value="'+(item.text||'').replace(/"/g,'&quot;')+'" placeholder="記事…" style="width:100%;border:none;border-bottom:1px solid var(--border);padding:2px 4px;font-size:11px;font-family:inherit;background:transparent;'+(color?'color:'+color:'')+'" onblur="savePrivateNote(\''+type+'\',\''+ds+'\','+i+',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()">';
+        inner+='</div>';
+      });
+      inner+='<button onclick="addPrivateNote(\''+type+'\',\''+ds+'\')" style="font-size:11px;padding:2px 6px;border:1px dashed var(--border);background:none;cursor:pointer;color:var(--text3);width:100%;text-align:left;margin-top:2px;border-radius:3px;font-family:inherit">＋ 新增</button>';
+      tds+='<td style="'+(isT?'background:#fff8f8':'')+' vertical-align:top;padding:4px">'+inner+'</td>';
+    });
+    return '<tr>'+tds+'</tr>';
   }
 
-  return`<div style="border-top:3px solid #1a1a1a;margin-top:0"></div>
-  <div class="private-section" style="margin-top:0;border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">
-    <div class="private-section-hdr">
-      🔒 私人記事
-      <span style="font-size:11px;color:var(--text2);font-weight:400">只有你自己看得到</span>
-    </div>
-    <div style="overflow-x:auto">
-    <table class="daily-log-table">
-      <colgroup><col style="width:100px">${days.map(()=>'<col>').join('')}</colgroup>
-      <thead><tr style="height:0;visibility:hidden"><th style="padding:0;width:100px"></th><th style="padding:0"></th><th style="padding:0"></th><th style="padding:0"></th><th style="padding:0"></th><th style="padding:0"></th><th style="padding:0"></th><th style="padding:0"></th></tr></thead>
-      <tbody>
-        ${renderNoteRow('work','工地記事')}
-        <tr><td colspan="${days.length+1}" style="padding:0"><div style="border-top:2px solid #1a1a1a"></div></td></tr>
-        ${renderNoteRow('personal','私人記事')}
-      </tbody>
-    </table>
-    </div>
-  </div>`;
+  const hiddenCols='<col style="width:100px">'+days.map(()=>'<col>').join('');
+  const tableStyle='width:100%;border-collapse:collapse;table-layout:fixed;min-width:700px';
+
+  return '<div style="border-top:3px solid #1a1a1a;margin-top:0"></div>'+
+    '<div class="private-section" style="margin-top:0;border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">'+
+    '<div class="private-section-hdr">🔒 私人記事 <span style="font-size:11px;color:var(--text2);font-weight:400">只有你自己看得到</span></div>'+
+    '<div style="overflow-x:auto">'+
+    '<table style="'+tableStyle+'"><colgroup>'+hiddenCols+'</colgroup>'+
+    '<thead><tr style="height:0;visibility:hidden"><th style="padding:0;width:100px"></th>'+days.map(()=>'<th style="padding:0"></th>').join('')+'</tr></thead>'+
+    '<tbody>'+
+    makeRow('work','工地記事')+
+    '<tr><td colspan="'+(days.length+1)+'" style="padding:0"><div style="border-top:2px solid #1a1a1a"></div></td></tr>'+
+    makeRow('personal','私人記事')+
+    '</tbody></table></div></div>';
 }
 
-window.selectPrivateNote=function(e,type,ds,idx){
-  e.stopPropagation();
-  if(!S.privateSelected)S.privateSelected={};
-  const key=`${type}_${ds}`;
-  if(S.privateSelected[key]===idx){
-    // deselect
-    delete S.privateSelected[key];
-  } else {
-    S.privateSelected[key]=idx;
-  }
-  S.privateEditing=null;
-  renderProgress();
-}
-window.editPrivateNote=function(e,type,ds,idx){
-  e.stopPropagation();
-  S.privateEditing={type,ds,idx};
-  if(!S.privateSelected)S.privateSelected={};
-  S.privateSelected[`${type}_${ds}`]=idx;
-  renderProgress();
-  setTimeout(()=>{
-    const inp=document.getElementById(`pn-edit-${type}-${ds}-${idx}`);
-    if(inp){inp.focus();inp.select();}
-  },30);
-}
-// Drag & drop for private notes (Ctrl = copy, no Ctrl = move)
-let pnDragSrc=null;
-window.pnDragStart=function(e,type,ds,idx){
-  pnDragSrc={type,ds,idx};
-}
-window.pnDragOver=function(e,type,ds){
-  e.preventDefault();
-}
-window.pnDrop=async function(e,toType,toDs){
-  e.preventDefault();
-  if(!pnDragSrc||!currentUser)return;
-  const{type:fromType,ds:fromDs,idx:fromIdx}=pnDragSrc;
-  const pn=S.privateNotes||{work:{},personal:{}};
-  const fromItems=[...(pn[fromType]?.[fromDs]||[])];
-  const item=fromItems[fromIdx];if(!item)return;
-  const toItems=[...(pn[toType]?.[toDs]||[]),{...item}];
-  const newPn={...pn,[toType]:{...(pn[toType]||{}),[toDs]:toItems}};
-  if(!e.ctrlKey){
-    // move: remove from source
-    fromItems.splice(fromIdx,1);
-    newPn[fromType]={...(newPn[fromType]||{}),[fromDs]:fromItems};
-  }
-  S.privateNotes=newPn;
-  await setDoc(doc(db,'privateNotes',currentUser.uid),newPn);
-  pnDragSrc=null;
-  renderProgress();
-}
-
-// Close selection when clicking outside
-document.addEventListener('click',function(e){
-  if(!e.target.closest('.pn-chip')&&!e.target.closest('[onclick*="setPrivateNoteColor"]')&&!e.target.closest('[onclick*="addPrivateNote"]')){
-    if(S.privateSelected&&Object.keys(S.privateSelected).length){
-      S.privateSelected={};S.privateEditing=null;
-      if(activePanel==='progress')renderProgress();
-    }
-  }
-},{capture:false});
-
-window.setPrivateNoteColor=async function(type,ds,idx,color){
-  if(!currentUser)return;
-  const pn=S.privateNotes||{work:{},personal:{}};
-  const items=[...(pn[type]?.[ds]||[])];
-  if(!items[idx])return;
-  items[idx]={...items[idx],color};
-  S.privateNotes={...pn,[type]:{...(pn[type]||{}),[ds]:items}};
-  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
-  renderProgress();
-}
 async function savePrivateNoteData(){
   if(!currentUser)return;
   setSyncing();
