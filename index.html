@@ -172,6 +172,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .ptd-item{margin-bottom:4px}
 .ptd-add-btn{font-size:11px;color:var(--text3);cursor:pointer;padding:2px 4px;display:block;text-align:left;border:none;background:none;font-family:inherit}
 .ptd-add-btn:hover{color:var(--purple)}
+.pn-chip{transition:opacity .1s}
+.pn-chip:hover{opacity:.85}
+.pn-chip-sel{box-shadow:0 0 0 2px var(--purple)!important}
 .private-divider{border-top:3px solid #1a1a1a;margin:0}
 .ptd-color-dots{display:flex;gap:3px;margin-top:2px;flex-wrap:wrap}
 .ptd-color-dot{width:12px;height:12px;border-radius:50%;cursor:pointer;border:1px solid rgba(0,0,0,.15);flex-shrink:0;transition:transform .1s}
@@ -727,21 +730,35 @@ function renderPrivateTodoSection(){
         const ds=fmtDay(d);
         const isT=isSameDay(d,td);
         const items=(pn[type]&&pn[type][ds])||[];
+        const selKey=`${type}_${ds}`;
+        const selIdx=S.privateSelected&&S.privateSelected[selKey]!=null?S.privateSelected[selKey]:-1;
         return`<td style="${isT?'background:#fff8f8':''}">
-          ${items.map((item,i)=>`
-            <div style="margin-bottom:5px;border-left:${item.color?'3px solid '+item.color:'3px solid transparent'};padding-left:4px">
-              <div style="display:flex;gap:3px;margin-bottom:2px">
-                ${COLORS.map(col=>`<span
-                  onclick="setPrivateNoteColor('${type}','${ds}',${i},'${col.c}')"
-                  title="${col.l}"
-                  style="width:11px;height:11px;border-radius:50%;background:${col.c||'#e8e5e0'};cursor:pointer;display:inline-block;flex-shrink:0;border:1px solid rgba(0,0,0,.15);${item.color===col.c&&col.c?'outline:2px solid #333;outline-offset:1px':''}"></span>`).join('')}
-              </div>
-              <input type="text" value="${(item.text||'').replace(/"/g,'&quot;')}"
-                placeholder="記事…"
-                style="width:100%;border:none;border-bottom:1px solid var(--border);padding:2px 4px;font-size:11px;font-family:inherit;background:transparent;${item.color?'color:'+item.color:''}"
-                onblur="savePrivateNote('${type}','${ds}',${i},this.value)"
-                onkeydown="if(event.key==='Enter')this.blur()">
-            </div>`).join('')}
+          ${items.map((item,i)=>{
+            const color=item.color||'';
+            const isSel=selIdx===i;
+            const isEditing=S.privateEditing&&S.privateEditing.type===type&&S.privateEditing.ds===ds&&S.privateEditing.idx===i;
+            return`<div class="pn-chip ${isSel?'pn-chip-sel':''}"
+              style="background:${color||'var(--bg)'};border:1.5px solid ${color||'var(--border)'};color:${color?'#fff':'var(--text)'};margin-bottom:3px;padding:3px 8px;border-radius:5px;font-size:11px;cursor:pointer;position:relative;user-select:none"
+              onclick="selectPrivateNote(event,'${type}','${ds}',${i})"
+              ondblclick="editPrivateNote(event,'${type}','${ds}',${i})"
+              draggable="true"
+              ondragstart="pnDragStart(event,'${type}','${ds}',${i})"
+              ondragover="pnDragOver(event,'${type}','${ds}')"
+              ondrop="pnDrop(event,'${type}','${ds}')"
+              data-type="${type}" data-ds="${ds}" data-idx="${i}">
+              ${isEditing
+                ?`<input type="text" id="pn-edit-${type}-${ds}-${i}" value="${(item.text||'').replace(/"/g,'&quot;')}"
+                  style="border:none;background:transparent;font-size:11px;font-family:inherit;width:100%;color:inherit;outline:none"
+                  onblur="savePrivateNote('${type}','${ds}',${i},this.value)"
+                  onkeydown="if(event.key==='Enter'||event.key==='Escape')this.blur()">`
+                :`${item.text||'記事…'}`}
+            </div>`;}).join('')}
+          ${isSel&&selIdx>=0?`<div style="display:flex;gap:4px;margin:4px 0 4px 2px">
+            ${COLORS.map(col=>`<span
+              onclick="setPrivateNoteColor('${type}','${ds}',${selIdx},'${col.c}')"
+              title="${col.l}"
+              style="width:14px;height:14px;border-radius:50%;background:${col.c||'#e8e5e0'};cursor:pointer;display:inline-block;border:1.5px solid rgba(0,0,0,.2);${(items[selIdx]?.color||'')===col.c&&col.c?'outline:2px solid #333;outline-offset:1px':''}"></span>`).join('')}
+          </div>`:''}
           <button onclick="addPrivateNote('${type}','${ds}')" style="font-size:11px;padding:2px 6px;border:1px dashed var(--border);background:none;cursor:pointer;color:var(--text3);width:100%;text-align:left;margin-top:2px;border-radius:3px;font-family:inherit">＋ 新增</button>
         </td>`;}).join('')}
     </tr>`;
@@ -766,6 +783,68 @@ function renderPrivateTodoSection(){
     </div>
   </div>`;
 }
+
+window.selectPrivateNote=function(e,type,ds,idx){
+  e.stopPropagation();
+  if(!S.privateSelected)S.privateSelected={};
+  const key=`${type}_${ds}`;
+  if(S.privateSelected[key]===idx){
+    // deselect
+    delete S.privateSelected[key];
+  } else {
+    S.privateSelected[key]=idx;
+  }
+  S.privateEditing=null;
+  renderProgress();
+}
+window.editPrivateNote=function(e,type,ds,idx){
+  e.stopPropagation();
+  S.privateEditing={type,ds,idx};
+  if(!S.privateSelected)S.privateSelected={};
+  S.privateSelected[`${type}_${ds}`]=idx;
+  renderProgress();
+  setTimeout(()=>{
+    const inp=document.getElementById(`pn-edit-${type}-${ds}-${idx}`);
+    if(inp){inp.focus();inp.select();}
+  },30);
+}
+// Drag & drop for private notes (Ctrl = copy, no Ctrl = move)
+let pnDragSrc=null;
+window.pnDragStart=function(e,type,ds,idx){
+  pnDragSrc={type,ds,idx};
+}
+window.pnDragOver=function(e,type,ds){
+  e.preventDefault();
+}
+window.pnDrop=async function(e,toType,toDs){
+  e.preventDefault();
+  if(!pnDragSrc||!currentUser)return;
+  const{type:fromType,ds:fromDs,idx:fromIdx}=pnDragSrc;
+  const pn=S.privateNotes||{work:{},personal:{}};
+  const fromItems=[...(pn[fromType]?.[fromDs]||[])];
+  const item=fromItems[fromIdx];if(!item)return;
+  const toItems=[...(pn[toType]?.[toDs]||[]),{...item}];
+  const newPn={...pn,[toType]:{...(pn[toType]||{}),[toDs]:toItems}};
+  if(!e.ctrlKey){
+    // move: remove from source
+    fromItems.splice(fromIdx,1);
+    newPn[fromType]={...(newPn[fromType]||{}),[fromDs]:fromItems};
+  }
+  S.privateNotes=newPn;
+  await setDoc(doc(db,'privateNotes',currentUser.uid),newPn);
+  pnDragSrc=null;
+  renderProgress();
+}
+
+// Close selection when clicking outside
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.pn-chip')&&!e.target.closest('[onclick*="setPrivateNoteColor"]')&&!e.target.closest('[onclick*="addPrivateNote"]')){
+    if(S.privateSelected&&Object.keys(S.privateSelected).length){
+      S.privateSelected={};S.privateEditing=null;
+      if(activePanel==='progress')renderProgress();
+    }
+  }
+},{capture:false});
 
 window.setPrivateNoteColor=async function(type,ds,idx,color){
   if(!currentUser)return;
