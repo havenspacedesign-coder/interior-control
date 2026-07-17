@@ -858,7 +858,7 @@ function renderPrivateTodoSection(){
           +'onkeydown="pnKeyDown(event,\''+type+'\',\''+ds+'\','+i+')" '
           +'oninput="pnInput(event,\''+type+'\',\''+ds+'\','+i+')">'
           +'<div id="pn-mention-'+type+'-'+ds+'-'+i+'" style="display:none;position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:180px;overflow-y:auto"></div>'
-          +'</div>';
+          +'</div>'
       }else{
         h+=renderText(item.text||'');
       }
@@ -900,18 +900,8 @@ var pnMentionActive=null; // {type,ds,idx}
 
 window.pnInput=function(e,type,ds,idx){
   var inp=e.target;
-  // Get text content for contenteditable
-  var sel=window.getSelection();
-  var pos=0;
-  if(sel.rangeCount>0){
-    var range=sel.getRangeAt(0);
-    var preRange=document.createRange();
-    preRange.selectNodeContents(inp);
-    preRange.setEnd(range.endContainer,range.endOffset);
-    pos=preRange.toString().length;
-  }
-  var val=inp.innerText||inp.textContent||'';
-  // Check if @ was typed
+  var val=inp.value||'';
+  var pos=inp.selectionStart||0;
   var textBefore=val.substring(0,pos);
   var atIdx=textBefore.lastIndexOf('@');
   var menuEl=document.getElementById('pn-mention-'+type+'-'+ds+'-'+idx);
@@ -941,38 +931,16 @@ window.pnInsertMention=function(e,type,ds,idx,projName){
   var menuEl=document.getElementById('pn-mention-'+type+'-'+ds+'-'+idx);
   if(menuEl)menuEl.style.display='none';
   pnMentionActive=null;
-  // Find @ position and replace with styled span
-  var sel=window.getSelection();
-  if(!sel.rangeCount){inp.focus();return;}
-  var range=sel.getRangeAt(0);
-  // Walk back to find @
-  var node=range.startContainer;
-  var offset=range.startOffset;
-  if(node.nodeType===3){
-    var text=node.textContent;
-    var before=text.substring(0,offset);
-    var atIdx=before.lastIndexOf('@');
-    if(atIdx>=0){
-      // Delete from @ to cursor
-      node.deleteData(atIdx,offset-atIdx);
-      // Insert proj span
-      var span=document.createElement('span');
-      span.className='pn-proj-tag';
-      span.setAttribute('data-proj',projName);
-      span.setAttribute('contenteditable','false');
-      span.style.cssText='color:var(--purple);font-weight:600;background:var(--pl);padding:0 4px;border-radius:3px;font-size:11px;user-select:none';
-      span.textContent=projName;
-      var newRange=document.createRange();
-      newRange.setStart(node,atIdx);
-      newRange.collapse(true);
-      newRange.insertNode(span);
-      // Move cursor after span
-      var after=document.createTextNode(' ');
-      span.after(after);
-      newRange.setStartAfter(after);
-      newRange.collapse(true);
-      sel.removeAllRanges();sel.addRange(newRange);
-    }
+  // Replace @query with [proj:name] in input value
+  var val=inp.value;
+  var pos=inp.selectionStart||val.length;
+  var textBefore=val.substring(0,pos);
+  var atIdx=textBefore.lastIndexOf('@');
+  if(atIdx>=0){
+    var newVal=val.substring(0,atIdx)+'[proj:'+projName+']'+val.substring(pos);
+    inp.value=newVal;
+    var newPos=atIdx+('[proj:'+projName+']').length;
+    inp.setSelectionRange(newPos,newPos);
   }
   inp.focus();
 }
@@ -992,15 +960,7 @@ window.pnKeyDown=function(e,type,ds,idx){
 window.pnSaveBlur=async function(type,ds,idx){
   var inp=document.getElementById('pne-'+type+'-'+ds+'-'+idx);
   if(!inp)return;
-  // Convert contenteditable HTML back to storage format
-  // Replace proj tag spans with [proj:name]
-  var html=inp.innerHTML;
-  var text=html
-    .replace(/<span[^>]*data-proj="([^"]*)"[^>]*>([^<]*)<\/span>/g,'[proj:$1]')
-    .replace(/<br\s*\/?>/gi,'\n')
-    .replace(/<[^>]+>/g,'')
-    .replace(/&nbsp;/g,' ')
-    .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+  var text=inp.value||'';
   if(!currentUser)return;
   var pn=S.privateNotes||{work:{},personal:{}};
   var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
@@ -1028,11 +988,7 @@ window.pnEdit=function(type,ds,idx){
   renderProgress();
   setTimeout(function(){
     var inp=document.getElementById('pne-'+type+'-'+ds+'-'+idx);
-    if(inp){
-      inp.focus();
-      var r=document.createRange();r.selectNodeContents(inp);r.collapse(false);
-      var s=window.getSelection();s.removeAllRanges();s.addRange(r);
-    }
+    if(inp){inp.focus();var l=inp.value.length;inp.setSelectionRange(l,l);}
   },30);
 }
 window.pnSetColor=async function(type,ds,idx,color){
