@@ -721,36 +721,49 @@ function renderPrivateTodoSection(){
   const td=today();
   const pn=S.privateNotes||{work:{},personal:{}};
   const COLS=[
-    {c:'',l:'無',bg:'#e8e5e0'},
-    {c:'#E24B4A',l:'紅',bg:'#E24B4A'},
-    {c:'#EF9F27',l:'橘',bg:'#EF9F27'},
-    {c:'#1D9E75',l:'綠',bg:'#1D9E75'},
-    {c:'#534AB7',l:'藍',bg:'#534AB7'},
-    {c:'#9c9690',l:'灰',bg:'#9c9690'}
+    {c:'',bg:'#e8e5e0',l:'無'},
+    {c:'#E24B4A',bg:'#E24B4A',l:'紅'},
+    {c:'#EF9F27',bg:'#EF9F27',l:'橘'},
+    {c:'#1D9E75',bg:'#1D9E75',l:'綠'},
+    {c:'#534AB7',bg:'#534AB7',l:'藍'},
+    {c:'#9c9690',bg:'#9c9690',l:'灰'}
   ];
   const sel=S.privateSelected||{};
   const editing=S.privateEditing||null;
 
-  function dotBar(type,ds,idx,curColor){
-    var h='<div style="display:flex;gap:3px;margin-bottom:3px">';
-    COLS.forEach(function(col){
-      var outline=(curColor===col.c&&col.c)?'outline:2px solid #333;outline-offset:1px;':'';
-      h+='<span style="width:13px;height:13px;border-radius:50%;background:'+col.bg+';cursor:pointer;display:inline-block;border:1px solid rgba(0,0,0,.2);'+outline+'" title="'+col.l+'" onclick="pnSetColor(\''+type+'\',\''+ds+'\','+idx+',\''+col.c+'\')"></span>';
+  // Get currently selected key and index across all days
+  function getSelKey(type,ds){return type+'|'+ds;}
+  function getSelIdx(type,ds){
+    var k=getSelKey(type,ds);
+    return(sel[k]!=null)?sel[k]:-1;
+  }
+
+  // Color dot bar for selected item - shown in header row
+  function globalColorBar(){
+    // Find currently selected item
+    var found=null;
+    Object.keys(sel).forEach(function(k){
+      if(sel[k]>=0){
+        var parts=k.split('|');
+        var type=parts[0],ds=parts[1];
+        var items=(pn[type]&&pn[type][ds])||[];
+        if(items[sel[k]])found={type,ds,idx:sel[k],color:items[sel[k]].color||''};
+      }
     });
-    h+='</div>';
+    if(!found)return'';
+    var h='';
+    COLS.forEach(function(col){
+      var isActive=found.color===col.c&&col.c;
+      h+='<span style="width:16px;height:16px;border-radius:50%;background:'+col.bg+';cursor:pointer;display:inline-block;border:1.5px solid rgba(0,0,0,.2);margin-left:4px;vertical-align:middle;'+(isActive?'outline:2px solid #333;outline-offset:1px':'')+'" title="'+col.l+'" onclick="pnSetColor(\''+found.type+'\',\''+found.ds+'\','+found.idx+',\''+col.c+'\')"></span>';
+    });
     return h;
   }
 
   function makeCell(type,ds){
     var isT=isSameDay(new Date(ds+'T00:00:00'),td);
     var items=(pn[type]&&pn[type][ds])||[];
-    var selKey=type+'|'+ds;
-    var selIdx=sel[selKey]!=null?sel[selKey]:-1;
+    var selIdx=getSelIdx(type,ds);
     var h='<td style="vertical-align:top;padding:4px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'">';
-    // Color picker shown only for selected item
-    if(selIdx>=0&&selIdx<items.length){
-      h+=dotBar(type,ds,selIdx,items[selIdx].color||'');
-    }
     items.forEach(function(item,i){
       var color=item.color||'';
       var isSel=selIdx===i;
@@ -780,7 +793,7 @@ function renderPrivateTodoSection(){
 
   function makeRow(type,label){
     var h='<tr><td class="log-name-cell" style="font-size:11px;color:var(--text2)">'+label+'</td>';
-    days.forEach(function(d){ h+=makeCell(type,fmtDay(d)); });
+    days.forEach(function(d){h+=makeCell(type,fmtDay(d));});
     h+='</tr>';
     return h;
   }
@@ -792,7 +805,10 @@ function renderPrivateTodoSection(){
 
   return '<div style="border-top:3px solid #1a1a1a"></div>'
     +'<div class="private-section" style="border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">'
-    +'<div class="private-section-hdr">🔒 私人記事 <span style="font-size:11px;color:var(--text2);font-weight:400">只有你自己看得到</span></div>'
+    +'<div class="private-section-hdr" style="display:flex;align-items:center;gap:0">🔒 私人記事 <span style="font-size:11px;color:var(--text2);font-weight:400;margin-left:6px">只有你自己看得到</span>'
+    +globalColorBar()
+    +'<span style="font-size:11px;color:var(--text3);margin-left:8px">'+(Object.values(sel).some(v=>v>=0)?'選取後可按 Delete 刪除':'')+'</span>'
+    +'</div>'
     +'<div style="overflow-x:auto"><table style="'+tblStyle+'">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
     +makeRow('work','工地記事')
     +divider
@@ -803,14 +819,16 @@ function renderPrivateTodoSection(){
 let pnDragSrc=null;
 window.pnSelect=function(type,ds,idx){
   if(!S.privateSelected)S.privateSelected={};
+  // Clear other selections first
+  S.privateSelected={};
   var key=type+'|'+ds;
-  if(S.privateSelected[key]===idx){delete S.privateSelected[key];}
-  else{S.privateSelected[key]=idx;}
+  S.privateSelected[key]=idx;
   S.privateEditing=null;
   renderProgress();
 }
 window.pnEdit=function(type,ds,idx){
   if(!S.privateSelected)S.privateSelected={};
+  S.privateSelected={};
   S.privateSelected[type+'|'+ds]=idx;
   S.privateEditing={type,ds,idx};
   renderProgress();
@@ -835,7 +853,7 @@ window.pnSetColor=async function(type,ds,idx,color){
   if(!currentUser)return;
   var pn=S.privateNotes||{work:{},personal:{}};
   var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
-  if(!items[idx])return;
+  if(idx<0||idx>=items.length)return;
   items[idx]={...items[idx],color};
   S.privateNotes={...pn,[type]:{...(pn[type]||{}),[ds]:items}};
   setSyncing();
@@ -852,11 +870,31 @@ window.pnAdd=async function(type,ds){
   await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
   setSynced();
 }
-window.pnDragStart=function(e,type,ds,idx){pnDragSrc={type,ds,idx};}
+window.pnDelete=async function(type,ds,idx){
+  if(!currentUser)return;
+  var pn=S.privateNotes||{work:{},personal:{}};
+  var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
+  if(idx<0||idx>=items.length)return;
+  items.splice(idx,1);
+  S.privateNotes={...pn,[type]:{...(pn[type]||{}),[ds]:items}};
+  if(S.privateSelected)delete S.privateSelected[type+'|'+ds];
+  setSyncing();
+  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+  setSynced();
+}
+window.pnDragStart=function(e,type,ds,idx){
+  pnDragSrc={type,ds,idx};
+  e.dataTransfer.effectAllowed='copyMove';
+  e.dataTransfer.setData('text/plain',JSON.stringify({type,ds,idx}));
+}
 window.pnDrop=async function(e,toType,toDs){
-  e.preventDefault();
-  if(!pnDragSrc||!currentUser)return;
-  var from=pnDragSrc;
+  e.preventDefault();e.stopPropagation();
+  var data=null;
+  try{data=JSON.parse(e.dataTransfer.getData('text/plain'));}catch(err){}
+  if(!data&&pnDragSrc)data=pnDragSrc;
+  if(!data||!currentUser)return;
+  var from=data;
+  if(from.type===toType&&from.ds===toDs)return;
   var pn=S.privateNotes||{work:{},personal:{}};
   var fromItems=(pn[from.type]&&pn[from.type][from.ds])?[...pn[from.type][from.ds]]:[];
   var item=fromItems[from.idx];if(!item)return;
@@ -872,9 +910,24 @@ window.pnDrop=async function(e,toType,toDs){
   pnDragSrc=null;
   renderProgress();
 }
+// Delete key handler
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Delete')return;
+  if(!S.privateSelected)return;
+  if(S.privateEditing)return; // don't delete while editing text
+  var keys=Object.keys(S.privateSelected);
+  if(!keys.length)return;
+  var k=keys[0];
+  var idx=S.privateSelected[k];
+  if(idx<0)return;
+  var parts=k.split('|');
+  var type=parts[0],ds=parts[1];
+  pnDelete(type,ds,idx);
+});
+// Close selection when clicking outside private section
 document.addEventListener('click',function(e){
   if(!e.target.closest('.private-section')){
-    if(S.privateSelected&&Object.keys(S.privateSelected).length){
+    if(S.privateSelected&&Object.keys(S.privateSelected).some(k=>S.privateSelected[k]>=0)){
       S.privateSelected={};S.privateEditing=null;
       if(activePanel==='progress')renderProgress();
     }
