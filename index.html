@@ -422,6 +422,8 @@ onAuthStateChanged(auth,async user=>{
   if(isAdmin())document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('show'));
   initListeners();renderOverview();
 
+});
+
 // ── AI Assistant ──
 var aiOpen=false;
 window.toggleAI=function(){
@@ -446,11 +448,7 @@ window.sendAI=async function(){
   msgs.scrollTop=msgs.scrollHeight;
   var projList=S.projects.map(function(p){return p.name+'（'+({design:'設計中',prog:'施工中',done:'已完工',wait:'待確認',stop:'暫停'}[p.status]||p.status)+'）';}).join('、');
   var stageList=Object.keys(S.bible||{}).filter(function(k){return k!=='__order__';}).join('、');
-  var systemPrompt='你是一個室內設計公司的專案管理 AI 助理，請用繁體中文回答。
-目前系統資料：
-【案件列表】'+projList+'
-【施工寶典階段】'+(stageList||'尚無')+'。
-請根據以上資料回答，若問題與資料無關也可提供室內設計相關建議。';
+  var systemPrompt='你是一個室內設計公司的專案管理 AI 助理，請用繁體中文回答。\n目前系統資料：\n【案件列表】'+projList+'\n【施工寶典階段】'+(stageList||'尚無')+'。\n請根據以上資料回答，若問題與資料無關也可提供室內設計相關建議。';
   try{
     var resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
@@ -464,7 +462,6 @@ window.sendAI=async function(){
   btn.disabled=false;
   msgs.scrollTop=msgs.scrollHeight;
 }
-});
 
 function initListeners(){
   onSnapshot(collection(db,'projects'),snap=>{S.projects=snap.docs.map(d=>({id:d.id,...d.data()}));renderActive();setSynced();},()=>setOffline());
@@ -1000,8 +997,7 @@ window.pnSaveBlur=async function(type,ds,idx){
   var html=inp.innerHTML;
   var text=html
     .replace(/<span[^>]*data-proj="([^"]*)"[^>]*>([^<]*)<\/span>/g,'[proj:$1]')
-    .replace(/<br\s*\/?>/gi,'
-')
+    .replace(/<br\s*\/?>/gi,'\n')
     .replace(/<[^>]+>/g,'')
     .replace(/&nbsp;/g,' ')
     .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
