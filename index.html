@@ -686,7 +686,7 @@ function renderProgress(){
     <input class="formula-bar-input" id="pn-formula-input" placeholder="選取色塊後在此編輯…" value="${formulaBarState?escAttr(formulaBarState.text||''):''}" autocomplete="off" spellcheck="false"
       oninput="if(formulaBarState)formulaBarState.text=this.value"
       onblur="pnBoxBlur()"
-      onkeydown="if((event.key==='Enter'||event.key==='Escape')&&!event.isComposing)this.blur()">
+      onkeydown="if((event.key==='Enter'||event.key==='Escape')&&!event.isComposing&&event.keyCode!==229)this.blur()">
   </div>`:''}
   ${calMode==='week'?renderWeekView(shouldShow):renderDayView()}
   ${calMode==='week'?renderDailyLogSection(weekDays):''}
@@ -876,7 +876,7 @@ function renderPrivateTodoSection(){
           +' style="width:100%;box-sizing:border-box;background:var(--surface);border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;min-height:30px;line-height:1.4;font-family:inherit;'+textStyle+'"'
           +' oninput="if(formulaBarState)formulaBarState.text=this.value"'
           +' onblur="pnBoxBlur()"'
-          +' onkeydown="if((event.key===\'Enter\'||event.key===\'Escape\')&&!event.isComposing)this.blur()"'
+          +' onkeydown="if((event.key===\'Enter\'||event.key===\'Escape\')&&!event.isComposing&&event.keyCode!==229)this.blur()"'
           +' onclick="event.stopPropagation()"'
           +'>';
       }else{
