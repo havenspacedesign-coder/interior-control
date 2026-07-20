@@ -337,7 +337,7 @@ const auth=getAuth(app);
 const provider=new GoogleAuthProvider();
 
 let currentUser=null,currentRole=null;
-let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{}};
+let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},taskAssignments:{}};
 const MEETING_ROWS=[
   {id:'meet1',name:'客戶會議/丈量'},
   {id:'meet2',name:'廠商會議'},
@@ -501,6 +501,11 @@ function initListeners(){
   onSnapshot(collection(db,'meetingLogs'),snap=>{
     S.meetingLogs={};
     snap.docs.forEach(d=>{S.meetingLogs[d.id]=d.data();});
+    if(activePanel==='progress')renderProgress();
+  });
+  onSnapshot(collection(db,'taskAssignments'),snap=>{
+    S.taskAssignments={};
+    snap.docs.forEach(d=>{S.taskAssignments[d.id]=d.data();});
     if(activePanel==='progress')renderProgress();
   });
   // Private notes: per user
@@ -887,7 +892,7 @@ function renderDailyLogSection(days){
   <div class="daily-section" style="margin-top:0;border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">
     <div class="daily-section-hdr">
       <span>每日施工日誌</span>
-      <span style="font-size:11px;color:var(--text2)">所有人可查看，各自填寫當天記事</span>
+      <span style="font-size:11px;color:var(--text2)">所有人可查看，各自填寫當天記事・下方小格可指派任務給別人</span>
     </div>
     <div style="overflow-x:auto">
     <table class="daily-log-table">
@@ -907,12 +912,210 @@ function renderDailyLogSection(days){
               onkeydown="if(event.key==='Tab'){event.preventDefault();this.blur()}"
               placeholder=""`:' readonly'}
             >${logVal}</textarea>
+            ${canEdit?renderTaskAssignBox(m.uid,ds):''}
           </td>`;}).join('')}
       </tr>`).join('')}
       </tbody>
     </table>
     </div>
   </div>`;
+}
+
+// Small "assign a task to someone else" box under your own daily-log cell.
+function renderTaskAssignBox(assignerUid,ds){
+  const key=assignerUid+'_'+ds;
+  const items=(S.taskAssignments[key]&&S.taskAssignments[key].items)||[];
+  const selIdx=(taskSelected[key]!=null)?taskSelected[key]:-1;
+  let h='<div style="margin-top:4px;border-top:1px dashed var(--border);padding-top:4px">';
+  if(items.length===0){
+    h+='<div class="task-chip" style="border:1.5px dashed var(--border);padding:4px 6px;border-radius:5px;font-size:11px;cursor:pointer;color:var(--text3)" onclick="tAdd(\''+assignerUid+'\',\''+ds+'\')">＋ 指派任務給別人</div>';
+  }else{
+    const item=items[0];
+    const targets=item.targets||[];
+    const isSel=selIdx===0;
+    const border=isSel?'2px solid var(--purple)':'1.5px solid var(--border)';
+    const dots=targets.map(function(uid){
+      const mm=S.members.find(function(x){return x.uid===uid;});
+      const nm=mm&&mm.name?mm.name:'?';
+      return'<span title="'+nm+'" style="width:14px;height:14px;border-radius:50%;background:var(--teal);color:#fff;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+nm.charAt(0)+'</span>';
+    }).join('');
+    if(isSel){
+      h+='<div class="task-chip" style="border:'+border+';padding:4px 6px;border-radius:5px;font-size:11px">'
+        +'<input type="text" class="pn-box-input task-chip" id="taskbox-'+assignerUid+'-'+ds+'-0" value="'+escAttr(item.text||'')+'" autocomplete="off" spellcheck="false"'
+        +' style="width:100%;box-sizing:border-box;border:none;padding:0;font-size:11px;line-height:1.4;font-family:inherit;background:transparent;color:inherit"'
+        +' onblur="tBoxBlur(this,\''+assignerUid+'\',\''+ds+'\',0)"'
+        +' onkeydown="if((event.key===\'Enter\'||event.key===\'Escape\')&&!event.isComposing&&event.keyCode!==229)this.blur()"'
+        +' onclick="event.stopPropagation()"'
+        +'>'
+        +'<div style="display:flex;gap:3px;align-items:center;margin-top:3px;flex-wrap:wrap">'+dots
+        +'<span class="task-tag-btn" onmouseenter="tOpenMentionPicker(event,\''+assignerUid+'\',\''+ds+'\',0)" onmouseleave="tScheduleCloseMention(\''+assignerUid+'\',\''+ds+'\')" onclick="event.stopPropagation()" style="font-size:9px;color:var(--teal);cursor:pointer;border:1px dashed var(--teal);border-radius:8px;padding:0 5px">+ 標記</span>'
+        +'<span onclick="event.stopPropagation();tDelete(\''+assignerUid+'\',\''+ds+'\',0)" style="font-size:9px;color:var(--text3);cursor:pointer;margin-left:2px">刪除</span>'
+        +'</div></div>';
+    }else{
+      h+='<div class="task-chip" style="border:'+border+';padding:4px 6px;border-radius:5px;font-size:11px;cursor:pointer;position:relative" onclick="tSelect(\''+assignerUid+'\',\''+ds+'\',0)">'
+        +escAttr(item.text||'')
+        +(dots?'<span style="position:absolute;top:2px;right:2px;display:flex;gap:2px">'+dots+'</span>':'')
+        +'</div>';
+    }
+  }
+  h+='<div class="pn-mention-menu" id="task-mention-'+assignerUid+'-'+ds+'" style="display:none" onmouseenter="mCancelCloseMention()" onmouseleave="tScheduleCloseMention(\''+assignerUid+'\',\''+ds+'\')"></div>';
+  h+='</div>';
+  return h;
+}
+
+window.tSelect=function(assignerUid,ds,idx){
+  taskSelGen++;
+  taskSelected={};
+  taskSelected[assignerUid+'_'+ds]=idx;
+  if(activePanel==='progress')renderProgress();
+}
+window.tAdd=async function(assignerUid,ds){
+  if(!currentUser||currentUser.uid!==assignerUid)return;
+  const key=assignerUid+'_'+ds;
+  const items=(S.taskAssignments[key]&&S.taskAssignments[key].items)?[...S.taskAssignments[key].items]:[];
+  if(items.length>=1)return;
+  items.push({text:'',targets:[]});
+  setSyncing();
+  await setDoc(doc(db,'taskAssignments',key),{assignerUid,date:ds,items,updatedAt:serverTimestamp()});
+  setSynced();
+  taskSelGen++;
+  taskSelected={};
+  taskSelected[key]=0;
+  if(activePanel==='progress')renderProgress();
+  setTimeout(function(){
+    const inp=document.getElementById('taskbox-'+assignerUid+'-'+ds+'-0');
+    if(inp)inp.focus();
+  },50);
+}
+window.tDelete=async function(assignerUid,ds,idx){
+  if(!currentUser||currentUser.uid!==assignerUid)return;
+  const key=assignerUid+'_'+ds;
+  const items=(S.taskAssignments[key]&&S.taskAssignments[key].items)?[...S.taskAssignments[key].items]:[];
+  const removed=items[idx];
+  items.splice(idx,1);
+  taskSelected={};
+  setSyncing();
+  await setDoc(doc(db,'taskAssignments',key),{assignerUid,date:ds,items,updatedAt:serverTimestamp()});
+  if(removed&&removed.targets&&removed.targets.length){
+    for(const uid of removed.targets){
+      await tRemoveFromDailyLog(assignerUid,ds,idx,uid);
+    }
+  }
+  setSynced();
+}
+function tMentionMenuHTML(assignerUid,ds,idx){
+  const key=assignerUid+'_'+ds;
+  const items=(S.taskAssignments[key]&&S.taskAssignments[key].items)||[];
+  const item=items[idx]||{};
+  const targets=item.targets||[];
+  return S.members.filter(function(m){return m.uid!==assignerUid;}).map(function(m){
+    const checked=targets.indexOf(m.uid)>=0;
+    return'<div onmousedown="event.preventDefault();tToggleMention(\''+assignerUid+'\',\''+ds+'\','+idx+',\''+m.uid+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">'
+      +'<span>'+(checked?'☑':'☐')+'</span><span>'+(m.name||'')+'</span></div>';
+  }).join('');
+}
+window.tScheduleCloseMention=function(assignerUid,ds){
+  clearTimeout(mCloseTimer);
+  mCloseTimer=setTimeout(function(){
+    const menuEl=document.getElementById('task-mention-'+assignerUid+'-'+ds);
+    if(menuEl)menuEl.style.display='none';
+    if(pendingProgressRender&&activePanel==='progress')renderProgress();
+  },250);
+}
+window.tOpenMentionPicker=function(e,assignerUid,ds,idx){
+  clearTimeout(mCloseTimer);
+  const menuEl=document.getElementById('task-mention-'+assignerUid+'-'+ds);
+  if(!menuEl)return;
+  const rect=e.currentTarget.getBoundingClientRect();
+  menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:200px;overflow-y:auto';
+  menuEl.innerHTML=tMentionMenuHTML(assignerUid,ds,idx);
+}
+window.tToggleMention=async function(assignerUid,ds,idx,uid){
+  if(!currentUser||currentUser.uid!==assignerUid)return;
+  const key=assignerUid+'_'+ds;
+  const items=(S.taskAssignments[key]&&S.taskAssignments[key].items)?[...S.taskAssignments[key].items]:[];
+  if(idx<0||idx>=items.length)return;
+  const targets=(items[idx].targets||[]).slice();
+  const pos=targets.indexOf(uid);
+  const adding=pos<0;
+  if(adding)targets.push(uid);else targets.splice(pos,1);
+  items[idx]=Object.assign({},items[idx],{targets});
+  S.taskAssignments=Object.assign({},S.taskAssignments);
+  S.taskAssignments[key]=Object.assign({},S.taskAssignments[key],{items});
+  setSyncing();
+  await setDoc(doc(db,'taskAssignments',key),{assignerUid,date:ds,items,updatedAt:serverTimestamp()});
+  setSynced();
+  if(adding)await tSyncDailyLog(assignerUid,ds,idx,uid,items[idx].text||'');
+  else await tRemoveFromDailyLog(assignerUid,ds,idx,uid);
+  const menuEl=document.getElementById('task-mention-'+assignerUid+'-'+ds);
+  if(menuEl&&menuEl.style.display==='block')menuEl.innerHTML=tMentionMenuHTML(assignerUid,ds,idx);
+}
+window.tBoxBlur=function(el,assignerUid,ds,idx){tSaveBox(el,assignerUid,ds,idx);}
+window.tSaveBox=async function(el,assignerUid,ds,idx){
+  if(!currentUser||currentUser.uid!==assignerUid||!el)return;
+  const text=el.value;
+  const key=assignerUid+'_'+ds;
+  const items=(S.taskAssignments[key]&&S.taskAssignments[key].items)?[...S.taskAssignments[key].items]:[];
+  while(items.length<=idx)items.push({text:'',targets:[]});
+  items[idx]=Object.assign({},items[idx],{text});
+  setSyncing();
+  await setDoc(doc(db,'taskAssignments',key),{assignerUid,date:ds,items,updatedAt:serverTimestamp()});
+  const targets=items[idx].targets||[];
+  for(const uid of targets){
+    await tSyncDailyLog(assignerUid,ds,idx,uid,text);
+  }
+  setSynced();
+  const gen=taskSelGen;
+  setTimeout(function(){
+    if(taskSelGen===gen){
+      taskSelected={};
+      if(activePanel==='progress')renderProgress();
+    }
+  },150);
+}
+// Same line-tracking trick as the meeting rows, but namespaced with a
+// "task:" prefix so it can never collide with a meeting row's tracking key
+// on the same person's daily log.
+async function tSyncDailyLog(assignerUid,ds,idx,uid,newText){
+  const m=S.members.find(x=>x.uid===uid);
+  if(!m)return;
+  const logKey=`${m.uid}_${ds}`;
+  const cur=S.dailyLogs[logKey]||{};
+  const autoLines=Object.assign({},cur.autoLines||{});
+  const trackKey='task:'+assignerUid+'_'+idx;
+  const oldLine=autoLines[trackKey];
+  let lines=(cur.text||'').split('\n').filter(l=>l!=='');
+  if(oldLine!=null){
+    const pos=lines.indexOf(oldLine);
+    if(pos>=0)lines[pos]=newText;else lines.push(newText);
+  }else{
+    lines.push(newText);
+  }
+  autoLines[trackKey]=newText;
+  try{
+    await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,updatedAt:serverTimestamp()});
+  }catch(err){
+    console.error('無法自動寫入 '+m.name+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
+  }
+}
+async function tRemoveFromDailyLog(assignerUid,ds,idx,uid){
+  const m=S.members.find(x=>x.uid===uid);
+  if(!m)return;
+  const logKey=`${m.uid}_${ds}`;
+  const cur=S.dailyLogs[logKey]||{};
+  const autoLines=Object.assign({},cur.autoLines||{});
+  const trackKey='task:'+assignerUid+'_'+idx;
+  const oldLine=autoLines[trackKey];
+  if(oldLine==null)return;
+  let lines=(cur.text||'').split('\n').filter(l=>l!=='');
+  const pos=lines.indexOf(oldLine);
+  if(pos>=0)lines.splice(pos,1);
+  delete autoLines[trackKey];
+  try{
+    await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,updatedAt:serverTimestamp()});
+  }catch(err){
+    console.error('無法自動移除 '+m.name+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
+  }
 }
 
 window.saveDailyLog=async function(uid,ds,text){
@@ -922,6 +1125,7 @@ window.saveDailyLog=async function(uid,ds,text){
   await setDoc(doc(db,'dailyLogs',key),{uid,date:ds,text,updatedAt:serverTimestamp()});
   setSynced();
 }
+
 
 // ── Fixed meeting rows (客戶會議/丈量・廠商會議・丈量・其他) under the site
 // table — same chip interaction as 工地記事 (select/edit/color/drag), plus a
@@ -1247,6 +1451,8 @@ var meetingSelected={};
 var meetingSelGen=0;
 var meetingDragSrc=null;
 var meetingMentionActive=null;
+var taskSelected={};
+var taskSelGen=0;
 var pnMentionActive=null; // {type,ds,idx}
 
 window.pnInput=function(e,type,ds,idx){
@@ -1451,6 +1657,12 @@ document.addEventListener('keydown',function(e){
   if(mkeys.length){
     var mk=mkeys[0];var mparts=mk.split('|');
     mDelete(mparts[0],mparts[1],meetingSelected[mk]);
+    return;
+  }
+  var tkeys=Object.keys(taskSelected).filter(function(k){return taskSelected[k]>=0;});
+  if(tkeys.length){
+    var tk=tkeys[0];var us=tk.indexOf('_');
+    tDelete(tk.substring(0,us),tk.substring(us+1),taskSelected[tk]);
   }
 });
 // Clicking anywhere that's not a note chip (and not the top bar) always
@@ -1460,13 +1672,16 @@ document.addEventListener('click',function(e){
   if(!e.target.closest('.pn-mention-menu')){
     document.querySelectorAll('.pn-mention-menu').forEach(function(el){el.style.display='none';});
   }
-  if(e.target.closest('.pn-chip')||e.target.closest('.meet-chip')||e.target.closest('.formula-bar'))return;
+  if(e.target.closest('.pn-chip')||e.target.closest('.meet-chip')||e.target.closest('.task-chip')||e.target.closest('.formula-bar'))return;
   var changed=false;
   if(S.privateSelected&&Object.keys(S.privateSelected).some(function(k){return S.privateSelected[k]>=0;})){
     S.privateSelected={};changed=true;
   }
   if(meetingSelected&&Object.keys(meetingSelected).some(function(k){return meetingSelected[k]>=0;})){
     meetingSelected={};changed=true;
+  }
+  if(taskSelected&&Object.keys(taskSelected).some(function(k){return taskSelected[k]>=0;})){
+    taskSelected={};changed=true;
   }
   if(changed&&activePanel==='progress')renderProgress();
 });
