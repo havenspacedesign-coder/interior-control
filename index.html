@@ -668,10 +668,13 @@ window.startColResize=function(e,projId,ci){
 var pendingProgressRender=false;
 function renderProgress(){
   var af=document.activeElement;
-  if(af&&(af.classList&&af.classList.contains('pn-box-input')||af.id==='pn-formula-input')){
-    // User is actively typing in a private note — skip this re-render so
-    // background updates (other data changing) don't wipe out what they're
-    // typing. We'll catch up once they're done (see pnBoxBlur).
+  var menuOpen=false;
+  document.querySelectorAll('.pn-mention-menu').forEach(function(el){if(el.style.display==='block')menuOpen=true;});
+  if((af&&(af.classList&&af.classList.contains('pn-box-input')||af.id==='pn-formula-input'))||menuOpen){
+    // User is actively typing in a private note, or has a tag-picker menu
+    // open — skip this re-render so background updates (other data
+    // changing) don't wipe out what they're doing. We'll catch up once
+    // they're done (see pnBoxBlur / mScheduleCloseMention).
     pendingProgressRender=true;
     return;
   }
@@ -962,10 +965,16 @@ window.mDelete=async function(rowId,ds,idx){
   if(!currentUser)return;
   const key=rowId+'_'+ds;
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
+  const removed=items[idx];
   items.splice(idx,1);
   meetingSelected={};
   setSyncing();
   await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
+  if(removed&&removed.mentions&&removed.mentions.length){
+    for(const uid of removed.mentions){
+      await mRemoveFromDailyLog(rowId,ds,idx,uid);
+    }
+  }
   setSynced();
 }
 window.mDragStart=function(e,rowId,ds,idx){
@@ -998,35 +1007,39 @@ window.mDrop=async function(e,toRowId,toDs){
   meetingDragSrc=null;
   setSynced();
 }
-// Tag-people picker (replaces the old inline @typing mention) — click "+ 標記"
-// to open a checklist of members; tagging pushes the entry into that
-// member's own daily log.
+// Tag-people picker (replaces the old inline @typing mention) — hover "+ 標記"
+// to open a checklist of members; tagging pushes the entry's own text into
+// that member's daily log, and untagging removes exactly that line again.
 var mCloseTimer=null;
 window.mScheduleCloseMention=function(rowId,ds){
   clearTimeout(mCloseTimer);
   mCloseTimer=setTimeout(function(){
     const menuEl=document.getElementById('meet-mention-'+rowId+'-'+ds);
     if(menuEl)menuEl.style.display='none';
+    if(pendingProgressRender&&activePanel==='progress')renderProgress();
   },250);
 }
 window.mCancelCloseMention=function(){
   clearTimeout(mCloseTimer);
 }
-window.mOpenMentionPicker=function(e,rowId,ds,idx){
-  clearTimeout(mCloseTimer);
-  const menuEl=document.getElementById('meet-mention-'+rowId+'-'+ds);
-  if(!menuEl)return;
+function mMentionMenuHTML(rowId,ds,idx){
   const key=rowId+'_'+ds;
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)||[];
   const item=items[idx]||{};
   const mentions=item.mentions||[];
-  const rect=e.currentTarget.getBoundingClientRect();
-  menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:200px;overflow-y:auto';
-  menuEl.innerHTML=S.members.map(function(m){
+  return S.members.map(function(m){
     const checked=mentions.indexOf(m.uid)>=0;
     return'<div onmousedown="event.preventDefault();mToggleMention(\''+rowId+'\',\''+ds+'\','+idx+',\''+m.uid+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">'
       +'<span>'+(checked?'☑':'☐')+'</span><span>'+(m.name||'')+'</span></div>';
   }).join('');
+}
+window.mOpenMentionPicker=function(e,rowId,ds,idx){
+  clearTimeout(mCloseTimer);
+  const menuEl=document.getElementById('meet-mention-'+rowId+'-'+ds);
+  if(!menuEl)return;
+  const rect=e.currentTarget.getBoundingClientRect();
+  menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:200px;overflow-y:auto';
+  menuEl.innerHTML=mMentionMenuHTML(rowId,ds,idx);
 }
 window.mToggleMention=async function(rowId,ds,idx,uid){
   if(!currentUser)return;
@@ -1038,26 +1051,60 @@ window.mToggleMention=async function(rowId,ds,idx,uid){
   const adding=pos<0;
   if(adding)mentions.push(uid);else mentions.splice(pos,1);
   items[idx]=Object.assign({},items[idx],{mentions});
+  S.meetingLogs=Object.assign({},S.meetingLogs);
+  S.meetingLogs[key]=Object.assign({},S.meetingLogs[key],{items});
   setSyncing();
   await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
   setSynced();
-  if(adding)await mPushToDailyLog(rowId,ds,items[idx].text||'',uid);
-  if(activePanel==='progress')renderProgress(); // closes the picker; click "+ 標記" again to tag more
+  if(adding)await mSyncDailyLog(rowId,ds,idx,uid,items[idx].text||'');
+  else await mRemoveFromDailyLog(rowId,ds,idx,uid);
+  // Refresh just the checklist (keep it open) instead of a full re-render,
+  // so tagging several people doesn't require re-hovering each time.
+  const menuEl=document.getElementById('meet-mention-'+rowId+'-'+ds);
+  if(menuEl&&menuEl.style.display==='block')menuEl.innerHTML=mMentionMenuHTML(rowId,ds,idx);
 }
-async function mPushToDailyLog(rowId,ds,text,uid){
+// Upsert this meeting entry's own text as one line in the member's daily
+// log, remembering exactly which line came from this entry (so editing the
+// text later replaces the same line, and untagging removes the same line).
+async function mSyncDailyLog(rowId,ds,idx,uid,newText){
   const m=S.members.find(x=>x.uid===uid);
   if(!m)return;
-  const row=MEETING_ROWS.find(r=>r.id===rowId);
-  const rowName=row?row.name:'';
   const logKey=`${m.uid}_${ds}`;
-  const existing=(S.dailyLogs[logKey]&&S.dailyLogs[logKey].text)||'';
-  const note=`[${rowName}] ${text}`;
-  if(existing.includes(note))return;
-  const merged=existing?existing+'\n'+note:note;
+  const cur=S.dailyLogs[logKey]||{};
+  const autoLines=Object.assign({},cur.autoLines||{});
+  const trackKey=rowId+'_'+idx;
+  const oldLine=autoLines[trackKey];
+  let lines=(cur.text||'').split('\n').filter(l=>l!=='');
+  if(oldLine!=null){
+    const pos=lines.indexOf(oldLine);
+    if(pos>=0)lines[pos]=newText;else lines.push(newText);
+  }else{
+    lines.push(newText);
+  }
+  autoLines[trackKey]=newText;
   try{
-    await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:merged,updatedAt:serverTimestamp()});
+    await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,updatedAt:serverTimestamp()});
   }catch(err){
     console.error('無法自動寫入 '+m.name+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
+  }
+}
+async function mRemoveFromDailyLog(rowId,ds,idx,uid){
+  const m=S.members.find(x=>x.uid===uid);
+  if(!m)return;
+  const logKey=`${m.uid}_${ds}`;
+  const cur=S.dailyLogs[logKey]||{};
+  const autoLines=Object.assign({},cur.autoLines||{});
+  const trackKey=rowId+'_'+idx;
+  const oldLine=autoLines[trackKey];
+  if(oldLine==null)return;
+  let lines=(cur.text||'').split('\n').filter(l=>l!=='');
+  const pos=lines.indexOf(oldLine);
+  if(pos>=0)lines.splice(pos,1);
+  delete autoLines[trackKey];
+  try{
+    await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,updatedAt:serverTimestamp()});
+  }catch(err){
+    console.error('無法自動移除 '+m.name+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
   }
 }
 window.mBoxBlur=function(el,rowId,ds,idx){mSaveBox(el,rowId,ds,idx);}
@@ -1073,7 +1120,7 @@ window.mSaveBox=async function(el,rowId,ds,idx){
   // keep already-tagged members' daily logs in sync with the latest text
   const mentions=items[idx].mentions||[];
   for(const uid of mentions){
-    await mPushToDailyLog(rowId,ds,text,uid);
+    await mSyncDailyLog(rowId,ds,idx,uid,text);
   }
   setSynced();
   const gen=meetingSelGen;
