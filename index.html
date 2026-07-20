@@ -337,7 +337,7 @@ const auth=getAuth(app);
 const provider=new GoogleAuthProvider();
 
 let currentUser=null,currentRole=null;
-let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{}};
+let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},customRows:[],customRowLogs:{}};
 let activePanel='overview',calMode='week',weekOffset=0,selectedTag=null;
 let activeBibleStage=null,activeBibleWs=null,bibleView='edit',dragSrc=null,dragModeOn=false;
 let openPicker=null;
@@ -490,6 +490,15 @@ function initListeners(){
   onSnapshot(collection(db,'dailyLogs'),snap=>{
     S.dailyLogs={};
     snap.docs.forEach(d=>{S.dailyLogs[d.id]=d.data();});
+    if(activePanel==='progress')renderProgress();
+  });
+  onSnapshot(collection(db,'customRows'),snap=>{
+    S.customRows=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
+    if(activePanel==='progress')renderProgress();
+  });
+  onSnapshot(collection(db,'customRowLogs'),snap=>{
+    S.customRowLogs={};
+    snap.docs.forEach(d=>{S.customRowLogs[d.id]=d.data();});
     if(activePanel==='progress')renderProgress();
   });
   // Private notes: per user
@@ -770,6 +779,28 @@ function renderWeekView(shouldShow){
     </tr>
     <tr>${days.map(d=>renderCell(p,pi,d,1)).join('')}</tr>
   `).join('')}
+  ${S.customRows.map(row=>`
+    <tr>
+      <td class="site-hd" style="color:var(--text2);position:relative">
+        <span>${row.name}</span>
+        <button onclick="deleteCustomRow('${row.id}')" title="刪除這一列" style="position:absolute;top:2px;right:2px;border:none;background:none;color:var(--text3);cursor:pointer;font-size:12px;line-height:1">×</button>
+      </td>
+      ${days.map(d=>{
+        const ds=fmtDay(d);
+        const key=row.id+'_'+ds;
+        const val=(S.customRowLogs[key]&&S.customRowLogs[key].text)||'';
+        return`<td style="vertical-align:top;padding:4px;position:relative">
+          <textarea class="log-textarea" id="crlog-${row.id}-${ds}" placeholder="點此輸入…（打@可標記人員）"
+            oninput="crMentionCheck(this,'${row.id}','${ds}')"
+            onblur="saveCustomRowLog('${row.id}','${ds}',this.value)"
+          >${val}</textarea>
+          <div class="pn-mention-menu" id="cr-mention-${row.id}-${ds}" style="display:none"></div>
+        </td>`;}).join('')}
+    </tr>
+  `).join('')}
+  <tr><td colspan="${days.length+1}" style="padding:6px 4px">
+    <button class="btn btn-sm" onclick="addCustomRow()">＋ 新增列（例如：開會）</button>
+  </td></tr>
   </tbody></table></div>
   <div style="font-size:11px;color:var(--text2);margin-top:8px">色塊單擊=checklist；Ctrl+單擊=複製；雙擊白格=編輯</div>`;
 }
@@ -817,6 +848,89 @@ window.saveDailyLog=async function(uid,ds,text){
   const key=`${uid}_${ds}`;
   setSyncing();
   await setDoc(doc(db,'dailyLogs',key),{uid,date:ds,text,updatedAt:serverTimestamp()});
+  setSynced();
+}
+
+// ── Custom rows (e.g. 開會) under the site table, with @member mention that
+// auto-copies the entry into that member's daily log for the same day ──
+window.addCustomRow=async function(){
+  if(!currentUser)return;
+  const name=(prompt('新列名稱（例如：開會）')||'').trim();
+  if(!name)return;
+  setSyncing();
+  await addDoc(collection(db,'customRows'),{name,order:S.customRows.length,createdAt:serverTimestamp()});
+  setSynced();
+}
+window.deleteCustomRow=async function(rowId){
+  if(!currentUser)return;
+  if(!confirm('確定要刪除這一列嗎？裡面填寫的內容也會一併刪除。'))return;
+  setSyncing();
+  await deleteDoc(doc(db,'customRows',rowId));
+  setSynced();
+}
+var crMentionActive=null; // {rowId,ds,atIdx}
+window.crMentionCheck=function(el,rowId,ds){
+  const val=el.value||'';
+  const pos=el.selectionStart||0;
+  const textBefore=val.substring(0,pos);
+  const atIdx=textBefore.lastIndexOf('@');
+  const menuEl=document.getElementById('cr-mention-'+rowId+'-'+ds);
+  if(!menuEl)return;
+  if(atIdx>=0&&textBefore.indexOf(' ',atIdx)<0&&textBefore.indexOf('\n',atIdx)<0){
+    const q=textBefore.substring(atIdx+1).toLowerCase();
+    const matches=S.members.filter(m=>(m.name||'').toLowerCase().includes(q));
+    if(matches.length){
+      crMentionActive={rowId,ds,atIdx};
+      const rect=el.getBoundingClientRect();
+      menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:180px;overflow-y:auto';
+      menuEl.innerHTML=matches.map(m=>'<div style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)" onmousedown="crInsertMention(event,\''+rowId+'\',\''+ds+'\',\''+(m.name||'').replace(/'/g,"\\'")+'\')">'+(m.name||'')+'</div>').join('');
+      return;
+    }
+  }
+  menuEl.style.display='none';
+  crMentionActive=null;
+}
+window.crInsertMention=function(e,rowId,ds,memberName){
+  e.preventDefault();
+  const el=document.getElementById('crlog-'+rowId+'-'+ds);
+  const menuEl=document.getElementById('cr-mention-'+rowId+'-'+ds);
+  if(menuEl)menuEl.style.display='none';
+  crMentionActive=null;
+  if(!el)return;
+  const val=el.value;
+  const pos=el.selectionStart||val.length;
+  const textBefore=val.substring(0,pos);
+  const atIdx=textBefore.lastIndexOf('@');
+  if(atIdx>=0){
+    const newVal=val.substring(0,atIdx)+'@'+memberName+' '+val.substring(pos);
+    el.value=newVal;
+    const newPos=atIdx+('@'+memberName+' ').length;
+    el.setSelectionRange(newPos,newPos);
+  }
+  el.focus();
+}
+window.saveCustomRowLog=async function(rowId,ds,text){
+  if(!currentUser)return;
+  const key=rowId+'_'+ds;
+  setSyncing();
+  await setDoc(doc(db,'customRowLogs',key),{rowId,date:ds,text,updatedAt:serverTimestamp()});
+  // @member mentions: push a copy into that member's own daily log for the same day
+  const row=S.customRows.find(r=>r.id===rowId);
+  const rowName=row?row.name:'';
+  const mentioned=S.members.filter(m=>m.name&&text.includes('@'+m.name));
+  for(const m of mentioned){
+    const logKey=`${m.uid}_${ds}`;
+    const existing=(S.dailyLogs[logKey]&&S.dailyLogs[logKey].text)||'';
+    const note=`[${rowName}] ${text}`;
+    if(!existing.includes(note)){
+      const merged=existing?existing+'\n'+note:note;
+      try{
+        await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:merged,updatedAt:serverTimestamp()});
+      }catch(err){
+        console.error('無法自動寫入 '+m.name+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
+      }
+    }
+  }
   setSynced();
 }
 
