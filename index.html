@@ -1023,9 +1023,9 @@ window.pnEdit=function(type,ds,idx){
   var text=items[idx]?items[idx].text||'':'';
   updateFormulaBar(type,ds,idx,text);
   renderProgress();
-  // Focus formula bar
+  // Focus the in-place box (also usable via the top bar, synced)
   setTimeout(function(){
-    var inp=document.getElementById('pn-formula-input');
+    var inp=document.getElementById('pnbox-'+type+'-'+ds+'-'+idx);
     if(inp){inp.focus();var l=inp.value.length;inp.setSelectionRange(l,l);}
   },50);
 }
@@ -1057,10 +1057,11 @@ window.pnAdd=async function(type,ds){
   S.privateSelected={};
   S.privateSelected[type+'|'+ds]=newIdx;
   updateFormulaBar(type,ds,newIdx,'');
+  renderProgress();
   setTimeout(function(){
-    var inp=document.getElementById('pn-formula-input');
-    if(inp){inp.focus();}
-  },300);
+    var inp=document.getElementById('pnbox-'+type+'-'+ds+'-'+newIdx);
+    if(inp)inp.focus();
+  },50);
 }
 window.pnDelete=async function(type,ds,idx){
   if(!currentUser)return;
