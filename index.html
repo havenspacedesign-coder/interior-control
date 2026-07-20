@@ -774,13 +774,6 @@ function renderWeekView(shouldShow){
   </th>`;}).join('')}
   </tr></thead>
   <tbody>
-  ${projs.map((p,pi)=>`
-    <tr>
-      <td class="site-hd" style="color:${tc(pi)}" rowspan="2">${p.name}${p.status==='done'?`<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">完工</span>`:''}</td>
-      ${days.map(d=>renderCell(p,pi,d,0)).join('')}
-    </tr>
-    <tr>${days.map(d=>renderCell(p,pi,d,1)).join('')}</tr>
-  `).join('')}
   ${(function(){
     var MCOLS=[
       {c:'',bg:'#e8e5e0',l:'無'},
@@ -812,7 +805,7 @@ function renderWeekView(shouldShow){
       +'</span>';
     var hdr='<tr><td colspan="'+(days.length+1)+'" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:2px solid #1a1a1a">'
       +'🗓 會議 / 其他事項'+mColorBar
-      +'<span style="font-size:11px;color:var(--text3);margin-left:10px;font-weight:400">單擊選取上色・雙擊編輯・打@標記人員(自動同步進對方每日日誌)・Ctrl+拖拉複製・Delete刪除</span>'
+      +'<span style="font-size:11px;color:var(--text3);margin-left:10px;font-weight:400">單擊選取上色・雙擊編輯・點「+標記」可標記人員(自動同步進對方每日日誌)・Ctrl+拖拉複製・Delete刪除</span>'
       +'</td></tr>';
     var rows=MEETING_ROWS.map(function(row){
       var rh='<tr><td class="site-hd" style="color:var(--text2)">'+row.name+'</td>';
@@ -824,29 +817,43 @@ function renderWeekView(shouldShow){
         var selKey=row.id+'|'+ds;
         var selIdx=(meetingSelected[selKey]!=null)?meetingSelected[selKey]:-1;
         var h='<td style="vertical-align:top;padding:4px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'" ondragover="event.preventDefault()" ondrop="mDrop(event,\''+row.id+'\',\''+ds+'\')">';
-        items.forEach(function(item,i){
+        if(items.length===0){
+          h+='<div class="meet-chip" style="border:1.5px dashed var(--border);padding:6px 8px;border-radius:5px;font-size:12px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;color:var(--text3)"'
+            +' onclick="mAdd(\''+row.id+'\',\''+ds+'\')">點此輸入…</div>';
+        }else{
+          var item=items[0];
           var color=item.color||'';var bg=item.bg||'';
-          var isSel=selIdx===i;
+          var mentions=item.mentions||[];
+          var isSel=selIdx===0;
           var border=isSel?'2px solid var(--purple)':'1.5px solid var(--border)';
           var textStyle=(color?'color:'+color+';font-weight:500;':'color:var(--text);')+(bg?'background:'+bg+';':'background:var(--surface);');
+          var dots=mentions.map(function(uid){
+            var m=S.members.find(function(x){return x.uid===uid;});
+            var nm=m&&m.name?m.name:'?';
+            return'<span title="'+nm+'" style="width:14px;height:14px;border-radius:50%;background:var(--purple);color:#fff;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+nm.charAt(0)+'</span>';
+          }).join('');
           if(isSel){
-            h+='<input type="text" class="pn-box-input meet-chip" id="meetbox-'+row.id+'-'+ds+'-'+i+'" value="'+escAttr(item.text||'')+'" autocomplete="off" spellcheck="false"'
-              +' style="width:100%;box-sizing:border-box;border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;min-height:30px;line-height:1.4;font-family:inherit;'+textStyle+'"'
-              +' oninput="mMentionCheck(this,\''+row.id+'\',\''+ds+'\')"'
-              +' onblur="mBoxBlur(this,\''+row.id+'\',\''+ds+'\','+i+')"'
+            h+='<div style="border:'+border+';padding:6px 8px;border-radius:5px;'+textStyle+'">'
+              +'<input type="text" class="pn-box-input meet-chip" id="meetbox-'+row.id+'-'+ds+'-0" value="'+escAttr(item.text||'')+'" autocomplete="off" spellcheck="false"'
+              +' style="width:100%;box-sizing:border-box;border:none;padding:0;font-size:12px;line-height:1.4;font-family:inherit;background:transparent;color:inherit"'
+              +' onblur="mBoxBlur(this,\''+row.id+'\',\''+ds+'\',0)"'
               +' onkeydown="if((event.key===\'Enter\'||event.key===\'Escape\')&&!event.isComposing&&event.keyCode!==229)this.blur()"'
               +' onclick="event.stopPropagation()"'
-              +'>';
+              +'>'
+              +'<div style="display:flex;gap:3px;align-items:center;margin-top:4px;flex-wrap:wrap">'+dots
+              +'<span class="meet-tag-btn" onmousedown="event.preventDefault();event.stopPropagation();mOpenMentionPicker(event,\''+row.id+'\',\''+ds+'\',0)" style="font-size:10px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:9px;padding:1px 6px">+ 標記</span>'
+              +'</div></div>';
           }else{
-            h+='<div class="meet-chip" style="border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;position:relative;'+textStyle+'"'
-              +' onclick="mSelect(\''+row.id+'\',\''+ds+'\','+i+')"'
+            h+='<div class="meet-chip" style="border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;position:relative;'+textStyle+'"'
+              +' onclick="mSelect(\''+row.id+'\',\''+ds+'\',0)"'
               +' draggable="true"'
-              +' ondragstart="mDragStart(event,\''+row.id+'\',\''+ds+'\','+i+')"'
-              +'>'+escAttr(item.text||'')+'</div>';
+              +' ondragstart="mDragStart(event,\''+row.id+'\',\''+ds+'\',0)"'
+              +'>'+escAttr(item.text||'')
+              +(dots?'<span style="position:absolute;top:2px;right:2px;display:flex;gap:2px">'+dots+'</span>':'')
+              +'</div>';
           }
-        });
+        }
         h+='<div class="pn-mention-menu" id="meet-mention-'+row.id+'-'+ds+'" style="display:none"></div>';
-        h+='<button style="font-size:12px;padding:6px 8px;border:1px dashed var(--border);background:none;cursor:pointer;color:var(--text3);width:100%;text-align:left;margin-top:2px;border-radius:5px;font-family:inherit;min-height:30px" onclick="mAdd(\''+row.id+'\',\''+ds+'\')">＋ 新增</button>';
         h+='</td>';
         return h;
       }).join('');
@@ -855,6 +862,13 @@ function renderWeekView(shouldShow){
     }).join('');
     return hdr+rows;
   })()}
+  ${projs.map((p,pi)=>`
+    <tr>
+      <td class="site-hd" style="color:${tc(pi)}" rowspan="2">${p.name}${p.status==='done'?`<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">完工</span>`:''}</td>
+      ${days.map(d=>renderCell(p,pi,d,0)).join('')}
+    </tr>
+    <tr>${days.map(d=>renderCell(p,pi,d,1)).join('')}</tr>
+  `).join('')}
   </tbody></table></div>
   <div style="font-size:11px;color:var(--text2);margin-top:8px">色塊單擊=checklist；Ctrl+單擊=複製；雙擊白格=編輯</div>`;
 }
@@ -919,17 +933,17 @@ window.mAdd=async function(rowId,ds){
   if(!currentUser)return;
   const key=rowId+'_'+ds;
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
-  items.push({text:'',color:'',bg:''});
+  if(items.length>=1)return; // one entry per cell
+  items.push({text:'',color:'',bg:'',mentions:[]});
   setSyncing();
   await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
   setSynced();
-  const newIdx=items.length-1;
   meetingSelGen++;
   meetingSelected={};
-  meetingSelected[rowId+'|'+ds]=newIdx;
+  meetingSelected[rowId+'|'+ds]=0;
   if(activePanel==='progress')renderProgress();
   setTimeout(function(){
-    const inp=document.getElementById('meetbox-'+rowId+'-'+ds+'-'+newIdx);
+    const inp=document.getElementById('meetbox-'+rowId+'-'+ds+'-0');
     if(inp)inp.focus();
   },50);
 }
@@ -966,12 +980,13 @@ window.mDrop=async function(e,toRowId,toDs){
   if(!from)from=meetingDragSrc;
   if(!from||!currentUser)return;
   if(from.rowId===toRowId&&from.ds===toDs){meetingDragSrc=null;return;}
+  const toKey=toRowId+'_'+toDs;
+  const toItems=(S.meetingLogs[toKey]&&S.meetingLogs[toKey].items)?[...S.meetingLogs[toKey].items]:[];
+  if(toItems.length>=1){meetingDragSrc=null;return;} // target cell already has an entry
   const fromKey=from.rowId+'_'+from.ds;
   const fromItems=(S.meetingLogs[fromKey]&&S.meetingLogs[fromKey].items)?[...S.meetingLogs[fromKey].items]:[];
   const item=fromItems[from.idx];
   if(!item){meetingDragSrc=null;return;}
-  const toKey=toRowId+'_'+toDs;
-  const toItems=(S.meetingLogs[toKey]&&S.meetingLogs[toKey].items)?[...S.meetingLogs[toKey].items]:[];
   toItems.push(Object.assign({},item));
   setSyncing();
   await setDoc(doc(db,'meetingLogs',toKey),{rowId:toRowId,date:toDs,items:toItems,updatedAt:serverTimestamp()});
@@ -982,46 +997,55 @@ window.mDrop=async function(e,toRowId,toDs){
   meetingDragSrc=null;
   setSynced();
 }
-window.mMentionCheck=function(el,rowId,ds){
-  const val=el.value||'';
-  const pos=el.selectionStart||0;
-  const textBefore=val.substring(0,pos);
-  const atIdx=textBefore.lastIndexOf('@');
+// Tag-people picker (replaces the old inline @typing mention) — click "+ 標記"
+// to open a checklist of members; tagging pushes the entry into that
+// member's own daily log.
+window.mOpenMentionPicker=function(e,rowId,ds,idx){
   const menuEl=document.getElementById('meet-mention-'+rowId+'-'+ds);
   if(!menuEl)return;
-  if(atIdx>=0&&textBefore.indexOf(' ',atIdx)<0&&textBefore.indexOf('\n',atIdx)<0){
-    const q=textBefore.substring(atIdx+1).toLowerCase();
-    const matches=S.members.filter(m=>(m.name||'').toLowerCase().includes(q));
-    if(matches.length){
-      meetingMentionActive={rowId,ds,atIdx};
-      const rect=el.getBoundingClientRect();
-      menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:180px;overflow-y:auto';
-      menuEl.innerHTML=matches.map(m=>'<div style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)" onmousedown="mInsertMention(event,\''+rowId+'\',\''+ds+'\',\''+(m.name||'').replace(/'/g,"\\'")+'\')">'+(m.name||'')+'</div>').join('');
-      return;
-    }
-  }
-  menuEl.style.display='none';
-  meetingMentionActive=null;
+  const key=rowId+'_'+ds;
+  const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)||[];
+  const item=items[idx]||{};
+  const mentions=item.mentions||[];
+  const rect=e.currentTarget.getBoundingClientRect();
+  menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:200px;overflow-y:auto';
+  menuEl.innerHTML=S.members.map(function(m){
+    const checked=mentions.indexOf(m.uid)>=0;
+    return'<div onmousedown="event.preventDefault();mToggleMention(\''+rowId+'\',\''+ds+'\','+idx+',\''+m.uid+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">'
+      +'<span>'+(checked?'☑':'☐')+'</span><span>'+(m.name||'')+'</span></div>';
+  }).join('');
 }
-window.mInsertMention=function(e,rowId,ds,memberName){
-  e.preventDefault();
-  const idx=meetingSelected[rowId+'|'+ds];
-  const el=document.getElementById('meetbox-'+rowId+'-'+ds+'-'+idx);
-  const menuEl=document.getElementById('meet-mention-'+rowId+'-'+ds);
-  if(menuEl)menuEl.style.display='none';
-  meetingMentionActive=null;
-  if(!el)return;
-  const val=el.value;
-  const pos=el.selectionStart||val.length;
-  const textBefore=val.substring(0,pos);
-  const atIdx=textBefore.lastIndexOf('@');
-  if(atIdx>=0){
-    const newVal=val.substring(0,atIdx)+'@'+memberName+' '+val.substring(pos);
-    el.value=newVal;
-    const newPos=atIdx+('@'+memberName+' ').length;
-    el.setSelectionRange(newPos,newPos);
+window.mToggleMention=async function(rowId,ds,idx,uid){
+  if(!currentUser)return;
+  const key=rowId+'_'+ds;
+  const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
+  if(idx<0||idx>=items.length)return;
+  const mentions=(items[idx].mentions||[]).slice();
+  const pos=mentions.indexOf(uid);
+  const adding=pos<0;
+  if(adding)mentions.push(uid);else mentions.splice(pos,1);
+  items[idx]=Object.assign({},items[idx],{mentions});
+  setSyncing();
+  await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
+  setSynced();
+  if(adding)await mPushToDailyLog(rowId,ds,items[idx].text||'',uid);
+  if(activePanel==='progress')renderProgress(); // closes the picker; click "+ 標記" again to tag more
+}
+async function mPushToDailyLog(rowId,ds,text,uid){
+  const m=S.members.find(x=>x.uid===uid);
+  if(!m)return;
+  const row=MEETING_ROWS.find(r=>r.id===rowId);
+  const rowName=row?row.name:'';
+  const logKey=`${m.uid}_${ds}`;
+  const existing=(S.dailyLogs[logKey]&&S.dailyLogs[logKey].text)||'';
+  const note=`[${rowName}] ${text}`;
+  if(existing.includes(note))return;
+  const merged=existing?existing+'\n'+note:note;
+  try{
+    await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:merged,updatedAt:serverTimestamp()});
+  }catch(err){
+    console.error('無法自動寫入 '+m.name+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
   }
-  el.focus();
 }
 window.mBoxBlur=function(el,rowId,ds,idx){mSaveBox(el,rowId,ds,idx);}
 window.mSaveBox=async function(el,rowId,ds,idx){
@@ -1029,26 +1053,14 @@ window.mSaveBox=async function(el,rowId,ds,idx){
   const text=el.value;
   const key=rowId+'_'+ds;
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
-  while(items.length<=idx)items.push({text:'',color:'',bg:''});
+  while(items.length<=idx)items.push({text:'',color:'',bg:'',mentions:[]});
   items[idx]=Object.assign({},items[idx],{text});
   setSyncing();
   await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
-  // @member mentions: push a copy into that member's own daily log for the same day
-  const row=MEETING_ROWS.find(r=>r.id===rowId);
-  const rowName=row?row.name:'';
-  const mentioned=S.members.filter(m=>m.name&&text.includes('@'+m.name));
-  for(const m of mentioned){
-    const logKey=`${m.uid}_${ds}`;
-    const existing=(S.dailyLogs[logKey]&&S.dailyLogs[logKey].text)||'';
-    const note=`[${rowName}] ${text}`;
-    if(!existing.includes(note)){
-      const merged=existing?existing+'\n'+note:note;
-      try{
-        await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:merged,updatedAt:serverTimestamp()});
-      }catch(err){
-        console.error('無法自動寫入 '+m.name+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
-      }
-    }
+  // keep already-tagged members' daily logs in sync with the latest text
+  const mentions=items[idx].mentions||[];
+  for(const uid of mentions){
+    await mPushToDailyLog(rowId,ds,text,uid);
   }
   setSynced();
   const gen=meetingSelGen;
@@ -1385,6 +1397,9 @@ document.addEventListener('keydown',function(e){
 // clears the purple "selected" highlight, whether or not that chip was
 // ever actually focused for typing — keeps the highlight behavior consistent.
 document.addEventListener('click',function(e){
+  if(!e.target.closest('.pn-mention-menu')){
+    document.querySelectorAll('.pn-mention-menu').forEach(function(el){el.style.display='none';});
+  }
   if(e.target.closest('.pn-chip')||e.target.closest('.meet-chip')||e.target.closest('.formula-bar'))return;
   var changed=false;
   if(S.privateSelected&&Object.keys(S.privateSelected).some(function(k){return S.privateSelected[k]>=0;})){
