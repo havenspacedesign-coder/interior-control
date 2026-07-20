@@ -819,7 +819,7 @@ function renderWeekView(shouldShow){
         var h='<td style="vertical-align:top;padding:4px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'" ondragover="event.preventDefault()" ondrop="mDrop(event,\''+row.id+'\',\''+ds+'\')">';
         if(items.length===0){
           h+='<div class="meet-chip" style="border:1.5px dashed var(--border);padding:6px 8px;border-radius:5px;font-size:12px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;color:var(--text3)"'
-            +' onclick="mAdd(\''+row.id+'\',\''+ds+'\')">點此輸入…</div>';
+            +' onclick="mAdd(\''+row.id+'\',\''+ds+'\')"></div>';
         }else{
           var item=items[0];
           var color=item.color||'';var bg=item.bg||'';
@@ -841,7 +841,7 @@ function renderWeekView(shouldShow){
               +' onclick="event.stopPropagation()"'
               +'>'
               +'<div style="display:flex;gap:3px;align-items:center;margin-top:4px;flex-wrap:wrap">'+dots
-              +'<span class="meet-tag-btn" onmousedown="event.preventDefault();event.stopPropagation();mOpenMentionPicker(event,\''+row.id+'\',\''+ds+'\',0)" style="font-size:10px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:9px;padding:1px 6px">+ 標記</span>'
+              +'<span class="meet-tag-btn" onmouseenter="mOpenMentionPicker(event,\''+row.id+'\',\''+ds+'\',0)" onmouseleave="mScheduleCloseMention(\''+row.id+'\',\''+ds+'\')" onclick="event.stopPropagation()" style="font-size:10px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:9px;padding:1px 6px">+ 標記</span>'
               +'</div></div>';
           }else{
             h+='<div class="meet-chip" style="border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;position:relative;'+textStyle+'"'
@@ -853,7 +853,7 @@ function renderWeekView(shouldShow){
               +'</div>';
           }
         }
-        h+='<div class="pn-mention-menu" id="meet-mention-'+row.id+'-'+ds+'" style="display:none"></div>';
+        h+='<div class="pn-mention-menu" id="meet-mention-'+row.id+'-'+ds+'" style="display:none" onmouseenter="mCancelCloseMention()" onmouseleave="mScheduleCloseMention(\''+row.id+'\',\''+ds+'\')"></div>';
         h+='</td>';
         return h;
       }).join('');
@@ -862,6 +862,7 @@ function renderWeekView(shouldShow){
     }).join('');
     return hdr+rows;
   })()}
+  <tr><td colspan="${days.length+1}" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:3px solid #1a1a1a">🏗 工地進度</td></tr>
   ${projs.map((p,pi)=>`
     <tr>
       <td class="site-hd" style="color:${tc(pi)}" rowspan="2">${p.name}${p.status==='done'?`<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">完工</span>`:''}</td>
@@ -901,7 +902,7 @@ function renderDailyLogSection(days){
             <textarea class="log-textarea${isT?' today':''}"
               ${canEdit?`onblur="saveDailyLog('${m.uid}','${ds}',this.value)"
               onkeydown="if(event.key==='Tab'){event.preventDefault();this.blur()}"
-              placeholder="${canEdit?'點此輸入…':''}"`:' readonly'}
+              placeholder=""`:' readonly'}
             >${logVal}</textarea>
           </td>`;}).join('')}
       </tr>`).join('')}
@@ -1000,7 +1001,19 @@ window.mDrop=async function(e,toRowId,toDs){
 // Tag-people picker (replaces the old inline @typing mention) — click "+ 標記"
 // to open a checklist of members; tagging pushes the entry into that
 // member's own daily log.
+var mCloseTimer=null;
+window.mScheduleCloseMention=function(rowId,ds){
+  clearTimeout(mCloseTimer);
+  mCloseTimer=setTimeout(function(){
+    const menuEl=document.getElementById('meet-mention-'+rowId+'-'+ds);
+    if(menuEl)menuEl.style.display='none';
+  },250);
+}
+window.mCancelCloseMention=function(){
+  clearTimeout(mCloseTimer);
+}
 window.mOpenMentionPicker=function(e,rowId,ds,idx){
+  clearTimeout(mCloseTimer);
   const menuEl=document.getElementById('meet-mention-'+rowId+'-'+ds);
   if(!menuEl)return;
   const key=rowId+'_'+ds;
