@@ -681,9 +681,10 @@ function renderProgress(){
     </div>`:''}
   </div>
   ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
-  ${calMode==='week'?`<div class="formula-bar" id="pn-formula-bar">
-    <span class="formula-bar-label" id="pn-formula-label">工地記事</span>
-    <input class="formula-bar-input" id="pn-formula-input" placeholder="選取色塊後在此編輯…"
+  ${calMode==='week'?`<div class="formula-bar${formulaBarState?' active':''}" id="pn-formula-bar">
+    <span class="formula-bar-label" id="pn-formula-label">${formulaBarState?(formulaBarState.type==='work'?'工地記事':'私人記事')+' · '+formulaBarState.ds.slice(5).replace('-','/'):'工地記事'}</span>
+    <input class="formula-bar-input" id="pn-formula-input" placeholder="選取色塊後在此編輯…" value="${formulaBarState?escAttr(formulaBarState.text||''):''}"
+      oninput="if(formulaBarState)formulaBarState.text=this.value"
       onblur="formulaBarSave()"
       onkeydown="if(event.key==='Enter'||event.key==='Escape')this.blur()">
   </div>`:''}
@@ -1536,28 +1537,27 @@ window.setCalMode=function(m){calMode=m;renderProgress();}
 window.changeWeek=function(d){weekOffset+=d;renderProgress();}
 
 // Formula bar functions
-var formulaBarState=null; // {type,ds,idx}
+var formulaBarState=null; // {type,ds,idx,text}
+function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function updateFormulaBar(type,ds,idx,text){
+  formulaBarState=(type===null)?null:{type:type,ds:ds,idx:idx,text:text||''};
   var bar=document.getElementById('pn-formula-bar');
   var inp=document.getElementById('pn-formula-input');
   var lbl=document.getElementById('pn-formula-label');
   if(!bar||!inp)return;
-  if(type===null){
+  if(!formulaBarState){
     bar.classList.remove('active');
     inp.value='';
-    formulaBarState=null;
     return;
   }
   bar.classList.add('active');
   lbl.textContent=(type==='work'?'工地記事':'私人記事')+' · '+ds.slice(5).replace('-','/');
   inp.value=text||'';
-  formulaBarState={type,ds,idx};
 }
 window.formulaBarSave=async function(){
   if(!formulaBarState||!currentUser)return;
   var inp=document.getElementById('pn-formula-input');
-  if(!inp)return;
-  var text=inp.value;
+  var text=inp?inp.value:(formulaBarState.text||'');
   var{type,ds,idx}=formulaBarState;
   var pn=S.privateNotes||{work:{},personal:{}};
   var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
