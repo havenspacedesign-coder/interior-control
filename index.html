@@ -683,7 +683,7 @@ function renderProgress(){
   ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
   ${calMode==='week'?`<div class="formula-bar${formulaBarState?' active':''}" id="pn-formula-bar">
     <span class="formula-bar-label" id="pn-formula-label">${formulaBarState?(formulaBarState.type==='work'?'工地記事':'私人記事')+' · '+formulaBarState.ds.slice(5).replace('-','/'):'工地記事'}</span>
-    <input class="formula-bar-input" id="pn-formula-input" placeholder="選取色塊後在此編輯…" value="${formulaBarState?escAttr(formulaBarState.text||''):''}"
+    <input class="formula-bar-input" id="pn-formula-input" placeholder="選取色塊後在此編輯…" value="${formulaBarState?escAttr(formulaBarState.text||''):''}" autocomplete="off" spellcheck="false"
       oninput="if(formulaBarState)formulaBarState.text=this.value"
       onblur="pnBoxBlur()"
       onkeydown="if(event.key==='Enter'||event.key==='Escape')this.blur()">
@@ -872,7 +872,7 @@ function renderPrivateTodoSection(){
       var textStyle=color?'color:'+color+';font-weight:500':'color:var(--text)';
       // Chip height matches add button
       if(isSel){
-        h+='<input type="text" class="pn-box-input" id="pnbox-'+type+'-'+ds+'-'+i+'" value="'+escAttr(item.text||'')+'"'
+        h+='<input type="text" class="pn-box-input" id="pnbox-'+type+'-'+ds+'-'+i+'" value="'+escAttr(item.text||'')+'" autocomplete="off" spellcheck="false"'
           +' style="width:100%;box-sizing:border-box;background:var(--surface);border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;min-height:30px;line-height:1.4;font-family:inherit;'+textStyle+'"'
           +' oninput="if(formulaBarState)formulaBarState.text=this.value"'
           +' onblur="pnBoxBlur()"'
@@ -1553,7 +1553,8 @@ window.pnBoxBlur=function(){
   setTimeout(function(){
     if(selGen===gen){
       S.privateSelected={};
-      updateFormulaBar(null,null,null,null);
+      // formulaBarState is intentionally NOT cleared here — the top bar stays
+      // visible permanently, showing the last-edited entry, per user request.
       if(activePanel==='progress')renderProgress();
     }
   },150);
