@@ -654,7 +654,17 @@ window.startColResize=function(e,projId,ci){
 }
 
 // ── Progress ──
+var pendingProgressRender=false;
 function renderProgress(){
+  var af=document.activeElement;
+  if(af&&(af.classList&&af.classList.contains('pn-box-input')||af.id==='pn-formula-input')){
+    // User is actively typing in a private note — skip this re-render so
+    // background updates (other data changing) don't wipe out what they're
+    // typing. We'll catch up once they're done (see pnBoxBlur).
+    pendingProgressRender=true;
+    return;
+  }
+  pendingProgressRender=false;
   const el=$('panel-progress');
   const weekDays=getWeekDates();
   function shouldShow(p){
@@ -1010,10 +1020,8 @@ window.pnSelect=function(type,ds,idx){
   var text=items[idx]?items[idx].text||'':'';
   updateFormulaBar(type,ds,idx,text);
   renderProgress();
-  setTimeout(function(){
-    var inp=document.getElementById('pnbox-'+type+'-'+ds+'-'+idx);
-    if(inp){inp.focus();var l=inp.value.length;inp.setSelectionRange(l,l);}
-  },50);
+  // Single click only selects — cursor is not auto-placed, so a second
+  // (double) click is what actually starts typing, matching the old feel.
 }
 window.pnEdit=function(type,ds,idx){
   selGen++;
