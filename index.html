@@ -685,7 +685,7 @@ function renderProgress(){
     <span class="formula-bar-label" id="pn-formula-label">${formulaBarState?(formulaBarState.type==='work'?'工地記事':'私人記事')+' · '+formulaBarState.ds.slice(5).replace('-','/'):'工地記事'}</span>
     <input class="formula-bar-input" id="pn-formula-input" placeholder="選取色塊後在此編輯…" value="${formulaBarState?escAttr(formulaBarState.text||''):''}"
       oninput="if(formulaBarState)formulaBarState.text=this.value"
-      onblur="formulaBarSave()"
+      onblur="pnBoxBlur()"
       onkeydown="if(event.key==='Enter'||event.key==='Escape')this.blur()">
   </div>`:''}
   ${calMode==='week'?renderWeekView(shouldShow):renderDayView()}
@@ -875,7 +875,7 @@ function renderPrivateTodoSection(){
         h+='<input type="text" class="pn-box-input" id="pnbox-'+type+'-'+ds+'-'+i+'" value="'+escAttr(item.text||'')+'"'
           +' style="width:100%;box-sizing:border-box;background:var(--surface);border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;min-height:30px;line-height:1.4;font-family:inherit;'+textStyle+'"'
           +' oninput="if(formulaBarState)formulaBarState.text=this.value"'
-          +' onblur="formulaBarSave()"'
+          +' onblur="pnBoxBlur()"'
           +' onkeydown="if(event.key===\'Enter\'||event.key===\'Escape\')this.blur()"'
           +' onclick="event.stopPropagation()"'
           +'>';
@@ -1001,6 +1001,7 @@ window.pnSaveBlur=async function(type,ds,idx){
 }
 
 window.pnSelect=function(type,ds,idx){
+  selGen++;
   S.privateSelected={};
   S.privateSelected[type+'|'+ds]=idx;
   S.privateEditing=null;
@@ -1015,6 +1016,7 @@ window.pnSelect=function(type,ds,idx){
   },50);
 }
 window.pnEdit=function(type,ds,idx){
+  selGen++;
   S.privateSelected={};
   S.privateSelected[type+'|'+ds]=idx;
   S.privateEditing=null; // No inline edit - use formula bar
@@ -1054,6 +1056,7 @@ window.pnAdd=async function(type,ds){
   await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
   setSynced();
   var newIdx=items.length-1;
+  selGen++;
   S.privateSelected={};
   S.privateSelected[type+'|'+ds]=newIdx;
   updateFormulaBar(type,ds,newIdx,'');
@@ -1542,7 +1545,19 @@ window.changeWeek=function(d){weekOffset+=d;renderProgress();}
 
 // Formula bar functions
 var formulaBarState=null; // {type,ds,idx,text}
+var selGen=0;
 function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+window.pnBoxBlur=function(){
+  formulaBarSave();
+  var gen=selGen;
+  setTimeout(function(){
+    if(selGen===gen){
+      S.privateSelected={};
+      updateFormulaBar(null,null,null,null);
+      if(activePanel==='progress')renderProgress();
+    }
+  },150);
+}
 function updateFormulaBar(type,ds,idx,text){
   formulaBarState=(type===null)?null:{type:type,ds:ds,idx:idx,text:text||''};
   var bar=document.getElementById('pn-formula-bar');
@@ -1560,8 +1575,7 @@ function updateFormulaBar(type,ds,idx,text){
 }
 window.formulaBarSave=async function(){
   if(!formulaBarState||!currentUser)return;
-  var inp=document.getElementById('pn-formula-input');
-  var text=inp?inp.value:(formulaBarState.text||'');
+  var text=formulaBarState.text||'';
   var{type,ds,idx}=formulaBarState;
   var pn=S.privateNotes||{work:{},personal:{}};
   var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
