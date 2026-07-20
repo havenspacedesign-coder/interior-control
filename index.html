@@ -882,7 +882,7 @@ function renderPrivateTodoSection(){
       var textStyle=color?'color:'+color+';font-weight:500':'color:var(--text)';
       // Chip height matches add button
       if(isSel){
-        h+='<input type="text" class="pn-box-input" id="pnbox-'+type+'-'+ds+'-'+i+'" value="'+escAttr(item.text||'')+'" autocomplete="off" spellcheck="false"'
+        h+='<input type="text" class="pn-box-input pn-chip" id="pnbox-'+type+'-'+ds+'-'+i+'" value="'+escAttr(item.text||'')+'" autocomplete="off" spellcheck="false"'
           +' style="width:100%;box-sizing:border-box;background:var(--surface);border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;min-height:30px;line-height:1.4;font-family:inherit;'+textStyle+'"'
           +' oninput="if(formulaBarState)formulaBarState.text=this.value"'
           +' onblur="pnBoxBlur(this,\''+type+'\',\''+ds+'\','+i+')"'
@@ -890,7 +890,7 @@ function renderPrivateTodoSection(){
           +' onclick="event.stopPropagation()"'
           +'>';
       }else{
-        h+='<div style="background:var(--surface);border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;position:relative;'+textStyle+'"'
+        h+='<div class="pn-chip" style="background:var(--surface);border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;position:relative;'+textStyle+'"'
           +' onclick="pnSelect(\''+type+'\',\''+ds+'\','+i+')"'
           +' draggable="true"'
           +' ondragstart="pnDragStart(event,\''+type+'\',\''+ds+'\','+i+')"'
@@ -1130,7 +1130,16 @@ document.addEventListener('keydown',function(e){
   var k=keys[0];var parts=k.split('|');
   pnDelete(parts[0],parts[1],sel[k]);
 });
-// (formula bar / selection now stays open until a different chip is selected — no longer auto-hidden on outside click)
+// Clicking anywhere that's not a note chip (and not the top bar) always
+// clears the purple "selected" highlight, whether or not that chip was
+// ever actually focused for typing — keeps the highlight behavior consistent.
+document.addEventListener('click',function(e){
+  if(e.target.closest('.pn-chip')||e.target.closest('.formula-bar'))return;
+  if(S.privateSelected&&Object.keys(S.privateSelected).some(function(k){return S.privateSelected[k]>=0;})){
+    S.privateSelected={};
+    if(activePanel==='progress')renderProgress();
+  }
+});
 
 async function savePrivateNoteData(){
   if(!currentUser)return;
