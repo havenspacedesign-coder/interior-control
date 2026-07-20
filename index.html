@@ -134,6 +134,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .wtbl th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
 .wtbl td{padding:3px;border:1px solid var(--border);vertical-align:top;background:var(--surface)}
 .wtbl td.ev-cell{height:50px;overflow:visible}
+.formula-bar{display:none;align-items:center;gap:8px;padding:5px 10px;background:var(--bg);border:1px solid var(--border);border-bottom:2px solid var(--purple);margin-bottom:8px;border-radius:var(--r)}
+.formula-bar.active{display:flex}
+.formula-bar-label{font-size:11px;color:var(--text2);white-space:nowrap;min-width:80px}
+.formula-bar-input{flex:1;border:none;background:transparent;font-size:13px;font-family:inherit;outline:none;color:var(--text)}
 .wtbl td.tc{background:#faf9ff}
 .wtbl th.th-t{color:var(--purple);font-weight:600}
 .site-hd{background:var(--bg)!important;font-size:12px;font-weight:500;padding:8px 10px!important;vertical-align:middle;width:100px;position:sticky;left:0;z-index:5;border-right:2px solid var(--border)}
@@ -673,6 +677,12 @@ function renderProgress(){
     </div>`:''}
   </div>
   ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
+  ${calMode==='week'?`<div class="formula-bar" id="pn-formula-bar">
+    <span class="formula-bar-label" id="pn-formula-label">工地記事</span>
+    <input class="formula-bar-input" id="pn-formula-input" placeholder="選取色塊後在此編輯…"
+      onblur="formulaBarSave()"
+      onkeydown="if(event.key==='Enter'||event.key==='Escape')this.blur()">
+  </div>`:''}
   ${calMode==='week'?renderWeekView(shouldShow):renderDayView()}
   ${calMode==='week'?renderDailyLogSection(weekDays):''}
   ${renderPrivateTodoSection()}`;
@@ -724,7 +734,18 @@ function renderWeekView(shouldShow){
   return`${hint}<div class="wtbl-wrap"><table class="wtbl">
   <thead><tr>
     <th class="site-hd" style="width:100px">工地</th>
-    ${days.map(d=>{const isT=isSameDay(d,td);return`<th class="${isT?'th-t':''}">${d.getMonth()+1}/${d.getDate()}<br><span style="font-weight:400;font-size:10px">週${WD[d.getDay()]}</span></th>`;}).join('')}
+    ${days.map(d=>{
+  const isT=isSameDay(d,td);
+  const ds2=fmtDay(d);
+  const dow=d.getDay();
+  const isWknd=dow===0||dow===6;
+  const dc=S.dateColors[ds2]||{};
+  const dateColor=dc.color||(isWknd?'var(--red)':'');
+  const dateNote=dc.note||'';
+  return`<th class="${isT?'th-t':''}" style="${dateColor?'color:'+dateColor:''};cursor:pointer" onclick="openDateColorPicker('${ds2}')" title="${dateNote||'點擊設定顏色/備註'}">
+    ${d.getMonth()+1}/${d.getDate()}${dateNote?`<br><span style="font-size:9px;font-weight:400">${dateNote}</span>`:''}
+    <br><span style="font-weight:400;font-size:10px">週${WD[d.getDay()]}</span>
+  </th>`;}).join('')}
   </tr></thead>
   <tbody>
   ${projs.map((p,pi)=>`
@@ -851,17 +872,10 @@ function renderPrivateTodoSection(){
         +' draggable="true"'
         +' ondragstart="pnDragStart(event,\''+type+'\',\''+ds+'\','+i+')"'
         +'>';
-      if(isEdit){
-        h+='<div style="position:relative">'
-          +'<input type="text" id="pne-'+type+'-'+ds+'-'+i+'" value="'+(item.text||'').replace(/"/g,'&quot;')+'" placeholder="" style="border:none;background:transparent;font-size:12px;font-family:inherit;width:100%;color:inherit;outline:none;min-height:18px" '
-          +'onblur="pnSaveBlur(\''+type+'\',\''+ds+'\','+i+')" '
-          +'onkeydown="pnKeyDown(event,\''+type+'\',\''+ds+'\','+i+')" '
-          +'oninput="pnInput(event,\''+type+'\',\''+ds+'\','+i+')">'
-          +'<div id="pn-mention-'+type+'-'+ds+'-'+i+'" style="display:none;position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:180px;overflow-y:auto"></div>'
-          +'</div>'
-      }else{
-        h+=renderText(item.text||'');
+      if(false){ // formula bar replaces inline edit
+        h+=''
       }
+      h+=renderText(item.text||'');
       h+='</div>';
     });
     h+='<button style="font-size:12px;padding:6px 8px;border:1px dashed var(--border);background:none;cursor:pointer;color:var(--text3);width:100%;text-align:left;margin-top:2px;border-radius:5px;font-family:inherit;min-height:30px" onclick="pnAdd(\''+type+'\',\''+ds+'\')">＋ 新增</button>';
@@ -979,17 +993,26 @@ window.pnSelect=function(type,ds,idx){
   S.privateSelected={};
   S.privateSelected[type+'|'+ds]=idx;
   S.privateEditing=null;
+  var pn=S.privateNotes||{work:{},personal:{}};
+  var items=(pn[type]&&pn[type][ds])||[];
+  var text=items[idx]?items[idx].text||'':'';
+  updateFormulaBar(type,ds,idx,text);
   renderProgress();
 }
 window.pnEdit=function(type,ds,idx){
   S.privateSelected={};
   S.privateSelected[type+'|'+ds]=idx;
-  S.privateEditing={type:type,ds:ds,idx:idx};
+  S.privateEditing=null; // No inline edit - use formula bar
+  var pn=S.privateNotes||{work:{},personal:{}};
+  var items=(pn[type]&&pn[type][ds])||[];
+  var text=items[idx]?items[idx].text||'':'';
+  updateFormulaBar(type,ds,idx,text);
   renderProgress();
+  // Focus formula bar
   setTimeout(function(){
-    var inp=document.getElementById('pne-'+type+'-'+ds+'-'+idx);
+    var inp=document.getElementById('pn-formula-input');
     if(inp){inp.focus();var l=inp.value.length;inp.setSelectionRange(l,l);}
-  },30);
+  },50);
 }
 window.pnSetColor=async function(type,ds,idx,color){
   if(!currentUser)return;
@@ -1015,7 +1038,14 @@ window.pnAdd=async function(type,ds){
   setSyncing();
   await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
   setSynced();
-  setTimeout(function(){pnEdit(type,ds,items.length-1);},200);
+  var newIdx=items.length-1;
+  S.privateSelected={};
+  S.privateSelected[type+'|'+ds]=newIdx;
+  updateFormulaBar(type,ds,newIdx,'');
+  setTimeout(function(){
+    var inp=document.getElementById('pn-formula-input');
+    if(inp){inp.focus();}
+  },300);
 }
 window.pnDelete=async function(type,ds,idx){
   if(!currentUser)return;
@@ -1074,9 +1104,10 @@ document.addEventListener('keydown',function(e){
   pnDelete(parts[0],parts[1],sel[k]);
 });
 document.addEventListener('click',function(e){
-  if(e.target.closest('.private-section'))return;
+  if(e.target.closest('.private-section')||e.target.closest('.formula-bar'))return;
   if(S.privateSelected&&Object.keys(S.privateSelected).some(function(k){return S.privateSelected[k]>=0;})){
     S.privateSelected={};S.privateEditing=null;
+    updateFormulaBar(null,null,null,null);
     if(activePanel==='progress')renderProgress();
   }
 });
@@ -1499,6 +1530,83 @@ window.deleteProject=async function(id){
 }
 window.setCalMode=function(m){calMode=m;renderProgress();}
 window.changeWeek=function(d){weekOffset+=d;renderProgress();}
+
+// Formula bar functions
+var formulaBarState=null; // {type,ds,idx}
+function updateFormulaBar(type,ds,idx,text){
+  var bar=document.getElementById('pn-formula-bar');
+  var inp=document.getElementById('pn-formula-input');
+  var lbl=document.getElementById('pn-formula-label');
+  if(!bar||!inp)return;
+  if(type===null){
+    bar.classList.remove('active');
+    inp.value='';
+    formulaBarState=null;
+    return;
+  }
+  bar.classList.add('active');
+  lbl.textContent=(type==='work'?'工地記事':'私人記事')+' · '+ds.slice(5).replace('-','/');
+  inp.value=text||'';
+  formulaBarState={type,ds,idx};
+}
+window.formulaBarSave=async function(){
+  if(!formulaBarState||!currentUser)return;
+  var inp=document.getElementById('pn-formula-input');
+  if(!inp)return;
+  var text=inp.value;
+  var{type,ds,idx}=formulaBarState;
+  var pn=S.privateNotes||{work:{},personal:{}};
+  var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
+  while(items.length<=idx)items.push({text:'',color:''});
+  items[idx]=Object.assign({},items[idx],{text:text});
+  S.privateNotes=Object.assign({},pn);
+  S.privateNotes[type]=Object.assign({},pn[type]||{});
+  S.privateNotes[type][ds]=items;
+  S.privateEditing=null;
+  setSyncing();
+  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+  setSynced();
+}
+
+// Date color picker
+window.openDateColorPicker=function(ds){
+  if(!isAdmin())return;
+  var dc=S.dateColors[ds]||{};
+  $('mo-content').innerHTML=`<div class="mo-title">${ds.slice(5).replace('-','/')} 日期設定</div>
+    <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+      <div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px">顏色</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${[{c:'',l:'預設'},{c:'#E24B4A',l:'紅'},{c:'#EF9F27',l:'橘'},
+             {c:'#1D9E75',l:'綠'},{c:'#534AB7',l:'藍'},{c:'#9c9690',l:'灰'}].map(col=>
+            `<span onclick="document.getElementById('dcp-color').value='${col.c}';document.querySelectorAll('.dcp-dot').forEach(el=>el.style.outline='');this.style.outline='2px solid #333'"
+              class="dcp-dot" style="width:24px;height:24px;border-radius:50%;background:${col.c||'#e8e5e0'};cursor:pointer;display:inline-block;border:1.5px solid rgba(0,0,0,.2);${(dc.color||'')===col.c?'outline:2px solid #333':''}" title="${col.l}"></span>`
+          ).join('')}
+          <input type="color" style="width:28px;height:28px;border:none;cursor:pointer;border-radius:4px" value="${dc.color||'#E24B4A'}" oninput="document.getElementById('dcp-color').value=this.value">
+        </div>
+        <input type="hidden" id="dcp-color" value="${dc.color||''}">
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px">備註（如：中秋節、補班日）</div>
+        <input type="text" id="dcp-note" value="${dc.note||''}" placeholder="可不填">
+      </div>
+    </div>
+    <div class="mo-footer">
+      <button class="btn btn-danger btn-sm" onclick="saveDateColor('${ds}','','')">清除</button>
+      <button class="btn" onclick="closeMo()">取消</button>
+      <button class="btn btn-p" onclick="saveDateColor('${ds}',document.getElementById('dcp-color').value,document.getElementById('dcp-note').value)">儲存</button>
+    </div>`;
+  $('modal').style.display='flex';
+}
+window.saveDateColor=async function(ds,color,note){
+  var colors=Object.assign({},S.dateColors);
+  if(!color&&!note){delete colors[ds];}
+  else{colors[ds]={color:color||'',note:note||''};}
+  S.dateColors=colors;
+  setSyncing();
+  await setDoc(doc(db,'settings','dateColors'),{colors});
+  closeMo();setSynced();
+}
 </script>
 </body>
 </html>
