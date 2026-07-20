@@ -337,7 +337,7 @@ const auth=getAuth(app);
 const provider=new GoogleAuthProvider();
 
 let currentUser=null,currentRole=null;
-let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}}};
+let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{}};
 let activePanel='overview',calMode='week',weekOffset=0,selectedTag=null;
 let activeBibleStage=null,activeBibleWs=null,bibleView='edit',dragSrc=null,dragModeOn=false;
 let openPicker=null;
@@ -481,6 +481,10 @@ function initListeners(){
   onSnapshot(doc(db,'settings','designCols'),snap=>{
     designCols=snap.exists()?(snap.data().cols||DEFAULT_DESIGN_COLS):DEFAULT_DESIGN_COLS;
     renderActive();
+  });
+  onSnapshot(doc(db,'settings','dateColors'),snap=>{
+    S.dateColors=snap.exists()?(snap.data().colors||{}):{};
+    if(activePanel==='progress')renderProgress();
   });
   // Daily logs: shared, keyed by date
   onSnapshot(collection(db,'dailyLogs'),snap=>{
