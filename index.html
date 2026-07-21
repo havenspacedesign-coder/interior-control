@@ -776,8 +776,8 @@ function renderWeekView(shouldShow){
   const dateColor=dc.color||(isWknd?'var(--red)':'');
   const dateNote=dc.note||'';
   return`<th class="${isT?'th-t':''}" style="${dateColor?'color:'+dateColor:''};cursor:pointer" onclick="openDateColorPicker('${ds2}')" title="${dateNote||'點擊設定顏色/備註'}">
-    ${d.getMonth()+1}/${d.getDate()}${dateNote?`<br><span style="font-size:9px;font-weight:400">${dateNote}</span>`:''}
-    <br><span style="font-weight:400;font-size:10px">週${WD[d.getDay()]}</span>
+    ${d.getMonth()+1}/${d.getDate()}
+    <br><span style="font-weight:400;font-size:10px">週${WD[d.getDay()]}</span>${dateNote?`<br><span style="font-size:9px;font-weight:400">${dateNote}</span>`:''}
   </th>`;}).join('')}
   </tr></thead>
   <tbody>
@@ -840,15 +840,15 @@ function renderWeekView(shouldShow){
             return'<span title="'+nm+'" style="width:14px;height:14px;border-radius:50%;background:var(--purple);color:#fff;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+nm.charAt(0)+'</span>';
           }).join('');
           if(isSel){
-            h+='<div style="border:'+border+';padding:6px 8px;border-radius:5px;'+textStyle+'">'
+            h+='<div style="border:'+border+';padding:6px 8px;border-radius:5px;display:flex;align-items:center;gap:5px;'+textStyle+'">'
               +'<input type="text" class="pn-box-input meet-chip" id="meetbox-'+row.id+'-'+ds+'-0" value="'+escAttr(item.text||'')+'" autocomplete="off" spellcheck="false"'
-              +' style="width:100%;box-sizing:border-box;border:none;padding:0;font-size:12px;line-height:1.4;font-family:inherit;background:transparent;color:inherit"'
+              +' style="flex:1;min-width:0;box-sizing:border-box;border:none;padding:0;font-size:12px;line-height:1.4;font-family:inherit;background:transparent;color:inherit"'
               +' onblur="mBoxBlur(this,\''+row.id+'\',\''+ds+'\',0)"'
               +' onkeydown="if((event.key===\'Enter\'||event.key===\'Escape\')&&!event.isComposing&&event.keyCode!==229)this.blur()"'
               +' onclick="event.stopPropagation()"'
               +'>'
-              +'<div style="display:flex;gap:3px;align-items:center;margin-top:4px;flex-wrap:wrap">'+dots
-              +'<span class="meet-tag-btn" onmouseenter="mOpenMentionPicker(event,\''+row.id+'\',\''+ds+'\',0)" onmouseleave="mScheduleCloseMention(\''+row.id+'\',\''+ds+'\')" onclick="event.stopPropagation()" style="font-size:10px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:9px;padding:1px 6px">+ 標記</span>'
+              +'<div style="display:flex;gap:3px;align-items:center;flex-shrink:0">'+dots
+              +'<span class="meet-tag-btn" onmouseenter="mOpenMentionPicker(event,\''+row.id+'\',\''+ds+'\',0)" onmouseleave="mScheduleCloseMention(\''+row.id+'\',\''+ds+'\')" onclick="event.stopPropagation()" style="font-size:10px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:9px;padding:1px 6px;white-space:nowrap">+ 標記</span>'
               +'</div></div>';
           }else{
             h+='<div class="meet-chip" style="border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;position:relative;'+textStyle+'"'
