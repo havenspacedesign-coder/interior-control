@@ -893,7 +893,6 @@ function renderDailyLogSection(days){
       <span>每日施工日誌</span>
       ${renderTaskAssignForm()}
     </div>
-    ${renderTaskAssignList()}
     <div style="overflow-x:auto">
     <table class="daily-log-table">
       <colgroup><col style="width:100px">${days.map(()=>'<col>').join('')}</colgroup>
@@ -906,12 +905,14 @@ function renderDailyLogSection(days){
           const logKey=`${m.uid}_${ds}`;
           const logVal=S.dailyLogs[logKey]?.text||'';
           const canEdit=currentUser&&m.uid===currentUser.uid;
-          return`<td style="${isT?'background:#faf9ff':''}">
+          const myTask=(S.taskList||[]).find(t=>t.date===ds&&(t.targets||[]).includes(m.uid)&&currentUser&&t.createdBy===currentUser.uid);
+          return`<td style="${isT?'background:#faf9ff':''};position:relative">
             <textarea class="log-textarea${isT?' today':''}"
               ${canEdit?`onblur="saveDailyLog('${m.uid}','${ds}',this.value)"
               onkeydown="if(event.key==='Tab'){event.preventDefault();this.blur()}"
               placeholder=""`:' readonly'}
             >${logVal}</textarea>
+            ${myTask?`<span onclick="tRemoveTarget('${myTask.id}','${m.uid}')" title="移除指派給${m.name||''}的任務：${escAttr(myTask.text||'')}" style="position:absolute;top:3px;right:3px;cursor:pointer;color:var(--text3);font-weight:700;font-size:11px;background:#fff;border:1px solid var(--border);border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;line-height:1">×</span>`:''}
           </td>`;}).join('')}
       </tr>`).join('')}
       </tbody>
@@ -928,31 +929,16 @@ function renderDailyLogSection(days){
 // task is deleted.
 function renderTaskAssignForm(){
   const dots=tNewTargetsDotsHTML();
-  return`<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400">
-    <span style="color:var(--text2)">指派任務：</span>
-    <input type="date" id="task-new-date" style="font-size:12px;padding:3px 5px;border:1px solid var(--border);border-radius:5px;font-family:inherit">
-    <input type="text" id="task-new-text" placeholder="任務內容…" style="font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;width:140px;font-family:inherit">
-    <span id="task-new-dots" style="display:inline-flex;gap:2px">${dots}</span>
-    <span class="task-tag-btn" onmouseenter="tNewOpenPicker(event)" onmouseleave="tNewScheduleClose()" style="font-size:11px;color:var(--teal);cursor:pointer;border:1px dashed var(--teal);border-radius:9px;padding:1px 7px">+ 標記</span>
-    <button onclick="tSubmitNew()" style="font-size:12px;padding:3px 10px;border:none;border-radius:5px;background:var(--purple);color:#fff;cursor:pointer">送出</button>
+  return`<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400;flex-wrap:nowrap">
+    <span style="color:var(--text2);white-space:nowrap;flex-shrink:0">指派任務：</span>
+    <input type="date" id="task-new-date" style="font-size:12px;padding:3px 5px;border:1px solid var(--border);border-radius:5px;font-family:inherit;flex-shrink:0">
+    <input type="text" id="task-new-text" placeholder="任務內容…" style="font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;width:140px;font-family:inherit;flex-shrink:0">
+    <span id="task-new-dots" style="display:inline-flex;gap:2px;flex-shrink:0">${dots}</span>
+    <span class="task-tag-btn" onmouseenter="tNewOpenPicker(event)" onmouseleave="tNewScheduleClose()" style="font-size:11px;color:var(--teal);cursor:pointer;border:1px dashed var(--teal);border-radius:9px;padding:1px 7px;white-space:nowrap;flex-shrink:0">+ 標記</span>
+    <button onclick="tSubmitNew()" style="font-size:12px;padding:3px 10px;border:none;border-radius:5px;background:var(--purple);color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0">送出</button>
     <div class="pn-mention-menu" id="task-new-mention" style="display:none" onmouseenter="mCancelCloseMention()" onmouseleave="tNewScheduleClose()"></div>
   </div>`;
 }
-function renderTaskAssignList(){
-  const list=(S.taskList||[]).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  if(!list.length)return'';
-  return`<div style="padding:8px 16px;font-size:12px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;background:var(--bg)">
-    ${list.map(t=>{
-      const names=(t.targets||[]).map(uid=>{const m=S.members.find(x=>x.uid===uid);return m?m.name:'?';}).join('、');
-      const canDelete=currentUser&&t.createdBy===currentUser.uid;
-      return`<span style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:3px 9px;display:inline-flex;align-items:center;gap:5px">
-        <b>${(t.date||'').slice(5)}</b> ${escAttr(t.text||'')} → ${names}
-        ${canDelete?`<span onclick="tDeleteTask('${t.id}')" style="cursor:pointer;color:var(--text3);font-weight:700">×</span>`:''}
-      </span>`;
-    }).join('')}
-  </div>`;
-}
-
 var tNewTargets=[];
 function tNewTargetsDotsHTML(){
   return tNewTargets.map(function(uid){
@@ -1011,17 +997,18 @@ window.tSubmitNew=async function(){
   tNewTargets=[];
   if(activePanel==='progress')renderProgress();
 }
-window.tDeleteTask=async function(taskId){
+window.tRemoveTarget=async function(taskId,uid){
   if(!currentUser)return;
   const t=(S.taskList||[]).find(x=>x.id===taskId);
   if(!t||t.createdBy!==currentUser.uid)return;
+  const newTargets=(t.targets||[]).filter(x=>x!==uid);
   setSyncing();
-  await deleteDoc(doc(db,'taskAssignments',taskId));
-  if(t.targets&&t.targets.length){
-    for(const uid of t.targets){
-      await tRemoveFromDailyLog(taskId,uid,t.date);
-    }
+  if(newTargets.length===0){
+    await deleteDoc(doc(db,'taskAssignments',taskId));
+  }else{
+    await setDoc(doc(db,'taskAssignments',taskId),{text:t.text,date:t.date,targets:newTargets,createdBy:t.createdBy,createdAt:t.createdAt||serverTimestamp()});
   }
+  await tRemoveFromDailyLog(taskId,uid,t.date);
   setSynced();
 }
 async function tSyncDailyLog(taskId,uid,ds,newText){
