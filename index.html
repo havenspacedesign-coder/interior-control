@@ -929,9 +929,13 @@ function renderDailyLogSection(days){
 // task is deleted.
 function renderTaskAssignForm(){
   const dots=tNewTargetsDotsHTML();
+  const td=today();
+  const monthLabel=(td.getMonth()+1)+'月';
   return`<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400;flex-wrap:nowrap">
     <span style="color:var(--text2);white-space:nowrap;flex-shrink:0">指派任務：</span>
-    <input type="date" id="task-new-date" style="font-size:12px;padding:3px 5px;border:1px solid var(--border);border-radius:5px;font-family:inherit;flex-shrink:0">
+    <span style="color:var(--text2);white-space:nowrap;flex-shrink:0">${monthLabel}</span>
+    <input type="number" id="task-new-day" min="1" max="31" placeholder="幾日" style="font-size:12px;padding:3px 5px;border:1px solid var(--border);border-radius:5px;font-family:inherit;flex-shrink:0;width:52px">
+    <span style="color:var(--text2);white-space:nowrap;flex-shrink:0">日</span>
     <input type="text" id="task-new-text" placeholder="任務內容…" style="font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;width:140px;font-family:inherit;flex-shrink:0">
     <span id="task-new-dots" style="display:inline-flex;gap:2px;flex-shrink:0">${dots}</span>
     <span class="task-tag-btn" onmouseenter="tNewOpenPicker(event)" onmouseleave="tNewScheduleClose()" style="font-size:11px;color:var(--teal);cursor:pointer;border:1px dashed var(--teal);border-radius:9px;padding:1px 7px;white-space:nowrap;flex-shrink:0">+ 標記</span>
@@ -979,20 +983,23 @@ window.tNewScheduleClose=function(){
 }
 window.tSubmitNew=async function(){
   if(!currentUser)return;
-  const dateInp=document.getElementById('task-new-date');
+  const dayInp=document.getElementById('task-new-day');
   const textInp=document.getElementById('task-new-text');
-  const dateVal=dateInp?dateInp.value:'';
+  const dayVal=dayInp?parseInt(dayInp.value,10):NaN;
   const textVal=textInp?textInp.value.trim():'';
-  if(!dateVal||!textVal||!tNewTargets.length){
-    alert('請選日期、填寫任務內容，並至少標記一位人員');
+  if(!dayVal||dayVal<1||dayVal>31||!textVal||!tNewTargets.length){
+    alert('請輸入幾日、填寫任務內容，並至少標記一位人員');
     return;
   }
+  const td=today();
+  const dateVal=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0')+'-'+String(dayVal).padStart(2,'0');
   setSyncing();
   const ref=await addDoc(collection(db,'taskAssignments'),{text:textVal,date:dateVal,targets:tNewTargets.slice(),createdBy:currentUser.uid,createdAt:serverTimestamp()});
   for(const uid of tNewTargets){
     await tSyncDailyLog(ref.id,uid,dateVal,textVal);
   }
   setSynced();
+  if(dayInp)dayInp.value='';
   if(textInp)textInp.value='';
   tNewTargets=[];
   if(activePanel==='progress')renderProgress();
