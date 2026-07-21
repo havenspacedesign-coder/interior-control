@@ -337,7 +337,7 @@ const auth=getAuth(app);
 const provider=new GoogleAuthProvider();
 
 let currentUser=null,currentRole=null;
-let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},taskAssignments:{}};
+let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},taskList:[]};
 const MEETING_ROWS=[
   {id:'meet1',name:'客戶會議/丈量'},
   {id:'meet2',name:'廠商會議'},
@@ -504,8 +504,7 @@ function initListeners(){
     if(activePanel==='progress')renderProgress();
   });
   onSnapshot(collection(db,'taskAssignments'),snap=>{
-    S.taskAssignments={};
-    snap.docs.forEach(d=>{S.taskAssignments[d.id]=d.data();});
+    S.taskList=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(activePanel==='progress')renderProgress();
   });
   // Private notes: per user
@@ -890,17 +889,15 @@ function renderDailyLogSection(days){
   const WD=['日','一','二','三','四','五','六'];
   return`<div style="border-top:3px solid #1a1a1a;margin-top:0"></div>
   <div class="daily-section" style="margin-top:0;border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">
-    <div class="daily-section-hdr">
+    <div class="daily-section-hdr" style="flex-wrap:wrap;gap:10px;align-items:center">
       <span>每日施工日誌</span>
+      ${renderTaskAssignForm()}
     </div>
+    ${renderTaskAssignList()}
     <div style="overflow-x:auto">
     <table class="daily-log-table">
       <colgroup><col style="width:100px">${days.map(()=>'<col>').join('')}</colgroup>
       <tbody>
-      <tr>
-        <td class="log-name-cell">指派任務</td>
-        ${days.map(d=>renderTaskAssignCell(fmtDay(d))).join('')}
-      </tr>
       ${activeMembers.map(m=>`<tr>
         <td class="log-name-cell">${m.name||m.email?.split('@')[0]||'成員'}</td>
         ${days.map(d=>{
@@ -923,161 +920,117 @@ function renderDailyLogSection(days){
   </div>`;
 }
 
-// Independent "指派任務" row — anyone can add a task here and tag whoever
-// it's for; the task text is then mirrored into that person's own daily
-// log cell for the same day (and removed again if untagged/deleted).
-function renderTaskAssignCell(ds){
-  const items=(S.taskAssignments[ds]&&S.taskAssignments[ds].items)||[];
-  const selIdx=(taskSelected[ds]!=null)?taskSelected[ds]:-1;
-  let h='<td style="vertical-align:top;padding:4px;border:1px solid var(--border)">';
-  if(items.length===0){
-    h+='<div class="task-chip" style="border:1.5px dashed var(--border);padding:6px 8px;border-radius:5px;font-size:12px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;color:var(--text3)" onclick="tAdd(\''+ds+'\')">＋ 指派任務給別人</div>';
-  }else{
-    const item=items[0];
-    const targets=item.targets||[];
-    const isSel=selIdx===0;
-    const border=isSel?'2px solid var(--purple)':'1.5px solid var(--border)';
-    const dots=targets.map(function(uid){
-      const mm=S.members.find(function(x){return x.uid===uid;});
-      const nm=mm&&mm.name?mm.name:'?';
-      return'<span title="'+nm+'" style="width:14px;height:14px;border-radius:50%;background:var(--teal);color:#fff;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+nm.charAt(0)+'</span>';
-    }).join('');
-    if(isSel){
-      h+='<div style="border:'+border+';padding:6px 8px;border-radius:5px">'
-        +'<input type="text" class="pn-box-input task-chip" id="taskbox-'+ds+'-0" value="'+escAttr(item.text||'')+'" autocomplete="off" spellcheck="false"'
-        +' style="width:100%;box-sizing:border-box;border:none;padding:0;font-size:12px;line-height:1.4;font-family:inherit;background:transparent;color:inherit"'
-        +' onblur="tBoxBlur(this,\''+ds+'\',0)"'
-        +' onkeydown="if((event.key===\'Enter\'||event.key===\'Escape\')&&!event.isComposing&&event.keyCode!==229)this.blur()"'
-        +' onclick="event.stopPropagation()"'
-        +'>'
-        +'<div style="display:flex;gap:3px;align-items:center;margin-top:4px;flex-wrap:wrap">'+dots
-        +'<span class="task-tag-btn" onmouseenter="tOpenMentionPicker(event,\''+ds+'\',0)" onmouseleave="tScheduleCloseMention(\''+ds+'\')" onclick="event.stopPropagation()" style="font-size:10px;color:var(--teal);cursor:pointer;border:1px dashed var(--teal);border-radius:9px;padding:1px 6px">+ 標記</span>'
-        +'<span onclick="event.stopPropagation();tDelete(\''+ds+'\',0)" style="font-size:10px;color:var(--text3);cursor:pointer;margin-left:2px">刪除</span>'
-        +'</div></div>';
-    }else{
-      h+='<div class="task-chip" style="border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;position:relative" onclick="tSelect(\''+ds+'\',0)">'
-        +escAttr(item.text||'')
-        +(dots?'<span style="position:absolute;top:2px;right:2px;display:flex;gap:2px">'+dots+'</span>':'')
-        +'</div>';
-    }
-  }
-  h+='<div class="pn-mention-menu" id="task-mention-'+ds+'" style="display:none" onmouseenter="mCancelCloseMention()" onmouseleave="tScheduleCloseMention(\''+ds+'\')"></div>';
-  h+='</td>';
-  return h;
+// Standalone task-assignment form, next to the 每日施工日誌 title — pick a
+// date, write the task, tag whoever it's for, submit. Not tied to any one
+// week-view cell, since assigning happens rarely and can target any date
+// (this month or otherwise). The task text is mirrored into each tagged
+// person's own daily-log cell for that date, and removed again if the
+// task is deleted.
+function renderTaskAssignForm(){
+  const dots=tNewTargetsDotsHTML();
+  return`<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400">
+    <span style="color:var(--text2)">指派任務：</span>
+    <input type="date" id="task-new-date" style="font-size:12px;padding:3px 5px;border:1px solid var(--border);border-radius:5px;font-family:inherit">
+    <input type="text" id="task-new-text" placeholder="任務內容…" style="font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;width:140px;font-family:inherit">
+    <span id="task-new-dots" style="display:inline-flex;gap:2px">${dots}</span>
+    <span class="task-tag-btn" onmouseenter="tNewOpenPicker(event)" onmouseleave="tNewScheduleClose()" style="font-size:11px;color:var(--teal);cursor:pointer;border:1px dashed var(--teal);border-radius:9px;padding:1px 7px">+ 標記</span>
+    <button onclick="tSubmitNew()" style="font-size:12px;padding:3px 10px;border:none;border-radius:5px;background:var(--purple);color:#fff;cursor:pointer">送出</button>
+    <div class="pn-mention-menu" id="task-new-mention" style="display:none" onmouseenter="mCancelCloseMention()" onmouseleave="tNewScheduleClose()"></div>
+  </div>`;
+}
+function renderTaskAssignList(){
+  const list=(S.taskList||[]).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  if(!list.length)return'';
+  return`<div style="padding:8px 16px;font-size:12px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;background:var(--bg)">
+    ${list.map(t=>{
+      const names=(t.targets||[]).map(uid=>{const m=S.members.find(x=>x.uid===uid);return m?m.name:'?';}).join('、');
+      const canDelete=currentUser&&t.createdBy===currentUser.uid;
+      return`<span style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:3px 9px;display:inline-flex;align-items:center;gap:5px">
+        <b>${(t.date||'').slice(5)}</b> ${escAttr(t.text||'')} → ${names}
+        ${canDelete?`<span onclick="tDeleteTask('${t.id}')" style="cursor:pointer;color:var(--text3);font-weight:700">×</span>`:''}
+      </span>`;
+    }).join('')}
+  </div>`;
 }
 
-window.tSelect=function(ds,idx){
-  taskSelGen++;
-  taskSelected={};
-  taskSelected[ds]=idx;
-  if(activePanel==='progress')renderProgress();
+var tNewTargets=[];
+function tNewTargetsDotsHTML(){
+  return tNewTargets.map(function(uid){
+    const m=S.members.find(function(x){return x.uid===uid;});
+    const nm=m&&m.name?m.name:'?';
+    return'<span title="'+nm+'" style="width:14px;height:14px;border-radius:50%;background:var(--teal);color:#fff;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+nm.charAt(0)+'</span>';
+  }).join('');
 }
-window.tAdd=async function(ds){
-  if(!currentUser)return;
-  const items=(S.taskAssignments[ds]&&S.taskAssignments[ds].items)?[...S.taskAssignments[ds].items]:[];
-  if(items.length>=1)return;
-  items.push({text:'',targets:[]});
-  setSyncing();
-  await setDoc(doc(db,'taskAssignments',ds),{date:ds,items,updatedAt:serverTimestamp()});
-  setSynced();
-  taskSelGen++;
-  taskSelected={};
-  taskSelected[ds]=0;
-  if(activePanel==='progress')renderProgress();
-  setTimeout(function(){
-    const inp=document.getElementById('taskbox-'+ds+'-0');
-    if(inp)inp.focus();
-  },50);
-}
-window.tDelete=async function(ds,idx){
-  if(!currentUser)return;
-  const items=(S.taskAssignments[ds]&&S.taskAssignments[ds].items)?[...S.taskAssignments[ds].items]:[];
-  const removed=items[idx];
-  items.splice(idx,1);
-  taskSelected={};
-  setSyncing();
-  await setDoc(doc(db,'taskAssignments',ds),{date:ds,items,updatedAt:serverTimestamp()});
-  if(removed&&removed.targets&&removed.targets.length){
-    for(const uid of removed.targets){
-      await tRemoveFromDailyLog(ds,idx,uid);
-    }
-  }
-  setSynced();
-}
-function tMentionMenuHTML(ds,idx){
-  const items=(S.taskAssignments[ds]&&S.taskAssignments[ds].items)||[];
-  const item=items[idx]||{};
-  const targets=item.targets||[];
+function tNewMentionMenuHTML(){
   return S.members.map(function(m){
-    const checked=targets.indexOf(m.uid)>=0;
-    return'<div onmousedown="event.preventDefault();tToggleMention(\''+ds+'\','+idx+',\''+m.uid+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">'
+    const checked=tNewTargets.indexOf(m.uid)>=0;
+    return'<div onmousedown="event.preventDefault();tNewToggle(\''+m.uid+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">'
       +'<span>'+(checked?'☑':'☐')+'</span><span>'+(m.name||'')+'</span></div>';
   }).join('');
 }
-window.tScheduleCloseMention=function(ds){
-  clearTimeout(mCloseTimer);
-  mCloseTimer=setTimeout(function(){
-    const menuEl=document.getElementById('task-mention-'+ds);
-    if(menuEl)menuEl.style.display='none';
-    if(pendingProgressRender&&activePanel==='progress')renderProgress();
-  },250);
+window.tNewToggle=function(uid){
+  const pos=tNewTargets.indexOf(uid);
+  if(pos>=0)tNewTargets.splice(pos,1);else tNewTargets.push(uid);
+  const menuEl=document.getElementById('task-new-mention');
+  if(menuEl)menuEl.innerHTML=tNewMentionMenuHTML();
+  const dotsEl=document.getElementById('task-new-dots');
+  if(dotsEl)dotsEl.innerHTML=tNewTargetsDotsHTML();
 }
-window.tOpenMentionPicker=function(e,ds,idx){
+window.tNewOpenPicker=function(e){
   clearTimeout(mCloseTimer);
-  const menuEl=document.getElementById('task-mention-'+ds);
+  const menuEl=document.getElementById('task-new-mention');
   if(!menuEl)return;
   const rect=e.currentTarget.getBoundingClientRect();
   menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:200px;overflow-y:auto';
-  menuEl.innerHTML=tMentionMenuHTML(ds,idx);
+  menuEl.innerHTML=tNewMentionMenuHTML();
 }
-window.tToggleMention=async function(ds,idx,uid){
+window.tNewScheduleClose=function(){
+  clearTimeout(mCloseTimer);
+  mCloseTimer=setTimeout(function(){
+    const menuEl=document.getElementById('task-new-mention');
+    if(menuEl)menuEl.style.display='none';
+  },250);
+}
+window.tSubmitNew=async function(){
   if(!currentUser)return;
-  const items=(S.taskAssignments[ds]&&S.taskAssignments[ds].items)?[...S.taskAssignments[ds].items]:[];
-  if(idx<0||idx>=items.length)return;
-  const targets=(items[idx].targets||[]).slice();
-  const pos=targets.indexOf(uid);
-  const adding=pos<0;
-  if(adding)targets.push(uid);else targets.splice(pos,1);
-  items[idx]=Object.assign({},items[idx],{targets});
-  S.taskAssignments=Object.assign({},S.taskAssignments);
-  S.taskAssignments[ds]=Object.assign({},S.taskAssignments[ds],{items});
+  const dateInp=document.getElementById('task-new-date');
+  const textInp=document.getElementById('task-new-text');
+  const dateVal=dateInp?dateInp.value:'';
+  const textVal=textInp?textInp.value.trim():'';
+  if(!dateVal||!textVal||!tNewTargets.length){
+    alert('請選日期、填寫任務內容，並至少標記一位人員');
+    return;
+  }
   setSyncing();
-  await setDoc(doc(db,'taskAssignments',ds),{date:ds,items,updatedAt:serverTimestamp()});
-  setSynced();
-  if(adding)await tSyncDailyLog(ds,idx,uid,items[idx].text||'');
-  else await tRemoveFromDailyLog(ds,idx,uid);
-  const menuEl=document.getElementById('task-mention-'+ds);
-  if(menuEl&&menuEl.style.display==='block')menuEl.innerHTML=tMentionMenuHTML(ds,idx);
-}
-window.tBoxBlur=function(el,ds,idx){tSaveBox(el,ds,idx);}
-window.tSaveBox=async function(el,ds,idx){
-  if(!currentUser||!el)return;
-  const text=el.value;
-  const items=(S.taskAssignments[ds]&&S.taskAssignments[ds].items)?[...S.taskAssignments[ds].items]:[];
-  while(items.length<=idx)items.push({text:'',targets:[]});
-  items[idx]=Object.assign({},items[idx],{text});
-  setSyncing();
-  await setDoc(doc(db,'taskAssignments',ds),{date:ds,items,updatedAt:serverTimestamp()});
-  const targets=items[idx].targets||[];
-  for(const uid of targets){
-    await tSyncDailyLog(ds,idx,uid,text);
+  const ref=await addDoc(collection(db,'taskAssignments'),{text:textVal,date:dateVal,targets:tNewTargets.slice(),createdBy:currentUser.uid,createdAt:serverTimestamp()});
+  for(const uid of tNewTargets){
+    await tSyncDailyLog(ref.id,uid,dateVal,textVal);
   }
   setSynced();
-  const gen=taskSelGen;
-  setTimeout(function(){
-    if(taskSelGen===gen){
-      taskSelected={};
-      if(activePanel==='progress')renderProgress();
-    }
-  },150);
+  if(textInp)textInp.value='';
+  tNewTargets=[];
+  if(activePanel==='progress')renderProgress();
 }
-async function tSyncDailyLog(ds,idx,uid,newText){
+window.tDeleteTask=async function(taskId){
+  if(!currentUser)return;
+  const t=(S.taskList||[]).find(x=>x.id===taskId);
+  if(!t||t.createdBy!==currentUser.uid)return;
+  setSyncing();
+  await deleteDoc(doc(db,'taskAssignments',taskId));
+  if(t.targets&&t.targets.length){
+    for(const uid of t.targets){
+      await tRemoveFromDailyLog(taskId,uid,t.date);
+    }
+  }
+  setSynced();
+}
+async function tSyncDailyLog(taskId,uid,ds,newText){
   const m=S.members.find(x=>x.uid===uid);
   if(!m)return;
   const logKey=`${m.uid}_${ds}`;
   const cur=S.dailyLogs[logKey]||{};
   const autoLines=Object.assign({},cur.autoLines||{});
-  const trackKey='task:'+ds+'_'+idx;
+  const trackKey='task:'+taskId;
   const oldLine=autoLines[trackKey];
   let lines=(cur.text||'').split('\n').filter(l=>l!=='');
   if(oldLine!=null){
@@ -1093,13 +1046,13 @@ async function tSyncDailyLog(ds,idx,uid,newText){
     console.error('無法自動寫入 '+m.name+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
   }
 }
-async function tRemoveFromDailyLog(ds,idx,uid){
+async function tRemoveFromDailyLog(taskId,uid,ds){
   const m=S.members.find(x=>x.uid===uid);
   if(!m)return;
   const logKey=`${m.uid}_${ds}`;
   const cur=S.dailyLogs[logKey]||{};
   const autoLines=Object.assign({},cur.autoLines||{});
-  const trackKey='task:'+ds+'_'+idx;
+  const trackKey='task:'+taskId;
   const oldLine=autoLines[trackKey];
   if(oldLine==null)return;
   let lines=(cur.text||'').split('\n').filter(l=>l!=='');
@@ -1112,15 +1065,6 @@ async function tRemoveFromDailyLog(ds,idx,uid){
     console.error('無法自動移除 '+m.name+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
   }
 }
-
-window.saveDailyLog=async function(uid,ds,text){
-  if(!currentUser||currentUser.uid!==uid)return;
-  const key=`${uid}_${ds}`;
-  setSyncing();
-  await setDoc(doc(db,'dailyLogs',key),{uid,date:ds,text,updatedAt:serverTimestamp()});
-  setSynced();
-}
-
 
 window.saveDailyLog=async function(uid,ds,text){
   if(!currentUser||currentUser.uid!==uid)return;
@@ -1661,12 +1605,6 @@ document.addEventListener('keydown',function(e){
   if(mkeys.length){
     var mk=mkeys[0];var mparts=mk.split('|');
     mDelete(mparts[0],mparts[1],meetingSelected[mk]);
-    return;
-  }
-  var tkeys=Object.keys(taskSelected).filter(function(k){return taskSelected[k]>=0;});
-  if(tkeys.length){
-    var tk=tkeys[0];
-    tDelete(tk,taskSelected[tk]);
   }
 });
 // Clicking anywhere that's not a note chip (and not the top bar) always
@@ -1676,16 +1614,13 @@ document.addEventListener('click',function(e){
   if(!e.target.closest('.pn-mention-menu')){
     document.querySelectorAll('.pn-mention-menu').forEach(function(el){el.style.display='none';});
   }
-  if(e.target.closest('.pn-chip')||e.target.closest('.meet-chip')||e.target.closest('.task-chip')||e.target.closest('.formula-bar'))return;
+  if(e.target.closest('.pn-chip')||e.target.closest('.meet-chip')||e.target.closest('.formula-bar'))return;
   var changed=false;
   if(S.privateSelected&&Object.keys(S.privateSelected).some(function(k){return S.privateSelected[k]>=0;})){
     S.privateSelected={};changed=true;
   }
   if(meetingSelected&&Object.keys(meetingSelected).some(function(k){return meetingSelected[k]>=0;})){
     meetingSelected={};changed=true;
-  }
-  if(taskSelected&&Object.keys(taskSelected).some(function(k){return taskSelected[k]>=0;})){
-    taskSelected={};changed=true;
   }
   if(changed&&activePanel==='progress')renderProgress();
 });
