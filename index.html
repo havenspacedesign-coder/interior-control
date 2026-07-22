@@ -349,6 +349,7 @@ let activeBibleStage=null,activeBibleWs=null,bibleView='edit',dragSrc=null,dragM
 let openPicker=null;
 let expandedProjs={},expandedFields={};
 let designCols=null;
+let designBlueColsOpen=false;
 
 const $=id=>document.getElementById(id);
 const STATUS_OPTS=[
@@ -363,8 +364,14 @@ const STCS=["#3C3489","#085041","#633806","#791F1F","#0C447C","#27500A","#72243E
 function sc(i){return SCOLS[i%SCOLS.length]}function tc(i){return STCS[i%STCS.length]}
 function statusInfo(v){return STATUS_OPTS.find(o=>o.v===v)||STATUS_OPTS[0]}
 function isAdmin(){return currentRole==='admin'}
-const DEFAULT_DESIGN_COLS=['會議人員','平面圖','客變圖','3D圖','施工圖','報價單'];
-function getDesignCols(){return designCols||DEFAULT_DESIGN_COLS;}
+const DEFAULT_DESIGN_COL_NAMES=['會議人員','平面圖','客變圖','3D圖','施工圖','報價單'];
+const DEFAULT_DESIGN_COLS=DEFAULT_DESIGN_COL_NAMES.map(name=>({name,kind:'member',collapsible:true}));
+// Accepts either the old plain-string column list or the new {name,kind,collapsible}
+// shape, and always returns the new shape — so existing saved data keeps working.
+function getDesignCols(){
+  const raw=designCols||DEFAULT_DESIGN_COLS;
+  return raw.map(c=>typeof c==='string'?{name:c,kind:DEFAULT_DESIGN_COL_NAMES.includes(c)?'member':'text',collapsible:DEFAULT_DESIGN_COL_NAMES.includes(c)}:c);
+}
 
 function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r}
 function isSameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
@@ -577,14 +584,18 @@ function renderDesign(){
   el.innerHTML=`
   <div class="flex-sb" style="margin-bottom:1rem">
     <span style="font-size:14px;font-weight:500">設計進度</span>
-    ${isAdmin()&&cols.length<10?`<button class="btn btn-sm" onclick="addDesignCol()">＋ 新增欄位</button>`:''}
+    <span style="display:flex;gap:8px">
+      ${cols.some(c=>c.collapsible)?`<button class="btn btn-sm" onclick="toggleDesignBlueCols()">${designBlueColsOpen?'收起標記欄位':'▶ 顯示標記欄位（會議人員等）'}</button>`:''}
+      ${isAdmin()&&cols.length<14?`<button class="btn btn-sm" onclick="addDesignCol()">＋ 新增欄位</button>`:''}
+    </span>
   </div>
   ${allProjs.length===0?`<div class="empty">尚無案件</div>`:''}
   ${allProjs.map(p=>{
     const dp=p.designProgress||{};
-    const missingCount=cols.filter(c=>!dp[c]||dp[c].trim()==='').length;
+    const missingCount=cols.filter(c=>!dp[c.name]||(''+dp[c.name]).trim()==='').length;
     const isProjOpen=expandedProjs[p.id]||false;
     const isFieldsOpen=expandedFields[p.id]||false;
+    const visCols=cols.filter(c=>!c.collapsible||designBlueColsOpen);
     return`<div class="design-proj-row">
       <div class="design-proj-hdr" onclick="toggleDesignProj('${p.id}')">
         <span class="design-proj-arrow ${isProjOpen?'open':''}">▶</span>
@@ -602,19 +613,17 @@ function renderDesign(){
           <div style="overflow-x:auto">
           <table class="design-tbl" id="dtbl-${p.id}">
             <thead><tr>
-              ${cols.map((c,ci)=>`<th style="width:${p.colWidths?.[ci]||120}px">
-                ${isAdmin()?`<input class="col-name-edit" value="${c}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c}</span>`}
+              ${visCols.map(c=>{const ci=cols.indexOf(c);return`<th style="width:${p.colWidths?.[ci]||120}px">
+                ${isAdmin()?`<input class="col-name-edit" value="${c.name}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c.name}</span>`}
+                ${isAdmin()?`<div style="display:flex;gap:4px;margin-top:3px;font-size:10px;color:var(--text3)">
+                  <label style="cursor:pointer"><input type="checkbox" ${c.kind==='member'?'checked':''} onchange="saveColKind(${ci},this.checked?'member':'text')" style="vertical-align:middle">成員</label>
+                  <label style="cursor:pointer"><input type="checkbox" ${c.collapsible?'checked':''} onchange="saveColCollapsible(${ci},this.checked)" style="vertical-align:middle">收合</label>
+                </div>`:''}
                 ${isAdmin()?`<div class="col-resize" onmousedown="startColResize(event,'${p.id}',${ci})"></div>`:''}
-              </th>`).join('')}
+              </th>`;}).join('')}
             </tr></thead>
             <tbody><tr>
-              ${cols.map((c,ci)=>{
-                const val=dp[c]||'';
-                return`<td class="${!val.trim()?'empty-cell':''}">
-                  <input type="text" value="${val}" placeholder="—"
-                    onblur="saveDesignField('${p.id}','${c}',this.value)"
-                    onkeydown="if(event.key==='Enter')this.blur()">
-                </td>`;}).join('')}
+              ${visCols.map(c=>renderDesignCell(p,c)).join('')}
             </tr></tbody>
           </table>
           </div>
@@ -622,7 +631,39 @@ function renderDesign(){
       </div>
     </div>`;}).join('')}`;
 }
-
+function renderDesignCell(p,col){
+  const dp=p.designProgress||{};
+  const val=dp[col.name]||'';
+  if(col.kind==='member'){
+    const m=S.members.find(x=>x.uid===val);
+    return`<td style="text-align:center">
+      ${m?`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:12px;font-size:12px">${m.name}<span onclick="saveDesignField('${p.id}','${col.name}','')" style="cursor:pointer;font-weight:700">×</span></span>`
+        :`<span class="task-tag-btn" onmouseenter="dcOpenPicker(event,'${p.id}','${col.name}')" onmouseleave="dcScheduleClose('${p.id}','${col.name}')" style="font-size:11px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:9px;padding:2px 8px">+ 標記</span>`}
+      <div class="pn-mention-menu" id="dc-mention-${p.id}-${col.name}" style="display:none" onmouseenter="mCancelCloseMention()" onmouseleave="dcScheduleClose('${p.id}','${col.name}')"></div>
+    </td>`;
+  }
+  // text column — supports #stage to link a 施工寶典 stage's checklist
+  if(val.startsWith('#')){
+    const stage=val.slice(1);
+    if(getBibleStages().includes(stage)){
+      const key=`${p.id}_${stage}`;const stored=S.checks[key]||[];
+      const allItems=getAllBibleItems(stage);
+      const done=allItems.filter((t,i)=>stored[i]?.done).length;
+      return`<td>
+        <span onclick="openCheckMo('${p.id}','${stage}','${stage}','${p.name}')" style="cursor:pointer;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:5px;font-size:12px;font-weight:600;white-space:nowrap">#${stage} ${done}/${allItems.length}</span>
+        <span onclick="saveDesignField('${p.id}','${col.name}','')" title="改回文字輸入" style="cursor:pointer;color:var(--text3);font-size:11px;margin-left:4px">×</span>
+      </td>`;
+    }
+  }
+  return`<td class="${!val.trim()?'empty-cell':''}">
+    <input type="text" class="design-cell-input" id="dcell-${p.id}-${col.name}" value="${escAttr(val)}" placeholder="—（可打 # 連結施工寶典階段）"
+      oninput="dcHashCheck(this,'${p.id}','${col.name}')"
+      onblur="saveDesignField('${p.id}','${col.name}',this.value)"
+      onkeydown="if(event.key==='Enter')this.blur()">
+    <div class="pn-mention-menu" id="dc-hash-${p.id}-${col.name}" style="display:none"></div>
+  </td>`;
+}
+window.toggleDesignBlueCols=function(){designBlueColsOpen=!designBlueColsOpen;renderDesign();}
 window.toggleDesignProj=function(projId){expandedProjs[projId]=!expandedProjs[projId];renderDesign();}
 window.toggleDesignFields=function(projId){expandedFields[projId]=!expandedFields[projId];renderDesign();}
 window.saveDesignField=async function(projId,col,val){
@@ -632,15 +673,69 @@ window.saveDesignField=async function(projId,col,val){
 }
 window.saveColName=async function(ci,val){
   if(!isAdmin())return;
-  const cols=[...getDesignCols()];cols[ci]=val||`欄位${ci+1}`;
+  const cols=getDesignCols().map(c=>({...c}));cols[ci].name=val||`欄位${ci+1}`;
+  setSyncing();await setDoc(doc(db,'settings','designCols'),{cols});setSynced();
+}
+window.saveColKind=async function(ci,kind){
+  if(!isAdmin())return;
+  const cols=getDesignCols().map(c=>({...c}));cols[ci].kind=kind;
+  setSyncing();await setDoc(doc(db,'settings','designCols'),{cols});setSynced();
+}
+window.saveColCollapsible=async function(ci,val){
+  if(!isAdmin())return;
+  const cols=getDesignCols().map(c=>({...c}));cols[ci].collapsible=val;
   setSyncing();await setDoc(doc(db,'settings','designCols'),{cols});setSynced();
 }
 window.addDesignCol=async function(){
   if(!isAdmin())return;
-  const cols=[...getDesignCols()];
-  if(cols.length>=10)return alert('最多10個欄位');
-  cols.push(`欄位${cols.length+1}`);
+  const cols=getDesignCols().map(c=>({...c}));
+  if(cols.length>=14)return alert('最多14個欄位');
+  cols.push({name:`欄位${cols.length+1}`,kind:'text',collapsible:false});
   setSyncing();await setDoc(doc(db,'settings','designCols'),{cols});setSynced();
+}
+// Member-tag picker for 'member' kind design columns
+window.dcOpenPicker=function(e,projId,colName){
+  clearTimeout(mCloseTimer);
+  const menuEl=document.getElementById('dc-mention-'+projId+'-'+colName);
+  if(!menuEl)return;
+  const rect=e.currentTarget.getBoundingClientRect();
+  menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:140px;max-height:200px;overflow-y:auto';
+  menuEl.innerHTML=S.members.map(function(m){
+    return'<div onmousedown="event.preventDefault();saveDesignField(\''+projId+'\',\''+colName+'\',\''+m.uid+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)">'+(m.name||'')+'</div>';
+  }).join('');
+}
+window.dcScheduleClose=function(projId,colName){
+  clearTimeout(mCloseTimer);
+  mCloseTimer=setTimeout(function(){
+    const menuEl=document.getElementById('dc-mention-'+projId+'-'+colName);
+    if(menuEl)menuEl.style.display='none';
+  },250);
+}
+// "#" autocomplete for text-kind design columns, linking to a 施工寶典 stage
+window.dcHashCheck=function(el,projId,colName){
+  const val=el.value||'';
+  const pos=el.selectionStart||0;
+  const textBefore=val.substring(0,pos);
+  const hIdx=textBefore.lastIndexOf('#');
+  const menuEl=document.getElementById('dc-hash-'+projId+'-'+colName);
+  if(!menuEl)return;
+  if(hIdx>=0&&textBefore.indexOf(' ',hIdx)<0){
+    const q=textBefore.substring(hIdx+1).toLowerCase();
+    const matches=getBibleStages().filter(s=>s.toLowerCase().includes(q));
+    if(matches.length){
+      const rect=el.getBoundingClientRect();
+      menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:140px;max-height:200px;overflow-y:auto';
+      menuEl.innerHTML=matches.map(s=>'<div onmousedown="event.preventDefault();dcPickStage(\''+projId+'\',\''+colName+'\',\''+s+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)">#'+s+'</div>').join('');
+      return;
+    }
+  }
+  menuEl.style.display='none';
+}
+window.dcPickStage=function(projId,colName,stage){
+  const menuEl=document.getElementById('dc-hash-'+projId+'-'+colName);
+  if(menuEl)menuEl.style.display='none';
+  saveDesignField(projId,colName,'#'+stage);
+  if(activePanel==='design')renderDesign();
 }
 let resizing=null;
 window.startColResize=function(e,projId,ci){
@@ -1799,14 +1894,26 @@ window.openCheckMo=function(projId,stage,label,projName){
   const key=`${projId}_${stage}`;const stored=S.checks[key]||[];
   const merged=allItems.map((t,i)=>({text:t,done:stored[i]?.done||false}));
   const done=merged.filter(x=>x.done).length;const pct=Math.round(done/merged.length*100);
+  const b=S.bible[stage]||{before:[],during:[],after:[]};
+  const beforeLen=(b.before||[]).length,duringLen=(b.during||[]).length;
+  const PHASES=[{label:'工程前',color:'var(--pl)',from:0,to:beforeLen},{label:'工程中',color:'var(--tl)',from:beforeLen,to:beforeLen+duringLen},{label:'工程後',color:'var(--gl)',from:beforeLen+duringLen,to:merged.length}];
+  let itemsHtml='';
+  PHASES.forEach(ph=>{
+    if(ph.to<=ph.from)return;
+    itemsHtml+=`<div style="font-size:11px;font-weight:600;color:var(--text2);margin:10px 0 4px"><span style="background:${ph.color};padding:2px 8px;border-radius:8px">${ph.label}</span></div>`;
+    for(let i=ph.from;i<ph.to;i++){
+      const item=merged[i];
+      itemsHtml+=`<div class="ws-cl-item ${item.done?'done':''}">
+        <input type="checkbox" id="ck${i}" ${item.done?'checked':''} onchange="toggleCheck('${projId}','${stage}',${i},this.checked)">
+        <label for="ck${i}">${item.text}</label>
+      </div>`;
+    }
+  });
   $('mo-content').innerHTML=`
     <div class="mo-title">${label}</div>
     <div class="mo-sub">${projName} — ${done}/${merged.length} 完成</div>
     <div class="pb-wrap"><div class="pb-fill" style="width:${pct}%;background:${pct===100?'var(--teal)':'var(--purple)'}"></div></div>
-    ${merged.map((item,i)=>`<div class="ws-cl-item ${item.done?'done':''}">
-      <input type="checkbox" id="ck${i}" ${item.done?'checked':''} onchange="toggleCheck('${projId}','${stage}',${i},this.checked)">
-      <label for="ck${i}">${item.text}</label>
-    </div>`).join('')}
+    ${itemsHtml}
     <div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;
   $('modal').style.display='flex';
 }
