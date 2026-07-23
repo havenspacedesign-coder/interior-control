@@ -349,7 +349,7 @@ let activeBibleStage=null,activeBibleWs=null,bibleView='edit',dragSrc=null,dragM
 let openPicker=null;
 let expandedProjs={},expandedFields={};
 let designCols=null;
-let designBlueColsOpen=false;
+let designBlueColsOpen={};
 
 const $=id=>document.getElementById(id);
 const STATUS_OPTS=[
@@ -368,7 +368,10 @@ function memberDisplayName(m){if(!m)return'成員';return m.displayName||m.name|
 function memberTag(m){if(!m)return'?';if(m.tagInitial)return m.tagInitial;return memberDisplayName(m).charAt(0);}
 function activeMembersList(){return S.members.filter(m=>(m.role==='admin'||m.role==='staff')&&m.status!=='resigned');}
 const DEFAULT_DESIGN_COL_NAMES=['會議人員','平面圖','客變圖','3D圖','施工圖','報價單'];
-const DEFAULT_DESIGN_COLS=DEFAULT_DESIGN_COL_NAMES.map(name=>({name,kind:'member',collapsible:true}));
+const DEFAULT_DESIGN_COLS=[
+  ...DEFAULT_DESIGN_COL_NAMES.map(name=>({name,kind:'member',collapsible:true})),
+  ...Array.from({length:9},(_,i)=>({name:String(i+1),kind:'text',collapsible:false}))
+];
 // Accepts either the old plain-string column list or the new {name,kind,collapsible}
 // shape, and always returns the new shape — so existing saved data keeps working.
 function getDesignCols(){
@@ -601,18 +604,19 @@ function renderDesign(){
   <div class="flex-sb" style="margin-bottom:1rem">
     <span style="font-size:14px;font-weight:500">設計進度</span>
     <span style="display:flex;gap:8px">
-      ${cols.some(c=>c.collapsible)?`<button class="btn btn-sm" onclick="toggleDesignBlueCols()">${designBlueColsOpen?'收起標記欄位':'▶ 顯示標記欄位（會議人員等）'}</button>`:''}
       ${isAdmin()?`<button class="btn btn-sm" onclick="openDesignColSettings()">⚙ 欄位設定</button>`:''}
-      ${isAdmin()&&cols.length<14?`<button class="btn btn-sm" onclick="addDesignCol()">＋ 新增欄位</button>`:''}
     </span>
   </div>
   ${allProjs.length===0?`<div class="empty">尚無案件</div>`:''}
   ${allProjs.map(p=>{
     const dp=p.designProgress||{};
     const missingCount=cols.filter(c=>!dp[c.name]||(''+dp[c.name]).trim()==='').length;
-    const visCols=cols.filter(c=>!c.collapsible||designBlueColsOpen);
+    const hasCollapsible=cols.some(c=>c.collapsible);
+    const isOpen=!!designBlueColsOpen[p.id];
+    const visCols=cols.filter(c=>!c.collapsible||isOpen);
     return`<div class="design-proj-row">
       <div class="design-proj-hdr" style="cursor:default">
+        ${hasCollapsible?`<span onclick="toggleDesignBlueCols('${p.id}')" title="顯示/隱藏標記欄位（會議人員等）" style="cursor:pointer;font-size:11px;color:var(--purple);transform:rotate(${isOpen?90:0}deg);transition:transform .15s;display:inline-block">▶</span>`:''}
         <span class="design-proj-name">${p.name}</span>
         ${missingCount>0?`<span class="design-warn">⚠ ${missingCount} 項未填</span>`:`<span style="font-size:11px;color:var(--teal)">✓ 已填齊</span>`}
         <span style="font-size:11px;color:var(--text3)">${statusInfo(p.status).l}</span>
@@ -680,7 +684,7 @@ function renderDesignCell(p,col){
     <div class="pn-mention-menu" id="dc-hash-${p.id}-${col.name}" style="display:none"></div>
   </td>`;
 }
-window.toggleDesignBlueCols=function(){designBlueColsOpen=!designBlueColsOpen;renderDesign();}
+window.toggleDesignBlueCols=function(projId){designBlueColsOpen[projId]=!designBlueColsOpen[projId];renderDesign();}
 window.toggleDesignProj=function(projId){expandedProjs[projId]=!expandedProjs[projId];renderDesign();}
 window.toggleDesignFields=function(projId){expandedFields[projId]=!expandedFields[projId];renderDesign();}
 window.saveDesignField=async function(projId,col,val){
