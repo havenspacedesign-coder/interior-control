@@ -599,6 +599,8 @@ window.updateStatus=async function(projId,v){setSyncing();await updateDoc(doc(db
 function renderDesign(){
   const el=$('panel-design');
   const cols=getDesignCols();
+  const blueCols=cols.filter(c=>c.collapsible);
+  const redCols=cols.filter(c=>!c.collapsible);
   const allProjs=S.projects.filter(p=>['design','prog','wait'].includes(p.status));
   el.innerHTML=`
   <div class="flex-sb" style="margin-bottom:1rem">
@@ -607,34 +609,43 @@ function renderDesign(){
       ${isAdmin()?`<button class="btn btn-sm" onclick="openDesignColSettings()">⚙ 欄位設定</button>`:''}
     </span>
   </div>
-  ${allProjs.length===0?`<div class="empty">尚無案件</div>`:''}
-  ${allProjs.map(p=>{
-    const dp=p.designProgress||{};
-    const missingCount=cols.filter(c=>!dp[c.name]||(''+dp[c.name]).trim()==='').length;
-    const hasCollapsible=cols.some(c=>c.collapsible);
-    const isOpen=!!designBlueColsOpen[p.id];
-    const visCols=cols.filter(c=>!c.collapsible||isOpen);
-    return`<div class="design-proj-row">
-      <div class="design-proj-hdr" style="cursor:default">
-        ${hasCollapsible?`<span onclick="toggleDesignBlueCols('${p.id}')" title="顯示/隱藏標記欄位（會議人員等）" style="cursor:pointer;font-size:11px;color:var(--purple);transform:rotate(${isOpen?90:0}deg);transition:transform .15s;display:inline-block">▶</span>`:''}
-        <span class="design-proj-name">${p.name}</span>
-        ${missingCount>0?`<span class="design-warn">⚠ ${missingCount} 項未填</span>`:`<span style="font-size:11px;color:var(--teal)">✓ 已填齊</span>`}
-        <span style="font-size:11px;color:var(--text3)">${statusInfo(p.status).l}</span>
-      </div>
-      <div style="overflow-x:auto">
-      <table class="design-tbl" id="dtbl-${p.id}">
-        <thead><tr>
-          ${visCols.map(c=>{const ci=cols.indexOf(c);return`<th style="width:${p.colWidths?.[ci]||120}px">
-            ${isAdmin()?`<input class="col-name-edit" value="${c.name}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c.name}</span>`}
-            ${isAdmin()?`<div class="col-resize" onmousedown="startColResize(event,'${p.id}',${ci})"></div>`:''}
-          </th>`;}).join('')}
-        </tr></thead>
-        <tbody><tr>
-          ${visCols.map(c=>renderDesignCell(p,c)).join('')}
-        </tr></tbody>
-      </table>
-      </div>
-    </div>`;}).join('')}`;
+  ${allProjs.length===0?`<div class="empty">尚無案件</div>`:`
+  <div style="overflow-x:auto">
+  <table class="design-tbl">
+    <thead><tr>
+      <th style="min-width:150px;text-align:left">案件名稱</th>
+      <th style="min-width:90px">預算</th>
+      ${blueCols.length?`<th style="width:22px"></th>`:''}
+      ${blueCols.map(c=>{const ci=cols.indexOf(c);return`<th style="min-width:110px">
+        ${isAdmin()?`<input class="col-name-edit" value="${c.name}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c.name}</span>`}
+      </th>`;}).join('')}
+      ${redCols.map(c=>{const ci=cols.indexOf(c);return`<th style="min-width:110px">
+        ${isAdmin()?`<input class="col-name-edit" value="${c.name}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c.name}</span>`}
+      </th>`;}).join('')}
+    </tr></thead>
+    <tbody>
+    ${allProjs.map(p=>{
+      const dp=p.designProgress||{};
+      const missingCount=cols.filter(c=>!dp[c.name]||(''+dp[c.name]).trim()==='').length;
+      const isOpen=!!designBlueColsOpen[p.id];
+      return`<tr>
+        <td style="text-align:left;white-space:nowrap">
+          <span style="font-weight:500">${p.name}</span>
+          ${missingCount>0?`<span class="design-warn" style="margin-left:6px">⚠${missingCount}</span>`:`<span style="font-size:11px;color:var(--teal);margin-left:6px">✓</span>`}
+          <span style="font-size:11px;color:var(--text3);margin-left:4px">${statusInfo(p.status).l}</span>
+        </td>
+        <td><input type="text" value="${escAttr(p.budget||'')}" onblur="saveProjectBudget('${p.id}',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%;box-sizing:border-box;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:12px;font-family:inherit"></td>
+        ${blueCols.length?`<td style="text-align:center;cursor:pointer;color:var(--purple)" onclick="toggleDesignBlueCols('${p.id}')" title="顯示/隱藏會議人員等欄位">${isOpen?'▼':'▶'}</td>`:''}
+        ${blueCols.length?(isOpen?blueCols.map(c=>renderDesignCell(p,c)).join(''):`<td colspan="${blueCols.length}" style="color:var(--text3);font-size:11px;text-align:center">（收合）</td>`):''}
+        ${redCols.map(c=>renderDesignCell(p,c)).join('')}
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table>
+  </div>`}`;
+}
+window.saveProjectBudget=async function(projId,val){
+  await updateDoc(doc(db,'projects',projId),{budget:val});
 }
 window.openDesignColSettings=function(){
   if(!isAdmin())return;
