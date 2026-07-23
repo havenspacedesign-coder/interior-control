@@ -602,6 +602,7 @@ function renderDesign(){
     <span style="font-size:14px;font-weight:500">設計進度</span>
     <span style="display:flex;gap:8px">
       ${cols.some(c=>c.collapsible)?`<button class="btn btn-sm" onclick="toggleDesignBlueCols()">${designBlueColsOpen?'收起標記欄位':'▶ 顯示標記欄位（會議人員等）'}</button>`:''}
+      ${isAdmin()?`<button class="btn btn-sm" onclick="openDesignColSettings()">⚙ 欄位設定</button>`:''}
       ${isAdmin()&&cols.length<14?`<button class="btn btn-sm" onclick="addDesignCol()">＋ 新增欄位</button>`:''}
     </span>
   </div>
@@ -609,43 +610,43 @@ function renderDesign(){
   ${allProjs.map(p=>{
     const dp=p.designProgress||{};
     const missingCount=cols.filter(c=>!dp[c.name]||(''+dp[c.name]).trim()==='').length;
-    const isProjOpen=expandedProjs[p.id]||false;
-    const isFieldsOpen=expandedFields[p.id]||false;
     const visCols=cols.filter(c=>!c.collapsible||designBlueColsOpen);
     return`<div class="design-proj-row">
-      <div class="design-proj-hdr" onclick="toggleDesignProj('${p.id}')">
-        <span class="design-proj-arrow ${isProjOpen?'open':''}">▶</span>
+      <div class="design-proj-hdr" style="cursor:default">
         <span class="design-proj-name">${p.name}</span>
         ${missingCount>0?`<span class="design-warn">⚠ ${missingCount} 項未填</span>`:`<span style="font-size:11px;color:var(--teal)">✓ 已填齊</span>`}
         <span style="font-size:11px;color:var(--text3)">${statusInfo(p.status).l}</span>
       </div>
-      <div class="design-fields-row ${isProjOpen?'open':''}">
-        <div class="design-fields-hdr" onclick="toggleDesignFields('${p.id}')">
-          <span class="design-fields-arrow ${isFieldsOpen?'open':''}">▶</span>
-          <span style="font-size:12px;font-weight:500">設計欄位</span>
-          <span style="font-size:11px;color:var(--text2);margin-left:4px">（${cols.length} 欄）</span>
-        </div>
-        <div class="design-fields-body ${isFieldsOpen?'open':''}">
-          <div style="overflow-x:auto">
-          <table class="design-tbl" id="dtbl-${p.id}">
-            <thead><tr>
-              ${visCols.map(c=>{const ci=cols.indexOf(c);return`<th style="width:${p.colWidths?.[ci]||120}px">
-                ${isAdmin()?`<input class="col-name-edit" value="${c.name}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c.name}</span>`}
-                ${isAdmin()?`<div style="display:flex;gap:4px;margin-top:3px;font-size:10px;color:var(--text3)">
-                  <label style="cursor:pointer"><input type="checkbox" ${c.kind==='member'?'checked':''} onchange="saveColKind(${ci},this.checked?'member':'text')" style="vertical-align:middle">成員</label>
-                  <label style="cursor:pointer"><input type="checkbox" ${c.collapsible?'checked':''} onchange="saveColCollapsible(${ci},this.checked)" style="vertical-align:middle">收合</label>
-                </div>`:''}
-                ${isAdmin()?`<div class="col-resize" onmousedown="startColResize(event,'${p.id}',${ci})"></div>`:''}
-              </th>`;}).join('')}
-            </tr></thead>
-            <tbody><tr>
-              ${visCols.map(c=>renderDesignCell(p,c)).join('')}
-            </tr></tbody>
-          </table>
-          </div>
-        </div>
+      <div style="overflow-x:auto">
+      <table class="design-tbl" id="dtbl-${p.id}">
+        <thead><tr>
+          ${visCols.map(c=>{const ci=cols.indexOf(c);return`<th style="width:${p.colWidths?.[ci]||120}px">
+            ${isAdmin()?`<input class="col-name-edit" value="${c.name}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c.name}</span>`}
+            ${isAdmin()?`<div class="col-resize" onmousedown="startColResize(event,'${p.id}',${ci})"></div>`:''}
+          </th>`;}).join('')}
+        </tr></thead>
+        <tbody><tr>
+          ${visCols.map(c=>renderDesignCell(p,c)).join('')}
+        </tr></tbody>
+      </table>
       </div>
     </div>`;}).join('')}`;
+}
+window.openDesignColSettings=function(){
+  if(!isAdmin())return;
+  const cols=getDesignCols();
+  $('mo-content').innerHTML=`
+    <div class="mo-title">欄位設定</div>
+    <div style="font-size:11px;color:var(--text2);margin:4px 0 10px">「成員標記」欄位只能選人員、不能自由打字；「收合」欄位平常收起來，要按「顯示標記欄位」才會展開</div>
+    <div style="display:flex;flex-direction:column;gap:8px;max-height:55vh;overflow-y:auto">
+      ${cols.map((c,ci)=>`<div style="display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);padding-bottom:6px">
+        <input type="text" value="${escAttr(c.name)}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="flex:1;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:12px;font-family:inherit">
+        <label style="font-size:12px;display:flex;align-items:center;gap:3px;white-space:nowrap"><input type="checkbox" ${c.kind==='member'?'checked':''} onchange="saveColKind(${ci},this.checked?'member':'text')">成員標記</label>
+        <label style="font-size:12px;display:flex;align-items:center;gap:3px;white-space:nowrap"><input type="checkbox" ${c.collapsible?'checked':''} onchange="saveColCollapsible(${ci},this.checked)">收合</label>
+      </div>`).join('')}
+    </div>
+    <div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;
+  $('modal').style.display='flex';
 }
 function renderDesignCell(p,col){
   const dp=p.designProgress||{};
@@ -687,20 +688,26 @@ window.saveDesignField=async function(projId,col,val){
   const dp={...(proj.designProgress||{}),[col]:val};
   await updateDoc(doc(db,'projects',projId),{designProgress:dp});
 }
+function refreshDesignColSettingsIfOpen(){
+  if($('modal').style.display==='flex'&&$('mo-content').querySelector('.mo-title')?.textContent==='欄位設定')openDesignColSettings();
+}
 window.saveColName=async function(ci,val){
   if(!isAdmin())return;
   const cols=getDesignCols().map(c=>({...c}));cols[ci].name=val||`欄位${ci+1}`;
   setSyncing();await setDoc(doc(db,'settings','designCols'),{cols});setSynced();
+  refreshDesignColSettingsIfOpen();
 }
 window.saveColKind=async function(ci,kind){
   if(!isAdmin())return;
   const cols=getDesignCols().map(c=>({...c}));cols[ci].kind=kind;
   setSyncing();await setDoc(doc(db,'settings','designCols'),{cols});setSynced();
+  refreshDesignColSettingsIfOpen();
 }
 window.saveColCollapsible=async function(ci,val){
   if(!isAdmin())return;
   const cols=getDesignCols().map(c=>({...c}));cols[ci].collapsible=val;
   setSyncing();await setDoc(doc(db,'settings','designCols'),{cols});setSynced();
+  refreshDesignColSettingsIfOpen();
 }
 window.addDesignCol=async function(){
   if(!isAdmin())return;
