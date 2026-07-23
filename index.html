@@ -364,6 +364,9 @@ const STCS=["#3C3489","#085041","#633806","#791F1F","#0C447C","#27500A","#72243E
 function sc(i){return SCOLS[i%SCOLS.length]}function tc(i){return STCS[i%STCS.length]}
 function statusInfo(v){return STATUS_OPTS.find(o=>o.v===v)||STATUS_OPTS[0]}
 function isAdmin(){return currentRole==='admin'}
+function memberDisplayName(m){if(!m)return'成員';return m.displayName||m.name||(m.email?m.email.split('@')[0]:'成員');}
+function memberTag(m){if(!m)return'?';if(m.tagInitial)return m.tagInitial;return memberDisplayName(m).charAt(0);}
+function activeMembersList(){return S.members.filter(m=>(m.role==='admin'||m.role==='staff')&&m.status!=='resigned');}
 const DEFAULT_DESIGN_COL_NAMES=['會議人員','平面圖','客變圖','3D圖','施工圖','報價單'];
 const DEFAULT_DESIGN_COLS=DEFAULT_DESIGN_COL_NAMES.map(name=>({name,kind:'member',collapsible:true}));
 // Accepts either the old plain-string column list or the new {name,kind,collapsible}
@@ -417,13 +420,26 @@ onAuthStateChanged(auth,async user=>{
   currentUser=user;
   const memberRef=doc(db,'members',user.uid);
   const memberSnap=await getDoc(memberRef);
+  let memberData;
   if(!memberSnap.exists()){
     const membersSnap=await getDocs(collection(db,'members'));
     const hasAdmin=membersSnap.docs.some(d=>d.data().role==='admin');
     const role=hasAdmin?'pending':'admin';
-    await setDoc(memberRef,{uid:user.uid,name:user.displayName,email:user.email,photoURL:user.photoURL,role,createdAt:serverTimestamp()});
+    memberData={uid:user.uid,name:user.displayName,email:user.email,photoURL:user.photoURL,role,status:'active',createdAt:serverTimestamp()};
+    await setDoc(memberRef,memberData);
     currentRole=role;
-  }else{currentRole=memberSnap.data().role;}
+  }else{
+    memberData=memberSnap.data();
+    currentRole=memberData.role;
+  }
+  if(memberData.status==='resigned'){
+    await fbSignOut(auth);
+    $('login-screen').style.display='flex';
+    $('pending-screen').style.display='none';
+    $('app-screen').style.display='none';
+    alert('此帳號已被設定為離職，無法登入。如有疑問請聯絡主管。');
+    return;
+  }
   if(currentRole==='pending'){
     $('login-screen').style.display='none';
     $('pending-screen').style.display='flex';
@@ -435,7 +451,7 @@ onAuthStateChanged(auth,async user=>{
   $('pending-screen').style.display='none';
   $('app-screen').style.display='block';
   if(user.photoURL){$('user-avatar').src=user.photoURL;$('user-avatar').style.display='block';}
-  $('user-name').textContent=user.displayName?.split(' ')[0]||user.email;
+  $('user-name').textContent=memberDisplayName(memberData);
   if(isAdmin())document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('show'));
   initListeners();renderOverview();
 
@@ -637,7 +653,7 @@ function renderDesignCell(p,col){
   if(col.kind==='member'){
     const m=S.members.find(x=>x.uid===val);
     return`<td style="text-align:center">
-      ${m?`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:12px;font-size:12px">${m.name}<span onclick="saveDesignField('${p.id}','${col.name}','')" style="cursor:pointer;font-weight:700">×</span></span>`
+      ${m?`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:12px;font-size:12px">${memberDisplayName(m)}<span onclick="saveDesignField('${p.id}','${col.name}','')" style="cursor:pointer;font-weight:700">×</span></span>`
         :`<span class="task-tag-btn" onmouseenter="dcOpenPicker(event,'${p.id}','${col.name}')" onmouseleave="dcScheduleClose('${p.id}','${col.name}')" style="font-size:11px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:9px;padding:2px 8px">+ 標記</span>`}
       <div class="pn-mention-menu" id="dc-mention-${p.id}-${col.name}" style="display:none" onmouseenter="mCancelCloseMention()" onmouseleave="dcScheduleClose('${p.id}','${col.name}')"></div>
     </td>`;
@@ -700,8 +716,8 @@ window.dcOpenPicker=function(e,projId,colName){
   if(!menuEl)return;
   const rect=e.currentTarget.getBoundingClientRect();
   menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:140px;max-height:200px;overflow-y:auto';
-  menuEl.innerHTML=S.members.map(function(m){
-    return'<div onmousedown="event.preventDefault();saveDesignField(\''+projId+'\',\''+colName+'\',\''+m.uid+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)">'+(m.name||'')+'</div>';
+  menuEl.innerHTML=activeMembersList().map(function(m){
+    return'<div onmousedown="event.preventDefault();saveDesignField(\''+projId+'\',\''+colName+'\',\''+m.uid+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)">'+memberDisplayName(m)+'</div>';
   }).join('');
 }
 window.dcScheduleClose=function(projId,colName){
@@ -931,8 +947,8 @@ function renderWeekView(shouldShow){
           var textStyle=(color?'color:'+color+';font-weight:500;':'color:var(--text);')+(bg?'background:'+bg+';':'background:var(--surface);');
           var dots=mentions.map(function(uid){
             var m=S.members.find(function(x){return x.uid===uid;});
-            var nm=m&&m.name?m.name:'?';
-            return'<span title="'+nm+'" style="width:14px;height:14px;border-radius:50%;background:var(--purple);color:#fff;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+nm.charAt(0)+'</span>';
+            var nm=memberDisplayName(m);
+            return'<span title="'+nm+'" style="width:14px;height:14px;border-radius:50%;background:var(--purple);color:#fff;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+memberTag(m)+'</span>';
           }).join('');
           if(isSel){
             h+='<div style="border:'+border+';padding:6px 8px;border-radius:5px;display:flex;align-items:center;gap:5px;'+textStyle+'">'
@@ -979,7 +995,7 @@ function renderWeekView(shouldShow){
 // ── Daily Log Section ──
 function renderDailyLogSection(days){
   const td=today();
-  const activeMembers=S.members.filter(m=>m.role==='admin'||m.role==='staff');
+  const activeMembers=activeMembersList();
   if(!activeMembers.length)return'';
   const WD=['日','一','二','三','四','五','六'];
   return`<div style="border-top:3px solid #1a1a1a;margin-top:0"></div>
@@ -993,7 +1009,7 @@ function renderDailyLogSection(days){
       <colgroup><col style="width:100px">${days.map(()=>'<col>').join('')}</colgroup>
       <tbody>
       ${activeMembers.map(m=>`<tr>
-        <td class="log-name-cell">${m.name||m.email?.split('@')[0]||'成員'}</td>
+        <td class="log-name-cell">${memberDisplayName(m)}</td>
         ${days.map(d=>{
           const ds=fmtDay(d);
           const isT=isSameDay(d,td);
@@ -1007,7 +1023,7 @@ function renderDailyLogSection(days){
               onkeydown="if(event.key==='Tab'){event.preventDefault();this.blur()}"
               placeholder=""`:' readonly'}
             >${logVal}</textarea>
-            ${myTask?`<span onclick="tRemoveTarget('${myTask.id}','${m.uid}')" title="移除指派給${m.name||''}的任務：${escAttr(myTask.text||'')}" style="position:absolute;top:3px;right:3px;cursor:pointer;color:var(--text3);font-weight:700;font-size:11px;background:#fff;border:1px solid var(--border);border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;line-height:1">×</span>`:''}
+            ${myTask?`<span onclick="tRemoveTarget('${myTask.id}','${m.uid}')" title="移除指派給${memberDisplayName(m)}的任務：${escAttr(myTask.text||'')}" style="position:absolute;top:3px;right:3px;cursor:pointer;color:var(--text3);font-weight:700;font-size:11px;background:#fff;border:1px solid var(--border);border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;line-height:1">×</span>`:''}
           </td>`;}).join('')}
       </tr>`).join('')}
       </tbody>
@@ -1042,15 +1058,15 @@ var tNewTargets=[];
 function tNewTargetsDotsHTML(){
   return tNewTargets.map(function(uid){
     const m=S.members.find(function(x){return x.uid===uid;});
-    const nm=m&&m.name?m.name:'?';
-    return'<span title="'+nm+'" style="width:14px;height:14px;border-radius:50%;background:var(--teal);color:#fff;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+nm.charAt(0)+'</span>';
+    const nm=memberDisplayName(m);
+    return'<span title="'+nm+'" style="width:14px;height:14px;border-radius:50%;background:var(--teal);color:#fff;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+memberTag(m)+'</span>';
   }).join('');
 }
 function tNewMentionMenuHTML(){
-  return S.members.map(function(m){
+  return activeMembersList().map(function(m){
     const checked=tNewTargets.indexOf(m.uid)>=0;
     return'<div onmousedown="event.preventDefault();tNewToggle(\''+m.uid+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">'
-      +'<span>'+(checked?'☑':'☐')+'</span><span>'+(m.name||'')+'</span></div>';
+      +'<span>'+(checked?'☑':'☐')+'</span><span>'+memberDisplayName(m)+'</span></div>';
   }).join('');
 }
 window.tNewToggle=function(uid){
@@ -1132,7 +1148,7 @@ async function tSyncDailyLog(taskId,uid,ds,newText){
   try{
     await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,updatedAt:serverTimestamp()});
   }catch(err){
-    console.error('無法自動寫入 '+m.name+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
+    console.error('無法自動寫入 '+memberDisplayName(m)+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
   }
 }
 async function tRemoveFromDailyLog(taskId,uid,ds){
@@ -1151,7 +1167,7 @@ async function tRemoveFromDailyLog(taskId,uid,ds){
   try{
     await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,updatedAt:serverTimestamp()});
   }catch(err){
-    console.error('無法自動移除 '+m.name+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
+    console.error('無法自動移除 '+memberDisplayName(m)+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
   }
 }
 
@@ -1268,10 +1284,10 @@ function mMentionMenuHTML(rowId,ds,idx){
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)||[];
   const item=items[idx]||{};
   const mentions=item.mentions||[];
-  return S.members.map(function(m){
+  return activeMembersList().map(function(m){
     const checked=mentions.indexOf(m.uid)>=0;
     return'<div onmousedown="event.preventDefault();mToggleMention(\''+rowId+'\',\''+ds+'\','+idx+',\''+m.uid+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">'
-      +'<span>'+(checked?'☑':'☐')+'</span><span>'+(m.name||'')+'</span></div>';
+      +'<span>'+(checked?'☑':'☐')+'</span><span>'+memberDisplayName(m)+'</span></div>';
   }).join('');
 }
 window.mOpenMentionPicker=function(e,rowId,ds,idx){
@@ -1326,7 +1342,7 @@ async function mSyncDailyLog(rowId,ds,idx,uid,newText){
   try{
     await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,updatedAt:serverTimestamp()});
   }catch(err){
-    console.error('無法自動寫入 '+m.name+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
+    console.error('無法自動寫入 '+memberDisplayName(m)+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
   }
 }
 async function mRemoveFromDailyLog(rowId,ds,idx,uid){
@@ -1345,7 +1361,7 @@ async function mRemoveFromDailyLog(rowId,ds,idx,uid){
   try{
     await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,updatedAt:serverTimestamp()});
   }catch(err){
-    console.error('無法自動移除 '+m.name+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
+    console.error('無法自動移除 '+memberDisplayName(m)+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
   }
 }
 window.mBoxBlur=function(el,rowId,ds,idx){mSaveBox(el,rowId,ds,idx);}
@@ -2084,34 +2100,110 @@ window.deleteStage=async function(stage){
 }
 
 // ── Members ──
+let expandedMemberInfo={};
 function renderMembers(){
   if(!isAdmin())return;
   const el=$('panel-members');
   const pending=S.members.filter(m=>m.role==='pending');
-  const active=S.members.filter(m=>m.role!=='pending');
+  const active=S.members.filter(m=>m.role!=='pending'&&m.status!=='resigned');
+  const resigned=S.members.filter(m=>m.role!=='pending'&&m.status==='resigned');
+  function memberCard(m,isResigned){
+    const ei=m.employeeInfo||{};
+    const open=!!expandedMemberInfo[m.id];
+    return`<div class="member-card" style="flex-direction:column;align-items:stretch">
+    <div style="display:flex;align-items:center;gap:10px">
+      <img class="member-avatar" src="${m.photoURL||''}" onerror="this.style.display='none'">
+      <div class="member-info" style="flex:1">
+        <div class="member-name">${memberDisplayName(m)}${isResigned?' <span style="font-size:11px;color:var(--text3)">（離職）</span>':''}</div>
+        <div class="member-email">${m.email}</div>
+      </div>
+      ${!isResigned?`<span class="role-badge ${m.role==='admin'?'role-admin':'role-staff'}">${m.role==='admin'?'主管':'員工'}</span>`:''}
+      ${!isResigned&&m.uid!==currentUser?.uid?`<select class="btn btn-sm" onchange="changeRole('${m.id}',this.value)">
+        <option value="admin" ${m.role==='admin'?'selected':''}>主管</option>
+        <option value="staff" ${m.role==='staff'?'selected':''}>員工</option>
+      </select>`:''}
+      ${m.uid===currentUser?.uid?'<span style="font-size:11px;color:var(--text3)">（自己）</span>':''}
+      <button class="btn btn-sm" onclick="toggleMemberInfo('${m.id}')">${open?'收起資料':'員工資料'}</button>
+      ${m.uid!==currentUser?.uid?(isResigned?`<button class="btn btn-sm btn-p" onclick="setMemberStatus('${m.id}','active')">恢復在職</button>`:`<button class="btn btn-sm btn-danger" onclick="setMemberStatus('${m.id}','resigned')">設為離職</button>`):''}
+    </div>
+    ${open?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px">
+      <div style="grid-column:1/-1;font-weight:600;color:var(--text2);margin-top:2px">顯示設定</div>
+      ${mfField(m.id,'displayName','顯示名稱',m.displayName||'')}
+      ${mfField(m.id,'tagInitial','標記縮寫（例如：偉）',m.tagInitial||'')}
+      <div style="grid-column:1/-1;font-weight:600;color:var(--text2);margin-top:6px">基本資料</div>
+      ${eiField(m.id,'realName','姓名',ei.realName)}
+      ${eiField(m.id,'idNumber','身份證字號',ei.idNumber)}
+      ${eiField(m.id,'birthDate','出生日期',ei.birthDate)}
+      ${eiField(m.id,'gender','性別',ei.gender)}
+      ${eiField(m.id,'bloodType','血型',ei.bloodType)}
+      ${eiField(m.id,'marital','婚姻狀況',ei.marital)}
+      <div style="grid-column:1/-1;font-weight:600;color:var(--text2);margin-top:6px">聯絡資訊</div>
+      ${eiField(m.id,'homeAddr','戶籍地址',ei.homeAddr)}
+      ${eiField(m.id,'mailAddr','聯絡地址',ei.mailAddr)}
+      ${eiField(m.id,'phone','手機',ei.phone)}
+      ${eiField(m.id,'emergName','緊急聯絡人姓名',ei.emergName)}
+      ${eiField(m.id,'emergRel','緊急聯絡人關係',ei.emergRel)}
+      ${eiField(m.id,'emergPhone','緊急聯絡人電話',ei.emergPhone)}
+      <div style="grid-column:1/-1;font-weight:600;color:var(--text2);margin-top:6px">任職資訊</div>
+      ${eiField(m.id,'title','職稱',ei.title)}
+      ${eiField(m.id,'department','所屬部門',ei.department)}
+      ${eiField(m.id,'hireDate','到職日',ei.hireDate)}
+      ${eiField(m.id,'resignDate','離職日',ei.resignDate)}
+      ${eiField(m.id,'insuranceDate','勞健保加保日',ei.insuranceDate)}
+    </div>`:''}
+    </div>`;
+  }
+  function mfField(uid,field,label,val){
+    return`<div><div style="color:var(--text3);font-size:11px;margin-bottom:2px">${label}</div>
+      <input type="text" value="${escAttr(val)}" onblur="saveMemberField('${uid}','${field}',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%;box-sizing:border-box;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:12px;font-family:inherit">
+    </div>`;
+  }
+  function eiField(uid,field,label,val){
+    return`<div><div style="color:var(--text3);font-size:11px;margin-bottom:2px">${label}</div>
+      <input type="text" value="${escAttr(val||'')}" onblur="saveEmployeeInfo('${uid}','${field}',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%;box-sizing:border-box;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:12px;font-family:inherit">
+    </div>`;
+  }
   el.innerHTML=`
   <div style="font-size:15px;font-weight:600;margin-bottom:1rem">成員管理</div>
   ${pending.length?`<div style="font-size:13px;font-weight:500;margin-bottom:8px;color:var(--amber)">待審核（${pending.length}）</div>
   ${pending.map(m=>`<div class="member-card">
     <img class="member-avatar" src="${m.photoURL||''}" onerror="this.style.display='none'">
-    <div class="member-info"><div class="member-name">${m.name||'未知'}</div><div class="member-email">${m.email}</div></div>
+    <div class="member-info"><div class="member-name">${memberDisplayName(m)}</div><div class="member-email">${m.email}</div></div>
     <span class="role-badge role-pending">待審核</span>
     <button class="btn btn-sm btn-p" onclick="approveMember('${m.id}','staff')">核准（員工）</button>
     <button class="btn btn-sm btn-p" style="background:var(--pd)" onclick="approveMember('${m.id}','admin')">核准（主管）</button>
     <button class="btn btn-sm btn-danger" onclick="rejectMember('${m.id}')">拒絕</button>
   </div>`).join('')}`:''}
   <div style="font-size:13px;font-weight:500;margin-bottom:8px;margin-top:${pending.length?'16px':'0'}">所有成員（${active.length}）</div>
-  ${active.map(m=>`<div class="member-card">
-    <img class="member-avatar" src="${m.photoURL||''}" onerror="this.style.display='none'">
-    <div class="member-info"><div class="member-name">${m.name||'未知'}</div><div class="member-email">${m.email}</div></div>
-    <span class="role-badge ${m.role==='admin'?'role-admin':'role-staff'}">${m.role==='admin'?'主管':'員工'}</span>
-    ${m.uid!==currentUser?.uid?`<select class="btn btn-sm" onchange="changeRole('${m.id}',this.value)">
-      <option value="admin" ${m.role==='admin'?'selected':''}>主管</option>
-      <option value="staff" ${m.role==='staff'?'selected':''}>員工</option>
-    </select>`:'<span style="font-size:11px;color:var(--text3)">（自己）</span>'}
-  </div>`).join('')}`;
+  ${active.map(m=>memberCard(m,false)).join('')}
+  ${resigned.length?`<div style="font-size:13px;font-weight:500;margin-bottom:8px;margin-top:16px;color:var(--text3)">離職員工（${resigned.length}）</div>
+  ${resigned.map(m=>memberCard(m,true)).join('')}`:''}`;
 }
-window.approveMember=async function(uid,role){await updateDoc(doc(db,'members',uid),{role});}
+window.toggleMemberInfo=function(uid){expandedMemberInfo[uid]=!expandedMemberInfo[uid];renderMembers();}
+window.saveMemberField=async function(uid,field,val){
+  if(!isAdmin())return;
+  await updateDoc(doc(db,'members',uid),{[field]:val});
+}
+window.saveEmployeeInfo=async function(uid,field,val){
+  if(!isAdmin())return;
+  const m=S.members.find(x=>x.id===uid);
+  const ei={...(m?.employeeInfo||{}),[field]:val};
+  await updateDoc(doc(db,'members',uid),{employeeInfo:ei});
+}
+window.setMemberStatus=async function(uid,status){
+  if(!isAdmin())return;
+  const m=S.members.find(x=>x.id===uid);
+  if(status==='resigned'&&!confirm('確定要將這位成員設為離職嗎？設定後他將無法再登入系統，但所有資料會保留。'))return;
+  const patch={status};
+  if(status==='resigned'){
+    patch.resignedAt=serverTimestamp();
+    const ei={...(m?.employeeInfo||{})};
+    if(!ei.resignDate)ei.resignDate=fmtDay(today());
+    patch.employeeInfo=ei;
+  }
+  await updateDoc(doc(db,'members',uid),patch);
+}
+window.approveMember=async function(uid,role){await updateDoc(doc(db,'members',uid),{role,status:'active'});}
 window.rejectMember=async function(uid){if(!confirm('確定拒絕？'))return;await deleteDoc(doc(db,'members',uid));}
 window.changeRole=async function(uid,role){await updateDoc(doc(db,'members',uid),{role});}
 
