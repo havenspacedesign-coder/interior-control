@@ -605,9 +605,6 @@ function renderDesign(){
   el.innerHTML=`
   <div class="flex-sb" style="margin-bottom:1rem">
     <span style="font-size:14px;font-weight:500">設計進度</span>
-    <span style="display:flex;gap:8px">
-      ${isAdmin()?`<button class="btn btn-sm" onclick="openDesignColSettings()">⚙ 欄位設定</button>`:''}
-    </span>
   </div>
   ${allProjs.length===0?`<div class="empty">尚無案件</div>`:`
   <div style="overflow-x:auto">
