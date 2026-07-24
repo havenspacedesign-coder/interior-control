@@ -128,11 +128,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .nav-btn:hover{background:var(--bg)}
 .wk-lbl{font-size:13px;font-weight:500;min-width:150px;text-align:center;cursor:pointer;padding:4px 8px;border-radius:var(--r)}
 .wk-lbl:hover{background:var(--bg)}
-.wtbl-wrap{overflow:auto;max-height:calc(100vh - 180px);border:1px solid var(--border);border-radius:var(--rl2)}
+.wtbl-wrap{overflow-x:auto;overflow-y:visible;border:1px solid var(--border);border-radius:var(--rl2)}
 .hide-hscrollbar{scrollbar-width:none}
 .hide-hscrollbar::-webkit-scrollbar{height:0}
 .wtbl{border-collapse:collapse;font-size:12px;table-layout:fixed}
-.wtbl th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500;position:sticky;top:0;z-index:10}
+.wtbl th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500;position:sticky;top:50px;z-index:10}
 .wtbl th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
 .wtbl td{padding:3px;border:1px solid var(--border);vertical-align:top;background:var(--surface)}
 .wtbl td.ev-cell{height:50px;overflow:visible}
@@ -910,9 +910,9 @@ function renderWeekView(shouldShow){
     </td>`;
   }
 
-  return`${hint}<div class="wtbl-wrap hscroll-sync hide-hscrollbar"><table class="wtbl" style="width:${100+days.length*150}px">
+  return`${hint}<div class="wtbl-wrap hscroll-sync hide-hscrollbar"><table class="wtbl" style="width:${100+days.length*173}px">
   <thead><tr>
-    <th class="site-hd" style="width:100px;position:sticky;top:0;z-index:3;background:var(--surface)"></th>
+    <th class="site-hd" style="width:100px;position:sticky;top:50px;z-index:3;background:var(--surface)"></th>
     ${days.map(d=>{
   const isT=isSameDay(d,td);
   const ds2=fmtDay(d);
@@ -921,7 +921,7 @@ function renderWeekView(shouldShow){
   const dc=S.dateColors[ds2]||{};
   const dateColor=dc.color||(isWknd?'var(--red)':'');
   const dateNote=dc.note||'';
-  return`<th class="${isT?'th-t':''}" style="width:150px;position:sticky;top:0;z-index:3;background:${isT?'#fff8f8':'var(--surface)'};${dateColor?'color:'+dateColor:''};cursor:pointer" onclick="openDateColorPicker('${ds2}')" title="${dateNote||'點擊設定顏色/備註'}">
+  return`<th class="${isT?'th-t':''}" style="width:173px;position:sticky;top:50px;z-index:3;background:${isT?'#fff8f8':'var(--surface)'};${dateColor?'color:'+dateColor:''};cursor:pointer" onclick="openDateColorPicker('${ds2}')" title="${dateNote||'點擊設定顏色/備註'}">
     ${d.getMonth()+1}/${d.getDate()}
     <br><span style="font-weight:400;font-size:10px">週${WD[d.getDay()]}</span>${dateNote?`<br><span style="font-size:9px;font-weight:400">${dateNote}</span>`:''}
   </th>`;}).join('')}
@@ -956,7 +956,7 @@ function renderWeekView(shouldShow){
       +'<span style="font-size:11px;color:var(--text2)">文字</span>'+mDots('text',mFound?mFound.color:'')
       +'<span style="font-size:11px;color:var(--text2);margin-left:6px">底色</span>'+mDots('bg',mFound?mFound.bg:'')
       +'</span>';
-    var hdr='<tr><td colspan="'+(days.length+1)+'" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:2px solid #1a1a1a;position:sticky;top:48px;z-index:9">'
+    var hdr='<tr><td colspan="'+(days.length+1)+'" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:2px solid #1a1a1a;position:sticky;top:98px;z-index:9">'
       +'🗓 會議 / 其他事項'+mColorBar
       +'<span style="font-size:11px;color:var(--text3);margin-left:10px;font-weight:400">單擊選取上色・雙擊編輯・點「+標記」可標記人員(自動同步進對方每日日誌)・Ctrl+拖拉複製・Delete刪除</span>'
       +'</td></tr>';
@@ -1040,8 +1040,8 @@ function renderDailyLogSection(days){
       ${renderTaskAssignForm()}
     </div>
     <div class="hscroll-sync hide-hscrollbar" style="overflow-x:auto">
-    <table class="daily-log-table" style="width:${100+days.length*150}px">
-      <colgroup><col style="width:100px">${days.map(()=>'<col style="width:150px">').join('')}</colgroup>
+    <table class="daily-log-table" style="width:${100+days.length*173}px">
+      <colgroup><col style="width:100px">${days.map(()=>'<col style="width:173px">').join('')}</colgroup>
       <tbody>
       ${activeMembers.map(m=>`<tr>
         <td class="log-name-cell">${memberDisplayName(m)}</td>
@@ -1518,7 +1518,7 @@ function renderPrivateTodoSection(){
   var hiddenHeader='<tr style="height:0;visibility:hidden"><th style="padding:0;width:100px"></th>'+days.map(function(){return'<th style="padding:0"></th>';}).join('')+'</tr>';
   var divider='<tr><td colspan="'+(days.length+1)+'" style="padding:0"><div style="border-top:2px solid #1a1a1a"></div></td></tr>';
   var tblStyle='border-collapse:collapse;table-layout:fixed';
-  var colgroup='<colgroup><col style="width:100px">'+days.map(function(){return'<col style="width:150px">';}).join('')+'</colgroup>';
+  var colgroup='<colgroup><col style="width:100px">'+days.map(function(){return'<col style="width:173px">';}).join('')+'</colgroup>';
 
   return '<div style="border-top:3px solid #1a1a1a"></div>'
     +'<div class="private-section" style="border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">'
@@ -1527,7 +1527,7 @@ function renderPrivateTodoSection(){
     +colorBar()
     +'<span style="font-size:11px;color:var(--text3);margin-left:4px">雙擊編輯 · 打@找工地 · Ctrl+拖拉複製 · Delete刪除</span>'
     +'</div>'
-    +'<div class="hscroll-sync" style="overflow-x:auto"><table style="'+tblStyle+';width:'+(100+days.length*150)+'px">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
+    +'<div class="hscroll-sync" style="overflow-x:auto"><table style="'+tblStyle+';width:'+(100+days.length*173)+'px">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
     +makeRow('work','工地記事')
     +divider
     +makeRow('personal','私人記事')
