@@ -344,7 +344,7 @@ const MEETING_ROWS=[
   {id:'meet3',name:'丈量'},
   {id:'meet4',name:'其他'}
 ];
-let activePanel='overview',calMode='week',weekOffset=0,selectedTag=null;
+let activePanel='overview',calMode='week',weekOffset=0,monthOffset=0,selectedTag=null;
 let activeBibleStage=null,activeBibleWs=null,bibleView='edit',dragSrc=null,dragModeOn=false;
 let openPicker=null;
 let expandedProjs={},expandedFields={};
@@ -384,7 +384,17 @@ function isSameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()==
 function fmtDate(d){return`${d.getMonth()+1}/${d.getDate()}`}
 function fmtDay(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function today(){return new Date()}
-function getWeekDates(){const b=today();const dow=b.getDay();const diff=dow===0?-6:1-dow;const mon=addDays(b,diff+weekOffset*7);return Array.from({length:7},(_,i)=>addDays(mon,i));}
+function getWeekDates(){
+  if(calMode==='month')return getMonthDates();
+  const b=today();const dow=b.getDay();const diff=dow===0?-6:1-dow;const mon=addDays(b,diff+weekOffset*7);return Array.from({length:7},(_,i)=>addDays(mon,i));
+}
+function getMonthDates(){
+  const b=today();
+  const target=new Date(b.getFullYear(),b.getMonth()+monthOffset,1);
+  const y=target.getFullYear(),m=target.getMonth();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  return Array.from({length:daysInMonth},(_,i)=>new Date(y,m,i+1));
+}
 
 function getBibleStages(){
   if(S.bibleOrder&&S.bibleOrder.length)return S.bibleOrder;
@@ -820,7 +830,7 @@ function renderProgress(){
     if(p.status==='done'){
       return(p.schedule||[]).some(e=>{
         const d=new Date(e.date+'T00:00:00');
-        return d>=weekDays[0]&&d<=weekDays[6];
+        return d>=weekDays[0]&&d<=weekDays[weekDays.length-1];
       });
     }
     return false;
@@ -828,26 +838,30 @@ function renderProgress(){
   el.innerHTML=`
   <div class="wctrl">
     <div class="seg">
-      <button class="${calMode==='week'?'on':''}" onclick="setCalMode('week')">週視圖</button>
+      <button class="${calMode==='week'||calMode==='month'?'on':''}" onclick="setCalMode('week')">週視圖</button>
       <button class="${calMode==='day'?'on':''}" onclick="setCalMode('day')">今日總覽</button>
     </div>
-    ${calMode==='week'?`<div class="nav-row">
-      <button class="nav-btn" onclick="changeWeek(-1)">‹</button>
-      <span class="wk-lbl" onclick="openDatePicker()">${weekDays[0].getFullYear()}年 ${fmtDate(weekDays[0])} – ${fmtDate(weekDays[6])} 📅</span>
+    ${calMode==='week'||calMode==='month'?`<div class="nav-row">
+      <span class="seg" style="margin-right:6px">
+        <button class="${calMode==='month'?'on':''}" onclick="setCalMode('month')" style="padding:3px 10px;font-size:12px">月</button>
+        <button class="${calMode==='week'?'on':''}" onclick="setCalMode('week')" style="padding:3px 10px;font-size:12px">週</button>
+      </span>
+      <button class="nav-btn" onclick="changePeriod(-1)">‹</button>
+      <span class="wk-lbl" onclick="openDatePicker()">${calMode==='month'?weekDays[0].getFullYear()+'年 '+(weekDays[0].getMonth()+1)+'月':weekDays[0].getFullYear()+'年 '+fmtDate(weekDays[0])+' – '+fmtDate(weekDays[weekDays.length-1])} 📅</span>
       <input type="date" id="week-date-picker" style="position:fixed;opacity:0;pointer-events:none;width:0;height:0" onchange="jumpToDate(this.value)">
-      <button class="nav-btn" onclick="changeWeek(1)">›</button>
+      <button class="nav-btn" onclick="changePeriod(1)">›</button>
     </div>`:''}
   </div>
   ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
-  ${calMode==='week'?`<div class="formula-bar${formulaBarState?' active':''}" id="pn-formula-bar">
+  ${calMode==='week'||calMode==='month'?`<div class="formula-bar${formulaBarState?' active':''}" id="pn-formula-bar">
     <span class="formula-bar-label" id="pn-formula-label">${formulaBarState?(formulaBarState.type==='work'?'工地記事':'私人記事')+' · '+formulaBarState.ds.slice(5).replace('-','/'):'工地記事'}</span>
     <input class="formula-bar-input" id="pn-formula-input" placeholder="選取色塊後在此編輯…" value="${formulaBarState?escAttr(formulaBarState.text||''):''}" autocomplete="off" spellcheck="false"
       oninput="if(formulaBarState)formulaBarState.text=this.value"
       onblur="formulaBarSave()"
       onkeydown="if((event.key==='Enter'||event.key==='Escape')&&!event.isComposing&&event.keyCode!==229)this.blur()">
   </div>`:''}
-  ${calMode==='week'?renderWeekView(shouldShow):renderDayView()}
-  ${calMode==='week'?renderDailyLogSection(weekDays):''}
+  ${calMode==='week'||calMode==='month'?renderWeekView(shouldShow):renderDayView()}
+  ${calMode==='week'||calMode==='month'?renderDailyLogSection(weekDays):''}
   ${renderPrivateTodoSection()}`;
 }
 
@@ -1714,6 +1728,23 @@ window.pnDrop=async function(e,toType,toDs){
   pnDragSrc=null;
   renderProgress();
 }
+// Shift + mouse wheel scrolls sideways instead of down, for any of the
+// horizontally-scrollable table wrappers in the app.
+document.addEventListener('wheel',function(e){
+  if(!e.shiftKey)return;
+  let el=e.target;
+  while(el&&el!==document.body){
+    if(el.scrollWidth>el.clientWidth){
+      const ov=getComputedStyle(el).overflowX;
+      if(ov==='auto'||ov==='scroll'){
+        el.scrollLeft+=e.deltaY;
+        e.preventDefault();
+        return;
+      }
+    }
+    el=el.parentElement;
+  }
+},{passive:false});
 document.addEventListener('keydown',function(e){
   if(e.key!=='Delete')return;
   if(S.privateEditing)return;
@@ -1891,6 +1922,12 @@ window.openDatePicker=function(){
 window.jumpToDate=function(dateStr){
   if(!dateStr)return;
   const target=new Date(dateStr+'T00:00:00');
+  if(calMode==='month'){
+    const base=today();
+    monthOffset=(target.getFullYear()-base.getFullYear())*12+(target.getMonth()-base.getMonth());
+    renderProgress();
+    return;
+  }
   const base=today();const dow=base.getDay();const diff=dow===0?-6:1-dow;
   const thisMon=addDays(base,diff);
   const targetDow=target.getDay();const targetDiff=targetDow===0?-6:1-targetDow;
@@ -2270,6 +2307,10 @@ window.deleteProject=async function(id){
 }
 window.setCalMode=function(m){calMode=m;renderProgress();}
 window.changeWeek=function(d){weekOffset+=d;renderProgress();}
+window.changePeriod=function(d){
+  if(calMode==='month')monthOffset+=d;else weekOffset+=d;
+  renderProgress();
+}
 
 // Formula bar functions
 var formulaBarState=null; // {type,ds,idx,text} — used for display/label only, not saving
