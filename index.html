@@ -129,7 +129,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .wk-lbl{font-size:13px;font-weight:500;min-width:150px;text-align:center;cursor:pointer;padding:4px 8px;border-radius:var(--r)}
 .wk-lbl:hover{background:var(--bg)}
 .wtbl-wrap{overflow:auto;max-height:calc(100vh - 180px);border:1px solid var(--border);border-radius:var(--rl2)}
-.wtbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;min-width:700px}
+.wtbl{border-collapse:collapse;font-size:12px;table-layout:fixed}
 .wtbl th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500;position:sticky;top:0;z-index:10}
 .wtbl th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
 .wtbl td{padding:3px;border:1px solid var(--border);vertical-align:top;background:var(--surface)}
@@ -169,7 +169,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 /* Daily log section */
 .daily-section{margin-top:1rem;border:1px solid var(--border);border-radius:var(--rl2);overflow:hidden}
 .daily-section-hdr{padding:10px 16px;background:var(--bg);font-size:13px;font-weight:500;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.daily-log-table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:700px}
+.daily-log-table{border-collapse:collapse;table-layout:fixed}
 .daily-log-table th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500;position:sticky;top:0;z-index:10}
 .daily-log-table th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
 .daily-log-table td{padding:3px;border:1px solid var(--border);background:var(--surface);vertical-align:top}
@@ -919,7 +919,7 @@ function renderWeekView(shouldShow){
   const dc=S.dateColors[ds2]||{};
   const dateColor=dc.color||(isWknd?'var(--red)':'');
   const dateNote=dc.note||'';
-  return`<th class="${isT?'th-t':''}" style="${dateColor?'color:'+dateColor:''};cursor:pointer" onclick="openDateColorPicker('${ds2}')" title="${dateNote||'點擊設定顏色/備註'}">
+  return`<th class="${isT?'th-t':''}" style="width:110px;${dateColor?'color:'+dateColor:''};cursor:pointer" onclick="openDateColorPicker('${ds2}')" title="${dateNote||'點擊設定顏色/備註'}">
     ${d.getMonth()+1}/${d.getDate()}
     <br><span style="font-weight:400;font-size:10px">週${WD[d.getDay()]}</span>${dateNote?`<br><span style="font-size:9px;font-weight:400">${dateNote}</span>`:''}
   </th>`;}).join('')}
@@ -1039,7 +1039,7 @@ function renderDailyLogSection(days){
     </div>
     <div style="overflow-x:auto">
     <table class="daily-log-table">
-      <colgroup><col style="width:100px">${days.map(()=>'<col>').join('')}</colgroup>
+      <colgroup><col style="width:100px">${days.map(()=>'<col style="width:110px">').join('')}</colgroup>
       <tbody>
       ${activeMembers.map(m=>`<tr>
         <td class="log-name-cell">${memberDisplayName(m)}</td>
@@ -1515,8 +1515,8 @@ function renderPrivateTodoSection(){
 
   var hiddenHeader='<tr style="height:0;visibility:hidden"><th style="padding:0;width:100px"></th>'+days.map(function(){return'<th style="padding:0"></th>';}).join('')+'</tr>';
   var divider='<tr><td colspan="'+(days.length+1)+'" style="padding:0"><div style="border-top:2px solid #1a1a1a"></div></td></tr>';
-  var tblStyle='width:100%;border-collapse:collapse;table-layout:fixed;min-width:700px';
-  var colgroup='<colgroup><col style="width:100px">'+days.map(function(){return'<col>';}).join('')+'</colgroup>';
+  var tblStyle='border-collapse:collapse;table-layout:fixed';
+  var colgroup='<colgroup><col style="width:100px">'+days.map(function(){return'<col style="width:110px">';}).join('')+'</colgroup>';
 
   return '<div style="border-top:3px solid #1a1a1a"></div>'
     +'<div class="private-section" style="border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">'
