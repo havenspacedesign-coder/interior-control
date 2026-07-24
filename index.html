@@ -128,11 +128,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .nav-btn:hover{background:var(--bg)}
 .wk-lbl{font-size:13px;font-weight:500;min-width:150px;text-align:center;cursor:pointer;padding:4px 8px;border-radius:var(--r)}
 .wk-lbl:hover{background:var(--bg)}
-.wtbl-wrap{overflow-x:auto;overflow-y:visible;border:1px solid var(--border);border-radius:var(--rl2)}
+.wtbl-wrap{overflow:auto;max-height:calc(100vh - 180px);border:1px solid var(--border);border-radius:var(--rl2)}
 .hide-hscrollbar{scrollbar-width:none}
 .hide-hscrollbar::-webkit-scrollbar{height:0}
 .wtbl{border-collapse:collapse;font-size:12px;table-layout:fixed}
-.wtbl th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500;position:sticky;top:50px;z-index:10}
+.wtbl th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500}
 .wtbl th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
 .wtbl td{padding:3px;border:1px solid var(--border);vertical-align:top;background:var(--surface)}
 .wtbl td.ev-cell{height:50px;overflow:visible}
@@ -912,7 +912,7 @@ function renderWeekView(shouldShow){
 
   return`${hint}<div class="wtbl-wrap hscroll-sync hide-hscrollbar"><table class="wtbl" style="width:${100+days.length*180}px">
   <thead><tr>
-    <th class="site-hd" style="width:100px;position:sticky;top:50px;z-index:3;background:var(--surface)"></th>
+    <th class="site-hd" style="width:100px"></th>
     ${days.map(d=>{
   const isT=isSameDay(d,td);
   const ds2=fmtDay(d);
@@ -921,7 +921,7 @@ function renderWeekView(shouldShow){
   const dc=S.dateColors[ds2]||{};
   const dateColor=dc.color||(isWknd?'var(--red)':'');
   const dateNote=dc.note||'';
-  return`<th class="${isT?'th-t':''}" style="width:180px;position:sticky;top:50px;z-index:3;background:${isT?'#fff8f8':'var(--surface)'};${dateColor?'color:'+dateColor:''};cursor:pointer" onclick="openDateColorPicker('${ds2}')" title="${dateNote||'點擊設定顏色/備註'}">
+  return`<th class="${isT?'th-t':''}" style="width:180px;${dateColor?'color:'+dateColor:''};cursor:pointer" onclick="openDateColorPicker('${ds2}')" title="${dateNote||'點擊設定顏色/備註'}">
     ${d.getMonth()+1}/${d.getDate()}
     <br><span style="font-weight:400;font-size:10px">週${WD[d.getDay()]}</span>${dateNote?`<br><span style="font-size:9px;font-weight:400">${dateNote}</span>`:''}
   </th>`;}).join('')}
