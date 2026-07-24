@@ -865,14 +865,6 @@ function renderProgress(){
   ${calMode==='week'||calMode==='month'?renderWeekView(shouldShow):renderDayView()}
   ${calMode==='week'||calMode==='month'?renderDailyLogSection(weekDays):''}
   ${renderPrivateTodoSection()}`;
-  requestAnimationFrame(fixStickyOffsets);
-}
-function fixStickyOffsets(){
-  document.querySelectorAll('.wtbl-wrap').forEach(function(wrap){
-    var thead=wrap.querySelector('thead');
-    var mcell=wrap.querySelector('.meeting-hdr-cell');
-    if(thead&&mcell)mcell.style.top=(50+thead.getBoundingClientRect().height)+'px';
-  });
 }
 
 function renderWeekView(shouldShow){
@@ -964,7 +956,7 @@ function renderWeekView(shouldShow){
       +'<span style="font-size:11px;color:var(--text2)">文字</span>'+mDots('text',mFound?mFound.color:'')
       +'<span style="font-size:11px;color:var(--text2);margin-left:6px">底色</span>'+mDots('bg',mFound?mFound.bg:'')
       +'</span>';
-    var hdr='<tr><td class="meeting-hdr-cell" colspan="'+(days.length+1)+'" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:2px solid #1a1a1a;position:sticky;top:98px;z-index:9">'
+    var hdr='<tr><td colspan="'+(days.length+1)+'" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:2px solid #1a1a1a">'
       +'🗓 會議 / 其他事項'+mColorBar
       +'<span style="font-size:11px;color:var(--text3);margin-left:10px;font-weight:400">單擊選取上色・雙擊編輯・點「+標記」可標記人員(自動同步進對方每日日誌)・Ctrl+拖拉複製・Delete刪除</span>'
       +'</td></tr>';
