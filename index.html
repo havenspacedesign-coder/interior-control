@@ -908,7 +908,7 @@ function renderWeekView(shouldShow){
     </td>`;
   }
 
-  return`${hint}<div class="wtbl-wrap"><table class="wtbl">
+  return`${hint}<div class="wtbl-wrap hscroll-sync"><table class="wtbl" style="width:${100+days.length*110}px">
   <thead><tr>
     <th class="site-hd" style="width:100px"></th>
     ${days.map(d=>{
@@ -1037,8 +1037,8 @@ function renderDailyLogSection(days){
       <span>每日施工日誌</span>
       ${renderTaskAssignForm()}
     </div>
-    <div style="overflow-x:auto">
-    <table class="daily-log-table">
+    <div class="hscroll-sync" style="overflow-x:auto">
+    <table class="daily-log-table" style="width:${100+days.length*110}px">
       <colgroup><col style="width:100px">${days.map(()=>'<col style="width:110px">').join('')}</colgroup>
       <tbody>
       ${activeMembers.map(m=>`<tr>
@@ -1424,7 +1424,7 @@ window.mSaveBox=async function(el,rowId,ds,idx){
 
 // ── Private Todo Section ──
 function renderPrivateTodoSection(){
-  if(calMode!=='week')return'';
+  if(calMode!=='week'&&calMode!=='month')return'';
   var days=getWeekDates();
   var td=today();
   var pn=S.privateNotes||{work:{},personal:{}};
@@ -1525,7 +1525,7 @@ function renderPrivateTodoSection(){
     +colorBar()
     +'<span style="font-size:11px;color:var(--text3);margin-left:4px">雙擊編輯 · 打@找工地 · Ctrl+拖拉複製 · Delete刪除</span>'
     +'</div>'
-    +'<div style="overflow-x:auto"><table style="'+tblStyle+'">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
+    +'<div class="hscroll-sync" style="overflow-x:auto"><table style="'+tblStyle+';width:'+(100+days.length*110)+'px">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
     +makeRow('work','工地記事')
     +divider
     +makeRow('personal','私人記事')
@@ -1728,6 +1728,20 @@ window.pnDrop=async function(e,toType,toDs){
   pnDragSrc=null;
   renderProgress();
 }
+// Keep the several date-column tables (工地/會議記事, 每日施工日誌, 私人記事)
+// scrolling left/right together, since they're visually one continuous
+// timeline even though they're separate <table> elements.
+let hscrollSyncing=false;
+document.addEventListener('scroll',function(e){
+  if(hscrollSyncing)return;
+  const el=e.target;
+  if(!el.classList||!el.classList.contains('hscroll-sync'))return;
+  hscrollSyncing=true;
+  document.querySelectorAll('.hscroll-sync').forEach(function(other){
+    if(other!==el)other.scrollLeft=el.scrollLeft;
+  });
+  hscrollSyncing=false;
+},true);
 // Shift + mouse wheel scrolls sideways instead of down, for any of the
 // horizontally-scrollable table wrappers in the app.
 document.addEventListener('wheel',function(e){
