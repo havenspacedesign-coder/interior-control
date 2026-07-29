@@ -339,7 +339,7 @@ const auth=getAuth(app);
 const provider=new GoogleAuthProvider();
 
 let currentUser=null,currentRole=null;
-let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},taskList:[],globalNotes:[]};
+let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},taskList:[],globalNotes:{}};
 const MEETING_ROWS=[
   {id:'meet1',name:'客戶會議/丈量'},
   {id:'meet2',name:'廠商會議'},
@@ -546,7 +546,8 @@ function initListeners(){
     if(activePanel==='progress')renderProgress();
   });
   onSnapshot(collection(db,'globalNotes'),snap=>{
-    S.globalNotes=snap.docs.map(d=>({id:d.id,...d.data()}));
+    S.globalNotes={};
+    snap.docs.forEach(d=>{S.globalNotes[d.id]=d.data();});
     if(activePanel==='progress')renderProgress();
   });
   // Private notes: per user
@@ -876,39 +877,34 @@ function renderProgress(){
   </div>
   </div>`;
 }
-// Global sticky notes — visible only to the current user, effective from
-// whichever month they were written in onward, until soft-deleted (which
-// only hides them from that month forward, keeping earlier months intact).
+// Global sticky notepad — visible only to the current user. One text box,
+// like 每日施工日誌. Whatever you type is saved under the month you're
+// currently viewing; a month with no edit of its own just inherits the
+// text from the nearest earlier month that has one, so editing "forks"
+// forward from that point without touching earlier months' saved text.
+function getGlobalNoteText(viewMonth){
+  if(!currentUser)return'';
+  const prefix=currentUser.uid+'_';
+  const months=Object.keys(S.globalNotes||{})
+    .filter(k=>k.indexOf(prefix)===0)
+    .map(k=>k.slice(prefix.length))
+    .filter(m=>m<=viewMonth)
+    .sort();
+  if(!months.length)return'';
+  return S.globalNotes[prefix+months[months.length-1]].text||'';
+}
 function renderGlobalNotesPanel(viewMonth){
   if(!currentUser)return'';
-  const mine=(S.globalNotes||[]).filter(n=>n.createdBy===currentUser.uid
-    &&n.effectiveMonth<=viewMonth
-    &&(!n.deletedFromMonth||n.deletedFromMonth>viewMonth)
-  ).sort((a,b)=>(a.effectiveMonth||'').localeCompare(b.effectiveMonth||'')||(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
+  const text=getGlobalNoteText(viewMonth);
   return`<div style="width:200px;flex-shrink:0;position:sticky;top:60px;border:1px solid var(--border);border-radius:var(--rl2);background:var(--surface);padding:10px;max-height:calc(100vh - 80px);overflow-y:auto">
     <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text2)">📝 我的記事本</div>
-    ${mine.map(n=>`<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:6px;font-size:12px;line-height:1.4;padding-bottom:6px;border-bottom:1px solid var(--border)">
-      <span style="flex:1;white-space:pre-wrap;word-break:break-word">${escAttr(n.text||'')}</span>
-      <span onclick="deleteGlobalNote('${n.id}','${viewMonth}')" title="從這個月開始刪除（更早的月份仍保留）" style="cursor:pointer;color:var(--text3);flex-shrink:0">×</span>
-    </div>`).join('')}
-    <textarea id="global-note-new" placeholder="新增記事…" rows="2" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;padding:5px 6px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
-    <button class="btn btn-sm" style="width:100%;margin-top:5px" onclick="addGlobalNote('${viewMonth}')">＋ 新增</button>
+    <textarea id="global-note-box" placeholder="點此輸入…" onblur="saveGlobalNote('${viewMonth}',this.value)" style="width:100%;box-sizing:border-box;min-height:300px;border:1px solid var(--border);border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5">${escAttr(text)}</textarea>
   </div>`;
 }
-window.addGlobalNote=async function(viewMonth){
-  if(!currentUser)return;
-  const ta=document.getElementById('global-note-new');
-  const text=ta?ta.value.trim():'';
-  if(!text)return;
-  setSyncing();
-  await addDoc(collection(db,'globalNotes'),{text,effectiveMonth:viewMonth,deletedFromMonth:null,createdBy:currentUser.uid,createdAt:serverTimestamp()});
-  setSynced();
-  if(ta)ta.value='';
-}
-window.deleteGlobalNote=async function(noteId,viewMonth){
+window.saveGlobalNote=async function(viewMonth,text){
   if(!currentUser)return;
   setSyncing();
-  await updateDoc(doc(db,'globalNotes',noteId),{deletedFromMonth:viewMonth});
+  await setDoc(doc(db,'globalNotes',currentUser.uid+'_'+viewMonth),{uid:currentUser.uid,month:viewMonth,text,updatedAt:serverTimestamp()});
   setSynced();
 }
 
