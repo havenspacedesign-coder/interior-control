@@ -1115,18 +1115,15 @@ function renderDailyLogCell(m,d,td){
     >${logVal}</textarea>`;
   assigned.forEach(function(e){
     const canManage=currentUser&&(currentUser.uid===e.authorUid||currentUser.uid===m.uid);
-    const author=S.members.find(function(x){return x.uid===e.authorUid;});
-    const authorName=memberDisplayName(author);
     if(canManage){
       h+=`<div style="margin-top:3px;position:relative">
-        <input type="text" id="assign-${m.uid}-${ds}-${e.id}" value="${escAttr(e.text||'')}" title="${authorName} 指派"
+        <textarea id="assign-${m.uid}-${ds}-${e.id}" class="log-textarea"
           onblur="saveAssignedEntry('${m.uid}','${ds}','${e.id}',this.value)"
-          onkeydown="if(event.key==='Enter')this.blur()"
-          style="width:100%;box-sizing:border-box;padding:3px 20px 3px 6px;border:1px solid var(--purple);border-radius:4px;font-size:11px;font-family:inherit;background:var(--pl);color:var(--pd)">
-        <span onclick="deleteAssignedEntry('${m.uid}','${ds}','${e.id}')" title="刪除" style="position:absolute;top:2px;right:3px;cursor:pointer;color:var(--pd);font-weight:700;font-size:11px">×</span>
+          style="padding-right:18px">${escAttr(e.text||'')}</textarea>
+        <span onclick="deleteAssignedEntry('${m.uid}','${ds}','${e.id}')" title="刪除" style="position:absolute;top:2px;right:3px;cursor:pointer;color:var(--text3);font-weight:700;font-size:11px">×</span>
       </div>`;
     }else{
-      h+=`<div style="margin-top:3px;padding:3px 6px;border-radius:4px;font-size:11px;background:var(--pl);color:var(--pd)">${escAttr(authorName)}：${escAttr(e.text||'')}</div>`;
+      h+=`<textarea class="log-textarea" style="margin-top:3px" readonly>${escAttr(e.text||'')}</textarea>`;
     }
   });
   if(currentUser){
