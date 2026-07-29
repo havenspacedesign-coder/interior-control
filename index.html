@@ -339,7 +339,7 @@ const auth=getAuth(app);
 const provider=new GoogleAuthProvider();
 
 let currentUser=null,currentRole=null;
-let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},taskList:[]};
+let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},taskList:[],globalNotes:[]};
 const MEETING_ROWS=[
   {id:'meet1',name:'客戶會議/丈量'},
   {id:'meet2',name:'廠商會議'},
@@ -543,6 +543,10 @@ function initListeners(){
   });
   onSnapshot(collection(db,'taskAssignments'),snap=>{
     S.taskList=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(activePanel==='progress')renderProgress();
+  });
+  onSnapshot(collection(db,'globalNotes'),snap=>{
+    S.globalNotes=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(activePanel==='progress')renderProgress();
   });
   // Private notes: per user
@@ -837,7 +841,11 @@ function renderProgress(){
     }
     return false;
   }
+  const viewMonth=weekDays[0].getFullYear()+'-'+String(weekDays[0].getMonth()+1).padStart(2,'0');
   el.innerHTML=`
+  <div style="display:flex;gap:14px;align-items:flex-start">
+  ${renderGlobalNotesPanel(viewMonth)}
+  <div style="flex:1;min-width:0">
   <div class="wctrl">
     <div class="seg">
       <button class="${calMode==='week'||calMode==='month'?'on':''}" onclick="setCalMode('week')">週視圖</button>
@@ -864,7 +872,44 @@ function renderProgress(){
   </div>`:''}
   ${calMode==='week'||calMode==='month'?renderWeekView(shouldShow):renderDayView()}
   ${calMode==='week'||calMode==='month'?renderDailyLogSection(weekDays):''}
-  ${renderPrivateTodoSection()}`;
+  ${renderPrivateTodoSection()}
+  </div>
+  </div>`;
+}
+// Global sticky notes — visible only to the current user, effective from
+// whichever month they were written in onward, until soft-deleted (which
+// only hides them from that month forward, keeping earlier months intact).
+function renderGlobalNotesPanel(viewMonth){
+  if(!currentUser)return'';
+  const mine=(S.globalNotes||[]).filter(n=>n.createdBy===currentUser.uid
+    &&n.effectiveMonth<=viewMonth
+    &&(!n.deletedFromMonth||n.deletedFromMonth>viewMonth)
+  ).sort((a,b)=>(a.effectiveMonth||'').localeCompare(b.effectiveMonth||'')||(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
+  return`<div style="width:200px;flex-shrink:0;position:sticky;top:60px;border:1px solid var(--border);border-radius:var(--rl2);background:var(--surface);padding:10px;max-height:calc(100vh - 80px);overflow-y:auto">
+    <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text2)">📝 我的記事本</div>
+    ${mine.map(n=>`<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:6px;font-size:12px;line-height:1.4;padding-bottom:6px;border-bottom:1px solid var(--border)">
+      <span style="flex:1;white-space:pre-wrap;word-break:break-word">${escAttr(n.text||'')}</span>
+      <span onclick="deleteGlobalNote('${n.id}','${viewMonth}')" title="從這個月開始刪除（更早的月份仍保留）" style="cursor:pointer;color:var(--text3);flex-shrink:0">×</span>
+    </div>`).join('')}
+    <textarea id="global-note-new" placeholder="新增記事…" rows="2" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:5px;padding:5px 6px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
+    <button class="btn btn-sm" style="width:100%;margin-top:5px" onclick="addGlobalNote('${viewMonth}')">＋ 新增</button>
+  </div>`;
+}
+window.addGlobalNote=async function(viewMonth){
+  if(!currentUser)return;
+  const ta=document.getElementById('global-note-new');
+  const text=ta?ta.value.trim():'';
+  if(!text)return;
+  setSyncing();
+  await addDoc(collection(db,'globalNotes'),{text,effectiveMonth:viewMonth,deletedFromMonth:null,createdBy:currentUser.uid,createdAt:serverTimestamp()});
+  setSynced();
+  if(ta)ta.value='';
+}
+window.deleteGlobalNote=async function(noteId,viewMonth){
+  if(!currentUser)return;
+  setSyncing();
+  await updateDoc(doc(db,'globalNotes',noteId),{deletedFromMonth:viewMonth});
+  setSynced();
 }
 
 function renderWeekView(shouldShow){
