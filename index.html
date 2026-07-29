@@ -339,7 +339,7 @@ const auth=getAuth(app);
 const provider=new GoogleAuthProvider();
 
 let currentUser=null,currentRole=null;
-let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},taskList:[],globalNotes:{}};
+let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},globalNotes:{}};
 const MEETING_ROWS=[
   {id:'meet1',name:'客戶會議/丈量'},
   {id:'meet2',name:'廠商會議'},
@@ -539,10 +539,6 @@ function initListeners(){
   onSnapshot(collection(db,'meetingLogs'),snap=>{
     S.meetingLogs={};
     snap.docs.forEach(d=>{S.meetingLogs[d.id]=d.data();});
-    if(activePanel==='progress')renderProgress();
-  });
-  onSnapshot(collection(db,'taskAssignments'),snap=>{
-    S.taskList=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(activePanel==='progress')renderProgress();
   });
   onSnapshot(collection(db,'globalNotes'),snap=>{
@@ -896,13 +892,19 @@ function getGlobalNoteText(viewMonth){
 function renderGlobalNotesPanel(viewMonth){
   if(!currentUser)return'';
   const text=getGlobalNoteText(viewMonth);
+  const td=today();
+  const curMonth=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0');
+  const isFuture=viewMonth>curMonth;
   return`<div style="width:200px;flex-shrink:0;position:sticky;top:60px;border:1px solid var(--border);border-radius:var(--rl2);background:var(--surface);padding:10px;max-height:calc(100vh - 80px);overflow-y:auto">
-    <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text2)">📝 我的記事本</div>
-    <textarea id="global-note-box" placeholder="點此輸入…" onblur="saveGlobalNote('${viewMonth}',this.value)" style="width:100%;box-sizing:border-box;min-height:300px;border:1px solid var(--border);border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5">${escAttr(text)}</textarea>
+    <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text2)">📝 我的記事本${isFuture?' <span style="font-weight:400;color:var(--text3)">（未來月份，鎖定）</span>':''}</div>
+    <textarea id="global-note-box" placeholder="點此輸入…" ${isFuture?'readonly':`onblur="saveGlobalNote('${viewMonth}',this.value)"`} style="width:100%;box-sizing:border-box;min-height:300px;border:1px solid var(--border);border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;${isFuture?'background:var(--bg);color:var(--text3);cursor:not-allowed':''}">${escAttr(text)}</textarea>
   </div>`;
 }
 window.saveGlobalNote=async function(viewMonth,text){
   if(!currentUser)return;
+  const td=today();
+  const curMonth=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0');
+  if(viewMonth>curMonth)return; // future months are locked, ignore any save attempt
   setSyncing();
   await setDoc(doc(db,'globalNotes',currentUser.uid+'_'+viewMonth),{uid:currentUser.uid,month:viewMonth,text,updatedAt:serverTimestamp()});
   setSynced();
@@ -1077,9 +1079,9 @@ function renderDailyLogSection(days){
   const WD=['日','一','二','三','四','五','六'];
   return`<div style="border-top:3px solid #1a1a1a;margin-top:0"></div>
   <div class="daily-section" style="margin-top:0;border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">
-    <div class="daily-section-hdr" style="flex-wrap:wrap;gap:10px;align-items:center">
+    <div class="daily-section-hdr">
       <span>每日施工日誌</span>
-      ${renderTaskAssignForm()}
+      <span style="font-size:11px;color:var(--text2)">格子裡可直接打字指派任務給任何人</span>
     </div>
     <div class="hscroll-sync hide-hscrollbar" style="overflow-x:auto">
     <table class="daily-log-table" style="width:${100+days.length*180}px">
@@ -1087,174 +1089,96 @@ function renderDailyLogSection(days){
       <tbody>
       ${activeMembers.map(m=>`<tr>
         <td class="log-name-cell">${memberDisplayName(m)}</td>
-        ${days.map(d=>{
-          const ds=fmtDay(d);
-          const isT=isSameDay(d,td);
-          const logKey=`${m.uid}_${ds}`;
-          const logVal=S.dailyLogs[logKey]?.text||'';
-          const canEdit=currentUser&&m.uid===currentUser.uid;
-          const myTask=(S.taskList||[]).find(t=>t.date===ds&&(t.targets||[]).includes(m.uid)&&currentUser&&t.createdBy===currentUser.uid);
-          return`<td style="${isT?'background:#faf9ff':''};position:relative">
-            <textarea class="log-textarea${isT?' today':''}"
-              ${canEdit?`onblur="saveDailyLog('${m.uid}','${ds}',this.value)"
-              onkeydown="if(event.key==='Tab'){event.preventDefault();this.blur()}"
-              placeholder=""`:' readonly'}
-            >${logVal}</textarea>
-            ${myTask?`<span onclick="tRemoveTarget('${myTask.id}','${m.uid}')" title="移除指派給${memberDisplayName(m)}的任務：${escAttr(myTask.text||'')}" style="position:absolute;top:3px;right:3px;cursor:pointer;color:var(--text3);font-weight:700;font-size:11px;background:#fff;border:1px solid var(--border);border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;line-height:1">×</span>`:''}
-          </td>`;}).join('')}
+        ${days.map(d=>renderDailyLogCell(m,d,td)).join('')}
       </tr>`).join('')}
       </tbody>
     </table>
     </div>
   </div>`;
 }
-
-// Standalone task-assignment form, next to the 每日施工日誌 title — pick a
-// date, write the task, tag whoever it's for, submit. Not tied to any one
-// week-view cell, since assigning happens rarely and can target any date
-// (this month or otherwise). The task text is mirrored into each tagged
-// person's own daily-log cell for that date, and removed again if the
-// task is deleted.
-function renderTaskAssignForm(){
-  const dots=tNewTargetsDotsHTML();
-  const td=today();
-  const monthLabel=(td.getMonth()+1)+'月';
-  return`<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400;flex-wrap:nowrap">
-    <span style="color:var(--text2);white-space:nowrap;flex-shrink:0">指派任務：</span>
-    <span style="color:var(--text2);white-space:nowrap;flex-shrink:0">${monthLabel}</span>
-    <input type="number" id="task-new-day" min="1" max="31" placeholder="幾日" style="font-size:12px;padding:3px 5px;border:1px solid var(--border);border-radius:5px;font-family:inherit;flex-shrink:0;width:52px">
-    <span style="color:var(--text2);white-space:nowrap;flex-shrink:0">日</span>
-    <input type="text" id="task-new-text" placeholder="任務內容…" style="font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;width:140px;font-family:inherit;flex-shrink:0">
-    <span id="task-new-dots" style="display:inline-flex;gap:2px;flex-shrink:0">${dots}</span>
-    <span class="task-tag-btn" onmouseenter="tNewOpenPicker(event)" onmouseleave="tNewScheduleClose()" style="font-size:11px;color:var(--teal);cursor:pointer;border:1px dashed var(--teal);border-radius:9px;padding:1px 7px;white-space:nowrap;flex-shrink:0">+ 標記</span>
-    <button onclick="tSubmitNew()" style="font-size:12px;padding:3px 10px;border:none;border-radius:5px;background:var(--purple);color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0">送出</button>
-    <div class="pn-mention-menu" id="task-new-mention" style="display:none" onmouseenter="mCancelCloseMention()" onmouseleave="tNewScheduleClose()"></div>
-  </div>`;
+// One cell = the owner's own free-text log (only they can edit it), plus
+// any number of "assigned" notes from other people — each assigned note
+// can only be edited/removed by whoever wrote it, or by the cell's owner.
+function renderDailyLogCell(m,d,td){
+  const ds=fmtDay(d);
+  const isT=isSameDay(d,td);
+  const logKey=`${m.uid}_${ds}`;
+  const cur=S.dailyLogs[logKey]||{};
+  const logVal=cur.text||'';
+  const canEditOwn=currentUser&&m.uid===currentUser.uid;
+  const assigned=cur.assigned||[];
+  let h=`<td style="${isT?'background:#faf9ff':''};vertical-align:top">
+    <textarea class="log-textarea${isT?' today':''}"
+      ${canEditOwn?`onblur="saveDailyLog('${m.uid}','${ds}',this.value)"
+      onkeydown="if(event.key==='Tab'){event.preventDefault();this.blur()}"
+      placeholder=""`:' readonly'}
+    >${logVal}</textarea>`;
+  assigned.forEach(function(e){
+    const canManage=currentUser&&(currentUser.uid===e.authorUid||currentUser.uid===m.uid);
+    const author=S.members.find(function(x){return x.uid===e.authorUid;});
+    const authorName=memberDisplayName(author);
+    if(canManage){
+      h+=`<div style="margin-top:3px;position:relative">
+        <input type="text" id="assign-${m.uid}-${ds}-${e.id}" value="${escAttr(e.text||'')}" title="${authorName} 指派"
+          onblur="saveAssignedEntry('${m.uid}','${ds}','${e.id}',this.value)"
+          onkeydown="if(event.key==='Enter')this.blur()"
+          style="width:100%;box-sizing:border-box;padding:3px 20px 3px 6px;border:1px solid var(--purple);border-radius:4px;font-size:11px;font-family:inherit;background:var(--pl);color:var(--pd)">
+        <span onclick="deleteAssignedEntry('${m.uid}','${ds}','${e.id}')" title="刪除" style="position:absolute;top:2px;right:3px;cursor:pointer;color:var(--pd);font-weight:700;font-size:11px">×</span>
+      </div>`;
+    }else{
+      h+=`<div style="margin-top:3px;padding:3px 6px;border-radius:4px;font-size:11px;background:var(--pl);color:var(--pd)">${escAttr(authorName)}：${escAttr(e.text||'')}</div>`;
+    }
+  });
+  if(currentUser){
+    h+=`<div onclick="addAssignedEntry('${m.uid}','${ds}')" style="margin-top:3px;font-size:10px;color:var(--text3);cursor:pointer;border:1px dashed var(--border);border-radius:4px;padding:2px 6px;text-align:center">＋ 指派</div>`;
+  }
+  h+='</td>';
+  return h;
 }
-var tNewTargets=[];
-function tNewTargetsDotsHTML(){
-  return tNewTargets.map(function(uid){
-    const m=S.members.find(function(x){return x.uid===uid;});
-    const nm=memberDisplayName(m);
-    return'<span title="'+nm+'" style="width:14px;height:14px;border-radius:50%;background:var(--teal);color:#fff;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+memberTag(m)+'</span>';
-  }).join('');
-}
-function tNewMentionMenuHTML(){
-  return activeMembersList().map(function(m){
-    const checked=tNewTargets.indexOf(m.uid)>=0;
-    return'<div onmousedown="event.preventDefault();tNewToggle(\''+m.uid+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">'
-      +'<span>'+(checked?'☑':'☐')+'</span><span>'+memberDisplayName(m)+'</span></div>';
-  }).join('');
-}
-window.tNewToggle=function(uid){
-  const pos=tNewTargets.indexOf(uid);
-  if(pos>=0)tNewTargets.splice(pos,1);else tNewTargets.push(uid);
-  const menuEl=document.getElementById('task-new-mention');
-  if(menuEl)menuEl.innerHTML=tNewMentionMenuHTML();
-  const dotsEl=document.getElementById('task-new-dots');
-  if(dotsEl)dotsEl.innerHTML=tNewTargetsDotsHTML();
-}
-window.tNewOpenPicker=function(e){
-  clearTimeout(mCloseTimer);
-  const menuEl=document.getElementById('task-new-mention');
-  if(!menuEl)return;
-  const rect=e.currentTarget.getBoundingClientRect();
-  menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:200px;overflow-y:auto';
-  menuEl.innerHTML=tNewMentionMenuHTML();
-}
-window.tNewScheduleClose=function(){
-  clearTimeout(mCloseTimer);
-  mCloseTimer=setTimeout(function(){
-    const menuEl=document.getElementById('task-new-mention');
-    if(menuEl)menuEl.style.display='none';
-  },250);
-}
-window.tSubmitNew=async function(){
+window.addAssignedEntry=async function(uid,ds){
   if(!currentUser)return;
-  const dayInp=document.getElementById('task-new-day');
-  const textInp=document.getElementById('task-new-text');
-  const dayVal=dayInp?parseInt(dayInp.value,10):NaN;
-  const textVal=textInp?textInp.value.trim():'';
-  if(!dayVal||dayVal<1||dayVal>31||!textVal||!tNewTargets.length){
-    alert('請輸入幾日、填寫任務內容，並至少標記一位人員');
-    return;
-  }
-  const td=today();
-  const dateVal=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0')+'-'+String(dayVal).padStart(2,'0');
+  const key=uid+'_'+ds;
+  const cur=S.dailyLogs[key]||{};
+  const list=(cur.assigned||[]).slice();
+  const eid='a'+Date.now();
+  list.push({id:eid,text:'',authorUid:currentUser.uid});
   setSyncing();
-  const ref=await addDoc(collection(db,'taskAssignments'),{text:textVal,date:dateVal,targets:tNewTargets.slice(),createdBy:currentUser.uid,createdAt:serverTimestamp()});
-  for(const uid of tNewTargets){
-    await tSyncDailyLog(ref.id,uid,dateVal,textVal);
-  }
+  await setDoc(doc(db,'dailyLogs',key),Object.assign({},cur,{uid,date:ds,assigned:list}));
   setSynced();
-  if(dayInp)dayInp.value='';
-  if(textInp)textInp.value='';
-  tNewTargets=[];
   if(activePanel==='progress')renderProgress();
+  setTimeout(function(){
+    const el=document.getElementById('assign-'+uid+'-'+ds+'-'+eid);
+    if(el)el.focus();
+  },50);
 }
-window.tRemoveTarget=async function(taskId,uid){
+window.saveAssignedEntry=async function(uid,ds,eid,text){
   if(!currentUser)return;
-  const t=(S.taskList||[]).find(x=>x.id===taskId);
-  if(!t||t.createdBy!==currentUser.uid)return;
-  const newTargets=(t.targets||[]).filter(x=>x!==uid);
+  const key=uid+'_'+ds;
+  const cur=S.dailyLogs[key]||{};
+  const list=(cur.assigned||[]).map(function(e){return e.id===eid?Object.assign({},e,{text}):e;});
   setSyncing();
-  if(newTargets.length===0){
-    await deleteDoc(doc(db,'taskAssignments',taskId));
-  }else{
-    await setDoc(doc(db,'taskAssignments',taskId),{text:t.text,date:t.date,targets:newTargets,createdBy:t.createdBy,createdAt:t.createdAt||serverTimestamp()});
-  }
-  await tRemoveFromDailyLog(taskId,uid,t.date);
+  await setDoc(doc(db,'dailyLogs',key),Object.assign({},cur,{assigned:list}));
   setSynced();
 }
-async function tSyncDailyLog(taskId,uid,ds,newText){
-  const m=S.members.find(x=>x.uid===uid);
-  if(!m)return;
-  const logKey=`${m.uid}_${ds}`;
-  const cur=S.dailyLogs[logKey]||{};
-  const autoLines=Object.assign({},cur.autoLines||{});
-  const trackKey='task:'+taskId;
-  const oldLine=autoLines[trackKey];
-  let lines=(cur.text||'').split('\n').filter(l=>l!=='');
-  if(oldLine!=null){
-    const pos=lines.indexOf(oldLine);
-    if(pos>=0)lines[pos]=newText;else lines.push(newText);
-  }else{
-    lines.push(newText);
-  }
-  autoLines[trackKey]=newText;
-  try{
-    await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,updatedAt:serverTimestamp()});
-  }catch(err){
-    console.error('無法自動寫入 '+memberDisplayName(m)+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
-  }
-}
-async function tRemoveFromDailyLog(taskId,uid,ds){
-  const m=S.members.find(x=>x.uid===uid);
-  if(!m)return;
-  const logKey=`${m.uid}_${ds}`;
-  const cur=S.dailyLogs[logKey]||{};
-  const autoLines=Object.assign({},cur.autoLines||{});
-  const trackKey='task:'+taskId;
-  const oldLine=autoLines[trackKey];
-  if(oldLine==null)return;
-  let lines=(cur.text||'').split('\n').filter(l=>l!=='');
-  const pos=lines.indexOf(oldLine);
-  if(pos>=0)lines.splice(pos,1);
-  delete autoLines[trackKey];
-  try{
-    await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,updatedAt:serverTimestamp()});
-  }catch(err){
-    console.error('無法自動移除 '+memberDisplayName(m)+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
-  }
+window.deleteAssignedEntry=async function(uid,ds,eid){
+  if(!currentUser)return;
+  const key=uid+'_'+ds;
+  const cur=S.dailyLogs[key]||{};
+  const list=(cur.assigned||[]).filter(function(e){return e.id!==eid;});
+  setSyncing();
+  await setDoc(doc(db,'dailyLogs',key),Object.assign({},cur,{assigned:list}));
+  setSynced();
 }
 
 window.saveDailyLog=async function(uid,ds,text){
   if(!currentUser||currentUser.uid!==uid)return;
   const key=`${uid}_${ds}`;
+  const cur=S.dailyLogs[key]||{};
   setSyncing();
-  await setDoc(doc(db,'dailyLogs',key),{uid,date:ds,text,updatedAt:serverTimestamp()});
+  await setDoc(doc(db,'dailyLogs',key),Object.assign({},cur,{uid,date:ds,text,updatedAt:serverTimestamp()}));
   setSynced();
 }
+
 
 
 // ── Fixed meeting rows (客戶會議/丈量・廠商會議・丈量・其他) under the site
@@ -1417,7 +1341,7 @@ async function mSyncDailyLog(rowId,ds,idx,uid,newText){
   }
   autoLines[trackKey]=newText;
   try{
-    await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,updatedAt:serverTimestamp()});
+    await setDoc(doc(db,'dailyLogs',logKey),Object.assign({},cur,{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,updatedAt:serverTimestamp()}));
   }catch(err){
     console.error('無法自動寫入 '+memberDisplayName(m)+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
   }
@@ -1436,7 +1360,7 @@ async function mRemoveFromDailyLog(rowId,ds,idx,uid){
   if(pos>=0)lines.splice(pos,1);
   delete autoLines[trackKey];
   try{
-    await setDoc(doc(db,'dailyLogs',logKey),{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,updatedAt:serverTimestamp()});
+    await setDoc(doc(db,'dailyLogs',logKey),Object.assign({},cur,{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,updatedAt:serverTimestamp()}));
   }catch(err){
     console.error('無法自動移除 '+memberDisplayName(m)+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
   }
