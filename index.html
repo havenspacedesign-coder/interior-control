@@ -147,7 +147,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 /* Event */
 .ev-row{display:flex;align-items:center;gap:2px;margin-bottom:2px}
 .ev-row:hover .ev-del{opacity:.6}
-.ev-field{font-size:11px;cursor:text;padding:2px 4px;border-radius:3px;min-width:20px;line-height:1.5;background:rgba(255,255,255,.6);color:inherit}
+.ev-field{font-size:11px;cursor:text;padding:4px 6px;border-radius:3px;min-width:36px;min-height:16px;line-height:1.5;background:rgba(255,255,255,.6);color:inherit}
+.ev-field:empty{border:1px dashed rgba(0,0,0,.2)}
 .ev-field:hover{background:rgba(255,255,255,.9)}
 .ev-field[contenteditable=true]{outline:1.5px solid rgba(0,0,0,.2);background:#fff;min-width:44px}
 .ev-chip{display:inline-flex;align-items:center;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
@@ -871,7 +872,10 @@ function renderProgress(){
   ${calMode==='week'||calMode==='month'?renderDailyLogSection(weekDays):''}
   ${renderPrivateTodoSection()}
   </div>
-  </div>`;
+  </div>
+  ${calMode==='week'||calMode==='month'?`<div class="hscroll-sync" style="position:fixed;left:0;right:0;bottom:0;height:14px;overflow-x:auto;overflow-y:hidden;background:var(--surface);border-top:1px solid var(--border);z-index:40">
+    <div style="width:${100+weekDays.length*180}px;height:1px"></div>
+  </div>`:''}`;
 }
 // Global sticky notepad — visible only to the current user. One text box,
 // like 每日施工日誌. Whatever you type is saved under the month you're
