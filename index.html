@@ -876,6 +876,7 @@ function renderProgress(){
   ${calMode==='week'||calMode==='month'?`<div class="hscroll-sync" style="position:fixed;left:0;right:0;bottom:0;height:14px;overflow-x:auto;overflow-y:hidden;background:var(--surface);border-top:1px solid var(--border);z-index:40">
     <div style="width:${100+weekDays.length*180}px;height:1px"></div>
   </div>`:''}`;
+  requestAnimationFrame(restoreHScroll);
 }
 // Global sticky notepad — visible only to the current user. One text box,
 // like 每日施工日誌. Whatever you type is saved under the month you're
@@ -893,15 +894,17 @@ function getGlobalNoteText(viewMonth){
   if(!months.length)return'';
   return S.globalNotes[prefix+months[months.length-1]].text||'';
 }
+let globalNoteBoxHeight=null;
 function renderGlobalNotesPanel(viewMonth){
   if(!currentUser)return'';
   const text=getGlobalNoteText(viewMonth);
   const td=today();
   const curMonth=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0');
   const isFuture=viewMonth>curMonth;
+  const heightStyle=globalNoteBoxHeight?`height:${globalNoteBoxHeight}`:'min-height:300px';
   return`<div style="width:200px;flex-shrink:0;position:sticky;top:60px;border:1px solid var(--border);border-radius:var(--rl2);background:var(--surface);padding:10px;max-height:calc(100vh - 80px);overflow-y:auto">
     <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text2)">📝 我的記事本${isFuture?' <span style="font-weight:400;color:var(--text3)">（未來月份，鎖定）</span>':''}</div>
-    <textarea id="global-note-box" placeholder="點此輸入…" ${isFuture?'readonly':`onblur="saveGlobalNote('${viewMonth}',this.value)"`} style="width:100%;box-sizing:border-box;min-height:300px;border:1px solid var(--border);border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;${isFuture?'background:var(--bg);color:var(--text3);cursor:not-allowed':''}">${escAttr(text)}</textarea>
+    <textarea id="global-note-box" placeholder="點此輸入…" ${isFuture?'readonly':`onblur="globalNoteBoxHeight=this.style.height;saveGlobalNote('${viewMonth}',this.value)"`} style="width:100%;box-sizing:border-box;${heightStyle};border:1px solid var(--border);border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;${isFuture?'background:var(--bg);color:var(--text3);cursor:not-allowed':''}">${escAttr(text)}</textarea>
   </div>`;
 }
 window.saveGlobalNote=async function(viewMonth,text){
@@ -1497,7 +1500,7 @@ function renderPrivateTodoSection(){
     +colorBar()
     +'<span style="font-size:11px;color:var(--text3);margin-left:4px">雙擊編輯 · 打@找工地 · Ctrl+拖拉複製 · Delete刪除</span>'
     +'</div>'
-    +'<div class="hscroll-sync" style="overflow-x:auto"><table style="'+tblStyle+';width:'+(100+days.length*180)+'px">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
+    +'<div class="hscroll-sync hide-hscrollbar" style="overflow-x:auto"><table style="'+tblStyle+';width:'+(100+days.length*180)+'px">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
     +makeRow('work','工地記事')
     +divider
     +makeRow('personal','私人記事')
@@ -1704,16 +1707,22 @@ window.pnDrop=async function(e,toType,toDs){
 // scrolling left/right together, since they're visually one continuous
 // timeline even though they're separate <table> elements.
 let hscrollSyncing=false;
+let lastHScrollLeft=0;
 document.addEventListener('scroll',function(e){
   if(hscrollSyncing)return;
   const el=e.target;
   if(!el.classList||!el.classList.contains('hscroll-sync'))return;
   hscrollSyncing=true;
+  lastHScrollLeft=el.scrollLeft;
   document.querySelectorAll('.hscroll-sync').forEach(function(other){
     if(other!==el)other.scrollLeft=el.scrollLeft;
   });
   hscrollSyncing=false;
 },true);
+function restoreHScroll(){
+  if(!lastHScrollLeft)return;
+  document.querySelectorAll('.hscroll-sync').forEach(function(el){el.scrollLeft=lastHScrollLeft;});
+}
 // Shift + mouse wheel scrolls sideways instead of down, for any of the
 // horizontally-scrollable table wrappers in the app.
 document.addEventListener('wheel',function(e){
@@ -1908,6 +1917,7 @@ window.openDatePicker=function(){
 window.jumpToDate=function(dateStr){
   if(!dateStr)return;
   const target=new Date(dateStr+'T00:00:00');
+  lastHScrollLeft=0;
   if(calMode==='month'){
     const base=today();
     monthOffset=(target.getFullYear()-base.getFullYear())*12+(target.getMonth()-base.getMonth());
@@ -2291,10 +2301,11 @@ window.deleteProject=async function(id){
   if(!isAdmin())return;if(!confirm('確定刪除？'))return;
   await deleteDoc(doc(db,'projects',id));
 }
-window.setCalMode=function(m){calMode=m;renderProgress();}
-window.changeWeek=function(d){weekOffset+=d;renderProgress();}
+window.setCalMode=function(m){calMode=m;lastHScrollLeft=0;renderProgress();}
+window.changeWeek=function(d){weekOffset+=d;lastHScrollLeft=0;renderProgress();}
 window.changePeriod=function(d){
   if(calMode==='month')monthOffset+=d;else weekOffset+=d;
+  lastHScrollLeft=0;
   renderProgress();
 }
 
