@@ -176,7 +176,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .daily-log-table th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500;position:sticky;top:0;z-index:10}
 .daily-log-table th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
 .daily-log-table td{padding:3px;border:1px solid var(--border);background:var(--surface);vertical-align:top}
-.daily-log-table td.log-name-cell{background:var(--bg);font-size:12px;font-weight:500;padding:6px 10px;position:sticky;left:0;z-index:5;border-right:2px solid var(--border);width:100px}
+.daily-log-table td.log-name-cell{background:var(--bg);font-size:12px;font-weight:500;padding:6px 10px;position:sticky;left:0;z-index:5;border-right:2px solid var(--border);width:200px}
 .log-textarea{width:100%;height:80px;border:none;resize:none;font-size:11px;font-family:inherit;padding:4px 6px;background:transparent;color:var(--text);line-height:1.4}
 .log-textarea:focus{outline:none;background:#faf9ff}
 .log-textarea.today{background:#faf9ff}
@@ -189,7 +189,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .private-todo-table th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500;position:sticky;top:0;z-index:10}
 .private-todo-table th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
 .private-todo-table td{border:1px solid var(--border);vertical-align:top;background:var(--surface);padding:4px}
-.private-todo-table td.ptd-label{background:var(--bg);font-size:12px;font-weight:500;padding:6px 10px;position:sticky;left:0;z-index:5;border-right:2px solid var(--border);width:100px}
+.private-todo-table td.ptd-label{background:var(--bg);font-size:12px;font-weight:500;padding:6px 10px;position:sticky;left:0;z-index:5;border-right:2px solid var(--border);width:200px}
 .ptd-item{margin-bottom:4px}
 .ptd-add-btn{font-size:11px;color:var(--text3);cursor:pointer;padding:2px 4px;display:block;text-align:left;border:none;background:none;font-family:inherit}
 .ptd-add-btn:hover{color:var(--purple)}
@@ -1110,8 +1110,8 @@ function renderDailyLogSection(days){
       <span style="font-size:11px;color:var(--text2)">格子裡可直接打字指派任務給任何人</span>
     </div>
     <div class="hscroll-sync hide-hscrollbar" style="overflow-x:auto">
-    <table class="daily-log-table" style="width:${100+days.length*180}px">
-      <colgroup><col style="width:100px">${days.map(()=>'<col style="width:180px">').join('')}</colgroup>
+    <table class="daily-log-table" style="width:${200+days.length*180}px">
+      <colgroup><col style="width:200px">${days.map(()=>'<col style="width:180px">').join('')}</colgroup>
       <tbody>
       ${activeMembers.map(m=>`<tr>
         <td class="log-name-cell">${memberDisplayName(m)}</td>
@@ -1507,10 +1507,10 @@ function renderPrivateTodoSection(){
     return h;
   }
 
-  var hiddenHeader='<tr style="height:0;visibility:hidden"><th style="padding:0;width:100px"></th>'+days.map(function(){return'<th style="padding:0"></th>';}).join('')+'</tr>';
+  var hiddenHeader='<tr style="height:0;visibility:hidden"><th style="padding:0;width:200px"></th>'+days.map(function(){return'<th style="padding:0"></th>';}).join('')+'</tr>';
   var divider='<tr><td colspan="'+(days.length+1)+'" style="padding:0"><div style="border-top:2px solid #1a1a1a"></div></td></tr>';
   var tblStyle='border-collapse:collapse;table-layout:fixed';
-  var colgroup='<colgroup><col style="width:100px">'+days.map(function(){return'<col style="width:180px">';}).join('')+'</colgroup>';
+  var colgroup='<colgroup><col style="width:200px">'+days.map(function(){return'<col style="width:180px">';}).join('')+'</colgroup>';
 
   return '<div style="border-top:3px solid #1a1a1a"></div>'
     +'<div class="private-section" style="border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">'
@@ -1519,7 +1519,7 @@ function renderPrivateTodoSection(){
     +colorBar()
     +'<span style="font-size:11px;color:var(--text3);margin-left:4px">雙擊編輯 · 打@找工地 · Ctrl+拖拉複製 · Delete刪除</span>'
     +'</div>'
-    +'<div class="hscroll-sync hide-hscrollbar" style="overflow-x:auto"><table style="'+tblStyle+';width:'+(100+days.length*180)+'px">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
+    +'<div class="hscroll-sync hide-hscrollbar" style="overflow-x:auto"><table style="'+tblStyle+';width:'+(200+days.length*180)+'px">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
     +makeRow('work','工地記事')
     +divider
     +makeRow('personal','私人記事')
