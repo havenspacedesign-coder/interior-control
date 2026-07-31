@@ -142,7 +142,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .formula-bar-input{flex:1;border:none;background:transparent;font-size:13px;font-family:inherit;outline:none;color:var(--text)}
 .wtbl td.tc{background:#faf9ff}
 .wtbl th.th-t{color:var(--purple);font-weight:600}
-.site-hd{background:var(--bg)!important;font-size:12px;font-weight:500;padding:8px 10px!important;vertical-align:middle;width:100px;position:sticky;left:0;z-index:5;border-right:2px solid var(--border)}
+.site-hd{background:var(--bg)!important;font-size:12px;font-weight:500;padding:8px 10px!important;vertical-align:middle;width:200px;position:sticky;left:0;z-index:5;border-right:2px solid var(--border)}
 
 /* Event */
 .ev-row{display:flex;align-items:center;gap:2px;margin-bottom:2px}
@@ -879,7 +879,7 @@ function renderProgress(){
   </div>
   </div>
   ${calMode==='week'||calMode==='month'?`<div class="hscroll-sync" style="position:fixed;left:0;right:0;bottom:0;height:14px;overflow-x:auto;overflow-y:hidden;background:var(--surface);border-top:1px solid var(--border);z-index:40">
-    <div style="width:${100+weekDays.length*180}px;height:1px"></div>
+    <div style="width:${200+weekDays.length*180}px;height:1px"></div>
   </div>`:''}`;
   requestAnimationFrame(restoreHScroll);
   requestAnimationFrame(watchNoteBoxResize);
@@ -921,7 +921,7 @@ function renderGlobalNotesPanel(viewMonth){
   const curMonth=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0');
   const isFuture=viewMonth>curMonth;
   const heightStyle=globalNoteBoxHeight?`height:${globalNoteBoxHeight}`:'min-height:300px';
-  return`<div style="width:400px;flex-shrink:0;position:sticky;top:60px;border:1px solid var(--border);border-radius:var(--rl2);background:var(--surface);padding:10px;max-height:calc(100vh - 80px);overflow-y:auto">
+  return`<div style="width:300px;flex-shrink:0;position:sticky;top:60px;border:1px solid var(--border);border-radius:var(--rl2);background:var(--surface);padding:10px;max-height:calc(100vh - 80px);overflow-y:auto">
     <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text2)">📝 我的記事本${isFuture?' <span style="font-weight:400;color:var(--text3)">（未來月份，鎖定）</span>':''}</div>
     <textarea id="global-note-box" placeholder="點此輸入…" ${isFuture?'readonly':`onblur="globalNoteBoxHeight=this.style.height;saveGlobalNote('${viewMonth}',this.value)"`} style="width:100%;box-sizing:border-box;${heightStyle};border:1px solid var(--border);border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;${isFuture?'background:var(--bg);color:var(--text3);cursor:not-allowed':''}">${escAttr(text)}</textarea>
   </div>`;
@@ -943,15 +943,13 @@ function renderWeekView(shouldShow){
   if(!projs.length)return`<div class="empty">尚無施工中案件</div>`;
   const hint=selectedTag?`<div style="background:var(--pl);color:var(--pd);padding:6px 10px;border-radius:var(--r);margin-bottom:8px;font-size:12px">已選取色塊 — Ctrl+點格子複製，點空白取消</div>`:'';
 
-  function renderCell(p,pi,d,rowIdx){
+  function renderCell(p,pi,d){
     const isT=isSameDay(d,td);const ds=fmtDay(d);
     const allEvs=(p.schedule||[]).filter(e=>e.date===ds);
     const isDone=p.status==='done';
-    const isOpen=openPicker&&openPicker.projId===p.id&&openPicker.ds===ds&&openPicker.row===rowIdx;
-    return`<td class="ev-cell ${isT?'tc':''}" onclick="handleCellBg(event,'${p.id}','${ds}')">
+    const isOpen=openPicker&&openPicker.projId===p.id&&openPicker.ds===ds;
+    return`<td class="ev-cell ${isT?'tc':''}" style="min-height:88px" onclick="handleCellBg(event,'${p.id}','${ds}')">
       ${allEvs.map((ev,ei)=>{
-        if(rowIdx===0&&ei>=2)return'';
-        if(rowIdx===1&&ei<2)return'';
         const pn=pendingCount(p.id,ev.stage);
         const isSel=selectedTag&&selectedTag.projId===p.id&&selectedTag.ds===ds&&selectedTag.ei===ei;
         return`<div class="ev-row">
@@ -965,7 +963,7 @@ function renderWeekView(shouldShow){
             onclick="event.stopPropagation()">${ev.note||''}</span>
           ${!isDone?`<button class="ev-del" onclick="event.stopPropagation();removeEv('${p.id}','${ds}',${ei})">×</button>`:''}
         </div>`;}).join('')}
-      ${rowIdx===1&&!isDone?`<div class="add-ev-wrap">
+      ${!isDone?`<div class="add-ev-wrap">
         <span class="add-ev-btn" onclick="event.stopPropagation();togglePicker(event,'${p.id}','${ds}',1)">＋ 新增</span>
         ${isOpen?`<div class="stage-search-box" onclick="event.stopPropagation()" style="top:${openPicker.top}px;left:${openPicker.left}px">
           <input type="text" class="stage-search-input" id="ssi-${p.id}-${ds}" placeholder="打關鍵字搜尋…"
@@ -979,9 +977,9 @@ function renderWeekView(shouldShow){
     </td>`;
   }
 
-  return`${hint}<div class="wtbl-wrap hscroll-sync hide-hscrollbar"><table class="wtbl" style="width:${100+days.length*180}px">
+  return`${hint}<div class="wtbl-wrap hscroll-sync hide-hscrollbar"><table class="wtbl" style="width:${200+days.length*180}px">
   <thead><tr>
-    <th class="site-hd" style="width:100px"></th>
+    <th class="site-hd" style="width:200px"></th>
     ${days.map(d=>{
   const isT=isSameDay(d,td);
   const ds2=fmtDay(d);
@@ -1088,13 +1086,12 @@ function renderWeekView(shouldShow){
   <tr><td colspan="${days.length+1}" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:3px solid #1a1a1a"><div style="position:sticky;left:8px;display:inline-block">🏗 工地進度</div></td></tr>
   ${projs.map((p,pi)=>`
     <tr>
-      <td class="site-hd" style="color:${tc(pi)};cursor:pointer" rowspan="2" onclick="showProjectDetail('${p.id}')" title="點擊查看案件詳細資料">
+      <td class="site-hd" style="color:${tc(pi)};cursor:pointer" onclick="showProjectDetail('${p.id}')" title="點擊查看案件詳細資料">
         ${p.name}${p.status==='done'?`<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">完工</span>`:''}
         <textarea onclick="event.stopPropagation()" onblur="saveSiteNote('${p.id}',this.value)" placeholder="共用備註…" style="width:100%;box-sizing:border-box;margin-top:5px;font-size:11px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;resize:vertical;min-height:44px;cursor:text;color:var(--text)">${escAttr(p.siteNote||'')}</textarea>
       </td>
-      ${days.map(d=>renderCell(p,pi,d,0)).join('')}
+      ${days.map(d=>renderCell(p,pi,d)).join('')}
     </tr>
-    <tr>${days.map(d=>renderCell(p,pi,d,1)).join('')}</tr>
   `).join('')}
   </tbody></table></div>
   <div style="font-size:11px;color:var(--text2);margin-top:8px">色塊單擊=checklist；Ctrl+單擊=複製；雙擊白格=編輯</div>`;
