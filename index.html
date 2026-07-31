@@ -591,14 +591,14 @@ function renderOverview(){
     </div>
     ${S.projects.length===0?`<div class="empty">尚無案件</div>`:`
     <div style="overflow-x:auto"><table>
-      <thead><tr><th>案件名稱</th><th>業主</th><th>類型</th><th>設計師</th><th>預算</th><th>完工日</th><th>狀態</th>${isAdmin()?'<th></th>':''}</tr></thead>
+      <thead><tr><th>案件名稱</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>完工日</th><th>狀態</th>${isAdmin()?'<th></th>':''}</tr></thead>
       <tbody>${S.projects.map(p=>{
         const si=statusInfo(p.status);
         return`<tr>
-          <td><strong style="font-weight:500">${p.name}</strong></td>
+          <td><strong style="font-weight:500;cursor:pointer;color:var(--purple)" onclick="showProjectDetail('${p.id}')">${p.name}</strong></td>
           <td>${p.owner||''}</td><td style="color:var(--text2)">${p.type||''}</td>
           <td>${p.designer||''}</td><td>${p.budget||''}</td>
-          <td style="color:var(--text2)">${p.finish||''}</td>
+          <td style="color:var(--text2)">${p.contractEnd||p.finish||''}</td>
           <td>${isAdmin()?`<select class="status-sel" style="background:${si.bg};color:${si.color}" onchange="updateStatus('${p.id}',this.value)">
             ${STATUS_OPTS.map(o=>`<option value="${o.v}" ${p.status===o.v?'selected':''}>${o.l}</option>`).join('')}
           </select>`:`<span class="badge" style="background:${si.bg};color:${si.color}">${si.l}</span>`}</td>
@@ -1083,7 +1083,7 @@ function renderWeekView(shouldShow){
   <tr><td colspan="${days.length+1}" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:3px solid #1a1a1a"><div style="position:sticky;left:8px;display:inline-block">🏗 工地進度</div></td></tr>
   ${projs.map((p,pi)=>`
     <tr>
-      <td class="site-hd" style="color:${tc(pi)}" rowspan="2">${p.name}${p.status==='done'?`<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">完工</span>`:''}</td>
+      <td class="site-hd" style="color:${tc(pi)};cursor:pointer" rowspan="2" onclick="showProjectDetail('${p.id}')" title="點擊查看案件詳細資料">${p.name}${p.status==='done'?`<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">完工</span>`:''}</td>
       ${days.map(d=>renderCell(p,pi,d,0)).join('')}
     </tr>
     <tr>${days.map(d=>renderCell(p,pi,d,1)).join('')}</tr>
@@ -2289,16 +2289,56 @@ window.rejectMember=async function(uid){if(!confirm('確定拒絕？'))return;aw
 window.changeRole=async function(uid,role){await updateDoc(doc(db,'members',uid),{role});}
 
 // ── Project CRUD ──
+function ymdInputs(prefix,label){
+  return`<div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:2px">${label}</div>
+    <div style="display:flex;align-items:center;gap:3px">
+      <input id="${prefix}-y" type="number" placeholder="年" style="width:70px">年
+      <input id="${prefix}-m" type="number" placeholder="月" min="1" max="12" style="width:50px">月
+      <input id="${prefix}-d" type="number" placeholder="日" min="1" max="31" style="width:50px">日
+    </div>
+  </div>`;
+}
+function ymdValue(prefix){
+  const y=$(`${prefix}-y`).value.trim(),m=$(`${prefix}-m`).value.trim(),d=$(`${prefix}-d`).value.trim();
+  if(!y||!m||!d)return'';
+  return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+}
+function ymdSetFields(prefix,val){
+  if(!val)return;
+  const parts=val.split('-');
+  if(parts.length!==3)return;
+  if($(`${prefix}-y`))$(`${prefix}-y`).value=parts[0];
+  if($(`${prefix}-m`))$(`${prefix}-m`).value=parseInt(parts[1],10);
+  if($(`${prefix}-d`))$(`${prefix}-d`).value=parseInt(parts[2],10);
+}
+window.updateNPAmount=function(){
+  const area=parseFloat($('np-area').value)||0;
+  const price=parseFloat($('np-price').value)||0;
+  $('np-design-amount').textContent=(area*price).toLocaleString();
+}
 window.showAddProject=function(){
   if(!isAdmin())return;
   $('mo-content').innerHTML=`<div class="mo-title">新增案件</div>
-    <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+    <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:65vh;overflow-y:auto">
       <input id="np-name" type="text" placeholder="案件名稱*">
-      <input id="np-owner" type="text" placeholder="業主">
+      <input id="np-owner" type="text" placeholder="業主姓名">
+      <input id="np-phone" type="text" placeholder="電話">
+      <input id="np-address" type="text" placeholder="案件地址">
       <input id="np-type" type="text" placeholder="類型（住宅／商業…）">
       <input id="np-designer" type="text" placeholder="設計師">
       <input id="np-budget" type="text" placeholder="預算">
-      <input id="np-finish" type="text" placeholder="預計完工日">
+      <div style="display:flex;gap:6px;align-items:center">
+        <input id="np-area" type="number" placeholder="設計簽約坪數" oninput="updateNPAmount()" style="flex:1">
+        <span>×</span>
+        <input id="np-price" type="number" placeholder="單坪價格" oninput="updateNPAmount()" style="flex:1">
+      </div>
+      <div style="font-size:12px;color:var(--text2)">設計合約金額（自動計算）：<span id="np-design-amount" style="font-weight:600;color:var(--text)">0</span></div>
+      <input id="np-contract-amount" type="text" placeholder="工程合約金額">
+      ${ymdInputs('np-cs','合約起始日')}
+      ${ymdInputs('np-ce','完工日')}
+      <textarea id="np-process" placeholder="廠商施工流程…" rows="3" style="font-family:inherit;padding:8px;border:1px solid var(--border);border-radius:var(--r)"></textarea>
+      <div style="font-size:11px;color:var(--text3);border:1px dashed var(--border);border-radius:var(--r);padding:8px;text-align:center">📷 照片上傳（尚未開通，之後啟用 Firebase Storage 後可用）</div>
       <select id="np-status"><option value="design">設計中</option><option value="prog">施工中</option><option value="wait">待確認</option><option value="done">已完工</option><option value="stop">暫停</option></select>
     </div>
     <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="addProject()">新增</button></div>`;
@@ -2307,13 +2347,62 @@ window.showAddProject=function(){
 window.addProject=async function(){
   if(!isAdmin())return;
   const name=$('np-name').value.trim();if(!name)return alert('請填寫案件名稱');
+  const contractStart=ymdValue('np-cs');
+  const contractEnd=ymdValue('np-ce');
   setSyncing();
-  await addDoc(collection(db,'projects'),{name,owner:$('np-owner').value.trim(),type:$('np-type').value.trim(),designer:$('np-designer').value.trim(),budget:$('np-budget').value.trim(),finish:$('np-finish').value.trim(),status:$('np-status').value,schedule:[],designProgress:{},createdAt:serverTimestamp()});
+  await addDoc(collection(db,'projects'),{
+    name,
+    owner:$('np-owner').value.trim(),
+    phone:$('np-phone').value.trim(),
+    address:$('np-address').value.trim(),
+    type:$('np-type').value.trim(),
+    designer:$('np-designer').value.trim(),
+    budget:$('np-budget').value.trim(),
+    area:$('np-area').value.trim(),
+    pricePerPing:$('np-price').value.trim(),
+    contractAmount:$('np-contract-amount').value.trim(),
+    contractStart,
+    contractEnd,
+    finish:contractEnd,
+    process:$('np-process').value.trim(),
+    status:$('np-status').value,schedule:[],designProgress:{},createdAt:serverTimestamp()});
   closeMo();setSynced();
 }
 window.deleteProject=async function(id){
   if(!isAdmin())return;if(!confirm('確定刪除？'))return;
   await deleteDoc(doc(db,'projects',id));
+}
+window.showProjectDetail=function(projId){
+  const p=S.projects.find(x=>x.id===projId);
+  if(!p)return;
+  const si=statusInfo(p.status);
+  const designAmount=(parseFloat(p.area)||0)*(parseFloat(p.pricePerPing)||0);
+  function row(label,val){
+    return`<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
+      <div style="width:110px;flex-shrink:0;color:var(--text2)">${label}</div>
+      <div style="flex:1;white-space:pre-wrap;word-break:break-word">${val||'—'}</div>
+    </div>`;
+  }
+  $('mo-content').innerHTML=`<div class="mo-title">${p.name}</div>
+    <div style="margin-top:8px;max-height:65vh;overflow-y:auto">
+      ${row('業主姓名',p.owner)}
+      ${row('電話',p.phone)}
+      ${row('案件地址',p.address)}
+      ${row('類型',p.type)}
+      ${row('設計師',p.designer)}
+      ${row('預算',p.budget)}
+      ${row('設計簽約坪數',p.area)}
+      ${row('單坪價格',p.pricePerPing)}
+      ${row('設計合約金額',designAmount?designAmount.toLocaleString():'')}
+      ${row('工程合約金額',p.contractAmount)}
+      ${row('合約起始日',p.contractStart)}
+      ${row('完工日',p.contractEnd||p.finish)}
+      ${row('狀態',`<span class="badge" style="background:${si.bg};color:${si.color}">${si.l}</span>`)}
+      ${row('廠商施工流程',p.process)}
+      <div style="font-size:11px;color:var(--text3);border:1px dashed var(--border);border-radius:var(--r);padding:8px;text-align:center;margin-top:6px">📷 照片（尚未開通）</div>
+    </div>
+    <div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;
+  $('modal').style.display='flex';
 }
 window.setCalMode=function(m){calMode=m;lastHScrollLeft=0;renderProgress();}
 window.changeWeek=function(d){weekOffset+=d;lastHScrollLeft=0;renderProgress();}
