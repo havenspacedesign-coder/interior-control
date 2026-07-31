@@ -877,6 +877,20 @@ function renderProgress(){
     <div style="width:${100+weekDays.length*180}px;height:1px"></div>
   </div>`:''}`;
   requestAnimationFrame(restoreHScroll);
+  requestAnimationFrame(watchNoteBoxResize);
+}
+let noteResizeObserver=null;
+function watchNoteBoxResize(){
+  const el=document.getElementById('global-note-box');
+  if(!el)return;
+  if(!noteResizeObserver){
+    noteResizeObserver=new ResizeObserver(function(entries){
+      entries.forEach(function(entry){
+        globalNoteBoxHeight=entry.target.style.height||(entry.contentRect.height+'px');
+      });
+    });
+  }
+  noteResizeObserver.observe(el);
 }
 // Global sticky notepad — visible only to the current user. One text box,
 // like 每日施工日誌. Whatever you type is saved under the month you're
