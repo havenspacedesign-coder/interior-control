@@ -608,6 +608,11 @@ function renderOverview(){
   </div>`;
 }
 window.updateStatus=async function(projId,v){setSyncing();await updateDoc(doc(db,'projects',projId),{status:v});setSynced();}
+window.saveSiteNote=async function(projId,val){
+  setSyncing();
+  await updateDoc(doc(db,'projects',projId),{siteNote:val});
+  setSynced();
+}
 
 // ── Design ──
 function renderDesign(){
@@ -916,7 +921,7 @@ function renderGlobalNotesPanel(viewMonth){
   const curMonth=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0');
   const isFuture=viewMonth>curMonth;
   const heightStyle=globalNoteBoxHeight?`height:${globalNoteBoxHeight}`:'min-height:300px';
-  return`<div style="width:200px;flex-shrink:0;position:sticky;top:60px;border:1px solid var(--border);border-radius:var(--rl2);background:var(--surface);padding:10px;max-height:calc(100vh - 80px);overflow-y:auto">
+  return`<div style="width:400px;flex-shrink:0;position:sticky;top:60px;border:1px solid var(--border);border-radius:var(--rl2);background:var(--surface);padding:10px;max-height:calc(100vh - 80px);overflow-y:auto">
     <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text2)">📝 我的記事本${isFuture?' <span style="font-weight:400;color:var(--text3)">（未來月份，鎖定）</span>':''}</div>
     <textarea id="global-note-box" placeholder="點此輸入…" ${isFuture?'readonly':`onblur="globalNoteBoxHeight=this.style.height;saveGlobalNote('${viewMonth}',this.value)"`} style="width:100%;box-sizing:border-box;${heightStyle};border:1px solid var(--border);border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;${isFuture?'background:var(--bg);color:var(--text3);cursor:not-allowed':''}">${escAttr(text)}</textarea>
   </div>`;
@@ -961,7 +966,7 @@ function renderWeekView(shouldShow){
           ${!isDone?`<button class="ev-del" onclick="event.stopPropagation();removeEv('${p.id}','${ds}',${ei})">×</button>`:''}
         </div>`;}).join('')}
       ${rowIdx===1&&!isDone?`<div class="add-ev-wrap">
-        <span class="add-ev-btn" onclick="event.stopPropagation();togglePicker('${p.id}','${ds}',1)">＋ 新增</span>
+        <span class="add-ev-btn" onclick="event.stopPropagation();togglePicker(event,'${p.id}','${ds}',1)">＋ 新增</span>
         ${isOpen?`<div class="stage-search-box" onclick="event.stopPropagation()" style="top:${openPicker.top}px;left:${openPicker.left}px">
           <input type="text" class="stage-search-input" id="ssi-${p.id}-${ds}" placeholder="打關鍵字搜尋…"
             oninput="filterStages('${p.id}','${ds}')"
@@ -1083,7 +1088,10 @@ function renderWeekView(shouldShow){
   <tr><td colspan="${days.length+1}" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:3px solid #1a1a1a"><div style="position:sticky;left:8px;display:inline-block">🏗 工地進度</div></td></tr>
   ${projs.map((p,pi)=>`
     <tr>
-      <td class="site-hd" style="color:${tc(pi)};cursor:pointer" rowspan="2" onclick="showProjectDetail('${p.id}')" title="點擊查看案件詳細資料">${p.name}${p.status==='done'?`<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">完工</span>`:''}</td>
+      <td class="site-hd" style="color:${tc(pi)};cursor:pointer" rowspan="2" onclick="showProjectDetail('${p.id}')" title="點擊查看案件詳細資料">
+        ${p.name}${p.status==='done'?`<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">完工</span>`:''}
+        <textarea onclick="event.stopPropagation()" onblur="saveSiteNote('${p.id}',this.value)" placeholder="共用備註…" style="width:100%;box-sizing:border-box;margin-top:5px;font-size:11px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;resize:vertical;min-height:44px;cursor:text;color:var(--text)">${escAttr(p.siteNote||'')}</textarea>
+      </td>
       ${days.map(d=>renderCell(p,pi,d,0)).join('')}
     </tr>
     <tr>${days.map(d=>renderCell(p,pi,d,1)).join('')}</tr>
@@ -1848,12 +1856,13 @@ window.handleStageKey=function(e,projId,ds){
     if(hi)addEvFromStage(projId,ds,hi.textContent.trim());
   }else if(e.key==='Escape'){openPicker=null;renderProgress();}
 }
-window.togglePicker=function(projId,ds,row){
+window.togglePicker=function(e,projId,ds,row){
   if(row===undefined)row=1;
   if(openPicker&&openPicker.projId===projId&&openPicker.ds===ds&&openPicker.row===row){
     openPicker=null;renderProgress();return;
   }
-  openPicker={projId,ds,row};
+  const rect=e.currentTarget.getBoundingClientRect();
+  openPicker={projId,ds,row,top:rect.bottom+4,left:rect.left};
   renderProgress();
   setTimeout(()=>{
     const inp=document.getElementById('ssi-'+projId+'-'+ds);
