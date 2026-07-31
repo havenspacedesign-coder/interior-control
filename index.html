@@ -1476,10 +1476,24 @@ function renderTodoItem(t){
     ?`pnToggleComplete('${t.type}','${t.ds}',${t.idx})`
     :`toggleManualTodo('${t.id}',${!t.completed})`;
   const isSel=t.source==='manual'&&selectedTodoId===t.id;
+  const dblclick=t.source==='manual'?`event.stopPropagation();startEditManualTodo('${t.id}',this)`:'';
   return`<div onclick="${t.source==='manual'?`event.stopPropagation();selectTodoItem('${t.id}')`:''}" style="display:flex;align-items:flex-start;gap:5px;font-size:11px;padding:4px 4px;border-bottom:1px solid var(--border);${isSel?'background:var(--pl);border-radius:4px':''}">
     <span onclick="event.stopPropagation();${toggleOnclick}" style="cursor:pointer;flex-shrink:0">${t.completed?'✅':'⬜'}</span>
-    <span style="flex:1;word-break:break-word;${doneStyle}">${escAttr(t.text)}</span>
+    <span ondblclick="${dblclick}" data-todo-id="${t.source==='manual'?t.id:''}" style="flex:1;word-break:break-word;${doneStyle}">${escAttr(t.text)}</span>
   </div>`;
+}
+window.startEditManualTodo=function(id,el){
+  const current=el.textContent;
+  el.innerHTML=`<input type="text" value="${escAttr(current)}" style="width:100%;box-sizing:border-box;font-size:11px;padding:2px 4px;border:1px solid var(--purple);border-radius:3px;font-family:inherit" onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){this.blur();}if(event.key==='Escape'){this.blur();}" onblur="saveManualTodoEdit('${id}',this.value)">`;
+  const inp=el.querySelector('input');
+  inp.focus();inp.select();
+}
+window.saveManualTodoEdit=async function(id,text){
+  text=(text||'').trim();
+  if(!text)return renderProgress();
+  setSyncing();
+  await updateDoc(doc(db,'userTodos',id),{text});
+  setSynced();
 }
 function renderTodoColumn(p){
   const noteTodos=getNoteTodosForProject(p.name);
@@ -1487,8 +1501,8 @@ function renderTodoColumn(p){
   const all=[...noteTodos,...manualTodos].sort((a,b)=>(a.completed?1:0)-(b.completed?1:0));
   return`<div style="min-width:210px;flex-shrink:0;border:1px solid var(--border);border-radius:var(--r);padding:8px">
     <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--purple)">${p.name}</div>
+    <input type="text" placeholder="+ 新增待辦…" onkeydown="if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){addManualTodo('${p.id}',this.value);this.value='';}" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 6px;border:1px dashed var(--border);border-radius:4px;margin-bottom:5px;font-family:inherit">
     ${all.length?all.map(t=>renderTodoItem(t)).join(''):'<div style="font-size:11px;color:var(--text3)">尚無待辦事項</div>'}
-    <input type="text" placeholder="+ 新增待辦…" onkeydown="if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){addManualTodo('${p.id}',this.value);this.value='';}" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 6px;border:1px dashed var(--border);border-radius:4px;margin-top:5px;font-family:inherit">
   </div>`;
 }
 window.addManualTodo=async function(projId,text){
