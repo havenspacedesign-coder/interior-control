@@ -862,6 +862,7 @@ function renderProgress(){
     <div class="seg">
       <button class="${calMode==='week'||calMode==='month'?'on':''}" onclick="setCalMode('week')">週視圖</button>
       <button class="${calMode==='day'?'on':''}" onclick="setCalMode('day')">今日總覽</button>
+      <button class="${calMode==='todo'?'on':''}" onclick="setCalMode('todo')">各工地待辦事項</button>
     </div>
     ${calMode==='week'||calMode==='month'?`<div class="nav-row">
       <span class="seg" style="margin-right:6px">
@@ -874,7 +875,7 @@ function renderProgress(){
       <button class="nav-btn" onclick="changePeriod(1)">›</button>
     </div>`:''}
   </div>
-  ${renderTodoPanel()}
+  ${calMode==='todo'?renderTodoPanel():`
   ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
   ${calMode==='week'||calMode==='month'?`<div class="formula-bar${formulaBarState?' active':''}" id="pn-formula-bar">
     <span class="formula-bar-label" id="pn-formula-label">${formulaBarState?(formulaBarState.type==='work'?'工地記事':'私人記事')+' · '+formulaBarState.ds.slice(5).replace('-','/'):'工地記事'}</span>
@@ -887,6 +888,7 @@ function renderProgress(){
   ${calMode==='week'||calMode==='month'?renderDailyLogSection(weekDays):''}
   ${renderPrivateTodoSection()}
   <div style="height:500px"></div>
+  `}
   </div>
   </div>
   ${calMode==='week'||calMode==='month'?`<div class="hscroll-sync" style="position:fixed;left:0;right:0;bottom:0;height:14px;overflow-x:auto;overflow-y:hidden;background:var(--surface);border-top:1px solid var(--border);z-index:40">
