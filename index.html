@@ -340,7 +340,8 @@ const auth=getAuth(app);
 const provider=new GoogleAuthProvider();
 
 let currentUser=null,currentRole=null;
-let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},globalNotes:{}};
+let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},globalNotes:{},userTodos:[]};
+let userPrefs={todoProjects:[]};
 const MEETING_ROWS=[
   {id:'meet1',name:'客戶會議/丈量'},
   {id:'meet2',name:'廠商會議'},
@@ -547,8 +548,16 @@ function initListeners(){
     snap.docs.forEach(d=>{S.globalNotes[d.id]=d.data();});
     if(activePanel==='progress')renderProgress();
   });
+  onSnapshot(collection(db,'userTodos'),snap=>{
+    S.userTodos=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(activePanel==='progress')renderProgress();
+  });
   // Private notes: per user
   if(currentUser){
+    onSnapshot(doc(db,'userPrefs',currentUser.uid),snap=>{
+      userPrefs=snap.exists()?snap.data():{todoProjects:[]};
+      if(activePanel==='progress')renderProgress();
+    });
     onSnapshot(doc(db,'privateNotes',currentUser.uid),snap=>{
       S.privateNotes=snap.exists()?snap.data():{work:{},personal:{}};
       if(activePanel==='progress')renderProgress();
@@ -865,6 +874,7 @@ function renderProgress(){
       <button class="nav-btn" onclick="changePeriod(1)">›</button>
     </div>`:''}
   </div>
+  ${renderTodoPanel()}
   ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
   ${calMode==='week'||calMode==='month'?`<div class="formula-bar${formulaBarState?' active':''}" id="pn-formula-bar">
     <span class="formula-bar-label" id="pn-formula-label">${formulaBarState?(formulaBarState.type==='work'?'工地記事':'私人記事')+' · '+formulaBarState.ds.slice(5).replace('-','/'):'工地記事'}</span>
@@ -876,6 +886,7 @@ function renderProgress(){
   ${calMode==='week'||calMode==='month'?renderWeekView(shouldShow):renderDayView()}
   ${calMode==='week'||calMode==='month'?renderDailyLogSection(weekDays):''}
   ${renderPrivateTodoSection()}
+  <div style="height:500px"></div>
   </div>
   </div>
   ${calMode==='week'||calMode==='month'?`<div class="hscroll-sync" style="position:fixed;left:0;right:0;bottom:0;height:14px;overflow-x:auto;overflow-y:hidden;background:var(--surface);border-top:1px solid var(--border);z-index:40">
@@ -948,7 +959,7 @@ function renderWeekView(shouldShow){
     const allEvs=(p.schedule||[]).filter(e=>e.date===ds);
     const isDone=p.status==='done';
     const isOpen=openPicker&&openPicker.projId===p.id&&openPicker.ds===ds;
-    return`<td class="ev-cell ${isT?'tc':''}" style="min-height:88px" onclick="handleCellBg(event,'${p.id}','${ds}')">
+    return`<td class="ev-cell ${isT?'tc':''}" style="min-height:88px" onclick="handleCellBg(event,'${p.id}','${ds}')" ondragover="event.preventDefault()" ondrop="evDrop(event,'${p.id}','${ds}')">
       ${allEvs.map((ev,ei)=>{
         const pn=pendingCount(p.id,ev.stage);
         const isSel=selectedTag&&selectedTag.projId===p.id&&selectedTag.ds===ds&&selectedTag.ei===ei;
@@ -957,6 +968,7 @@ function renderWeekView(shouldShow){
             ondblclick="event.stopPropagation();startFieldEdit(this)"
             onclick="event.stopPropagation()">${ev.time||''}</span>
           <span class="ev-chip${isSel?' sel':''}" style="background:${sc(pi)};color:${tc(pi)}"
+            draggable="true" ondragstart="evDragStart(event,'${p.id}','${ds}',${ei})"
             onclick="event.stopPropagation();handleChipClick(event,'${p.id}','${ds}',${ei},'${ev.stage||''}')">${ev.label||ev.stage||'?'}${pendBadge(pn)}</span>
           <span class="ev-field" data-proj="${p.id}" data-ds="${ds}" data-ei="${ei}" data-field="note"
             ondblclick="event.stopPropagation();startFieldEdit(this)"
@@ -1094,7 +1106,7 @@ function renderWeekView(shouldShow){
     </tr>
   `).join('')}
   </tbody></table></div>
-  <div style="font-size:11px;color:var(--text2);margin-top:8px">色塊單擊=checklist；Ctrl+單擊=複製；雙擊白格=編輯</div>`;
+  <div style="font-size:11px;color:var(--text2);margin-top:8px">色塊單擊=checklist；Ctrl+單擊=複製；雙擊白格=編輯；拖拉可搬移，按住Ctrl+拖拉=複製</div>`;
 }
 
 // ── Daily Log Section ──
@@ -1417,6 +1429,100 @@ window.mSaveBox=async function(el,rowId,ds,idx){
 }
 
 // ── Private Todo Section ──
+// ── Personal per-project todo panel — private to the current user. Combines
+// items @-tagged to a project inside 私人記事 with manually-added items that
+// aren't tied to any date. Which projects show is a personal preference. ──
+function getNoteTodosForProject(projName){
+  const pn=S.privateNotes||{work:{},personal:{}};
+  const out=[];
+  ['work','personal'].forEach(function(type){
+    const byDate=pn[type]||{};
+    Object.keys(byDate).forEach(function(ds){
+      (byDate[ds]||[]).forEach(function(item,idx){
+        const m=(item.text||'').match(/\[proj:([^\]]+)\]/);
+        if(m&&m[1]===projName){
+          out.push({source:'note',type:type,ds:ds,idx:idx,text:(item.text||'').replace(/\[proj:[^\]]+\]/g,'').trim(),completed:!!item.completed});
+        }
+      });
+    });
+  });
+  return out;
+}
+function renderTodoPanel(){
+  if(!currentUser)return'';
+  const projIds=userPrefs.todoProjects||[];
+  const projs=projIds.map(id=>S.projects.find(p=>p.id===id)).filter(Boolean);
+  return`<div style="border:1px solid var(--border);border-radius:var(--rl2);padding:10px;margin-bottom:12px;background:var(--surface)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-size:13px;font-weight:600">📋 各工地待辦事項 <span style="font-weight:400;color:var(--text3);font-size:11px">（只有自己看得到）</span></span>
+      <button class="btn btn-sm" onclick="openTodoProjectPicker()">⚙ 選擇工地</button>
+    </div>
+    ${projs.length===0?`<div style="font-size:12px;color:var(--text3)">尚未選擇要顯示的工地，點右上角「⚙ 選擇工地」設定</div>`:
+    `<div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px">
+      ${projs.map(p=>renderTodoColumn(p)).join('')}
+    </div>`}
+  </div>`;
+}
+function renderTodoItem(t){
+  const doneStyle=t.completed?'text-decoration:line-through;color:var(--text3)':'';
+  const toggleOnclick=t.source==='note'
+    ?`pnToggleComplete('${t.type}','${t.ds}',${t.idx})`
+    :`toggleManualTodo('${t.id}',${!t.completed})`;
+  return`<div style="display:flex;align-items:flex-start;gap:5px;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border)">
+    <span onclick="${toggleOnclick}" style="cursor:pointer;flex-shrink:0">${t.completed?'✅':'⬜'}</span>
+    <span style="flex:1;word-break:break-word;${doneStyle}">${escAttr(t.text)}</span>
+    ${t.source==='manual'?`<span onclick="deleteManualTodo('${t.id}')" style="cursor:pointer;color:var(--text3);flex-shrink:0">×</span>`:''}
+  </div>`;
+}
+function renderTodoColumn(p){
+  const noteTodos=getNoteTodosForProject(p.name);
+  const manualTodos=(S.userTodos||[]).filter(t=>t.uid===currentUser.uid&&t.projId===p.id).map(t=>({source:'manual',id:t.id,text:t.text,completed:!!t.done}));
+  const all=[...noteTodos,...manualTodos].sort((a,b)=>(a.completed?1:0)-(b.completed?1:0));
+  return`<div style="min-width:210px;flex-shrink:0;border:1px solid var(--border);border-radius:var(--r);padding:8px">
+    <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--purple)">${p.name}</div>
+    ${all.length?all.map(t=>renderTodoItem(t)).join(''):'<div style="font-size:11px;color:var(--text3)">尚無待辦事項</div>'}
+    <input type="text" placeholder="+ 新增待辦…" onkeydown="if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){addManualTodo('${p.id}',this.value);this.value='';}" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 6px;border:1px dashed var(--border);border-radius:4px;margin-top:5px;font-family:inherit">
+  </div>`;
+}
+window.addManualTodo=async function(projId,text){
+  text=(text||'').trim();
+  if(!text||!currentUser)return;
+  setSyncing();
+  await addDoc(collection(db,'userTodos'),{uid:currentUser.uid,projId,text,done:false,createdAt:serverTimestamp()});
+  setSynced();
+}
+window.toggleManualTodo=async function(todoId,done){
+  if(!currentUser)return;
+  setSyncing();
+  await updateDoc(doc(db,'userTodos',todoId),{done,doneAt:done?serverTimestamp():null});
+  setSynced();
+}
+window.deleteManualTodo=async function(todoId){
+  if(!currentUser)return;
+  await deleteDoc(doc(db,'userTodos',todoId));
+}
+window.openTodoProjectPicker=function(){
+  if(!currentUser)return;
+  const cur=userPrefs.todoProjects||[];
+  $('mo-content').innerHTML=`<div class="mo-title">選擇要顯示的工地</div>
+    <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto">
+      ${S.projects.map(p=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+        <input type="checkbox" value="${p.id}" ${cur.includes(p.id)?'checked':''}>
+        ${p.name}
+      </label>`).join('')}
+    </div>
+    <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="saveTodoProjectPicker()">儲存</button></div>`;
+  $('modal').style.display='flex';
+}
+window.saveTodoProjectPicker=async function(){
+  if(!currentUser)return;
+  const boxes=document.querySelectorAll('#mo-content input[type=checkbox]:checked');
+  const ids=Array.from(boxes).map(b=>b.value);
+  setSyncing();
+  await setDoc(doc(db,'userPrefs',currentUser.uid),{todoProjects:ids},{merge:true});
+  closeMo();setSynced();
+}
+
 function renderPrivateTodoSection(){
   if(calMode!=='week'&&calMode!=='month')return'';
   var days=getWeekDates();
@@ -1478,13 +1584,17 @@ function renderPrivateTodoSection(){
       var textStyle=color?'color:'+color+';font-weight:500':'color:var(--text)';
       // Chip height matches add button
       if(isSel){
-        h+='<input type="text" class="pn-box-input pn-chip" id="pnbox-'+type+'-'+ds+'-'+i+'" value="'+escAttr(item.text||'')+'" autocomplete="off" spellcheck="false"'
-          +' style="width:100%;box-sizing:border-box;background:var(--surface);border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;min-height:30px;line-height:1.4;font-family:inherit;'+textStyle+'"'
-          +' oninput="if(formulaBarState)formulaBarState.text=this.value"'
+        h+='<div style="border:'+border+';border-radius:5px;margin-bottom:4px;padding:6px 8px;background:var(--surface);display:flex;align-items:center;gap:5px">'
+          +'<input type="text" class="pn-box-input pn-chip" id="pnbox-'+type+'-'+ds+'-'+i+'" value="'+escAttr(item.text||'')+'" autocomplete="off" spellcheck="false"'
+          +' style="flex:1;min-width:0;box-sizing:border-box;background:transparent;border:none;padding:0;font-size:12px;line-height:1.4;font-family:inherit;'+textStyle+'"'
+          +' oninput="if(formulaBarState)formulaBarState.text=this.value;pnInput(event,\''+type+'\',\''+ds+'\','+i+')"'
           +' onblur="pnBoxBlur(this,\''+type+'\',\''+ds+'\','+i+')"'
-          +' onkeydown="if((event.key===\'Enter\'||event.key===\'Escape\')&&!event.isComposing&&event.keyCode!==229)this.blur()"'
+          +' onkeydown="pnKeyDown(event,\''+type+'\',\''+ds+'\','+i+')"'
           +' onclick="event.stopPropagation()"'
-          +'>';
+          +'>'
+          +'<span onclick="event.stopPropagation();pnToggleComplete(\''+type+'\',\''+ds+'\','+i+')" title="標記完成（變紅色）" style="flex-shrink:0;font-size:10px;color:'+(item.completed?'#fff':'var(--text3)')+';background:'+(item.completed?'var(--red)':'transparent')+';border:1px solid '+(item.completed?'var(--red)':'var(--border)')+';border-radius:9px;padding:1px 6px;cursor:pointer;white-space:nowrap">'+(item.completed?'✓ 已完成':'完成')+'</span>'
+          +'<div class="pn-mention-menu" id="pn-mention-'+type+'-'+ds+'-'+i+'" style="display:none"></div>'
+          +'</div>';
       }else{
         h+='<div class="pn-chip" style="background:var(--surface);border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;position:relative;'+textStyle+'"'
           +' onclick="pnSelect(\''+type+'\',\''+ds+'\','+i+')"'
@@ -1492,6 +1602,7 @@ function renderPrivateTodoSection(){
           +' ondragstart="pnDragStart(event,\''+type+'\',\''+ds+'\','+i+')"'
           +'>';
         h+=renderText(item.text||'');
+        if(item.completed)h+='<span style="position:absolute;top:2px;right:4px;font-size:10px;color:var(--red)">✓</span>';
         h+='</div>';
       }
     });
@@ -1563,7 +1674,7 @@ window.pnInput=function(e,type,ds,idx){
 
 window.pnInsertMention=function(e,type,ds,idx,projName){
   e.preventDefault();
-  var inp=document.getElementById('pne-'+type+'-'+ds+'-'+idx);
+  var inp=document.getElementById('pnbox-'+type+'-'+ds+'-'+idx);
   if(!inp)return;
   var menuEl=document.getElementById('pn-mention-'+type+'-'+ds+'-'+idx);
   if(menuEl)menuEl.style.display='none';
@@ -1591,7 +1702,7 @@ window.pnKeyDown=function(e,type,ds,idx){
       return;
     }
   }
-  if(e.key==='Enter'||e.key==='Escape'){e.target.blur();}
+  if((e.key==='Enter'||e.key==='Escape')&&!e.isComposing&&e.keyCode!==229){e.target.blur();}
 }
 
 window.pnSaveBlur=async function(type,ds,idx){
@@ -1647,6 +1758,25 @@ window.pnSetColor=async function(type,ds,idx,color){
   var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
   if(idx<0||idx>=items.length)return;
   items[idx]=Object.assign({},items[idx],{color:color});
+  S.privateNotes=Object.assign({},pn);
+  S.privateNotes[type]=Object.assign({},pn[type]||{});
+  S.privateNotes[type][ds]=items;
+  setSyncing();
+  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+  setSynced();
+}
+window.pnToggleComplete=async function(type,ds,idx){
+  if(!currentUser)return;
+  var pn=S.privateNotes||{work:{},personal:{}};
+  var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
+  if(idx<0||idx>=items.length)return;
+  var nowDone=!items[idx].completed;
+  items[idx]=Object.assign({},items[idx],{
+    completed:nowDone,
+    color:nowDone?'#E24B4A':(items[idx].color==='#E24B4A'?'':items[idx].color),
+    completedBy:nowDone?currentUser.uid:null,
+    completedAt:nowDone?serverTimestamp():null
+  });
   S.privateNotes=Object.assign({},pn);
   S.privateNotes[type]=Object.assign({},pn[type]||{});
   S.privateNotes[type][ds]=items;
@@ -1897,6 +2027,36 @@ async function copyTagToCell(toProjId,toDs){
   const toProj=S.projects.find(p=>p.id===toProjId);if(!toProj)return;
   const schedule=[...(toProj.schedule||[]),{...ev,date:toDs}];
   setSyncing();await updateDoc(doc(db,'projects',toProjId),{schedule});setSynced();selectedTag=null;
+}
+var evDragSrc=null;
+window.evDragStart=function(e,projId,ds,ei){
+  evDragSrc={projId,ds,ei};
+  e.dataTransfer.effectAllowed='copyMove';
+  e.dataTransfer.setData('text/plain','ev|'+projId+'|'+ds+'|'+ei);
+}
+window.evDrop=async function(e,toProjId,toDs){
+  e.preventDefault();e.stopPropagation();
+  const raw=e.dataTransfer.getData('text/plain');
+  let from=null;
+  if(raw){const parts=raw.split('|');if(parts.length===4&&parts[0]==='ev')from={projId:parts[1],ds:parts[2],ei:parseInt(parts[3])};}
+  if(!from)from=evDragSrc;
+  if(!from)return;
+  const srcProj=S.projects.find(p=>p.id===from.projId);if(!srcProj)return;
+  const dayEvs=(srcProj.schedule||[]).filter(ev=>ev.date===from.ds);
+  const ev=dayEvs[from.ei];if(!ev){evDragSrc=null;return;}
+  const toProj=S.projects.find(p=>p.id===toProjId);if(!toProj){evDragSrc=null;return;}
+  if(from.projId===toProjId&&from.ds===toDs){evDragSrc=null;return;}
+  setSyncing();
+  await updateDoc(doc(db,'projects',toProjId),{schedule:[...(toProj.schedule||[]),{...ev,date:toDs}]});
+  if(!e.ctrlKey){
+    const idx=(srcProj.schedule||[]).indexOf(ev);
+    if(idx>=0){
+      const ns=[...(srcProj.schedule||[]).slice(0,idx),...(srcProj.schedule||[]).slice(idx+1)];
+      await updateDoc(doc(db,'projects',from.projId),{schedule:ns});
+    }
+  }
+  evDragSrc=null;
+  setSynced();
 }
 window.removeEv=async function(projId,ds,ei){
   const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
