@@ -2346,7 +2346,7 @@ function showProjectForm(projId){
       <input id="np-contract-amount" type="text" placeholder="工程合約金額" value="${escAttr(p?.contractAmount||'')}">
       ${ymdInputs('np-cs','合約起始日')}
       ${ymdInputs('np-ce','完工日')}
-      <textarea id="np-process" placeholder="廠商施工流程…" rows="3" oninput="autoGrow(this)" style="font-family:inherit;padding:8px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;resize:none">${escAttr(p?.process||'')}</textarea>
+      <textarea id="np-process" placeholder="廠商施工流程…" rows="${p?.process?Math.max(3,p.process.split('\n').length+1):3}" oninput="autoGrow(this)" style="font-family:inherit;padding:8px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;resize:none">${escAttr(p?.process||'')}</textarea>
       <div style="font-size:11px;color:var(--text3);border:1px dashed var(--border);border-radius:var(--r);padding:8px;text-align:center">📷 照片上傳（尚未開通，之後啟用 Firebase Storage 後可用）</div>
       <select id="np-status">
         <option value="design" ${p?.status==='design'?'selected':''}>設計中</option>
@@ -2360,7 +2360,7 @@ function showProjectForm(projId){
   $('modal').style.display='flex';
   ymdSetFields('np-cs',p?.contractStart);
   ymdSetFields('np-ce',p?.contractEnd||(!p?.contractStart?p?.finish:''));
-  setTimeout(function(){const ta=$('np-process');if(ta)autoGrow(ta);},0);
+  requestAnimationFrame(function(){const ta=$('np-process');if(ta)autoGrow(ta);});
 }
 window.saveProjectForm=async function(projId){
   if(!isAdmin())return;
@@ -2417,7 +2417,7 @@ window.showProjectDetail=function(projId){
       ${row('設計簽約坪數',p.area)}
       ${row('單坪價格',p.pricePerPing)}
       ${row('設計合約金額',designAmount?designAmount.toLocaleString():'')}
-      ${row('工程合約金額',p.contractAmount)}
+      ${row('工程合約金額',p.contractAmount&&!isNaN(parseFloat(p.contractAmount))?parseFloat(p.contractAmount).toLocaleString():p.contractAmount)}
       ${row('合約起始日',p.contractStart)}
       ${row('完工日',p.contractEnd||p.finish)}
       ${row('狀態',`<span class="badge" style="background:${si.bg};color:${si.color}">${si.l}</span>`)}
