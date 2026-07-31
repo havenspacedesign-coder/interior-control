@@ -602,7 +602,7 @@ function renderOverview(){
           <td>${isAdmin()?`<select class="status-sel" style="background:${si.bg};color:${si.color}" onchange="updateStatus('${p.id}',this.value)">
             ${STATUS_OPTS.map(o=>`<option value="${o.v}" ${p.status===o.v?'selected':''}>${o.l}</option>`).join('')}
           </select>`:`<span class="badge" style="background:${si.bg};color:${si.color}">${si.l}</span>`}</td>
-          ${isAdmin()?`<td><button class="btn btn-sm" onclick="deleteProject('${p.id}')">刪除</button></td>`:''}
+          ${isAdmin()?`<td><button class="btn btn-sm" onclick="showEditProject('${p.id}')">編輯</button> <button class="btn btn-sm" onclick="deleteProject('${p.id}')">刪除</button></td>`:''}
         </tr>`;}).join('')}</tbody>
     </table></div>`}
   </div>`;
@@ -2312,6 +2312,7 @@ function ymdSetFields(prefix,val){
   if($(`${prefix}-m`))$(`${prefix}-m`).value=parseInt(parts[1],10);
   if($(`${prefix}-d`))$(`${prefix}-d`).value=parseInt(parts[2],10);
 }
+window.autoGrow=function(el){el.style.height='auto';el.style.height=el.scrollHeight+'px';}
 window.updateNPAmount=function(){
   const area=parseFloat($('np-area').value)||0;
   const price=parseFloat($('np-price').value)||0;
@@ -2319,38 +2320,54 @@ window.updateNPAmount=function(){
 }
 window.showAddProject=function(){
   if(!isAdmin())return;
-  $('mo-content').innerHTML=`<div class="mo-title">新增案件</div>
+  showProjectForm(null);
+}
+window.showEditProject=function(projId){
+  if(!isAdmin())return;
+  showProjectForm(projId);
+}
+function showProjectForm(projId){
+  const p=projId?S.projects.find(x=>x.id===projId):null;
+  $('mo-content').innerHTML=`<div class="mo-title">${p?'編輯案件':'新增案件'}</div>
     <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:65vh;overflow-y:auto">
-      <input id="np-name" type="text" placeholder="案件名稱*">
-      <input id="np-owner" type="text" placeholder="業主姓名">
-      <input id="np-phone" type="text" placeholder="電話">
-      <input id="np-address" type="text" placeholder="案件地址">
-      <input id="np-type" type="text" placeholder="類型（住宅／商業…）">
-      <input id="np-designer" type="text" placeholder="設計師">
-      <input id="np-budget" type="text" placeholder="預算">
+      <input id="np-name" type="text" placeholder="案件名稱*" value="${escAttr(p?.name||'')}">
+      <input id="np-owner" type="text" placeholder="業主姓名" value="${escAttr(p?.owner||'')}">
+      <input id="np-phone" type="text" placeholder="電話" value="${escAttr(p?.phone||'')}">
+      <input id="np-address" type="text" placeholder="案件地址" value="${escAttr(p?.address||'')}">
+      <input id="np-type" type="text" placeholder="類型（住宅／商業…）" value="${escAttr(p?.type||'')}">
+      <input id="np-designer" type="text" placeholder="設計師" value="${escAttr(p?.designer||'')}">
+      <input id="np-budget" type="text" placeholder="預算" value="${escAttr(p?.budget||'')}">
       <div style="display:flex;gap:6px;align-items:center">
-        <input id="np-area" type="number" placeholder="設計簽約坪數" oninput="updateNPAmount()" style="flex:1">
+        <input id="np-area" type="number" placeholder="設計簽約坪數" oninput="updateNPAmount()" value="${escAttr(p?.area||'')}" style="flex:1">
         <span>×</span>
-        <input id="np-price" type="number" placeholder="單坪價格" oninput="updateNPAmount()" style="flex:1">
+        <input id="np-price" type="number" placeholder="單坪價格" oninput="updateNPAmount()" value="${escAttr(p?.pricePerPing||'')}" style="flex:1">
       </div>
-      <div style="font-size:12px;color:var(--text2)">設計合約金額（自動計算）：<span id="np-design-amount" style="font-weight:600;color:var(--text)">0</span></div>
-      <input id="np-contract-amount" type="text" placeholder="工程合約金額">
+      <div style="font-size:12px;color:var(--text2)">設計合約金額（自動計算）：<span id="np-design-amount" style="font-weight:600;color:var(--text)">${p?((parseFloat(p.area)||0)*(parseFloat(p.pricePerPing)||0)).toLocaleString():'0'}</span></div>
+      <input id="np-contract-amount" type="text" placeholder="工程合約金額" value="${escAttr(p?.contractAmount||'')}">
       ${ymdInputs('np-cs','合約起始日')}
       ${ymdInputs('np-ce','完工日')}
-      <textarea id="np-process" placeholder="廠商施工流程…" rows="3" style="font-family:inherit;padding:8px;border:1px solid var(--border);border-radius:var(--r)"></textarea>
+      <textarea id="np-process" placeholder="廠商施工流程…" rows="3" oninput="autoGrow(this)" style="font-family:inherit;padding:8px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;resize:none">${escAttr(p?.process||'')}</textarea>
       <div style="font-size:11px;color:var(--text3);border:1px dashed var(--border);border-radius:var(--r);padding:8px;text-align:center">📷 照片上傳（尚未開通，之後啟用 Firebase Storage 後可用）</div>
-      <select id="np-status"><option value="design">設計中</option><option value="prog">施工中</option><option value="wait">待確認</option><option value="done">已完工</option><option value="stop">暫停</option></select>
+      <select id="np-status">
+        <option value="design" ${p?.status==='design'?'selected':''}>設計中</option>
+        <option value="prog" ${p?.status==='prog'?'selected':''}>施工中</option>
+        <option value="wait" ${p?.status==='wait'?'selected':''}>待確認</option>
+        <option value="done" ${p?.status==='done'?'selected':''}>已完工</option>
+        <option value="stop" ${p?.status==='stop'?'selected':''}>暫停</option>
+      </select>
     </div>
-    <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="addProject()">新增</button></div>`;
+    <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="saveProjectForm(${p?`'${p.id}'`:'null'})">${p?'儲存':'新增'}</button></div>`;
   $('modal').style.display='flex';
+  ymdSetFields('np-cs',p?.contractStart);
+  ymdSetFields('np-ce',p?.contractEnd||(!p?.contractStart?p?.finish:''));
+  setTimeout(function(){const ta=$('np-process');if(ta)autoGrow(ta);},0);
 }
-window.addProject=async function(){
+window.saveProjectForm=async function(projId){
   if(!isAdmin())return;
   const name=$('np-name').value.trim();if(!name)return alert('請填寫案件名稱');
   const contractStart=ymdValue('np-cs');
   const contractEnd=ymdValue('np-ce');
-  setSyncing();
-  await addDoc(collection(db,'projects'),{
+  const data={
     name,
     owner:$('np-owner').value.trim(),
     phone:$('np-phone').value.trim(),
@@ -2365,7 +2382,13 @@ window.addProject=async function(){
     contractEnd,
     finish:contractEnd,
     process:$('np-process').value.trim(),
-    status:$('np-status').value,schedule:[],designProgress:{},createdAt:serverTimestamp()});
+    status:$('np-status').value};
+  setSyncing();
+  if(projId){
+    await updateDoc(doc(db,'projects',projId),data);
+  }else{
+    await addDoc(collection(db,'projects'),Object.assign({},data,{schedule:[],designProgress:{},createdAt:serverTimestamp()}));
+  }
   closeMo();setSynced();
 }
 window.deleteProject=async function(id){
@@ -2401,7 +2424,7 @@ window.showProjectDetail=function(projId){
       ${row('廠商施工流程',p.process)}
       <div style="font-size:11px;color:var(--text3);border:1px dashed var(--border);border-radius:var(--r);padding:8px;text-align:center;margin-top:6px">📷 照片（尚未開通）</div>
     </div>
-    <div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;
+    <div class="mo-footer">${isAdmin()?`<button class="btn" onclick="showEditProject('${p.id}')">編輯</button>`:''}<button class="btn" onclick="closeMo()">關閉</button></div>`;
   $('modal').style.display='flex';
 }
 window.setCalMode=function(m){calMode=m;lastHScrollLeft=0;renderProgress();}
