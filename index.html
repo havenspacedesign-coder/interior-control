@@ -1453,10 +1453,10 @@ function getNoteTodosForProject(projName){
 function renderTodoPanel(){
   if(!currentUser)return'';
   const projIds=userPrefs.todoProjects||[];
-  const projs=projIds.map(id=>S.projects.find(p=>p.id===id)).filter(Boolean);
+  const projs=projIds.map(id=>S.projects.find(p=>p.id===id)).filter(p=>p&&p.status!=='done');
   return`<div style="border:1px solid var(--border);border-radius:var(--rl2);padding:10px;margin-bottom:12px;background:var(--surface)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <span style="font-size:13px;font-weight:600">📋 各工地待辦事項 <span style="font-weight:400;color:var(--text3);font-size:11px">（只有自己看得到）</span></span>
+      <span style="font-size:13px;font-weight:600">📋 各工地待辦事項 <span style="font-weight:400;color:var(--text3);font-size:11px">（只有自己看得到・點選新增的待辦後按 Delete 鍵可刪除）</span></span>
       <button class="btn btn-sm" onclick="openTodoProjectPicker()">⚙ 選擇工地</button>
     </div>
     ${projs.length===0?`<div style="font-size:12px;color:var(--text3)">尚未選擇要顯示的工地，點右上角「⚙ 選擇工地」設定</div>`:
@@ -1465,15 +1465,20 @@ function renderTodoPanel(){
     </div>`}
   </div>`;
 }
+let selectedTodoId=null;
+window.selectTodoItem=function(id){
+  selectedTodoId=(selectedTodoId===id)?null:id;
+  renderProgress();
+}
 function renderTodoItem(t){
   const doneStyle=t.completed?'text-decoration:line-through;color:var(--text3)':'';
   const toggleOnclick=t.source==='note'
     ?`pnToggleComplete('${t.type}','${t.ds}',${t.idx})`
     :`toggleManualTodo('${t.id}',${!t.completed})`;
-  return`<div style="display:flex;align-items:flex-start;gap:5px;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border)">
-    <span onclick="${toggleOnclick}" style="cursor:pointer;flex-shrink:0">${t.completed?'✅':'⬜'}</span>
+  const isSel=t.source==='manual'&&selectedTodoId===t.id;
+  return`<div onclick="${t.source==='manual'?`event.stopPropagation();selectTodoItem('${t.id}')`:''}" style="display:flex;align-items:flex-start;gap:5px;font-size:11px;padding:4px 4px;border-bottom:1px solid var(--border);${isSel?'background:var(--pl);border-radius:4px':''}">
+    <span onclick="event.stopPropagation();${toggleOnclick}" style="cursor:pointer;flex-shrink:0">${t.completed?'✅':'⬜'}</span>
     <span style="flex:1;word-break:break-word;${doneStyle}">${escAttr(t.text)}</span>
-    ${t.source==='manual'?`<span onclick="deleteManualTodo('${t.id}')" style="cursor:pointer;color:var(--text3);flex-shrink:0">×</span>`:''}
   </div>`;
 }
 function renderTodoColumn(p){
@@ -1508,7 +1513,7 @@ window.openTodoProjectPicker=function(){
   const cur=userPrefs.todoProjects||[];
   $('mo-content').innerHTML=`<div class="mo-title">選擇要顯示的工地</div>
     <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto">
-      ${S.projects.map(p=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+      ${S.projects.filter(p=>p.status!=='done').map(p=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
         <input type="checkbox" value="${p.id}" ${cur.includes(p.id)?'checked':''}>
         ${p.name}
       </label>`).join('')}
@@ -1906,6 +1911,11 @@ document.addEventListener('keydown',function(e){
   if(mkeys.length){
     var mk=mkeys[0];var mparts=mk.split('|');
     mDelete(mparts[0],mparts[1],meetingSelected[mk]);
+    return;
+  }
+  if(selectedTodoId){
+    deleteManualTodo(selectedTodoId);
+    selectedTodoId=null;
   }
 });
 // Clicking anywhere that's not a note chip (and not the top bar) always
@@ -1923,6 +1933,7 @@ document.addEventListener('click',function(e){
   if(meetingSelected&&Object.keys(meetingSelected).some(function(k){return meetingSelected[k]>=0;})){
     meetingSelected={};changed=true;
   }
+  if(selectedTodoId){selectedTodoId=null;changed=true;}
   if(changed&&activePanel==='progress')renderProgress();
 });
 
