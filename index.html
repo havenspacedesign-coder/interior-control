@@ -1468,7 +1468,15 @@ function renderTodoPanel(){
 let selectedTodoId=null;
 window.selectTodoItem=function(id){
   selectedTodoId=(selectedTodoId===id)?null:id;
-  renderProgress();
+  // Direct style toggle instead of a full renderProgress() — a full
+  // re-render on every single click destroys and recreates these row
+  // elements, which breaks the browser's double-click detection (the
+  // dblclick event ends up targeting an already-detached old node).
+  document.querySelectorAll('.todo-item-row').forEach(function(row){
+    var match=row.getAttribute('data-todo-key')===selectedTodoId;
+    row.style.background=match?'var(--pl)':'';
+    row.style.borderRadius=match?'4px':'';
+  });
 }
 function renderTodoItem(t){
   const doneStyle=t.completed?'text-decoration:line-through;color:var(--text3)':'';
@@ -1478,7 +1486,7 @@ function renderTodoItem(t){
   const key=t.source==='manual'?('m:'+t.id):('n:'+t.type+':'+t.ds+':'+t.idx);
   const isSel=selectedTodoId===key;
   const dblclick=`event.stopPropagation();startEditTodoItem('${key}',this)`;
-  return`<div onclick="event.stopPropagation();selectTodoItem('${key}')" style="display:flex;align-items:flex-start;gap:5px;font-size:11px;padding:4px 4px;border-bottom:1px solid var(--border);${isSel?'background:var(--pl);border-radius:4px':''}">
+  return`<div class="todo-item-row" data-todo-key="${key}" onclick="event.stopPropagation();selectTodoItem('${key}')" style="display:flex;align-items:flex-start;gap:5px;font-size:11px;padding:4px 4px;border-bottom:1px solid var(--border);${isSel?'background:var(--pl);border-radius:4px':''}">
     <span onclick="event.stopPropagation();${toggleOnclick}" style="cursor:pointer;flex-shrink:0">${t.completed?'✅':'⬜'}</span>
     <span ondblclick="${dblclick}" style="flex:1;word-break:break-word;${doneStyle}">${escAttr(t.text)}</span>
   </div>`;
