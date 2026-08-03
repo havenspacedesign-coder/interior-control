@@ -880,9 +880,10 @@ function renderProgress(){
   ${calMode==='week'||calMode==='month'?`<div class="formula-bar${formulaBarState?' active':''}" id="pn-formula-bar">
     <span class="formula-bar-label" id="pn-formula-label">${formulaBarState?(formulaBarState.type==='work'?'工地記事':'私人記事')+' · '+formulaBarState.ds.slice(5).replace('-','/'):'工地記事'}</span>
     <input class="formula-bar-input" id="pn-formula-input" placeholder="選取色塊後在此編輯…" value="${formulaBarState?escAttr(formulaBarState.text||''):''}" autocomplete="off" spellcheck="false"
-      oninput="if(formulaBarState)formulaBarState.text=this.value"
+      oninput="if(formulaBarState){formulaBarState.text=this.value;}pnFormulaInput(event)"
       onblur="formulaBarSave()"
-      onkeydown="if((event.key==='Enter'||event.key==='Escape')&&!event.isComposing&&event.keyCode!==229)this.blur()">
+      onkeydown="pnFormulaKeyDown(event)">
+    <div class="pn-mention-menu" id="pn-formula-mention" style="display:none"></div>
   </div>`:''}
   ${calMode==='week'||calMode==='month'?renderWeekView(shouldShow):renderDayView()}
   ${calMode==='week'||calMode==='month'?renderDailyLogSection(weekDays):''}
@@ -1602,7 +1603,7 @@ function renderPrivateTodoSection(){
       var isSel=selIdx===i;
       var isEdit=editing&&editing.type===type&&editing.ds===ds&&editing.idx===i;
       var border=isSel?'2px solid var(--purple)':'1.5px solid var(--border)';
-      var textStyle=color?'color:'+color+';font-weight:500':'color:var(--text)';
+      var textStyle=(color?'color:'+color+';font-weight:500':'color:var(--text)')+(item.strike?';text-decoration:line-through':'');
       // Chip height matches add button
       if(isSel){
         h+='<div style="border:'+border+';border-radius:5px;margin-bottom:4px;padding:6px 8px;background:var(--surface);display:flex;align-items:center;gap:5px">'
@@ -1614,6 +1615,7 @@ function renderPrivateTodoSection(){
           +' onclick="event.stopPropagation()"'
           +'>'
           +'<span onclick="event.stopPropagation();pnToggleComplete(\''+type+'\',\''+ds+'\','+i+')" title="標記完成（變紅色）" style="flex-shrink:0;font-size:10px;color:'+(item.completed?'#fff':'var(--text3)')+';background:'+(item.completed?'var(--red)':'transparent')+';border:1px solid '+(item.completed?'var(--red)':'var(--border)')+';border-radius:9px;padding:1px 6px;cursor:pointer;white-space:nowrap">'+(item.completed?'✓ 已完成':'完成')+'</span>'
+          +'<span onclick="event.stopPropagation();pnToggleStrike(\''+type+'\',\''+ds+'\','+i+')" title="刪除線" style="flex-shrink:0;font-size:10px;color:'+(item.strike?'#fff':'var(--text3)')+';background:'+(item.strike?'#555':'transparent')+';border:1px solid '+(item.strike?'#555':'var(--border)')+';border-radius:9px;padding:1px 6px;cursor:pointer;white-space:nowrap;text-decoration:line-through">S</span>'
           +'<div class="pn-mention-menu" id="pn-mention-'+type+'-'+ds+'-'+i+'" style="display:none"></div>'
           +'</div>';
       }else{
@@ -1648,7 +1650,6 @@ function renderPrivateTodoSection(){
     +'<div class="private-section" style="border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">'
     +'<div class="private-section-hdr" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">'
     +'🔒 私人記事 <span style="font-size:11px;color:var(--text2);font-weight:400">只有你自己看得到</span>'
-    +colorBar()
     +'<span style="font-size:11px;color:var(--text3);margin-left:4px">雙擊編輯 · 打@找工地 · Ctrl+拖拉複製 · Delete刪除</span>'
     +'</div>'
     +'<div class="hscroll-sync hide-hscrollbar" style="overflow-x:auto"><table style="'+tblStyle+';width:'+(200+days.length*180)+'px">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
@@ -1712,6 +1713,65 @@ window.pnInsertMention=function(e,type,ds,idx,projName){
     inp.setSelectionRange(newPos,newPos);
   }
   inp.focus();
+}
+
+// Same @ mention behavior as the inline chip box, but for the top formula bar.
+window.pnFormulaInput=function(e){
+  var inp=e.target;
+  var val=inp.value||'';
+  var pos=inp.selectionStart||0;
+  var textBefore=val.substring(0,pos);
+  var atIdx=textBefore.lastIndexOf('@');
+  var menuEl=document.getElementById('pn-formula-mention');
+  if(!menuEl)return;
+  if(atIdx>=0&&textBefore.indexOf(' ',atIdx)<0){
+    var q=textBefore.substring(atIdx+1).toLowerCase();
+    var projs=S.projects.filter(function(p){return p.name.toLowerCase().includes(q);});
+    if(projs.length){
+      pnMentionActive={formula:true,atIdx:atIdx};
+      var rect=inp.getBoundingClientRect();
+      menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:180px;overflow-y:auto';
+      menuEl.innerHTML=projs.map(function(p){
+        return'<div style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)" '
+          +'onmousedown="pnFormulaInsertMention(event,\''+p.name+'\')">'
+          +p.name+'</div>';
+      }).join('');
+      return;
+    }
+  }
+  menuEl.style.display='none';
+  pnMentionActive=null;
+}
+window.pnFormulaInsertMention=function(e,projName){
+  e.preventDefault();
+  var inp=document.getElementById('pn-formula-input');
+  if(!inp)return;
+  var menuEl=document.getElementById('pn-formula-mention');
+  if(menuEl)menuEl.style.display='none';
+  pnMentionActive=null;
+  var val=inp.value;
+  var pos=inp.selectionStart||val.length;
+  var textBefore=val.substring(0,pos);
+  var atIdx=textBefore.lastIndexOf('@');
+  if(atIdx>=0){
+    var newVal=val.substring(0,atIdx)+'[proj:'+projName+']'+val.substring(pos);
+    inp.value=newVal;
+    if(formulaBarState)formulaBarState.text=newVal;
+    var newPos=atIdx+('[proj:'+projName+']').length;
+    inp.setSelectionRange(newPos,newPos);
+  }
+  inp.focus();
+}
+window.pnFormulaKeyDown=function(e){
+  if(pnMentionActive&&pnMentionActive.formula){
+    if(e.key==='Escape'){
+      var menuEl=document.getElementById('pn-formula-mention');
+      if(menuEl)menuEl.style.display='none';
+      pnMentionActive=null;
+      return;
+    }
+  }
+  if((e.key==='Enter'||e.key==='Escape')&&!e.isComposing&&e.keyCode!==229)e.target.blur();
 }
 
 window.pnKeyDown=function(e,type,ds,idx){
@@ -1805,6 +1865,19 @@ window.pnToggleComplete=async function(type,ds,idx){
   await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
   setSynced();
 }
+window.pnToggleStrike=async function(type,ds,idx){
+  if(!currentUser)return;
+  var pn=S.privateNotes||{work:{},personal:{}};
+  var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
+  if(idx<0||idx>=items.length)return;
+  items[idx]=Object.assign({},items[idx],{strike:!items[idx].strike});
+  S.privateNotes=Object.assign({},pn);
+  S.privateNotes[type]=Object.assign({},pn[type]||{});
+  S.privateNotes[type][ds]=items;
+  setSyncing();
+  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+  setSynced();
+}
 window.pnAdd=async function(type,ds){
   if(!currentUser)return;
   var pn=S.privateNotes||{work:{},personal:{}};
@@ -1865,6 +1938,14 @@ window.pnDrop=async function(e,toType,toDs){
   newPn[toType][toDs]=toItems;
   if(!e.ctrlKey){
     fromItems.splice(from.idx,1);
+    newPn[from.type]=Object.assign({},newPn[from.type]||{});
+    newPn[from.type][from.ds]=fromItems;
+  }else{
+    // Copied forward to a later date (multi-day task) — mark the earlier
+    // day's item blue so it's clear the task continues past this date.
+    if(toDs>from.ds){
+      fromItems[from.idx]=Object.assign({},fromItems[from.idx],{color:'#534AB7'});
+    }
     newPn[from.type]=Object.assign({},newPn[from.type]||{});
     newPn[from.type][from.ds]=fromItems;
   }
