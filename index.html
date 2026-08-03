@@ -1475,24 +1475,59 @@ function renderTodoItem(t){
   const toggleOnclick=t.source==='note'
     ?`pnToggleComplete('${t.type}','${t.ds}',${t.idx})`
     :`toggleManualTodo('${t.id}',${!t.completed})`;
-  const isSel=t.source==='manual'&&selectedTodoId===t.id;
-  const dblclick=t.source==='manual'?`event.stopPropagation();startEditManualTodo('${t.id}',this)`:'';
-  return`<div onclick="${t.source==='manual'?`event.stopPropagation();selectTodoItem('${t.id}')`:''}" style="display:flex;align-items:flex-start;gap:5px;font-size:11px;padding:4px 4px;border-bottom:1px solid var(--border);${isSel?'background:var(--pl);border-radius:4px':''}">
+  const key=t.source==='manual'?('m:'+t.id):('n:'+t.type+':'+t.ds+':'+t.idx);
+  const isSel=selectedTodoId===key;
+  const dblclick=`event.stopPropagation();startEditTodoItem('${key}',this)`;
+  return`<div onclick="event.stopPropagation();selectTodoItem('${key}')" style="display:flex;align-items:flex-start;gap:5px;font-size:11px;padding:4px 4px;border-bottom:1px solid var(--border);${isSel?'background:var(--pl);border-radius:4px':''}">
     <span onclick="event.stopPropagation();${toggleOnclick}" style="cursor:pointer;flex-shrink:0">${t.completed?'✅':'⬜'}</span>
-    <span ondblclick="${dblclick}" data-todo-id="${t.source==='manual'?t.id:''}" style="flex:1;word-break:break-word;${doneStyle}">${escAttr(t.text)}</span>
+    <span ondblclick="${dblclick}" style="flex:1;word-break:break-word;${doneStyle}">${escAttr(t.text)}</span>
   </div>`;
 }
-window.startEditManualTodo=function(id,el){
+window.startEditTodoItem=function(key,el){
   const current=el.textContent;
-  el.innerHTML=`<input type="text" value="${escAttr(current)}" style="width:100%;box-sizing:border-box;font-size:11px;padding:2px 4px;border:1px solid var(--purple);border-radius:3px;font-family:inherit" onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){this.blur();}if(event.key==='Escape'){this.blur();}" onblur="saveManualTodoEdit('${id}',this.value)">`;
+  el.innerHTML=`<input type="text" value="${escAttr(current)}" style="width:100%;box-sizing:border-box;font-size:11px;padding:2px 4px;border:1px solid var(--purple);border-radius:3px;font-family:inherit" onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){this.blur();}if(event.key==='Escape'){this.blur();}" onblur="saveTodoItemEdit('${key}',this.value)">`;
   const inp=el.querySelector('input');
   inp.focus();inp.select();
 }
-window.saveManualTodoEdit=async function(id,text){
+window.saveTodoItemEdit=async function(key,text){
   text=(text||'').trim();
   if(!text)return renderProgress();
+  if(key.indexOf('m:')===0){
+    const id=key.slice(2);
+    setSyncing();
+    await updateDoc(doc(db,'userTodos',id),{text});
+    setSynced();
+  }else if(key.indexOf('n:')===0&&currentUser){
+    const parts=key.slice(2).split(':');
+    const type=parts[0],ds=parts[1],idx=parseInt(parts[2]);
+    const pn=S.privateNotes||{work:{},personal:{}};
+    const items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
+    if(idx<0||idx>=items.length)return renderProgress();
+    const oldText=items[idx].text||'';
+    const m=oldText.match(/\[proj:[^\]]+\]/);
+    const tag=m?m[0]:'';
+    items[idx]=Object.assign({},items[idx],{text:tag?tag+' '+text:text});
+    S.privateNotes=Object.assign({},pn);
+    S.privateNotes[type]=Object.assign({},pn[type]||{});
+    S.privateNotes[type][ds]=items;
+    setSyncing();
+    await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+    setSynced();
+  }
+}
+window.deleteNoteTodoByKey=async function(key){
+  if(key.indexOf('n:')!==0||!currentUser)return;
+  const parts=key.slice(2).split(':');
+  const type=parts[0],ds=parts[1],idx=parseInt(parts[2]);
+  const pn=S.privateNotes||{work:{},personal:{}};
+  const items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
+  if(idx<0||idx>=items.length)return;
+  items.splice(idx,1);
+  S.privateNotes=Object.assign({},pn);
+  S.privateNotes[type]=Object.assign({},pn[type]||{});
+  S.privateNotes[type][ds]=items;
   setSyncing();
-  await updateDoc(doc(db,'userTodos',id),{text});
+  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
   setSynced();
 }
 function renderTodoColumn(p){
@@ -1570,7 +1605,7 @@ function renderPrivateTodoSection(){
         if(items[sel[k]])found={type:parts[0],ds:parts[1],idx:sel[k],item:items[sel[k]]};
       }
     });
-    var active=!!(found&&found.type==='personal');
+    var active=!!found;
     var item=active?found.item:null;
     var completeOnclick=active?(' onclick="pnToggleComplete(\''+found.type+'\',\''+found.ds+'\','+found.idx+')"'):'';
     var strikeOnclick=active?(' onclick="pnToggleStrike(\''+found.type+'\',\''+found.ds+'\','+found.idx+')"'):'';
@@ -1708,10 +1743,8 @@ window.pnInsertMention=function(e,type,ds,idx,projName){
     var newVal=val.substring(0,atIdx)+'[proj:'+projName+']'+val.substring(pos);
     inp.value=newVal;
     if(formulaBarState)formulaBarState.text=newVal;
-    var newPos=atIdx+('[proj:'+projName+']').length;
-    inp.setSelectionRange(newPos,newPos);
   }
-  inp.focus();
+  inp.blur();
 }
 
 // Same @ mention behavior as the inline chip box, but for the top formula bar.
@@ -1756,10 +1789,8 @@ window.pnFormulaInsertMention=function(e,projName){
     var newVal=val.substring(0,atIdx)+'[proj:'+projName+']'+val.substring(pos);
     inp.value=newVal;
     if(formulaBarState)formulaBarState.text=newVal;
-    var newPos=atIdx+('[proj:'+projName+']').length;
-    inp.setSelectionRange(newPos,newPos);
   }
-  inp.focus();
+  inp.blur();
 }
 window.pnFormulaKeyDown=function(e){
   if(pnMentionActive&&pnMentionActive.formula){
@@ -2008,7 +2039,8 @@ document.addEventListener('keydown',function(e){
     return;
   }
   if(selectedTodoId){
-    deleteManualTodo(selectedTodoId);
+    if(selectedTodoId.indexOf('m:')===0){deleteManualTodo(selectedTodoId.slice(2));}
+    else if(selectedTodoId.indexOf('n:')===0){deleteNoteTodoByKey(selectedTodoId);}
     selectedTodoId=null;
   }
 });
