@@ -880,7 +880,7 @@ function renderProgress(){
   ${calMode==='week'||calMode==='month'?`<div class="formula-bar${formulaBarState?' active':''}" id="pn-formula-bar">
     <span class="formula-bar-label" id="pn-formula-label">${formulaBarState?(formulaBarState.type==='work'?'工地記事':'私人記事')+' · '+formulaBarState.ds.slice(5).replace('-','/'):'工地記事'}</span>
     <input class="formula-bar-input" id="pn-formula-input" placeholder="選取色塊後在此編輯…" value="${formulaBarState?escAttr(formulaBarState.text||''):''}" autocomplete="off" spellcheck="false"
-      oninput="if(formulaBarState){formulaBarState.text=this.value;}pnFormulaInput(event)"
+      oninput="pnSyncFormulaText(this.value);pnFormulaInput(event)"
       onblur="formulaBarSave()"
       onkeydown="pnFormulaKeyDown(event)">
   </div>`:''}
@@ -1560,22 +1560,23 @@ function renderPrivateTodoSection(){
   var sel=S.privateSelected||{};
   var editing=S.privateEditing||null;
 
-  function colorBar(){
+  function itemControls(){
     var found=null;
     Object.keys(sel).forEach(function(k){
       if(sel[k]>=0){
         var parts=k.split('|');
         var type=parts[0],ds=parts[1];
         var items=(pn[type]&&pn[type][ds])||[];
-        if(items[sel[k]])found={type:parts[0],ds:parts[1],idx:sel[k],color:items[sel[k]].color||''};
+        if(items[sel[k]])found={type:parts[0],ds:parts[1],idx:sel[k],item:items[sel[k]]};
       }
     });
+    var active=!!(found&&found.type==='personal');
+    var item=active?found.item:null;
+    var completeOnclick=active?(' onclick="pnToggleComplete(\''+found.type+'\',\''+found.ds+'\','+found.idx+')"'):'';
+    var strikeOnclick=active?(' onclick="pnToggleStrike(\''+found.type+'\',\''+found.ds+'\','+found.idx+')"'):'';
     var h='<span style="display:inline-flex;align-items:center;gap:4px;margin-left:10px">';
-    COLS.forEach(function(col){
-      var isActive=found&&found.color===col.c;
-      var onclick=found?(' onclick="pnSetColor(\''+found.type+'\',\''+found.ds+'\','+found.idx+',\''+col.c+'\')"'):'';
-      h+='<span style="width:16px;height:16px;border-radius:50%;background:'+col.bg+';cursor:'+(found?'pointer':'default')+';display:inline-block;border:1.5px solid rgba(0,0,0,.2);vertical-align:middle;opacity:'+(found?1:0.35)+';'+(isActive?'outline:2px solid #333;outline-offset:1px':'')+'" title="'+col.l+'"'+onclick+'></span>';
-    });
+    h+='<span'+completeOnclick+' style="font-size:10px;cursor:'+(active?'pointer':'default')+';opacity:'+(active?1:0.35)+';color:'+(item&&item.completed?'#fff':'var(--text3)')+';background:'+(item&&item.completed?'var(--red)':'transparent')+';border:1px solid '+(item&&item.completed?'var(--red)':'var(--border)')+';border-radius:9px;padding:1px 6px;white-space:nowrap">'+(item&&item.completed?'✓ 已完成':'完成')+'</span>';
+    h+='<span'+strikeOnclick+' style="font-size:10px;cursor:'+(active?'pointer':'default')+';opacity:'+(active?1:0.35)+';color:'+(item&&item.strike?'#fff':'var(--text3)')+';background:'+(item&&item.strike?'#555':'transparent')+';border:1px solid '+(item&&item.strike?'#555':'var(--border)')+';border-radius:9px;padding:1px 6px;text-decoration:line-through;white-space:nowrap">S</span>';
     h+='</span>';
     return h;
   }
@@ -1608,13 +1609,11 @@ function renderPrivateTodoSection(){
         h+='<div style="border:'+border+';border-radius:5px;margin-bottom:4px;padding:6px 8px;background:var(--surface);display:flex;align-items:center;gap:5px">'
           +'<input type="text" class="pn-box-input pn-chip" id="pnbox-'+type+'-'+ds+'-'+i+'" value="'+escAttr(item.text||'')+'" autocomplete="off" spellcheck="false"'
           +' style="flex:1;min-width:0;box-sizing:border-box;background:transparent;border:none;padding:0;font-size:12px;line-height:1.4;font-family:inherit;'+textStyle+'"'
-          +' oninput="if(formulaBarState)formulaBarState.text=this.value;pnInput(event,\''+type+'\',\''+ds+'\','+i+')"'
+          +' oninput="pnSyncFormulaText(this.value);pnInput(event,\''+type+'\',\''+ds+'\','+i+')"'
           +' onblur="pnBoxBlur(this,\''+type+'\',\''+ds+'\','+i+')"'
           +' onkeydown="pnKeyDown(event,\''+type+'\',\''+ds+'\','+i+')"'
           +' onclick="event.stopPropagation()"'
           +'>'
-          +(type==='personal'?('<span onclick="event.stopPropagation();pnToggleComplete(\''+type+'\',\''+ds+'\','+i+')" title="標記完成（變紅色）" style="flex-shrink:0;font-size:10px;color:'+(item.completed?'#fff':'var(--text3)')+';background:'+(item.completed?'var(--red)':'transparent')+';border:1px solid '+(item.completed?'var(--red)':'var(--border)')+';border-radius:9px;padding:1px 6px;cursor:pointer;white-space:nowrap">'+(item.completed?'✓ 已完成':'完成')+'</span>'
-          +'<span onclick="event.stopPropagation();pnToggleStrike(\''+type+'\',\''+ds+'\','+i+')" title="刪除線" style="flex-shrink:0;font-size:10px;color:'+(item.strike?'#fff':'var(--text3)')+';background:'+(item.strike?'#555':'transparent')+';border:1px solid '+(item.strike?'#555':'var(--border)')+';border-radius:9px;padding:1px 6px;cursor:pointer;white-space:nowrap;text-decoration:line-through">S</span>'):'')
           +'</div>';
       }else{
         h+='<div class="pn-chip" style="background:var(--surface);border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;position:relative;'+textStyle+'"'
@@ -1648,6 +1647,7 @@ function renderPrivateTodoSection(){
     +'<div class="private-section" style="border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">'
     +'<div class="private-section-hdr" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">'
     +'🔒 私人記事 <span style="font-size:11px;color:var(--text2);font-weight:400">只有你自己看得到</span>'
+    +itemControls()
     +'<span style="font-size:11px;color:var(--text3);margin-left:4px">雙擊編輯 · 打@找工地 · Ctrl+拖拉複製 · Delete刪除</span>'
     +'</div>'
     +'<div class="hscroll-sync hide-hscrollbar" style="overflow-x:auto"><table style="'+tblStyle+';width:'+(200+days.length*180)+'px">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
@@ -2710,6 +2710,12 @@ window.changePeriod=function(d){
 
 // Formula bar functions
 var formulaBarState=null; // {type,ds,idx,text} — used for display/label only, not saving
+// Inline HTML "oninput" attributes run in a scope that can't see this
+// module's top-level variables directly, so they must go through a
+// window-exposed function like this instead of touching formulaBarState.
+window.pnSyncFormulaText=function(text){
+  if(formulaBarState)formulaBarState.text=text;
+}
 var selGen=0;
 function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 // Core save: always reads the live value straight off the given input element,
