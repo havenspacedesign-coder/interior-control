@@ -883,7 +883,6 @@ function renderProgress(){
       oninput="if(formulaBarState){formulaBarState.text=this.value;}pnFormulaInput(event)"
       onblur="formulaBarSave()"
       onkeydown="pnFormulaKeyDown(event)">
-    <div class="pn-mention-menu" id="pn-formula-mention" style="display:none"></div>
   </div>`:''}
   ${calMode==='week'||calMode==='month'?renderWeekView(shouldShow):renderDayView()}
   ${calMode==='week'||calMode==='month'?renderDailyLogSection(weekDays):''}
@@ -1614,9 +1613,8 @@ function renderPrivateTodoSection(){
           +' onkeydown="pnKeyDown(event,\''+type+'\',\''+ds+'\','+i+')"'
           +' onclick="event.stopPropagation()"'
           +'>'
-          +'<span onclick="event.stopPropagation();pnToggleComplete(\''+type+'\',\''+ds+'\','+i+')" title="標記完成（變紅色）" style="flex-shrink:0;font-size:10px;color:'+(item.completed?'#fff':'var(--text3)')+';background:'+(item.completed?'var(--red)':'transparent')+';border:1px solid '+(item.completed?'var(--red)':'var(--border)')+';border-radius:9px;padding:1px 6px;cursor:pointer;white-space:nowrap">'+(item.completed?'✓ 已完成':'完成')+'</span>'
-          +'<span onclick="event.stopPropagation();pnToggleStrike(\''+type+'\',\''+ds+'\','+i+')" title="刪除線" style="flex-shrink:0;font-size:10px;color:'+(item.strike?'#fff':'var(--text3)')+';background:'+(item.strike?'#555':'transparent')+';border:1px solid '+(item.strike?'#555':'var(--border)')+';border-radius:9px;padding:1px 6px;cursor:pointer;white-space:nowrap;text-decoration:line-through">S</span>'
-          +'<div class="pn-mention-menu" id="pn-mention-'+type+'-'+ds+'-'+i+'" style="display:none"></div>'
+          +(type==='personal'?('<span onclick="event.stopPropagation();pnToggleComplete(\''+type+'\',\''+ds+'\','+i+')" title="標記完成（變紅色）" style="flex-shrink:0;font-size:10px;color:'+(item.completed?'#fff':'var(--text3)')+';background:'+(item.completed?'var(--red)':'transparent')+';border:1px solid '+(item.completed?'var(--red)':'var(--border)')+';border-radius:9px;padding:1px 6px;cursor:pointer;white-space:nowrap">'+(item.completed?'✓ 已完成':'完成')+'</span>'
+          +'<span onclick="event.stopPropagation();pnToggleStrike(\''+type+'\',\''+ds+'\','+i+')" title="刪除線" style="flex-shrink:0;font-size:10px;color:'+(item.strike?'#fff':'var(--text3)')+';background:'+(item.strike?'#555':'transparent')+';border:1px solid '+(item.strike?'#555':'var(--border)')+';border-radius:9px;padding:1px 6px;cursor:pointer;white-space:nowrap;text-decoration:line-through">S</span>'):'')
           +'</div>';
       }else{
         h+='<div class="pn-chip" style="background:var(--surface);border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;position:relative;'+textStyle+'"'
@@ -1635,7 +1633,7 @@ function renderPrivateTodoSection(){
   }
 
   function makeRow(type,label){
-    var h='<tr><td class="log-name-cell" style="font-size:11px;color:var(--text2)">'+label+'</td>';
+    var h='<tr><td class="log-name-cell" style="font-size:11px;color:var(--text2);position:sticky;left:0;z-index:5;background:var(--bg);border-right:2px solid var(--border);width:200px">'+label+'</td>';
     days.forEach(function(d){h+=makeCell(type,fmtDay(d));});
     h+='</tr>';
     return h;
@@ -1674,14 +1672,14 @@ window.pnInput=function(e,type,ds,idx){
   var pos=inp.selectionStart||0;
   var textBefore=val.substring(0,pos);
   var atIdx=textBefore.lastIndexOf('@');
-  var menuEl=document.getElementById('pn-mention-'+type+'-'+ds+'-'+idx);
+  var menuEl=document.getElementById('pn-global-mention');
   if(atIdx>=0&&textBefore.indexOf(' ',atIdx)<0){
     var q=textBefore.substring(atIdx+1).toLowerCase();
     var projs=S.projects.filter(function(p){return p.name.toLowerCase().includes(q);});
     if(projs.length){
       pnMentionActive={type:type,ds:ds,idx:idx,atIdx:atIdx};
       var rect=inp.getBoundingClientRect();
-      menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:180px;overflow-y:auto';
+      menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:9999;min-width:150px;max-height:180px;overflow-y:auto';
       menuEl.innerHTML=projs.map(function(p){
         return'<div style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)" '
           +'onmousedown="pnInsertMention(event,\''+type+'\',\''+ds+'\','+idx+',\''+p.name+'\')">'
@@ -1698,7 +1696,7 @@ window.pnInsertMention=function(e,type,ds,idx,projName){
   e.preventDefault();
   var inp=document.getElementById('pnbox-'+type+'-'+ds+'-'+idx);
   if(!inp)return;
-  var menuEl=document.getElementById('pn-mention-'+type+'-'+ds+'-'+idx);
+  var menuEl=document.getElementById('pn-global-mention');
   if(menuEl)menuEl.style.display='none';
   pnMentionActive=null;
   // Replace @query with [proj:name] in input value
@@ -1709,6 +1707,7 @@ window.pnInsertMention=function(e,type,ds,idx,projName){
   if(atIdx>=0){
     var newVal=val.substring(0,atIdx)+'[proj:'+projName+']'+val.substring(pos);
     inp.value=newVal;
+    if(formulaBarState)formulaBarState.text=newVal;
     var newPos=atIdx+('[proj:'+projName+']').length;
     inp.setSelectionRange(newPos,newPos);
   }
@@ -1722,7 +1721,7 @@ window.pnFormulaInput=function(e){
   var pos=inp.selectionStart||0;
   var textBefore=val.substring(0,pos);
   var atIdx=textBefore.lastIndexOf('@');
-  var menuEl=document.getElementById('pn-formula-mention');
+  var menuEl=document.getElementById('pn-global-mention');
   if(!menuEl)return;
   if(atIdx>=0&&textBefore.indexOf(' ',atIdx)<0){
     var q=textBefore.substring(atIdx+1).toLowerCase();
@@ -1730,7 +1729,7 @@ window.pnFormulaInput=function(e){
     if(projs.length){
       pnMentionActive={formula:true,atIdx:atIdx};
       var rect=inp.getBoundingClientRect();
-      menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:180px;overflow-y:auto';
+      menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:9999;min-width:150px;max-height:180px;overflow-y:auto';
       menuEl.innerHTML=projs.map(function(p){
         return'<div style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)" '
           +'onmousedown="pnFormulaInsertMention(event,\''+p.name+'\')">'
@@ -1746,7 +1745,7 @@ window.pnFormulaInsertMention=function(e,projName){
   e.preventDefault();
   var inp=document.getElementById('pn-formula-input');
   if(!inp)return;
-  var menuEl=document.getElementById('pn-formula-mention');
+  var menuEl=document.getElementById('pn-global-mention');
   if(menuEl)menuEl.style.display='none';
   pnMentionActive=null;
   var val=inp.value;
@@ -1765,7 +1764,7 @@ window.pnFormulaInsertMention=function(e,projName){
 window.pnFormulaKeyDown=function(e){
   if(pnMentionActive&&pnMentionActive.formula){
     if(e.key==='Escape'){
-      var menuEl=document.getElementById('pn-formula-mention');
+      var menuEl=document.getElementById('pn-global-mention');
       if(menuEl)menuEl.style.display='none';
       pnMentionActive=null;
       return;
@@ -1777,7 +1776,7 @@ window.pnFormulaKeyDown=function(e){
 window.pnKeyDown=function(e,type,ds,idx){
   if(pnMentionActive){
     if(e.key==='Escape'){
-      var menuEl=document.getElementById('pn-mention-'+type+'-'+ds+'-'+idx);
+      var menuEl=document.getElementById('pn-global-mention');
       if(menuEl)menuEl.style.display='none';
       pnMentionActive=null;
       return;
@@ -2806,5 +2805,6 @@ window.saveDateColor=async function(ds,color,note){
   closeMo();setSynced();
 }
 </script>
+<div class="pn-mention-menu" id="pn-global-mention" style="display:none;position:fixed;z-index:9999"></div>
 </body>
 </html>
