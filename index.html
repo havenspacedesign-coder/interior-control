@@ -556,6 +556,7 @@ function initListeners(){
   if(currentUser){
     onSnapshot(doc(db,'userPrefs',currentUser.uid),snap=>{
       userPrefs=snap.exists()?snap.data():{todoProjects:[]};
+      if(userPrefs.noteHeight)globalNoteBoxHeight=userPrefs.noteHeight;
       if(activePanel==='progress')renderProgress();
     });
     onSnapshot(doc(db,'privateNotes',currentUser.uid),snap=>{
@@ -936,8 +937,12 @@ function renderGlobalNotesPanel(viewMonth){
   const heightStyle=globalNoteBoxHeight?`height:${globalNoteBoxHeight}`:'min-height:300px';
   return`<div style="width:300px;flex-shrink:0;position:sticky;top:60px;border:1px solid var(--border);border-radius:var(--rl2);background:var(--surface);padding:10px;max-height:calc(100vh - 80px);overflow-y:auto">
     <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text2)">📝 我的記事本${isFuture?' <span style="font-weight:400;color:var(--text3)">（未來月份，鎖定）</span>':''}</div>
-    <textarea id="global-note-box" placeholder="點此輸入…" ${isFuture?'readonly':`onblur="globalNoteBoxHeight=this.style.height;saveGlobalNote('${viewMonth}',this.value)"`} style="width:100%;box-sizing:border-box;${heightStyle};border:1px solid var(--border);border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;${isFuture?'background:var(--bg);color:var(--text3);cursor:not-allowed':''}">${escAttr(text)}</textarea>
+    <textarea id="global-note-box" placeholder="點此輸入…" ${isFuture?'readonly':`onblur="globalNoteBoxHeight=this.style.height;saveGlobalNote('${viewMonth}',this.value);saveNoteHeight(this.style.height)" onmouseup="globalNoteBoxHeight=this.style.height;saveNoteHeight(this.style.height)"`} style="width:100%;box-sizing:border-box;${heightStyle};border:1px solid var(--border);border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;${isFuture?'background:var(--bg);color:var(--text3);cursor:not-allowed':''}">${escAttr(text)}</textarea>
   </div>`;
+}
+window.saveNoteHeight=async function(height){
+  if(!currentUser||!height)return;
+  await setDoc(doc(db,'userPrefs',currentUser.uid),{noteHeight:height},{merge:true});
 }
 window.saveGlobalNote=async function(viewMonth,text){
   if(!currentUser)return;
@@ -1502,6 +1507,8 @@ window.saveTodoItemEdit=async function(key,text){
   if(!text)return renderProgress();
   if(key.indexOf('m:')===0){
     const id=key.slice(2);
+    S.userTodos=(S.userTodos||[]).map(function(t){return t.id===id?Object.assign({},t,{text:text}):t;});
+    renderProgress();
     setSyncing();
     await updateDoc(doc(db,'userTodos',id),{text});
     setSynced();
@@ -1518,6 +1525,7 @@ window.saveTodoItemEdit=async function(key,text){
     S.privateNotes=Object.assign({},pn);
     S.privateNotes[type]=Object.assign({},pn[type]||{});
     S.privateNotes[type][ds]=items;
+    renderProgress();
     setSyncing();
     await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
     setSynced();
