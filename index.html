@@ -244,6 +244,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .member-email{font-size:11px;color:var(--text2)}
 .role-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
 .role-admin{background:var(--pl);color:var(--pd)}
+.role-manager{background:#FCEBEB;color:var(--red)}
 .role-staff{background:var(--gl);color:var(--gd)}
 .role-pending{background:var(--al);color:var(--ad)}
 
@@ -367,10 +368,13 @@ const SCOLS=["#EEEDFE","#E1F5EE","#FAEEDA","#FCEBEB","#E6F1FB","#EAF3DE","#FBEAF
 const STCS=["#3C3489","#085041","#633806","#791F1F","#0C447C","#27500A","#72243E","#444441"];
 function sc(i){return SCOLS[i%SCOLS.length]}function tc(i){return STCS[i%STCS.length]}
 function statusInfo(v){return STATUS_OPTS.find(o=>o.v===v)||STATUS_OPTS[0]}
-function isAdmin(){return currentRole==='admin'}
+function isAdmin(){return currentRole==='admin'||currentRole==='manager'}
 function memberDisplayName(m){if(!m)return'成員';return m.displayName||m.name||(m.email?m.email.split('@')[0]:'成員');}
 function memberTag(m){if(!m)return'?';if(m.tagInitial)return m.tagInitial;return memberDisplayName(m).charAt(0);}
-function activeMembersList(){return S.members.filter(m=>(m.role==='admin'||m.role==='staff')&&m.status!=='resigned');}
+function activeMembersList(){return S.members.filter(m=>(m.role==='admin'||m.role==='staff'||m.role==='manager')&&m.status!=='resigned');}
+// Daily work log rows exclude the "管理員" (company/manager account) role —
+// that role doesn't do site work, so it shouldn't be asked to log it.
+function dailyLogMembersList(){return activeMembersList().filter(m=>m.role!=='manager');}
 const DEFAULT_DESIGN_COL_NAMES=['會議人員','平面圖','客變圖','3D圖','施工圖','報價單'];
 const DEFAULT_DESIGN_COLS=[
   ...DEFAULT_DESIGN_COL_NAMES.map(name=>({name,kind:'member',collapsible:true})),
@@ -1119,7 +1123,7 @@ function renderWeekView(shouldShow){
 // ── Daily Log Section ──
 function renderDailyLogSection(days){
   const td=today();
-  const activeMembers=activeMembersList();
+  const activeMembers=dailyLogMembersList();
   if(!activeMembers.length)return'';
   const WD=['日','一','二','三','四','五','六'];
   return`<div style="border-top:3px solid #1a1a1a;margin-top:0"></div>
@@ -1726,7 +1730,7 @@ window.pnInput=function(e,type,ds,idx){
   var menuEl=document.getElementById('pn-global-mention');
   if(atIdx>=0&&textBefore.indexOf(' ',atIdx)<0){
     var q=textBefore.substring(atIdx+1).toLowerCase();
-    var projs=S.projects.filter(function(p){return p.name.toLowerCase().includes(q);});
+    var projs=S.projects.filter(function(p){return p.status!=='done'&&p.name.toLowerCase().includes(q);});
     if(projs.length){
       pnMentionActive={type:type,ds:ds,idx:idx,atIdx:atIdx};
       var rect=inp.getBoundingClientRect();
@@ -1774,7 +1778,7 @@ window.pnFormulaInput=function(e){
   if(!menuEl)return;
   if(atIdx>=0&&textBefore.indexOf(' ',atIdx)<0){
     var q=textBefore.substring(atIdx+1).toLowerCase();
-    var projs=S.projects.filter(function(p){return p.name.toLowerCase().includes(q);});
+    var projs=S.projects.filter(function(p){return p.status!=='done'&&p.name.toLowerCase().includes(q);});
     if(projs.length){
       pnMentionActive={formula:true,atIdx:atIdx};
       var rect=inp.getBoundingClientRect();
@@ -2493,12 +2497,16 @@ function renderMembers(){
   if(!isAdmin())return;
   const el=$('panel-members');
   const pending=S.members.filter(m=>m.role==='pending');
-  const active=S.members.filter(m=>m.role!=='pending'&&m.status!=='resigned');
+  const roleOrder={manager:0,admin:1,staff:2};
+  const active=S.members.filter(m=>m.role!=='pending'&&m.status!=='resigned')
+    .sort((a,b)=>(roleOrder[a.role]??3)-(roleOrder[b.role]??3));
   const resigned=S.members.filter(m=>m.role!=='pending'&&m.status==='resigned');
   function memberCard(m,isResigned){
     const ei=m.employeeInfo||{};
     const open=!!expandedMemberInfo[m.id];
     const isEdit=!!editingMemberInfo[m.id];
+    const roleLabel=m.role==='manager'?'管理員':(m.role==='admin'?'主管':'員工');
+    const roleBadgeClass=m.role==='manager'?'role-manager':(m.role==='admin'?'role-admin':'role-staff');
     return`<div class="member-card" style="flex-direction:column;align-items:stretch">
     <div style="display:flex;align-items:center;gap:10px">
       <img class="member-avatar" src="${m.photoURL||''}" onerror="this.style.display='none'">
@@ -2506,8 +2514,9 @@ function renderMembers(){
         <div class="member-name">${memberDisplayName(m)}${isResigned?' <span style="font-size:11px;color:var(--text3)">（離職）</span>':''}</div>
         <div class="member-email">${m.email}</div>
       </div>
-      ${!isResigned?`<span class="role-badge ${m.role==='admin'?'role-admin':'role-staff'}">${m.role==='admin'?'主管':'員工'}</span>`:''}
+      ${!isResigned?`<span class="role-badge ${roleBadgeClass}">${roleLabel}</span>`:''}
       ${!isResigned&&m.uid!==currentUser?.uid?`<select class="btn btn-sm" onchange="changeRole('${m.id}',this.value)">
+        <option value="manager" ${m.role==='manager'?'selected':''}>管理員</option>
         <option value="admin" ${m.role==='admin'?'selected':''}>主管</option>
         <option value="staff" ${m.role==='staff'?'selected':''}>員工</option>
       </select>`:''}
@@ -2573,6 +2582,7 @@ function renderMembers(){
     <span class="role-badge role-pending">待審核</span>
     <button class="btn btn-sm btn-p" onclick="approveMember('${m.id}','staff')">核准（員工）</button>
     <button class="btn btn-sm btn-p" style="background:var(--pd)" onclick="approveMember('${m.id}','admin')">核准（主管）</button>
+    <button class="btn btn-sm btn-p" style="background:var(--red)" onclick="approveMember('${m.id}','manager')">核准（管理員）</button>
     <button class="btn btn-sm btn-danger" onclick="rejectMember('${m.id}')">拒絕</button>
   </div>`).join('')}`:''}
   <div style="font-size:13px;font-weight:500;margin-bottom:8px;margin-top:${pending.length?'16px':'0'}">所有成員（${active.length}）</div>
