@@ -414,7 +414,7 @@ function getMonthDates(){
 
 function getBibleStages(){
   if(S.bibleOrder&&S.bibleOrder.length)return S.bibleOrder;
-  return Object.keys(S.bible).filter(k=>k!=='__order__');
+  return Object.keys(S.bible).filter(k=>k!=='orderConfig');
 }
 function getBiblePhaseItems(stage,phase){const b=S.bible[stage];return(b&&b[phase])?b[phase]:[];}
 // A bible item used to always be a plain string. It can now be an object
@@ -556,7 +556,7 @@ window.sendAI=async function(){
   msgs.appendChild(loadDiv);
   msgs.scrollTop=msgs.scrollHeight;
   var projList=S.projects.map(function(p){return p.name+'（'+({design:'設計中',prog:'施工中',done:'已完工',wait:'待確認',stop:'暫停'}[p.status]||p.status)+'）';}).join('、');
-  var stageList=Object.keys(S.bible||{}).filter(function(k){return k!=='__order__';}).join('、');
+  var stageList=Object.keys(S.bible||{}).filter(function(k){return k!=='orderConfig';}).join('、');
   var systemPrompt='你是一個室內設計公司的專案管理 AI 助理，請用繁體中文回答。\n目前系統資料：\n【案件列表】'+projList+'\n【施工寶典階段】'+(stageList||'尚無')+'。\n請根據以上資料回答，若問題與資料無關也可提供室內設計相關建議。';
   try{
     var resp=await fetch('https://api.anthropic.com/v1/messages',{
@@ -577,8 +577,8 @@ function initListeners(){
   onSnapshot(collection(db,'checks'),snap=>{S.checks={};snap.docs.forEach(d=>{S.checks[d.id]=d.data().items||[]});renderActive();});
   onSnapshot(collection(db,'bible'),snap=>{
     S.bible={};S.bibleOrder=[];
-    snap.docs.forEach(d=>{if(d.id==='__order__'){S.bibleOrder=d.data().order||[];}else{S.bible[d.id]=d.data();}});
-    const allStages=Object.keys(S.bible).filter(k=>k!=='__order__');
+    snap.docs.forEach(d=>{if(d.id==='orderConfig'){S.bibleOrder=d.data().order||[];}else{S.bible[d.id]=d.data();}});
+    const allStages=Object.keys(S.bible).filter(k=>k!=='orderConfig');
     allStages.forEach(s=>{if(!S.bibleOrder.includes(s))S.bibleOrder.push(s);});
     renderActive();
   });
@@ -2676,7 +2676,9 @@ window.bsDrop=async function(e,toS){
   if(fi<0||ti<0)return;order.splice(fi,1);order.splice(ti,0,dragSrc);
   S.bibleOrder=order;
   renderBible();
-  setSyncing();await setDoc(doc(db,'bible','__order__'),{order});setSynced();
+  setSyncing();
+  try{await setDoc(doc(db,'bible','orderConfig'),{order});setSynced();}
+  catch(err){alert('排序存檔失敗：'+err.message);setSynced();}
 }
 window.bsDragEnd=function(){
   document.querySelectorAll('.bst-item').forEach(el=>{el.classList.remove('dragging');el.classList.remove('drag-over');});
@@ -2826,13 +2828,15 @@ window.importWordBible=async function(){
   const toImport=Object.keys(WORD_BIBLE_IMPORT).filter(s=>!getBibleStages().includes(s));
   if(!toImport.length)return;
   setSyncing();
-  for(const stage of toImport){
-    await setDoc(doc(db,'bible',stage),WORD_BIBLE_IMPORT[stage]);
-  }
-  const order=[...getBibleStages(),...toImport];
-  await setDoc(doc(db,'bible','__order__'),{order});
-  activeBibleStage=toImport[0];
-  setSynced();
+  try{
+    for(const stage of toImport){
+      await setDoc(doc(db,'bible',stage),WORD_BIBLE_IMPORT[stage]);
+    }
+    const order=[...getBibleStages(),...toImport];
+    await setDoc(doc(db,'bible','orderConfig'),{order});
+    activeBibleStage=toImport[0];
+    setSynced();
+  }catch(err){alert('匯入失敗：'+err.message);setSynced();}
 }
 window.startEditBibleStageTitle=function(stage,el){
   if(!isAdmin()||!dragModeOn)return;
@@ -2853,35 +2857,37 @@ window.saveBibleStageTitle=async function(oldName,newName){
   activeBibleStage=newName;
   renderBible();
   setSyncing();
-  await setDoc(doc(db,'bible',newName),data);
-  await deleteDoc(doc(db,'bible',oldName));
-  await setDoc(doc(db,'bible','__order__'),{order});
-  // Migrate anything keyed off the old stage name so nothing silently
-  // detaches: per-project checklist progress, calendar chips, and the
-  // frozen snapshot on completed projects.
-  const snap=await getDocs(collection(db,'checks'));
-  const batch=writeBatch(db);
-  snap.docs.filter(d=>d.id.endsWith('_'+oldName)).forEach(d=>{
-    const projId=d.id.slice(0,d.id.length-('_'+oldName).length);
-    batch.set(doc(db,'checks',projId+'_'+newName),d.data());
-    batch.delete(doc(db,'checks',d.id));
-  });
-  await batch.commit();
-  for(const p of S.projects){
-    const sched=p.schedule||[];
-    const patch={};
-    if(sched.some(e=>e.stage===oldName)){
-      patch.schedule=sched.map(e=>e.stage===oldName?{...e,stage:newName,label:e.label===oldName?newName:e.label}:e);
+  try{
+    await setDoc(doc(db,'bible',newName),data);
+    await deleteDoc(doc(db,'bible',oldName));
+    await setDoc(doc(db,'bible','orderConfig'),{order});
+    // Migrate anything keyed off the old stage name so nothing silently
+    // detaches: per-project checklist progress, calendar chips, and the
+    // frozen snapshot on completed projects.
+    const snap=await getDocs(collection(db,'checks'));
+    const batch=writeBatch(db);
+    snap.docs.filter(d=>d.id.endsWith('_'+oldName)).forEach(d=>{
+      const projId=d.id.slice(0,d.id.length-('_'+oldName).length);
+      batch.set(doc(db,'checks',projId+'_'+newName),d.data());
+      batch.delete(doc(db,'checks',d.id));
+    });
+    await batch.commit();
+    for(const p of S.projects){
+      const sched=p.schedule||[];
+      const patch={};
+      if(sched.some(e=>e.stage===oldName)){
+        patch.schedule=sched.map(e=>e.stage===oldName?{...e,stage:newName,label:e.label===oldName?newName:e.label}:e);
+      }
+      if(p.bibleSnapshot&&p.bibleSnapshot[oldName]){
+        const snap2=Object.assign({},p.bibleSnapshot);
+        snap2[newName]=snap2[oldName];
+        delete snap2[oldName];
+        patch.bibleSnapshot=snap2;
+      }
+      if(Object.keys(patch).length)await updateDoc(doc(db,'projects',p.id),patch);
     }
-    if(p.bibleSnapshot&&p.bibleSnapshot[oldName]){
-      const snap2=Object.assign({},p.bibleSnapshot);
-      snap2[newName]=snap2[oldName];
-      delete snap2[oldName];
-      patch.bibleSnapshot=snap2;
-    }
-    if(Object.keys(patch).length)await updateDoc(doc(db,'projects',p.id),patch);
-  }
-  setSynced();
+    setSynced();
+  }catch(err){alert('改名失敗：'+err.message);setSynced();}
 }
 window.addStage=async function(){
   if(!isAdmin())return;
@@ -2889,9 +2895,11 @@ window.addStage=async function(){
   if(getBibleStages().includes(name))return alert('此階段已存在');
   const order=[...getBibleStages(),name];
   setSyncing();
-  await setDoc(doc(db,'bible',name),{before:[],during:[],after:[]});
-  await setDoc(doc(db,'bible','__order__'),{order});
-  activeBibleStage=name;closeMo();setSynced();
+  try{
+    await setDoc(doc(db,'bible',name),{before:[],during:[],after:[]});
+    await setDoc(doc(db,'bible','orderConfig'),{order});
+    activeBibleStage=name;closeMo();setSynced();
+  }catch(err){alert('新增階段失敗：'+err.message);setSynced();}
 }
 window.confirmDeleteStage=function(stage){
   $('mo-content').innerHTML=`
@@ -2905,12 +2913,14 @@ window.deleteStage=async function(stage){
   if(!isAdmin())return;
   const order=getBibleStages().filter(s=>s!==stage);
   setSyncing();
-  await deleteDoc(doc(db,'bible',stage));
-  await setDoc(doc(db,'bible','__order__'),{order});
-  const snap=await getDocs(collection(db,'checks'));
-  const batch=writeBatch(db);
-  snap.docs.filter(d=>d.id.endsWith('_'+stage)).forEach(d=>batch.delete(doc(db,'checks',d.id)));
-  await batch.commit();activeBibleStage=null;setSynced();
+  try{
+    await deleteDoc(doc(db,'bible',stage));
+    await setDoc(doc(db,'bible','orderConfig'),{order});
+    const snap=await getDocs(collection(db,'checks'));
+    const batch=writeBatch(db);
+    snap.docs.filter(d=>d.id.endsWith('_'+stage)).forEach(d=>batch.delete(doc(db,'checks',d.id)));
+    await batch.commit();activeBibleStage=null;setSynced();
+  }catch(err){alert('刪除階段失敗：'+err.message);setSynced();}
 }
 
 // ── Members ──
