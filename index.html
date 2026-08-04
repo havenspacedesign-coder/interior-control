@@ -2409,7 +2409,7 @@ function renderBibleDetail(stage){
   return`
   <div class="flex-sb" style="margin-bottom:14px">
     <span style="font-size:14px;font-weight:500">${stage}</span>
-    ${isAdmin()&&dragModeOn?`<button class="btn btn-sm btn-danger" onclick="deleteStage('${stage}')">刪除此階段</button>`:''}
+    ${isAdmin()&&dragModeOn?`<button class="btn btn-sm btn-danger" onclick="confirmDeleteStage('${stage}')">刪除此階段</button>`:''}
   </div>
   ${phases.map(ph=>`<div class="phase-section">
     <div class="phase-title" style="color:${ph.color}">
@@ -2420,7 +2420,7 @@ function renderBibleDetail(stage){
       <div class="bib-item-row">
         <span class="bib-item-num">${i+1}</span>
         <span class="bib-item-text">${item}</span>
-        ${isAdmin()&&dragModeOn?`<button class="bib-item-del" onclick="delBibleItem('${stage}','${ph.id}',${i})">×</button>`:''}
+        ${isAdmin()&&dragModeOn?`<button class="bib-item-del" onclick="confirmDelBibleItem('${stage}','${ph.id}',${i},'${escAttr(item).replace(/'/g,"\\'")}')">×</button>`:''}
       </div>`).join('')}
     ${isAdmin()&&dragModeOn?`<div class="bib-add-row">
       <input type="text" id="bib-new-${ph.id}" placeholder="新增${ph.label}項目…" autocomplete="off" onkeydown="if(event.key==='Enter')addBibleItem('${stage}','${ph.id}')">
@@ -2470,6 +2470,14 @@ window.addBibleItem=async function(stage,phase){
   const updated={...data,[phase]:[...(data[phase]||[]),text]};
   setSyncing();await setDoc(doc(db,'bible',stage),updated);inp.value='';setSynced();
 }
+window.confirmDelBibleItem=function(stage,phase,idx,text){
+  $('mo-content').innerHTML=`
+    <div class="mo-title">確定要刪除這一項嗎？</div>
+    <div class="mo-sub">「${text}」</div>
+    <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-danger" id="mo-confirm-btn" onclick="closeMo();delBibleItem('${stage}','${phase}',${idx})">刪除</button></div>`;
+  $('modal').style.display='flex';
+  setTimeout(()=>{const b=$('mo-confirm-btn');if(b)b.focus();},0);
+}
 window.delBibleItem=async function(stage,phase,idx){
   if(!isAdmin())return;
   const data=S.bible[stage]||{before:[],during:[],after:[]};
@@ -2501,9 +2509,16 @@ window.addStage=async function(){
   await setDoc(doc(db,'bible','__order__'),{order});
   activeBibleStage=name;closeMo();setSynced();
 }
+window.confirmDeleteStage=function(stage){
+  $('mo-content').innerHTML=`
+    <div class="mo-title">確定要刪除整個階段嗎？</div>
+    <div class="mo-sub">「${stage}」底下所有項目也會一併刪除</div>
+    <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-danger" id="mo-confirm-btn" onclick="closeMo();deleteStage('${stage}')">刪除</button></div>`;
+  $('modal').style.display='flex';
+  setTimeout(()=>{const b=$('mo-confirm-btn');if(b)b.focus();},0);
+}
 window.deleteStage=async function(stage){
   if(!isAdmin())return;
-  if(!confirm(`確定刪除「${stage}」？`))return;
   const order=getBibleStages().filter(s=>s!==stage);
   setSyncing();
   await deleteDoc(doc(db,'bible',stage));
