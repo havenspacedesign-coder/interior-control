@@ -2555,23 +2555,22 @@ function renderBibleDetail(stage){
     ${getBiblePhaseItems(stage,ph.id).map((rawItem,i)=>{
       const item=normalizeBibleItem(rawItem);
       const key=`${stage}|${ph.id}|${i}`;
-      const expanded=!!expandedBibleItems[key];
+      const addOpen=!!expandedBibleItems[key];
       return`
       <div class="bib-item-row">
         <span class="bib-item-num">${i+1}</span>
         <span class="bib-item-text" ondblclick="startEditBibleItem('${stage}','${ph.id}',${i},this)">${item.text}</span>
-        ${isAdmin()&&dragModeOn?`<button class="btn btn-sm" title="子項目" onclick="toggleBibleSubItems('${key}')">${expanded?'－':'＋'} 子項目${item.subs.length?' ('+item.subs.length+')':''}</button>`:(item.subs.length?`<span style="font-size:11px;color:var(--text3)">${item.subs.length} 個子項目</span>`:'')}
         ${isAdmin()&&dragModeOn?`<button class="bib-item-del" onclick="confirmDelBibleItem('${stage}','${ph.id}',${i},'${escAttr(item.text).replace(/'/g,"\\'")}')">×</button>`:''}
       </div>
-      ${expanded||!dragModeOn?item.subs.map((sub,si)=>`
+      ${item.subs.map((sub,si)=>`
       <div class="bib-item-row" style="padding-left:26px">
         <span class="bib-item-text" style="color:var(--text2)" ondblclick="startEditBibleSubItem('${stage}','${ph.id}',${i},${si},this)">└ ${sub}</span>
         ${isAdmin()&&dragModeOn?`<button class="bib-item-del" onclick="confirmDelBibleSubItem('${stage}','${ph.id}',${i},${si},'${escAttr(sub).replace(/'/g,"\\'")}')">×</button>`:''}
-      </div>`).join(''):''}
-      ${isAdmin()&&dragModeOn&&expanded?`<div class="bib-add-row" style="padding-left:26px">
+      </div>`).join('')}
+      ${isAdmin()&&dragModeOn?(addOpen?`<div class="bib-add-row" style="padding-left:26px">
         <input type="text" id="bib-sub-new-${ph.id}-${i}" placeholder="+ 新增子項目…" autocomplete="off" onkeydown="if(event.key==='Enter')addBibleSubItem('${stage}','${ph.id}',${i})">
         <button class="btn btn-sm" onclick="addBibleSubItem('${stage}','${ph.id}',${i})">新增</button>
-      </div>`:''}`;
+      </div>`:`<div style="padding-left:26px;margin:2px 0"><button class="btn btn-sm" onclick="toggleBibleSubItems('${key}')">＋ 新增子項目</button></div>`):''}`;
     }).join('')}
     ${isAdmin()&&dragModeOn?`<div class="bib-add-row">
       <input type="text" id="bib-new-${ph.id}" placeholder="新增${ph.label}項目…" autocomplete="off" onkeydown="if(event.key==='Enter')addBibleItem('${stage}','${ph.id}')">
@@ -2664,7 +2663,11 @@ window.addBibleSubItem=async function(stage,phase,idx){
   const arr=[...(data[phase]||[])];
   const item=normalizeBibleItem(arr[idx]);
   arr[idx]={text:item.text,subs:[...item.subs,text]};
-  setSyncing();await setDoc(doc(db,'bible',stage),{...data,[phase]:arr});inp.value='';setSynced();
+  const updated={...data,[phase]:arr};
+  S.bible=Object.assign({},S.bible,{[stage]:updated});
+  expandedBibleItems[`${stage}|${phase}|${idx}`]=false;
+  renderBible();
+  setSyncing();await setDoc(doc(db,'bible',stage),updated);setSynced();
 }
 window.confirmDelBibleItem=function(stage,phase,idx,text){
   $('mo-content').innerHTML=`
