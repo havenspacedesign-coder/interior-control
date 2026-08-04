@@ -226,6 +226,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .bib-item-text{flex:1;font-size:13px}
 .bib-item-del{color:var(--text3);cursor:pointer;font-size:15px;padding:0 4px;border:none;background:none}
 .bib-item-del:hover{color:var(--red)}
+.bib-item-add{color:var(--text3);cursor:pointer;font-size:15px;padding:0 4px;border:none;background:none}
+.bib-item-add:hover{color:var(--purple)}
 .bib-add-row{display:flex;gap:8px;margin-top:8px}
 .ws-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .ws-tab{padding:4px 12px;font-size:12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:none;font-family:inherit;color:var(--text2)}
@@ -2560,6 +2562,7 @@ function renderBibleDetail(stage){
       <div class="bib-item-row">
         <span class="bib-item-num">${i+1}</span>
         <span class="bib-item-text" ondblclick="startEditBibleItem('${stage}','${ph.id}',${i},this)">${item.text}</span>
+        ${isAdmin()&&dragModeOn?`<button class="bib-item-add" title="新增子項目" onclick="toggleBibleSubItems('${key}')">＋</button>`:''}
         ${isAdmin()&&dragModeOn?`<button class="bib-item-del" onclick="confirmDelBibleItem('${stage}','${ph.id}',${i},'${escAttr(item.text).replace(/'/g,"\\'")}')">×</button>`:''}
       </div>
       ${item.subs.map((sub,si)=>`
@@ -2567,10 +2570,10 @@ function renderBibleDetail(stage){
         <span class="bib-item-text" style="color:var(--text2)" ondblclick="startEditBibleSubItem('${stage}','${ph.id}',${i},${si},this)">└ ${sub}</span>
         ${isAdmin()&&dragModeOn?`<button class="bib-item-del" onclick="confirmDelBibleSubItem('${stage}','${ph.id}',${i},${si},'${escAttr(sub).replace(/'/g,"\\'")}')">×</button>`:''}
       </div>`).join('')}
-      ${isAdmin()&&dragModeOn?(addOpen?`<div class="bib-add-row" style="padding-left:26px">
+      ${isAdmin()&&dragModeOn&&addOpen?`<div class="bib-add-row" style="padding-left:26px">
         <input type="text" id="bib-sub-new-${ph.id}-${i}" placeholder="+ 新增子項目…" autocomplete="off" onkeydown="if(event.key==='Enter')addBibleSubItem('${stage}','${ph.id}',${i})">
         <button class="btn btn-sm" onclick="addBibleSubItem('${stage}','${ph.id}',${i})">新增</button>
-      </div>`:`<div style="padding-left:26px;margin:2px 0"><button class="btn btn-sm" onclick="toggleBibleSubItems('${key}')">＋ 新增子項目</button></div>`):''}`;
+      </div>`:''}`;
     }).join('')}
     ${isAdmin()&&dragModeOn?`<div class="bib-add-row">
       <input type="text" id="bib-new-${ph.id}" placeholder="新增${ph.label}項目…" autocomplete="off" onkeydown="if(event.key==='Enter')addBibleItem('${stage}','${ph.id}')">
