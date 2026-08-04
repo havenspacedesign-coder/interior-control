@@ -235,6 +235,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .ws-cl-item input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--purple);flex-shrink:0}
 .ws-cl-item label{font-size:13px;cursor:pointer;flex:1;line-height:1.4}
 .ws-cl-item.done label{text-decoration:line-through;color:var(--text3)}
+.ws-cl-item.skip label{text-decoration:line-through;color:var(--text3)}
+.ck-btns{display:flex;gap:4px;flex-shrink:0}
+.ck-btn{width:22px;height:22px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--text3);font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ck-btn.on-done{background:var(--teal);border-color:var(--teal);color:#fff}
+.ck-btn.on-skip{background:var(--text3);border-color:var(--text3);color:#fff}
 
 /* Members */
 .member-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -414,12 +419,24 @@ function pendingCount(projId,stage){
   if(!stage)return null;
   const items=getAllBibleItems(stage);if(!items.length)return null;
   const stored=S.checks[`${projId}_${stage}`]||[];
-  return items.length-items.filter((_,i)=>stored[i]?.done).length;
+  return items.length-items.filter((_,i)=>stored[i]?.done||stored[i]?.skip).length;
 }
 function pendBadge(n){
   if(n===null)return'';
   if(n===0)return`<span class="pend pend-g">✓</span>`;
   return`<span class="pend pend-r">${n}</span>`;
+}
+// Shared row renderer for a bible checklist item — ✓ means done, ✗ means
+// "seen but not applicable to this site". Both count as resolved.
+function renderCheckItemRow(projId,stage,idx,item){
+  const cls=item.done?'done':(item.skip?'skip':'');
+  return`<div class="ws-cl-item ${cls}">
+    <div class="ck-btns">
+      <button type="button" class="ck-btn ${item.done?'on-done':''}" title="完成" onclick="setCheckStatus('${projId}','${stage}',${idx},'done')">✓</button>
+      <button type="button" class="ck-btn ${item.skip?'on-skip':''}" title="不適用" onclick="setCheckStatus('${projId}','${stage}',${idx},'skip')">✗</button>
+    </div>
+    <label>${item.text}</label>
+  </div>`;
 }
 function setSynced(){$('sdot').style.background='#1D9E75';$('slbl').textContent='已同步'}
 function setSyncing(){$('sdot').style.background='var(--amber)';$('slbl').textContent='同步中'}
@@ -710,7 +727,7 @@ function renderDesignCell(p,col){
     if(getBibleStages().includes(stage)){
       const key=`${p.id}_${stage}`;const stored=S.checks[key]||[];
       const allItems=getAllBibleItems(stage);
-      const done=allItems.filter((t,i)=>stored[i]?.done).length;
+      const done=allItems.filter((t,i)=>stored[i]?.done||stored[i]?.skip).length;
       return`<td>
         <span onclick="openCheckMo('${p.id}','${stage}','${stage}','${p.name}')" style="cursor:pointer;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:5px;font-size:12px;font-weight:600;white-space:nowrap">#${stage} ${done}/${allItems.length}</span>
         <span onclick="saveDesignField('${p.id}','${col.name}','')" title="改回文字輸入" style="cursor:pointer;color:var(--text3);font-size:11px;margin-left:4px">×</span>
@@ -2299,8 +2316,8 @@ window.openCheckMo=function(projId,stage,label,projName){
   const allItems=getAllBibleItems(stage);
   if(!allItems.length){alert('此階段尚無項目');return;}
   const key=`${projId}_${stage}`;const stored=S.checks[key]||[];
-  const merged=allItems.map((t,i)=>({text:t,done:stored[i]?.done||false}));
-  const done=merged.filter(x=>x.done).length;const pct=Math.round(done/merged.length*100);
+  const merged=allItems.map((t,i)=>({text:t,done:stored[i]?.done||false,skip:stored[i]?.skip||false}));
+  const done=merged.filter(x=>x.done||x.skip).length;const pct=Math.round(done/merged.length*100);
   const b=S.bible[stage]||{before:[],during:[],after:[]};
   const beforeLen=(b.before||[]).length,duringLen=(b.during||[]).length;
   const PHASES=[{label:'工程前',color:'var(--pl)',from:0,to:beforeLen},{label:'工程中',color:'var(--tl)',from:beforeLen,to:beforeLen+duringLen},{label:'工程後',color:'var(--gl)',from:beforeLen+duringLen,to:merged.length}];
@@ -2309,11 +2326,7 @@ window.openCheckMo=function(projId,stage,label,projName){
     if(ph.to<=ph.from)return;
     itemsHtml+=`<div style="font-size:11px;font-weight:600;color:var(--text2);margin:10px 0 4px"><span style="background:${ph.color};padding:2px 8px;border-radius:8px">${ph.label}</span></div>`;
     for(let i=ph.from;i<ph.to;i++){
-      const item=merged[i];
-      itemsHtml+=`<div class="ws-cl-item ${item.done?'done':''}">
-        <input type="checkbox" id="ck${i}" ${item.done?'checked':''} onchange="toggleCheck('${projId}','${stage}',${i},this.checked)">
-        <label for="ck${i}">${item.text}</label>
-      </div>`;
+      itemsHtml+=renderCheckItemRow(projId,stage,i,merged[i]);
     }
   });
   $('mo-content').innerHTML=`
@@ -2325,13 +2338,16 @@ window.openCheckMo=function(projId,stage,label,projName){
   $('modal').style.display='flex';
 }
 window.closeMo=function(){$('modal').style.display='none';}
-window.toggleCheck=async function(projId,stage,idx,checked){
+window.setCheckStatus=async function(projId,stage,idx,status){
   setSyncing();
   const allItems=getAllBibleItems(stage);
   const key=`${projId}_${stage}`;
   const stored=[...(S.checks[key]||allItems.map(t=>({text:t,done:false})))];
   while(stored.length<allItems.length)stored.push({done:false});
-  stored[idx]={...stored[idx],done:checked};
+  const cur=stored[idx]||{};
+  const newDone=status==='done'?!cur.done:false;
+  const newSkip=status==='skip'?!cur.skip:false;
+  stored[idx]={...cur,done:newDone,skip:newSkip};
   try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}
 }
 
@@ -2347,7 +2363,7 @@ function renderBible(){
     <div>
       <div style="font-size:15px;font-weight:600">施工寶典</div>
       <div style="font-size:12px;color:var(--text2);margin-top:2px">新增階段後可在工程進度選取，自動帶入待辦清單</div>
-      ${isAdmin()?`<button class="btn btn-p btn-sm" style="margin-top:8px" onclick="showAddStage()">＋ 新增階段</button>`:''}
+      ${isAdmin()&&dragModeOn?`<button class="btn btn-p btn-sm" style="margin-top:8px" onclick="showAddStage()">＋ 新增階段</button>`:''}
     </div>
     <div class="flex">
       <div class="seg">
@@ -2398,32 +2414,31 @@ function renderBibleDetail(stage){
         ${isAdmin()&&dragModeOn?`<button class="bib-item-del" onclick="delBibleItem('${stage}','${ph.id}',${i})">×</button>`:''}
       </div>`).join('')}
     ${isAdmin()&&dragModeOn?`<div class="bib-add-row">
-      <input type="text" id="bib-new-${ph.id}" placeholder="新增${ph.label}項目…" onkeydown="if(event.key==='Enter')addBibleItem('${stage}','${ph.id}')">
+      <input type="text" id="bib-new-${ph.id}" placeholder="新增${ph.label}項目…" autocomplete="off" onkeydown="if(event.key==='Enter')addBibleItem('${stage}','${ph.id}')">
       <button class="btn btn-p btn-sm" onclick="addBibleItem('${stage}','${ph.id}')">新增</button>
     </div>`:''}
   </div>`).join('')}`;
 }
 function renderBibleWorksite(stage){
-  const progProjs=S.projects.filter(p=>p.status==='prog');
-  if(!progProjs.length)return`<div class="empty">尚無施工中案件</div>`;
+  const progProjs=S.projects.filter(p=>p.status==='design'||p.status==='prog');
+  if(!progProjs.length)return`<div class="empty">尚無設計中或施工中的案件</div>`;
   if(!activeBibleWs||!progProjs.find(p=>p.id===activeBibleWs))activeBibleWs=progProjs[0].id;
-  const allItems=getAllBibleItems(stage);
-  const key=`${activeBibleWs}_${stage}`;const stored=S.checks[key]||[];
-  const merged=allItems.map((t,i)=>({text:t,done:stored[i]?.done||false}));
-  const done=merged.filter(x=>x.done).length;
   const curProj=progProjs.find(p=>p.id===activeBibleWs);
+  const allStages=getBibleStages();
   return`
-  <div style="font-size:14px;font-weight:500;margin-bottom:10px">${stage}</div>
   <div class="ws-tabs">${progProjs.map(p=>`<button class="ws-tab ${p.id===activeBibleWs?'active':''}" onclick="setActiveWs('${p.id}')">${p.name}</button>`).join('')}</div>
-  <div style="font-size:12px;color:var(--text2);margin-bottom:8px">${curProj?.name||''} — ${done}/${merged.length} 完成</div>
-  <div class="pb-wrap"><div class="pb-fill" style="width:${merged.length?Math.round(done/merged.length*100):0}%;background:var(--purple)"></div></div>
-  <div style="margin-top:10px">
-    ${merged.length===0?`<div class="empty" style="padding:1rem">此階段尚無項目</div>`:''}
-    ${merged.map((item,i)=>`<div class="ws-cl-item ${item.done?'done':''}">
-      <input type="checkbox" id="wsck${i}" ${item.done?'checked':''} onchange="toggleCheck('${activeBibleWs}','${stage}',${i},this.checked)">
-      <label for="wsck${i}">${item.text}</label>
-    </div>`).join('')}
-  </div>`;
+  <div style="font-size:12px;color:var(--text2);margin:8px 0 4px">${curProj?.name||''}</div>
+  ${allStages.length===0?`<div class="empty" style="padding:1rem">尚無階段</div>`:''}
+  ${allStages.map(s=>{
+    const allItems=getAllBibleItems(s);
+    if(!allItems.length)return'';
+    const key=`${activeBibleWs}_${s}`;const stored=S.checks[key]||[];
+    const merged=allItems.map((t,i)=>({text:t,done:stored[i]?.done||false,skip:stored[i]?.skip||false}));
+    return`<div style="margin-top:16px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">${s}</div>
+      ${merged.map((item,i)=>renderCheckItemRow(activeBibleWs,s,i,item)).join('')}
+    </div>`;
+  }).join('')}`;
 }
 window.setBibleView=function(v){bibleView=v;renderBible();}
 window.setActiveStage=function(s){if(dragModeOn)return;activeBibleStage=s;renderBible();}
