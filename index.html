@@ -356,6 +356,7 @@ const MEETING_ROWS=[
 ];
 let activePanel='overview',calMode='week',weekOffset=0,monthOffset=0,selectedTag=null;
 let activeBibleStage=null,activeBibleWs=null,bibleView='edit',dragSrc=null,dragModeOn=false;
+let stageDragInProgress=false,pendingBibleRender=false;
 let expandedBibleItems={};
 let openPicker=null;
 let expandedProjs={},expandedFields={};
@@ -2558,6 +2559,7 @@ window.setCheckStatus=async function(projId,stage,idx,status){
 
 // ── Bible ──
 function renderBible(){
+  if(stageDragInProgress){pendingBibleRender=true;return;}
   const el=$('panel-bible');
   const stages=getBibleStages();
   if(stages.length&&(!activeBibleStage||!stages.includes(activeBibleStage)))activeBibleStage=stages[0];
@@ -2661,20 +2663,27 @@ function renderBibleWorksite(stage){
   }).join('')}`;
 }
 window.setBibleView=function(v){bibleView=v;renderBible();}
-window.setActiveStage=function(s){if(dragModeOn)return;activeBibleStage=s;renderBible();}
+window.setActiveStage=function(s){activeBibleStage=s;renderBible();}
 window.setActiveWs=function(id){activeBibleWs=id;renderBible();}
 window.toggleDragMode=function(){dragModeOn=!dragModeOn;renderBible();}
-window.bsDragStart=function(e,s){if(!dragModeOn)return;dragSrc=s;setTimeout(()=>document.querySelector(`[data-stage="${s}"]`)?.classList.add('dragging'),0);}
+window.bsDragStart=function(e,s){if(!dragModeOn)return;dragSrc=s;stageDragInProgress=true;setTimeout(()=>document.querySelector(`[data-stage="${s}"]`)?.classList.add('dragging'),0);}
 window.bsDragOver=function(e,s){if(!dragModeOn)return;e.preventDefault();document.querySelectorAll('.bst-item').forEach(el=>el.classList.remove('drag-over'));if(s!==dragSrc)document.querySelector(`[data-stage="${s}"]`)?.classList.add('drag-over');}
 window.bsDrop=async function(e,toS){
-  if(!dragModeOn)return;e.preventDefault();if(!dragSrc||dragSrc===toS)return;
+  if(!dragModeOn)return;e.preventDefault();
+  stageDragInProgress=false;
+  if(!dragSrc||dragSrc===toS)return;
   const order=[...getBibleStages()];const fi=order.indexOf(dragSrc);const ti=order.indexOf(toS);
   if(fi<0||ti<0)return;order.splice(fi,1);order.splice(ti,0,dragSrc);
   S.bibleOrder=order;
   renderBible();
   setSyncing();await setDoc(doc(db,'bible','__order__'),{order});setSynced();
 }
-window.bsDragEnd=function(){document.querySelectorAll('.bst-item').forEach(el=>{el.classList.remove('dragging');el.classList.remove('drag-over');});dragSrc=null;}
+window.bsDragEnd=function(){
+  document.querySelectorAll('.bst-item').forEach(el=>{el.classList.remove('dragging');el.classList.remove('drag-over');});
+  dragSrc=null;
+  stageDragInProgress=false;
+  if(pendingBibleRender){pendingBibleRender=false;renderBible();}
+}
 window.toggleBibleSubItems=function(key){
   expandedBibleItems[key]=!expandedBibleItems[key];
   renderBible();
