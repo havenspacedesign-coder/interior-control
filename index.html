@@ -234,8 +234,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .ws-cl-item:last-child{border-bottom:none}
 .ws-cl-item input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--purple);flex-shrink:0}
 .ws-cl-item label{font-size:13px;cursor:pointer;flex:1;line-height:1.4}
-.ws-cl-item.done label{text-decoration:line-through;color:var(--text3)}
-.ws-cl-item.skip label{text-decoration:line-through;color:var(--text3)}
 .ck-btns{display:flex;gap:4px;flex-shrink:0}
 .ck-btn{width:22px;height:22px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--text3);font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .ck-btn.on-done{background:var(--teal);border-color:var(--teal);color:#fff}
@@ -2311,6 +2309,7 @@ function renderDayView(){
   return html;
 }
 
+let openCheckMoArgs=null;
 window.openCheckMo=function(projId,stage,label,projName){
   if(!stage)return;
   const allItems=getAllBibleItems(stage);
@@ -2336,10 +2335,10 @@ window.openCheckMo=function(projId,stage,label,projName){
     ${itemsHtml}
     <div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;
   $('modal').style.display='flex';
+  openCheckMoArgs={projId,stage,label,projName};
 }
-window.closeMo=function(){$('modal').style.display='none';}
+window.closeMo=function(){$('modal').style.display='none';openCheckMoArgs=null;}
 window.setCheckStatus=async function(projId,stage,idx,status){
-  setSyncing();
   const allItems=getAllBibleItems(stage);
   const key=`${projId}_${stage}`;
   const stored=[...(S.checks[key]||allItems.map(t=>({text:t,done:false})))];
@@ -2348,6 +2347,16 @@ window.setCheckStatus=async function(projId,stage,idx,status){
   const newDone=status==='done'?!cur.done:false;
   const newSkip=status==='skip'?!cur.skip:false;
   stored[idx]={...cur,done:newDone,skip:newSkip};
+  S.checks=Object.assign({},S.checks,{[key]:stored});
+  // Reflect the change immediately — the open modal is a one-off innerHTML
+  // snapshot, so it needs an explicit re-render; it isn't part of the
+  // normal panel re-render that Firestore's onSnapshot triggers.
+  if(openCheckMoArgs&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage){
+    openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName);
+  }
+  if(activePanel==='progress')renderProgress();
+  else if(activePanel==='bible')renderBible();
+  setSyncing();
   try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}
 }
 
