@@ -2347,6 +2347,7 @@ function renderBible(){
     <div>
       <div style="font-size:15px;font-weight:600">施工寶典</div>
       <div style="font-size:12px;color:var(--text2);margin-top:2px">新增階段後可在工程進度選取，自動帶入待辦清單</div>
+      ${isAdmin()?`<button class="btn btn-p btn-sm" style="margin-top:8px" onclick="showAddStage()">＋ 新增階段</button>`:''}
     </div>
     <div class="flex">
       <div class="seg">
@@ -2354,8 +2355,7 @@ function renderBible(){
         <button class="${bibleView==='worksite'?'on':''}" onclick="setBibleView('worksite')">工地勾選</button>
       </div>
       ${isAdmin()?`
-        <button class="btn btn-sm ${dragModeOn?'btn-p':''}" onclick="toggleDragMode()">${dragModeOn?'✓ 排序中':'⠿ 編輯順序'}</button>
-        <button class="btn btn-p btn-sm" onclick="showAddStage()">＋ 新增階段</button>`:''}
+        <button class="btn btn-sm ${dragModeOn?'btn-p':''}" onclick="toggleDragMode()">${dragModeOn?'✓ 編輯中':'✎ 編輯'}</button>`:''}
     </div>
   </div>
   <div class="bible-wrap">
@@ -2384,7 +2384,7 @@ function renderBibleDetail(stage){
   return`
   <div class="flex-sb" style="margin-bottom:14px">
     <span style="font-size:14px;font-weight:500">${stage}</span>
-    ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="deleteStage('${stage}')">刪除此階段</button>`:''}
+    ${isAdmin()&&dragModeOn?`<button class="btn btn-sm btn-danger" onclick="deleteStage('${stage}')">刪除此階段</button>`:''}
   </div>
   ${phases.map(ph=>`<div class="phase-section">
     <div class="phase-title" style="color:${ph.color}">
@@ -2395,9 +2395,9 @@ function renderBibleDetail(stage){
       <div class="bib-item-row">
         <span class="bib-item-num">${i+1}</span>
         <span class="bib-item-text">${item}</span>
-        ${isAdmin()?`<button class="bib-item-del" onclick="delBibleItem('${stage}','${ph.id}',${i})">×</button>`:''}
+        ${isAdmin()&&dragModeOn?`<button class="bib-item-del" onclick="delBibleItem('${stage}','${ph.id}',${i})">×</button>`:''}
       </div>`).join('')}
-    ${isAdmin()?`<div class="bib-add-row">
+    ${isAdmin()&&dragModeOn?`<div class="bib-add-row">
       <input type="text" id="bib-new-${ph.id}" placeholder="新增${ph.label}項目…" onkeydown="if(event.key==='Enter')addBibleItem('${stage}','${ph.id}')">
       <button class="btn btn-p btn-sm" onclick="addBibleItem('${stage}','${ph.id}')">新增</button>
     </div>`:''}
