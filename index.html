@@ -1811,7 +1811,7 @@ function renderPrivateTodoSection(){
       var border=isSel?'2px solid var(--purple)':'1.5px solid var(--border)';
       var textStyle=(color?'color:'+color+';font-weight:500':'color:var(--text)')+(item.strike?';text-decoration:line-through':'');
       // Chip height matches add button
-      if(isSel){
+      if(isEdit){
         h+='<div style="border:'+border+';border-radius:5px;margin-bottom:4px;padding:6px 8px;background:var(--surface);display:flex;align-items:center;gap:5px">'
           +'<input type="text" class="pn-box-input pn-chip" id="pnbox-'+type+'-'+ds+'-'+i+'" value="'+escAttr(item.text||'')+'" autocomplete="off" spellcheck="false"'
           +' style="flex:1;min-width:0;box-sizing:border-box;background:transparent;border:none;padding:0;font-size:12px;line-height:1.4;font-family:inherit;'+textStyle+'"'
@@ -1824,6 +1824,7 @@ function renderPrivateTodoSection(){
       }else{
         h+='<div class="pn-chip" style="background:var(--surface);border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;position:relative;'+textStyle+'"'
           +' onclick="pnSelect(\''+type+'\',\''+ds+'\','+i+')"'
+          +' ondblclick="event.stopPropagation();pnStartEdit(\''+type+'\',\''+ds+'\','+i+')"'
           +' draggable="true"'
           +' ondragstart="pnDragStart(event,\''+type+'\',\''+ds+'\','+i+')"'
           +'>';
@@ -2015,9 +2016,53 @@ window.pnSelect=function(type,ds,idx){
   var text=items[idx]?items[idx].text||'':'';
   updateFormulaBar(type,ds,idx,text);
   renderProgress();
-  // Single click only selects — cursor is not auto-placed, so a second
-  // (double) click is what actually starts typing, matching the old feel.
+  // Single click only selects (highlights) — it stays showing the pretty
+  // chip. Double-click, or typing a character while selected, is what
+  // actually opens the raw text for editing (see pnStartEdit / the
+  // type-to-edit keydown listener below).
 }
+window.pnStartEdit=function(type,ds,idx){
+  selGen++;
+  S.privateSelected={};
+  S.privateSelected[type+'|'+ds]=idx;
+  S.privateEditing={type:type,ds:ds,idx:idx};
+  var pn=S.privateNotes||{work:{},personal:{}};
+  var items=(pn[type]&&pn[type][ds])||[];
+  var text=items[idx]?items[idx].text||'':'';
+  updateFormulaBar(type,ds,idx,text);
+  renderProgress();
+  setTimeout(function(){
+    var inp=document.getElementById('pnbox-'+type+'-'+ds+'-'+idx);
+    if(inp){inp.focus();inp.select();}
+  },0);
+}
+// Excel-style "select the cell, then just start typing" — the keystroke
+// replaces whatever was there, rather than appending to it.
+window.pnStartEditWithChar=function(type,ds,idx,ch){
+  selGen++;
+  S.privateSelected={};
+  S.privateSelected[type+'|'+ds]=idx;
+  S.privateEditing={type:type,ds:ds,idx:idx};
+  updateFormulaBar(type,ds,idx,ch);
+  renderProgress();
+  setTimeout(function(){
+    var inp=document.getElementById('pnbox-'+type+'-'+ds+'-'+idx);
+    if(inp){inp.value=ch;pnSyncFormulaText(ch);inp.focus();var l=inp.value.length;inp.setSelectionRange(l,l);}
+  },0);
+}
+document.addEventListener('keydown',function(e){
+  var ae=document.activeElement;
+  if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.isContentEditable))return;
+  if(!S.privateSelected)return;
+  var selKey=null,idx=-1;
+  Object.keys(S.privateSelected).forEach(function(k){if(S.privateSelected[k]>=0){selKey=k;idx=S.privateSelected[k];}});
+  if(!selKey||idx<0)return;
+  if(e.key.length===1&&!e.ctrlKey&&!e.metaKey&&!e.altKey){
+    var parts=selKey.split('|');
+    pnStartEditWithChar(parts[0],parts[1],idx,e.key);
+    e.preventDefault();
+  }
+});
 window.pnEdit=function(type,ds,idx){
   selGen++;
   S.privateSelected={};
@@ -2094,6 +2139,7 @@ window.pnAdd=async function(type,ds){
   selGen++;
   S.privateSelected={};
   S.privateSelected[type+'|'+ds]=newIdx;
+  S.privateEditing={type:type,ds:ds,idx:newIdx};
   updateFormulaBar(type,ds,newIdx,'');
   renderProgress();
   setTimeout(function(){
