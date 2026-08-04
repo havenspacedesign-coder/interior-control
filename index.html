@@ -413,9 +413,17 @@ function getBibleStages(){
 }
 function getBiblePhaseItems(stage,phase){const b=S.bible[stage];return(b&&b[phase])?b[phase]:[];}
 function getAllBibleItems(stage){const b=S.bible[stage]||{before:[],during:[],after:[]};return[...(b.before||[]),...(b.during||[]),...(b.after||[])];}
+// For a completed project, use the frozen snapshot taken when it was marked
+// done, so later edits to the live 施工寶典 template don't shift/relabel
+// its already-checked items. Active projects always use the live template.
+function projectBibleItems(proj,stage){
+  if(proj&&proj.status==='done'&&proj.bibleSnapshot&&proj.bibleSnapshot[stage])return proj.bibleSnapshot[stage];
+  return getAllBibleItems(stage);
+}
 function pendingCount(projId,stage){
   if(!stage)return null;
-  const items=getAllBibleItems(stage);if(!items.length)return null;
+  const proj=S.projects.find(p=>p.id===projId);
+  const items=projectBibleItems(proj,stage);if(!items.length)return null;
   const stored=S.checks[`${projId}_${stage}`]||[];
   return items.length-items.filter((_,i)=>stored[i]?.done||stored[i]?.skip).length;
 }
@@ -602,29 +610,37 @@ function renderActive(){
 }
 
 // ── Overview ──
+let overviewStatusFilter=null;
+let overviewReportProjId=null;
 function renderOverview(){
   const el=$('panel-overview');
+  if(overviewReportProjId){el.innerHTML=renderSiteReport(overviewReportProjId);return;}
   const inDesign=S.projects.filter(p=>p.status==='design').length;
   const inProg=S.projects.filter(p=>p.status==='prog').length;
   const done=S.projects.filter(p=>p.status==='done').length;
+  const shown=overviewStatusFilter?S.projects.filter(p=>p.status===overviewStatusFilter):S.projects;
+  function statCard(v,n,color,label){
+    const on=overviewStatusFilter===v;
+    return`<div class="stat" style="cursor:pointer;${on?'outline:2px solid '+color+';border-radius:var(--r)':''}" onclick="setOverviewFilter(${v?`'${v}'`:'null'})"><div class="stat-n" style="color:${color}">${n}</div><div class="stat-l">${label}</div></div>`;
+  }
   el.innerHTML=`
   <div class="stats">
-    <div class="stat"><div class="stat-n" style="color:#4A3FA0">${inDesign}</div><div class="stat-l">設計中</div></div>
-    <div class="stat"><div class="stat-n" style="color:var(--purple)">${inProg}</div><div class="stat-l">施工中</div></div>
-    <div class="stat"><div class="stat-n" style="color:var(--green)">${done}</div><div class="stat-l">已完工</div></div>
+    ${statCard('design',inDesign,'#4A3FA0','設計中')}
+    ${statCard('prog',inProg,'var(--purple)','施工中')}
+    ${statCard('done',done,'var(--green)','已完工')}
     <div class="stat"><div class="stat-n" style="color:var(--red)">${S.members.filter(m=>m.role==='pending').length}</div><div class="stat-l">待審核</div></div>
   </div>
   <div class="card">
-    <div class="card-hdr"><span class="card-title">所有案件</span>
+    <div class="card-hdr"><span class="card-title">${overviewStatusFilter?statusInfo(overviewStatusFilter).l+'案件':'所有案件'}${overviewStatusFilter?` <span style="font-size:11px;color:var(--purple);cursor:pointer;font-weight:400" onclick="setOverviewFilter(null)">（清除篩選）</span>`:''}</span>
       ${isAdmin()?`<button class="btn btn-p btn-sm" onclick="showAddProject()">＋ 新增案件</button>`:''}
     </div>
-    ${S.projects.length===0?`<div class="empty">尚無案件</div>`:`
+    ${shown.length===0?`<div class="empty">尚無案件</div>`:`
     <div style="overflow-x:auto"><table>
       <thead><tr><th>案件名稱</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>完工日</th><th>狀態</th>${isAdmin()?'<th></th>':''}</tr></thead>
-      <tbody>${S.projects.map(p=>{
+      <tbody>${shown.map(p=>{
         const si=statusInfo(p.status);
         return`<tr>
-          <td><strong style="font-weight:500;cursor:pointer;color:var(--purple)" onclick="showProjectDetail('${p.id}')">${p.name}</strong></td>
+          <td><strong style="font-weight:500;cursor:pointer;color:var(--purple)" onclick="${p.status==='done'?`showSiteReport('${p.id}')`:`showProjectDetail('${p.id}')`}">${p.name}</strong>${p.status==='done'?' <span style="font-size:10px;color:var(--text3)">(查看總報告表)</span>':''}</td>
           <td>${p.owner||''}</td><td style="color:var(--text2)">${p.type||''}</td>
           <td>${p.designer||''}</td><td>${p.budget||''}</td>
           <td style="color:var(--text2)">${p.contractEnd||p.finish||''}</td>
@@ -636,7 +652,94 @@ function renderOverview(){
     </table></div>`}
   </div>`;
 }
-window.updateStatus=async function(projId,v){setSyncing();await updateDoc(doc(db,'projects',projId),{status:v});setSynced();}
+window.setOverviewFilter=function(v){overviewStatusFilter=v;renderOverview();}
+window.showSiteReport=function(id){overviewReportProjId=id;renderOverview();}
+window.closeSiteReport=function(){overviewReportProjId=null;renderOverview();}
+function renderSiteReport(projId){
+  const p=S.projects.find(x=>x.id===projId);
+  if(!p)return`<div class="empty">找不到這個案件</div><button class="btn" onclick="closeSiteReport()">← 返回</button>`;
+  const stages=getBibleStages();
+  const schedule=[...(p.schedule||[])].sort((a,b)=>(a.date<b.date?-1:a.date>b.date?1:0));
+  const meetingEntries=getMeetingEntriesForProject(p.name);
+  const noteTodos=getNoteTodosForProject(p.name);
+  const manualTodos=currentUser?(S.userTodos||[]).filter(t=>t.uid===currentUser.uid&&t.projId===p.id).map(t=>({text:t.text,completed:!!t.done})):[];
+  const allTodos=[...noteTodos,...manualTodos];
+  return`
+  <button class="btn btn-sm" onclick="closeSiteReport()">← 返回案件總覽</button>
+  <div class="card" style="margin-top:12px">
+    <div class="card-hdr"><span class="card-title">${p.name} — 工地總報告表</span></div>
+    <div style="font-size:13px;line-height:2;color:var(--text2)">
+      業主姓名：${p.owner||'—'}　類型：${p.type||'—'}　設計師：${p.designer||'—'}<br>
+      預算：${p.budget||'—'}　完工日：${p.contractEnd||p.finish||'—'}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">📖 施工寶典勾選結果</span></div>
+    ${stages.map(s=>{
+      const items=projectBibleItems(p,s);
+      if(!items.length)return'';
+      const stored=S.checks[`${p.id}_${s}`]||[];
+      const done=items.filter((_,i)=>stored[i]?.done||stored[i]?.skip).length;
+      return`<div style="margin-bottom:14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">${s}（${done}/${items.length}）</div>
+        ${items.map((t,i)=>{
+          const st=stored[i]||{};
+          const icon=st.done?'✓':(st.skip?'✗':'○');
+          const color=st.done?'var(--teal)':(st.skip?'var(--text3)':'var(--text3)');
+          return`<div style="font-size:12px;padding:3px 0;display:flex;gap:6px"><span style="color:${color};font-weight:600;width:14px">${icon}</span>${t}</div>`;
+        }).join('')}
+      </div>`;
+    }).join('')||'<div class="empty">尚無階段資料</div>'}
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">🏗 工地進度</span></div>
+    ${schedule.length?schedule.map(ev=>`<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)">
+      <strong>${ev.date}</strong>　${ev.time||''}　${ev.label||ev.stage||''}${ev.note?'　— '+ev.note:''}
+    </div>`).join(''):'<div class="empty">尚無工地進度紀錄</div>'}
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">🗓 會議 / 其他事項</span></div>
+    ${meetingEntries.length?meetingEntries.map(e=>`<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)">
+      <strong>${e.date}</strong>　［${e.rowLabel}］　${e.text}
+    </div>`).join(''):'<div class="empty">沒有標記這個工地的會議/其他事項紀錄</div>'}
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">📋 工地代辦事項（最終狀況）</span></div>
+    ${allTodos.length?allTodos.map(t=>`<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)">
+      <span style="color:${t.completed?'var(--teal)':'var(--text3)'}">${t.completed?'✓':'○'}</span>　${t.text}
+    </div>`).join(''):'<div class="empty">尚無代辦事項紀錄</div>'}
+  </div>`;
+}
+function getMeetingEntriesForProject(projName){
+  const out=[];
+  Object.keys(S.meetingLogs||{}).forEach(key=>{
+    const log=S.meetingLogs[key];
+    if(!log||!log.items)return;
+    const rowInfo=MEETING_ROWS.find(r=>r.id===log.rowId);
+    (log.items||[]).forEach(item=>{
+      const m=(item.text||'').match(/\[proj:([^\]]+)\]/);
+      if(m&&m[1]===projName){
+        out.push({date:log.date,rowLabel:rowInfo?rowInfo.name:(log.rowId||''),text:(item.text||'').replace(/\[proj:[^\]]+\]/g,'').trim()});
+      }
+    });
+  });
+  out.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+  return out;
+}
+window.updateStatus=async function(projId,v){
+  setSyncing();
+  const patch={status:v};
+  if(v==='done'){
+    const proj=S.projects.find(p=>p.id===projId);
+    if(!proj||!proj.bibleSnapshot){
+      const snap={};
+      getBibleStages().forEach(s=>{snap[s]=getAllBibleItems(s);});
+      patch.bibleSnapshot=snap;
+    }
+  }
+  await updateDoc(doc(db,'projects',projId),patch);
+  setSynced();
+}
 window.saveSiteNote=async function(projId,val){
   setSyncing();
   await updateDoc(doc(db,'projects',projId),{siteNote:val});
@@ -724,7 +827,7 @@ function renderDesignCell(p,col){
     const stage=val.slice(1);
     if(getBibleStages().includes(stage)){
       const key=`${p.id}_${stage}`;const stored=S.checks[key]||[];
-      const allItems=getAllBibleItems(stage);
+      const allItems=projectBibleItems(p,stage);
       const done=allItems.filter((t,i)=>stored[i]?.done||stored[i]?.skip).length;
       return`<td>
         <span onclick="openCheckMo('${p.id}','${stage}','${stage}','${p.name}')" style="cursor:pointer;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:5px;font-size:12px;font-weight:600;white-space:nowrap">#${stage} ${done}/${allItems.length}</span>
@@ -2312,7 +2415,8 @@ function renderDayView(){
 let openCheckMoArgs=null;
 window.openCheckMo=function(projId,stage,label,projName){
   if(!stage)return;
-  const allItems=getAllBibleItems(stage);
+  const proj=S.projects.find(p=>p.id===projId);
+  const allItems=projectBibleItems(proj,stage);
   if(!allItems.length){alert('此階段尚無項目');return;}
   const key=`${projId}_${stage}`;const stored=S.checks[key]||[];
   const merged=allItems.map((t,i)=>({text:t,done:stored[i]?.done||false,skip:stored[i]?.skip||false}));
@@ -2339,7 +2443,8 @@ window.openCheckMo=function(projId,stage,label,projName){
 }
 window.closeMo=function(){$('modal').style.display='none';openCheckMoArgs=null;}
 window.setCheckStatus=async function(projId,stage,idx,status){
-  const allItems=getAllBibleItems(stage);
+  const proj=S.projects.find(p=>p.id===projId);
+  const allItems=projectBibleItems(proj,stage);
   const key=`${projId}_${stage}`;
   const stored=[...(S.checks[key]||allItems.map(t=>({text:t,done:false})))];
   while(stored.length<allItems.length)stored.push({done:false});
@@ -2554,8 +2659,8 @@ function renderMembers(){
         <div class="member-email">${m.email}</div>
       </div>
       ${!isResigned?`<span class="role-badge ${roleBadgeClass}">${roleLabel}</span>`:''}
-      ${!isResigned&&m.uid!==currentUser?.uid?`<select class="btn btn-sm" onchange="changeRole('${m.id}',this.value)">
-        <option value="manager" ${m.role==='manager'?'selected':''}>管理員</option>
+      ${!isResigned?`<select class="btn btn-sm" onchange="changeRole('${m.id}',this.value)">
+        ${m.uid===currentUser?.uid?`<option value="manager" ${m.role==='manager'?'selected':''}>管理員</option>`:''}
         <option value="admin" ${m.role==='admin'?'selected':''}>主管</option>
         <option value="staff" ${m.role==='staff'?'selected':''}>員工</option>
       </select>`:''}
@@ -2621,7 +2726,6 @@ function renderMembers(){
     <span class="role-badge role-pending">待審核</span>
     <button class="btn btn-sm btn-p" onclick="approveMember('${m.id}','staff')">核准（員工）</button>
     <button class="btn btn-sm btn-p" style="background:var(--pd)" onclick="approveMember('${m.id}','admin')">核准（主管）</button>
-    <button class="btn btn-sm btn-p" style="background:var(--red)" onclick="approveMember('${m.id}','manager')">核准（管理員）</button>
     <button class="btn btn-sm btn-danger" onclick="rejectMember('${m.id}')">拒絕</button>
   </div>`).join('')}`:''}
   <div style="font-size:13px;font-weight:500;margin-bottom:8px;margin-top:${pending.length?'16px':'0'}">所有成員（${active.length}）</div>
