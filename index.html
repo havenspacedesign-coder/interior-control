@@ -1872,6 +1872,7 @@ var meetingMentionActive=null;
 var taskSelected={};
 var taskSelGen=0;
 var pnMentionActive=null; // {type,ds,idx}
+var pnEditCanceled=false; // set right before an Escape-triggered blur, so the blur handler discards the edit instead of saving it
 
 window.pnInput=function(e,type,ds,idx){
   var inp=e.target;
@@ -1912,11 +1913,16 @@ window.pnInsertMention=function(e,type,ds,idx,projName){
   var textBefore=val.substring(0,pos);
   var atIdx=textBefore.lastIndexOf('@');
   if(atIdx>=0){
-    var newVal=val.substring(0,atIdx)+'[proj:'+projName+']'+val.substring(pos);
+    var tag='[proj:'+projName+']';
+    var newVal=val.substring(0,atIdx)+tag+val.substring(pos);
     inp.value=newVal;
     if(formulaBarState)formulaBarState.text=newVal;
+    var newPos=atIdx+tag.length;
+    inp.setSelectionRange(newPos,newPos);
   }
-  inp.blur();
+  // Stay in edit mode — the person may want to keep typing right after
+  // the inserted tag, rather than the field immediately closing.
+  inp.focus();
 }
 
 // Same @ mention behavior as the inline chip box, but for the top formula bar.
@@ -1958,11 +1964,14 @@ window.pnFormulaInsertMention=function(e,projName){
   var textBefore=val.substring(0,pos);
   var atIdx=textBefore.lastIndexOf('@');
   if(atIdx>=0){
-    var newVal=val.substring(0,atIdx)+'[proj:'+projName+']'+val.substring(pos);
+    var tag='[proj:'+projName+']';
+    var newVal=val.substring(0,atIdx)+tag+val.substring(pos);
     inp.value=newVal;
     if(formulaBarState)formulaBarState.text=newVal;
+    var newPos=atIdx+tag.length;
+    inp.setSelectionRange(newPos,newPos);
   }
-  inp.blur();
+  inp.focus();
 }
 window.pnFormulaKeyDown=function(e){
   if(pnMentionActive&&pnMentionActive.formula){
@@ -1973,7 +1982,8 @@ window.pnFormulaKeyDown=function(e){
       return;
     }
   }
-  if((e.key==='Enter'||e.key==='Escape')&&!e.isComposing&&e.keyCode!==229)e.target.blur();
+  if(e.key==='Escape'&&!e.isComposing&&e.keyCode!==229){pnEditCanceled=true;e.target.blur();return;}
+  if(e.key==='Enter'&&!e.isComposing&&e.keyCode!==229)e.target.blur();
 }
 
 window.pnKeyDown=function(e,type,ds,idx){
@@ -1985,7 +1995,8 @@ window.pnKeyDown=function(e,type,ds,idx){
       return;
     }
   }
-  if((e.key==='Enter'||e.key==='Escape')&&!e.isComposing&&e.keyCode!==229){e.target.blur();}
+  if(e.key==='Escape'&&!e.isComposing&&e.keyCode!==229){pnEditCanceled=true;e.target.blur();return;}
+  if(e.key==='Enter'&&!e.isComposing&&e.keyCode!==229){e.target.blur();}
 }
 
 window.pnSaveBlur=async function(type,ds,idx){
@@ -3102,6 +3113,16 @@ function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'
 // never relies on a shared "current selection" variable that could be stale.
 window.pnSaveBox=async function(el,type,ds,idx){
   if(!currentUser||!el)return;
+  if(pnEditCanceled){
+    pnEditCanceled=false;
+    S.privateEditing=null;
+    var pn0=S.privateNotes||{work:{},personal:{}};
+    var items0=(pn0[type]&&pn0[type][ds])||[];
+    var origText=items0[idx]?items0[idx].text||'':'';
+    updateFormulaBar(type,ds,idx,origText);
+    renderProgress();
+    return;
+  }
   var text=el.value;
   var pn=S.privateNotes||{work:{},personal:{}};
   var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
