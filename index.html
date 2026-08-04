@@ -2604,7 +2604,7 @@ function renderBibleDetail(stage){
   ];
   return`
   <div class="flex-sb" style="margin-bottom:14px">
-    <span style="font-size:14px;font-weight:500">${stage}</span>
+    <span style="font-size:14px;font-weight:500" ondblclick="startEditBibleStageTitle('${stage}',this)">${stage}</span>
     ${isAdmin()&&dragModeOn?`<button class="btn btn-sm btn-danger" onclick="confirmDeleteStage('${stage}')">刪除此階段</button>`:''}
   </div>
   ${phases.map(ph=>`<div class="phase-section">
@@ -2692,7 +2692,10 @@ window.saveBibleItemText=async function(stage,phase,idx,text){
   const arr=[...(data[phase]||[])];
   const item=normalizeBibleItem(arr[idx]);
   arr[idx]=item.subs.length?{text,subs:item.subs}:text;
-  setSyncing();await setDoc(doc(db,'bible',stage),{...data,[phase]:arr});setSynced();
+  const updated={...data,[phase]:arr};
+  S.bible=Object.assign({},S.bible,{[stage]:updated});
+  renderBible();
+  setSyncing();await setDoc(doc(db,'bible',stage),updated);setSynced();
 }
 window.startEditBibleSubItem=function(stage,phase,idx,subIdx,el){
   if(!isAdmin()||!dragModeOn)return;
@@ -2708,7 +2711,10 @@ window.saveBibleSubItemText=async function(stage,phase,idx,subIdx,text){
   const item=normalizeBibleItem(arr[idx]);
   const newSubs=[...item.subs];newSubs[subIdx]=text;
   arr[idx]={text:item.text,subs:newSubs};
-  setSyncing();await setDoc(doc(db,'bible',stage),{...data,[phase]:arr});setSynced();
+  const updated={...data,[phase]:arr};
+  S.bible=Object.assign({},S.bible,{[stage]:updated});
+  renderBible();
+  setSyncing();await setDoc(doc(db,'bible',stage),updated);setSynced();
 }
 window.addBibleItem=async function(stage,phase){
   if(!isAdmin())return;
@@ -2817,6 +2823,55 @@ window.importWordBible=async function(){
   const order=[...getBibleStages(),...toImport];
   await setDoc(doc(db,'bible','__order__'),{order});
   activeBibleStage=toImport[0];
+  setSynced();
+}
+window.startEditBibleStageTitle=function(stage,el){
+  if(!isAdmin()||!dragModeOn)return;
+  const current=el.textContent;
+  el.innerHTML=`<input type="text" value="${escAttr(current)}" style="font-size:14px;font-weight:500;padding:2px 6px;border:1px solid var(--purple);border-radius:3px;font-family:inherit;width:320px" onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){this.blur();}if(event.key==='Escape'){this.blur();}" onblur="saveBibleStageTitle('${stage}',this.value)">`;
+  const inp=el.querySelector('input');inp.focus();inp.select();
+}
+window.saveBibleStageTitle=async function(oldName,newName){
+  newName=(newName||'').trim();
+  if(!newName||newName===oldName)return renderBible();
+  if(getBibleStages().includes(newName)){alert('此階段名稱已存在');renderBible();return;}
+  const data=S.bible[oldName]||{before:[],during:[],after:[]};
+  const order=getBibleStages().map(s=>s===oldName?newName:s);
+  S.bible=Object.assign({},S.bible);
+  delete S.bible[oldName];
+  S.bible[newName]=data;
+  S.bibleOrder=order;
+  activeBibleStage=newName;
+  renderBible();
+  setSyncing();
+  await setDoc(doc(db,'bible',newName),data);
+  await deleteDoc(doc(db,'bible',oldName));
+  await setDoc(doc(db,'bible','__order__'),{order});
+  // Migrate anything keyed off the old stage name so nothing silently
+  // detaches: per-project checklist progress, calendar chips, and the
+  // frozen snapshot on completed projects.
+  const snap=await getDocs(collection(db,'checks'));
+  const batch=writeBatch(db);
+  snap.docs.filter(d=>d.id.endsWith('_'+oldName)).forEach(d=>{
+    const projId=d.id.slice(0,d.id.length-('_'+oldName).length);
+    batch.set(doc(db,'checks',projId+'_'+newName),d.data());
+    batch.delete(doc(db,'checks',d.id));
+  });
+  await batch.commit();
+  for(const p of S.projects){
+    const sched=p.schedule||[];
+    const patch={};
+    if(sched.some(e=>e.stage===oldName)){
+      patch.schedule=sched.map(e=>e.stage===oldName?{...e,stage:newName,label:e.label===oldName?newName:e.label}:e);
+    }
+    if(p.bibleSnapshot&&p.bibleSnapshot[oldName]){
+      const snap2=Object.assign({},p.bibleSnapshot);
+      snap2[newName]=snap2[oldName];
+      delete snap2[oldName];
+      patch.bibleSnapshot=snap2;
+    }
+    if(Object.keys(patch).length)await updateDoc(doc(db,'projects',p.id),patch);
+  }
   setSynced();
 }
 window.addStage=async function(){
