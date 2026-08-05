@@ -768,21 +768,28 @@ function renderSiteReport(projId){
   </div>
   <div class="card">
     <div class="card-hdr"><span class="card-title">📖 施工寶典勾選結果</span></div>
-    ${stages.map(s=>{
-      const metaItems=projectBibleItemsMeta(p,s);
-      if(!metaItems.length)return'';
-      const stored=S.checks[`${p.id}_${s}`]||[];
-      const done=metaItems.filter((_,i)=>stored[i]?.done||stored[i]?.skip).length;
-      return`<div style="margin-bottom:14px">
-        <div style="font-size:13px;font-weight:600;margin-bottom:4px">${s}（${done}/${metaItems.length}）</div>
-        ${metaItems.map((m,i)=>{
-          const st=stored[i]||{};
-          const icon=st.done?'✓':(st.skip?'✗':'○');
-          const color=st.done?'var(--teal)':'var(--text3)';
-          return`<div style="font-size:12px;padding:3px 0 3px ${m.isSub?'26px':'0'};display:flex;gap:6px"><span style="color:${color};font-weight:600;width:14px">${icon}</span>${m.isSub?'└ ':''}${m.text}</div>`;
-        }).join('')}
-      </div>`;
-    }).join('')||'<div class="empty">尚無階段資料</div>'}
+    ${(()=>{
+      const touchedStages=stages.filter(s=>{
+        const stored=S.checks[`${p.id}_${s}`]||[];
+        return stored.some(x=>x&&(x.done||x.skip));
+      });
+      if(!touchedStages.length)return'<div class="empty">尚無勾選紀錄</div>';
+      return touchedStages.map(s=>{
+        const metaItems=projectBibleItemsMeta(p,s);
+        if(!metaItems.length)return'';
+        const stored=S.checks[`${p.id}_${s}`]||[];
+        const done=metaItems.filter((_,i)=>stored[i]?.done||stored[i]?.skip).length;
+        return`<div style="margin-bottom:14px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px">${s}（${done}/${metaItems.length}）</div>
+          ${metaItems.map((m,i)=>{
+            const st=stored[i]||{};
+            const icon=st.done?'✓':(st.skip?'✗':'○');
+            const color=st.done?'var(--teal)':'var(--text3)';
+            return`<div style="font-size:12px;padding:3px 0 3px ${m.isSub?'26px':'0'};display:flex;gap:6px"><span style="color:${color};font-weight:600;width:14px">${icon}</span>${m.isSub?'└ ':''}${m.text}</div>`;
+          }).join('')}
+        </div>`;
+      }).join('');
+    })()}
   </div>
   <div class="card">
     <div class="card-hdr"><span class="card-title">🏗 工地進度</span></div>
