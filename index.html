@@ -240,6 +240,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .ck-btn{width:22px;height:22px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--text3);font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .ck-btn.on-done{background:var(--teal);border-color:var(--teal);color:#fff}
 .ck-btn.on-skip{background:var(--text3);border-color:var(--text3);color:#fff}
+.ck-amount{width:80px;flex-shrink:0;font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-family:inherit;text-align:right}
 
 /* Members */
 .member-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -466,7 +467,7 @@ function pendBadge(n){
 // Shared row renderer for a bible checklist item — ✓ means done, ✗ means
 // "seen but not applicable to this site". Both count as resolved. Sub-items
 // (item.isSub) render indented under their parent.
-function renderCheckItemRow(projId,stage,idx,item){
+function renderCheckItemRow(projId,stage,idx,item,isEstimate){
   const cls=item.done?'done':(item.skip?'skip':'');
   return`<div class="ws-cl-item ${cls}"${item.isSub?' style="padding-left:26px"':''}>
     <div class="ck-btns">
@@ -474,6 +475,7 @@ function renderCheckItemRow(projId,stage,idx,item){
       <button type="button" class="ck-btn ${item.skip?'on-skip':''}" title="不適用" onclick="setCheckStatus('${projId}','${stage}',${idx},'skip')">✗</button>
     </div>
     <label>${item.isSub?'└ ':''}${item.text}</label>
+    ${isEstimate?`<input type="number" class="ck-amount" placeholder="金額" value="${item.amount||''}" onclick="event.stopPropagation()" onchange="setCheckAmount('${projId}','${stage}',${idx},this.value)">`:''}
   </div>`;
 }
 function setSynced(){$('sdot').style.background='#1D9E75';$('slbl').textContent='已同步'}
@@ -2510,9 +2512,11 @@ window.openCheckMo=function(projId,stage,label,projName){
   const proj=S.projects.find(p=>p.id===projId);
   const metaItems=projectBibleItemsMeta(proj,stage);
   if(!metaItems.length){alert('此階段尚無項目');return;}
+  const isEstimate=!!(S.bible[stage]&&S.bible[stage].isEstimate);
   const key=`${projId}_${stage}`;const stored=S.checks[key]||[];
-  const merged=metaItems.map((m,i)=>({text:m.text,isSub:m.isSub,done:stored[i]?.done||false,skip:stored[i]?.skip||false}));
+  const merged=metaItems.map((m,i)=>({text:m.text,isSub:m.isSub,done:stored[i]?.done||false,skip:stored[i]?.skip||false,amount:stored[i]?.amount||''}));
   const done=merged.filter(x=>x.done||x.skip).length;const pct=Math.round(done/merged.length*100);
+  const totalAmount=merged.reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
   const bData=projectBibleData(proj,stage);
   const beforeLen=flattenPhaseItems(bData.before).length,duringLen=flattenPhaseItems(bData.during).length;
   const PHASES=[{label:'工程前',color:'var(--pl)',from:0,to:beforeLen},{label:'工程中',color:'var(--tl)',from:beforeLen,to:beforeLen+duringLen},{label:'工程後',color:'var(--gl)',from:beforeLen+duringLen,to:merged.length}];
@@ -2521,19 +2525,20 @@ window.openCheckMo=function(projId,stage,label,projName){
     if(ph.to<=ph.from)return;
     itemsHtml+=`<div style="font-size:11px;font-weight:600;color:var(--text2);margin:10px 0 4px"><span style="background:${ph.color};padding:2px 8px;border-radius:8px">${ph.label}</span></div>`;
     for(let i=ph.from;i<ph.to;i++){
-      itemsHtml+=renderCheckItemRow(projId,stage,i,merged[i]);
+      itemsHtml+=renderCheckItemRow(projId,stage,i,merged[i],isEstimate);
     }
   });
   $('mo-content').innerHTML=`
     <div class="mo-title">${label}</div>
-    <div class="mo-sub">${projName} — ${done}/${merged.length} 完成</div>
+    <div class="mo-sub">${projName} — ${done}/${merged.length} 完成${isEstimate?`　｜　粗估總金額：<strong>${totalAmount.toLocaleString()}</strong>`:''}</div>
     <div class="pb-wrap"><div class="pb-fill" style="width:${pct}%;background:${pct===100?'var(--teal)':'var(--purple)'}"></div></div>
     ${itemsHtml}
     <div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;
+  $('mo-content').style.maxWidth=isEstimate?'520px':'';
   $('modal').style.display='flex';
   openCheckMoArgs={projId,stage,label,projName};
 }
-window.closeMo=function(){$('modal').style.display='none';openCheckMoArgs=null;}
+window.closeMo=function(){$('modal').style.display='none';openCheckMoArgs=null;$('mo-content').style.maxWidth='';}
 window.setCheckStatus=async function(projId,stage,idx,status){
   const proj=S.projects.find(p=>p.id===projId);
   const allItems=projectBibleItems(proj,stage);
@@ -2553,6 +2558,21 @@ window.setCheckStatus=async function(projId,stage,idx,status){
   }
   if(activePanel==='progress')renderProgress();
   else if(activePanel==='bible')renderBible();
+  setSyncing();
+  try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}
+}
+window.setCheckAmount=async function(projId,stage,idx,value){
+  const proj=S.projects.find(p=>p.id===projId);
+  const allItems=projectBibleItems(proj,stage);
+  const key=`${projId}_${stage}`;
+  const stored=[...(S.checks[key]||allItems.map(t=>({text:t,done:false})))];
+  while(stored.length<allItems.length)stored.push({done:false});
+  const cur=stored[idx]||{};
+  stored[idx]={...cur,amount:value};
+  S.checks=Object.assign({},S.checks,{[key]:stored});
+  if(openCheckMoArgs&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage){
+    openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName);
+  }
   setSyncing();
   try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}
 }
@@ -2607,7 +2627,10 @@ function renderBibleDetail(stage){
   return`
   <div class="flex-sb" style="margin-bottom:14px">
     <span style="font-size:14px;font-weight:500" ondblclick="startEditBibleStageTitle('${stage}',this)">${stage}</span>
-    ${isAdmin()&&dragModeOn?`<button class="btn btn-sm btn-danger" onclick="confirmDeleteStage('${stage}')">刪除此階段</button>`:''}
+    <span style="display:flex;gap:6px">
+      ${isAdmin()&&dragModeOn?`<button class="btn btn-sm ${S.bible[stage]&&S.bible[stage].isEstimate?'btn-p':''}" onclick="toggleStageEstimate('${stage}')" title="開啟後,這個階段的項目在彈出視窗裡會多一個金額輸入框">${S.bible[stage]&&S.bible[stage].isEstimate?'💰 金額估算階段':'設為金額估算階段'}</button>`:''}
+      ${isAdmin()&&dragModeOn?`<button class="btn btn-sm btn-danger" onclick="confirmDeleteStage('${stage}')">刪除此階段</button>`:''}
+    </span>
   </div>
   ${phases.map(ph=>`<div class="phase-section">
     <div class="phase-title" style="color:${ph.color}">
@@ -2837,6 +2860,16 @@ window.importWordBible=async function(){
     activeBibleStage=toImport[0];
     setSynced();
   }catch(err){alert('匯入失敗：'+err.message);setSynced();}
+}
+window.toggleStageEstimate=async function(stage){
+  if(!isAdmin())return;
+  const data=S.bible[stage]||{before:[],during:[],after:[]};
+  const updated={...data,isEstimate:!data.isEstimate};
+  S.bible=Object.assign({},S.bible,{[stage]:updated});
+  renderBible();
+  setSyncing();
+  try{await setDoc(doc(db,'bible',stage),updated);setSynced();}
+  catch(err){alert('設定失敗：'+err.message);setSynced();}
 }
 window.startEditBibleStageTitle=function(stage,el){
   if(!isAdmin()||!dragModeOn)return;
