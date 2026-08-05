@@ -846,36 +846,32 @@ window.handleStatusChange=function(projId,selectEl){
   if(v!=='done'){updateStatus(projId,v);return;}
   const proj=S.projects.find(p=>p.id===projId);
   const prevStatus=proj?proj.status:'design';
-  const opts=['設計終止','設計完成','工程完成','未簽約'];
-  $('mo-content').innerHTML=`
-    <div class="mo-title">標記為已完工</div>
-    <div class="mo-sub">可複選：這個案子屬於哪一種完工？</div>
-    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
-      ${opts.map((o,i)=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
-        <input type="checkbox" id="ct-${i}" value="${o}" ${o==='工程完成'?'onchange="toggleInspDateRow(this.checked)"':''}> ${o}
-      </label>`).join('')}
-    </div>
-    <div id="insp-date-row" style="display:none;margin:-2px 0 10px 26px">
+  const opts=['未簽約','設計終止','設計完成','工程完成'];
+  const inspRow=`<div style="margin:2px 0 4px 26px">
       <div style="font-size:11px;color:var(--text2);margin-bottom:2px">初驗日</div>
       <div style="display:flex;align-items:center;gap:3px">
         <input id="ct-insp-y" type="number" placeholder="年" style="width:70px">年
         <input id="ct-insp-m" type="number" placeholder="月" min="1" max="12" style="width:50px">月
         <input id="ct-insp-d" type="number" placeholder="日" min="1" max="31" style="width:50px">日
       </div>
+    </div>`;
+  $('mo-content').innerHTML=`
+    <div class="mo-title">標記為已完工</div>
+    <div class="mo-sub">可複選：這個案子屬於哪一種完工？</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      ${opts.map((o,i)=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+        <input type="checkbox" id="ct-${i}" value="${o}"> ${o}
+      </label>${o==='工程完成'?inspRow:''}`).join('')}
     </div>
     <div class="mo-footer"><button class="btn" onclick="cancelStatusChange('${projId}','${prevStatus}')">取消</button><button class="btn btn-p" onclick="confirmStatusDone('${projId}')">確定</button></div>`;
   $('modal').style.display='flex';
-}
-window.toggleInspDateRow=function(show){
-  const row=$('insp-date-row');
-  if(row)row.style.display=show?'block':'none';
 }
 window.cancelStatusChange=function(projId,prevStatus){
   closeMo();
   renderOverview();
 }
 window.confirmStatusDone=function(projId){
-  const opts=['設計終止','設計完成','工程完成','未簽約'];
+  const opts=['未簽約','設計終止','設計完成','工程完成'];
   const selected=opts.filter((o,i)=>{const el=$('ct-'+i);return el&&el.checked;});
   const y=$('ct-insp-y'),m=$('ct-insp-m'),d=$('ct-insp-d');
   let inspDate='';
@@ -3240,7 +3236,6 @@ function showProjectForm(projId){
       <input id="np-contract-amount" type="text" placeholder="工程合約金額" value="${escAttr(p?.contractAmount||'')}">
       ${ymdInputs('np-cs','合約起始日')}
       ${ymdInputs('np-ce','完工日')}
-      ${ymdInputs('np-insp','初驗日')}
       <textarea id="np-process" placeholder="廠商施工流程…" rows="${p?.process?Math.max(3,p.process.split('\n').length+1):3}" oninput="autoGrow(this)" style="font-family:inherit;padding:8px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;resize:none">${escAttr(p?.process||'')}</textarea>
       <div style="font-size:11px;color:var(--text3);border:1px dashed var(--border);border-radius:var(--r);padding:8px;text-align:center">📷 照片上傳（尚未開通，之後啟用 Firebase Storage 後可用）</div>
       <select id="np-status">
@@ -3251,7 +3246,6 @@ function showProjectForm(projId){
   $('modal').style.display='flex';
   ymdSetFields('np-cs',p?.contractStart);
   ymdSetFields('np-ce',p?.contractEnd||(!p?.contractStart?p?.finish:''));
-  ymdSetFields('np-insp',p?.initialInspectionDate);
   requestAnimationFrame(function(){const ta=$('np-process');if(ta)autoGrow(ta);});
 }
 window.saveProjectForm=async function(projId){
@@ -3259,7 +3253,6 @@ window.saveProjectForm=async function(projId){
   const name=$('np-name').value.trim();if(!name)return alert('請填寫案件名稱');
   const contractStart=ymdValue('np-cs');
   const contractEnd=ymdValue('np-ce');
-  const initialInspectionDate=ymdValue('np-insp');
   const data={
     name,
     owner:$('np-owner').value.trim(),
@@ -3273,7 +3266,6 @@ window.saveProjectForm=async function(projId){
     contractAmount:$('np-contract-amount').value.trim(),
     contractStart,
     contractEnd,
-    initialInspectionDate,
     finish:contractEnd,
     process:$('np-process').value.trim(),
     status:$('np-status').value};
