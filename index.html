@@ -229,6 +229,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .bib-item-add{color:var(--text3);cursor:pointer;font-size:15px;padding:0 4px;border:none;background:none}
 .bib-item-add:hover{color:var(--purple)}
 .bib-add-row{display:flex;gap:8px;margin-top:8px}
+.bib-add-row input{flex:1}
 .ws-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .ws-tab{padding:4px 12px;font-size:12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:none;font-family:inherit;color:var(--text2)}
 .ws-tab.active{background:var(--pl);color:var(--pd);border-color:var(--pl)}
@@ -2690,7 +2691,6 @@ function renderBibleDetail(stage){
     ${getBiblePhaseItems(stage,ph.id).map((rawItem,i)=>renderBibleItemNode(stage,ph.id,[i],rawItem)).join('')}
     ${isAdmin()&&dragModeOn?`<div class="bib-add-row">
       <input type="text" id="bib-new-${ph.id}" placeholder="新增${ph.label}項目…" autocomplete="off" onkeydown="if(event.key==='Enter')addBibleItem('${stage}','${ph.id}')">
-      <button class="btn btn-p btn-sm" onclick="addBibleItem('${stage}','${ph.id}')">新增</button>
     </div>`:''}
   </div>`).join('')}`;
 }
@@ -2756,7 +2756,6 @@ function renderBibleItemNode(stage,phase,path,rawItem){
   item.subs.forEach((sub,i)=>{html+=renderBibleItemNode(stage,phase,[...path,i],sub);});
   if(isAdmin()&&dragModeOn){
     html+=addOpen?`<div class="bib-add-row" style="padding-left:${(depth+1)*26}px">
-      <button class="btn btn-sm" onclick="addBibleChildAtPath('${stage}','${phase}','${pathStr}')">新增</button>
       <input type="text" id="bib-child-new-${phase}-${pathStr}" placeholder="+ 新增子項目…" autocomplete="off" onkeydown="if(event.key==='Enter')addBibleChildAtPath('${stage}','${phase}','${pathStr}')">
     </div>`:'';
   }
