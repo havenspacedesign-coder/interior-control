@@ -3234,7 +3234,7 @@ function showProjectForm(projId){
       <input id="np-contract-amount" type="text" placeholder="工程合約金額" value="${escAttr(p?.contractAmount||'')}">
       ${ymdInputs('np-cs','合約起始日')}
       ${ymdInputs('np-ce','完工日')}
-      <textarea id="np-process" placeholder="廠商施工流程…" rows="10" oninput="autoGrow(this)" style="font-family:inherit;padding:8px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;resize:none;min-height:190px">${escAttr(p?.process||'')}</textarea>
+      <textarea id="np-process" placeholder="廠商施工流程…" rows="10" oninput="autoGrow(this)" style="font-family:inherit;padding:8px;border:1px solid var(--border);border-radius:var(--r);overflow-y:auto;resize:none;min-height:190px;max-height:340px">${escAttr(p?.process||'')}</textarea>
       <div style="font-size:11px;color:var(--text3);border:1px dashed var(--border);border-radius:var(--r);padding:8px;text-align:center">📷 照片上傳（尚未開通，之後啟用 Firebase Storage 後可用）</div>
       <select id="np-status">
         ${STATUS_OPTS.map(o=>`<option value="${o.v}" ${p?.status===o.v?'selected':''}>${o.l}</option>`).join('')}
