@@ -415,7 +415,7 @@ function getMonthDates(){
 }
 
 function getBibleStages(){
-  if(S.bibleOrder&&S.bibleOrder.length)return S.bibleOrder;
+  if(S.bibleOrder&&S.bibleOrder.length)return[...new Set(S.bibleOrder)];
   return Object.keys(S.bible).filter(k=>k!=='orderConfig');
 }
 function getBiblePhaseItems(stage,phase){const b=S.bible[stage];return(b&&b[phase])?b[phase]:[];}
@@ -630,7 +630,7 @@ function initListeners(){
   onSnapshot(collection(db,'checks'),snap=>{S.checks={};snap.docs.forEach(d=>{S.checks[d.id]=d.data().items||[]});renderActive();});
   onSnapshot(collection(db,'bible'),snap=>{
     S.bible={};S.bibleOrder=[];
-    snap.docs.forEach(d=>{if(d.id==='orderConfig'){S.bibleOrder=d.data().order||[];}else{S.bible[d.id]=d.data();}});
+    snap.docs.forEach(d=>{if(d.id==='orderConfig'){S.bibleOrder=[...new Set(d.data().order||[])];}else{S.bible[d.id]=d.data();}});
     const allStages=Object.keys(S.bible).filter(k=>k!=='orderConfig');
     allStages.forEach(s=>{if(!S.bibleOrder.includes(s))S.bibleOrder.push(s);});
     renderActive();
