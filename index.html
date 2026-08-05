@@ -425,16 +425,65 @@ function normalizeBibleItem(it){
   if(typeof it==='string')return{text:it,subs:[]};
   return{text:it?.text||'',subs:Array.isArray(it?.subs)?it.subs:[]};
 }
-function flattenPhaseItems(rawArr){
+function flattenPhaseItems(rawArr,depth){
+  depth=depth||0;
   const flat=[];
   (rawArr||[]).forEach(it=>{
     const n=normalizeBibleItem(it);
-    flat.push({text:n.text,isSub:false});
-    n.subs.forEach(s=>flat.push({text:s,isSub:true}));
+    flat.push({text:n.text,depth:depth,isSub:depth>0});
+    flat.push(...flattenPhaseItems(n.subs,depth+1));
   });
   return flat;
 }
-function flatPhaseCount(rawArr){return(rawArr||[]).reduce((s,it)=>s+1+normalizeBibleItem(it).subs.length,0);}
+function flatPhaseCount(rawArr){return(rawArr||[]).reduce((s,it)=>s+1+flatPhaseCount(normalizeBibleItem(it).subs),0);}
+// Path-based helpers so items can nest to any depth (item -> sub-item ->
+// sub-sub-item ...). A path is an array of indices, e.g. [2] is the 3rd
+// top-level item, [2,0] is its 1st sub-item, [2,0,1] its 2nd sub-sub-item.
+function replaceAtPath(arr,path,newNode){
+  const copy=[...arr];
+  if(path.length===1){copy[path[0]]=newNode;return copy;}
+  const cur=normalizeBibleItem(copy[path[0]]);
+  copy[path[0]]={text:cur.text,subs:replaceAtPath(cur.subs,path.slice(1),newNode)};
+  return copy;
+}
+function addChildAtPath(arr,path,text){
+  const copy=[...arr];
+  const cur=normalizeBibleItem(copy[path[0]]);
+  if(path.length===1){
+    copy[path[0]]={text:cur.text,subs:[...cur.subs,text]};
+  }else{
+    copy[path[0]]={text:cur.text,subs:addChildAtPath(cur.subs,path.slice(1),text)};
+  }
+  return copy;
+}
+function removeAtPath(arr,path){
+  const copy=[...arr];
+  if(path.length===1){copy.splice(path[0],1);return copy;}
+  const cur=normalizeBibleItem(copy[path[0]]);
+  copy[path[0]]={text:cur.text,subs:removeAtPath(cur.subs,path.slice(1))};
+  return copy;
+}
+function getNodeAtPath(arr,path){
+  let node=arr[path[0]];
+  for(let k=1;k<path.length;k++)node=normalizeBibleItem(node).subs[path[k]];
+  return node;
+}
+function flatIndexAtPath(data,phase,path){
+  const before=data.before||[],during=data.during||[];
+  let offset=0;
+  if(phase!=='before')offset+=flatPhaseCount(before);
+  if(phase==='after')offset+=flatPhaseCount(during);
+  let arr=data[phase]||[];
+  for(let level=0;level<path.length;level++){
+    const idx=path[level];
+    for(let i=0;i<idx;i++)offset+=1+flatPhaseCount(normalizeBibleItem(arr[i]).subs);
+    if(level<path.length-1){
+      offset+=1;
+      arr=normalizeBibleItem(arr[idx]).subs;
+    }
+  }
+  return offset;
+}
 function getAllBibleItemsMeta(stage){
   const b=S.bible[stage]||{before:[],during:[],after:[]};
   return[...flattenPhaseItems(b.before),...flattenPhaseItems(b.during),...flattenPhaseItems(b.after)];
@@ -469,12 +518,13 @@ function pendBadge(n){
 // (item.isSub) render indented under their parent.
 function renderCheckItemRow(projId,stage,idx,item,isEstimate){
   const cls=item.done?'done':(item.skip?'skip':'');
-  return`<div class="ws-cl-item ${cls}"${item.isSub?' style="padding-left:26px"':''}>
+  const depth=item.depth||(item.isSub?1:0);
+  return`<div class="ws-cl-item ${cls}"${depth>0?` style="padding-left:${depth*26}px"`:''}>
     <div class="ck-btns">
       <button type="button" class="ck-btn ${item.done?'on-done':''}" title="完成" onclick="setCheckStatus('${projId}','${stage}',${idx},'done')">✓</button>
       <button type="button" class="ck-btn ${item.skip?'on-skip':''}" title="不適用" onclick="setCheckStatus('${projId}','${stage}',${idx},'skip')">✗</button>
     </div>
-    <label>${item.isSub?'└ ':''}${item.text}</label>
+    <label>${depth>0?'└ ':''}${item.text}</label>
     ${isEstimate?`<input type="number" class="ck-amount" placeholder="金額" value="${item.amount||''}" onclick="event.stopPropagation()" onchange="setCheckAmount('${projId}','${stage}',${idx},this.value)">`:''}
   </div>`;
 }
@@ -2637,27 +2687,7 @@ function renderBibleDetail(stage){
       <span class="phase-dot" style="background:${ph.dot}"></span>
       ${ph.label}（${getBiblePhaseItems(stage,ph.id).length} 項）
     </div>
-    ${getBiblePhaseItems(stage,ph.id).map((rawItem,i)=>{
-      const item=normalizeBibleItem(rawItem);
-      const key=`${stage}|${ph.id}|${i}`;
-      const addOpen=!!expandedBibleItems[key];
-      return`
-      <div class="bib-item-row">
-        <span class="bib-item-num">${i+1}</span>
-        <span class="bib-item-text" ondblclick="startEditBibleItem('${stage}','${ph.id}',${i},this)">${item.text}</span>
-        ${isAdmin()&&dragModeOn?`<button class="bib-item-add" title="新增子項目" onclick="toggleBibleSubItems('${key}')">＋</button>`:''}
-        ${isAdmin()&&dragModeOn?`<button class="bib-item-del" onclick="confirmDelBibleItem('${stage}','${ph.id}',${i},'${escAttr(item.text).replace(/'/g,"\\'")}')">×</button>`:''}
-      </div>
-      ${item.subs.map((sub,si)=>`
-      <div class="bib-item-row" style="padding-left:26px">
-        <span class="bib-item-text" style="color:var(--text2)" ondblclick="startEditBibleSubItem('${stage}','${ph.id}',${i},${si},this)">└ ${sub}</span>
-        ${isAdmin()&&dragModeOn?`<button class="bib-item-del" onclick="confirmDelBibleSubItem('${stage}','${ph.id}',${i},${si},'${escAttr(sub).replace(/'/g,"\\'")}')">×</button>`:''}
-      </div>`).join('')}
-      ${isAdmin()&&dragModeOn&&addOpen?`<div class="bib-add-row" style="padding-left:26px">
-        <input type="text" id="bib-sub-new-${ph.id}-${i}" placeholder="+ 新增子項目…" autocomplete="off" onkeydown="if(event.key==='Enter')addBibleSubItem('${stage}','${ph.id}',${i})">
-        <button class="btn btn-sm" onclick="addBibleSubItem('${stage}','${ph.id}',${i})">新增</button>
-      </div>`:''}`;
-    }).join('')}
+    ${getBiblePhaseItems(stage,ph.id).map((rawItem,i)=>renderBibleItemNode(stage,ph.id,[i],rawItem)).join('')}
     ${isAdmin()&&dragModeOn?`<div class="bib-add-row">
       <input type="text" id="bib-new-${ph.id}" placeholder="新增${ph.label}項目…" autocomplete="off" onkeydown="if(event.key==='Enter')addBibleItem('${stage}','${ph.id}')">
       <button class="btn btn-p btn-sm" onclick="addBibleItem('${stage}','${ph.id}')">新增</button>
@@ -2709,43 +2739,49 @@ window.bsDragEnd=function(){
   stageDragInProgress=false;
   if(pendingBibleRender){pendingBibleRender=false;renderBible();}
 }
-window.toggleBibleSubItems=function(key){
+// Recursively renders one item and all its descendants at any depth.
+// path is an array of indices locating this node, e.g. [2,0,1].
+function renderBibleItemNode(stage,phase,path,rawItem){
+  const item=normalizeBibleItem(rawItem);
+  const pathStr=path.join(',');
+  const depth=path.length-1;
+  const addOpen=!!expandedBibleItems[stage+'|'+phase+'|'+pathStr];
+  let html=`
+  <div class="bib-item-row" style="padding-left:${depth*26}px">
+    ${depth===0?`<span class="bib-item-num">${path[0]+1}</span>`:'<span style="color:var(--text3);flex-shrink:0">└</span>'}
+    ${isAdmin()&&dragModeOn?`<button class="bib-item-add" title="新增子項目" onclick="toggleBibleSubItems('${stage}','${phase}','${pathStr}')">＋</button>`:''}
+    <span class="bib-item-text" style="flex:1" ondblclick="startEditBibleNode('${stage}','${phase}','${pathStr}',this)">${item.text}</span>
+    ${isAdmin()&&dragModeOn?`<button class="bib-item-del" onclick="confirmDelBibleNode('${stage}','${phase}','${pathStr}','${escAttr(item.text).replace(/'/g,"\\'")}')">×</button>`:''}
+  </div>`;
+  item.subs.forEach((sub,i)=>{html+=renderBibleItemNode(stage,phase,[...path,i],sub);});
+  if(isAdmin()&&dragModeOn){
+    html+=addOpen?`<div class="bib-add-row" style="padding-left:${(depth+1)*26}px">
+      <button class="btn btn-sm" onclick="addBibleChildAtPath('${stage}','${phase}','${pathStr}')">新增</button>
+      <input type="text" id="bib-child-new-${phase}-${pathStr}" placeholder="+ 新增子項目…" autocomplete="off" onkeydown="if(event.key==='Enter')addBibleChildAtPath('${stage}','${phase}','${pathStr}')">
+    </div>`:'';
+  }
+  return html;
+}
+window.toggleBibleSubItems=function(stage,phase,pathStr){
+  const key=stage+'|'+phase+'|'+pathStr;
   expandedBibleItems[key]=!expandedBibleItems[key];
   renderBible();
 }
-window.startEditBibleItem=function(stage,phase,idx,el){
+window.startEditBibleNode=function(stage,phase,pathStr,el){
   if(!isAdmin()||!dragModeOn)return;
   const current=el.textContent;
-  el.innerHTML=`<input type="text" value="${escAttr(current)}" style="font-size:13px;padding:2px 6px;border:1px solid var(--purple);border-radius:3px;font-family:inherit;width:260px" onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){this.blur();}if(event.key==='Escape'){this.blur();}" onblur="saveBibleItemText('${stage}','${phase}',${idx},this.value)">`;
+  el.innerHTML=`<input type="text" value="${escAttr(current)}" style="font-size:13px;padding:2px 6px;border:1px solid var(--purple);border-radius:3px;font-family:inherit;width:240px" onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){this.blur();}if(event.key==='Escape'){this.blur();}" onblur="saveBibleNodeText('${stage}','${phase}','${pathStr}',this.value)">`;
   const inp=el.querySelector('input');inp.focus();inp.select();
 }
-window.saveBibleItemText=async function(stage,phase,idx,text){
+window.saveBibleNodeText=async function(stage,phase,pathStr,text){
   text=(text||'').trim();
   if(!text)return renderBible();
+  const path=pathStr.split(',').map(Number);
   const data=S.bible[stage]||{before:[],during:[],after:[]};
-  const arr=[...(data[phase]||[])];
-  const item=normalizeBibleItem(arr[idx]);
-  arr[idx]=item.subs.length?{text,subs:item.subs}:text;
-  const updated={...data,[phase]:arr};
-  S.bible=Object.assign({},S.bible,{[stage]:updated});
-  renderBible();
-  setSyncing();await setDoc(doc(db,'bible',stage),updated);setSynced();
-}
-window.startEditBibleSubItem=function(stage,phase,idx,subIdx,el){
-  if(!isAdmin()||!dragModeOn)return;
-  const current=el.textContent.replace(/^└\s*/,'');
-  el.innerHTML=`└ <input type="text" value="${escAttr(current)}" style="font-size:13px;padding:2px 6px;border:1px solid var(--purple);border-radius:3px;font-family:inherit;width:240px" onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){this.blur();}if(event.key==='Escape'){this.blur();}" onblur="saveBibleSubItemText('${stage}','${phase}',${idx},${subIdx},this.value)">`;
-  const inp=el.querySelector('input');inp.focus();inp.select();
-}
-window.saveBibleSubItemText=async function(stage,phase,idx,subIdx,text){
-  text=(text||'').trim();
-  if(!text)return renderBible();
-  const data=S.bible[stage]||{before:[],during:[],after:[]};
-  const arr=[...(data[phase]||[])];
-  const item=normalizeBibleItem(arr[idx]);
-  const newSubs=[...item.subs];newSubs[subIdx]=text;
-  arr[idx]={text:item.text,subs:newSubs};
-  const updated={...data,[phase]:arr};
+  const arr=data[phase]||[];
+  const cur=normalizeBibleItem(getNodeAtPath(arr,path));
+  const newArr=replaceAtPath(arr,path,cur.subs.length?{text,subs:cur.subs}:text);
+  const updated={...data,[phase]:newArr};
   S.bible=Object.assign({},S.bible,{[stage]:updated});
   renderBible();
   setSyncing();await setDoc(doc(db,'bible',stage),updated);setSynced();
@@ -2758,74 +2794,41 @@ window.addBibleItem=async function(stage,phase){
   const updated={...data,[phase]:[...(data[phase]||[]),text]};
   setSyncing();await setDoc(doc(db,'bible',stage),updated);inp.value='';setSynced();
 }
-window.addBibleSubItem=async function(stage,phase,idx){
+window.addBibleChildAtPath=async function(stage,phase,pathStr){
   if(!isAdmin())return;
-  const inp=$(`bib-sub-new-${phase}-${idx}`);if(!inp)return;
+  const path=pathStr.split(',').map(Number);
+  const inp=$(`bib-child-new-${phase}-${pathStr}`);if(!inp)return;
   const text=inp.value.trim();if(!text)return;
   const data=S.bible[stage]||{before:[],during:[],after:[]};
-  const arr=[...(data[phase]||[])];
-  const item=normalizeBibleItem(arr[idx]);
-  arr[idx]={text:item.text,subs:[...item.subs,text]};
-  const updated={...data,[phase]:arr};
+  const arr=data[phase]||[];
+  const newArr=addChildAtPath(arr,path,text);
+  const updated={...data,[phase]:newArr};
   S.bible=Object.assign({},S.bible,{[stage]:updated});
-  expandedBibleItems[`${stage}|${phase}|${idx}`]=false;
+  expandedBibleItems[stage+'|'+phase+'|'+pathStr]=false;
   renderBible();
   setSyncing();await setDoc(doc(db,'bible',stage),updated);setSynced();
 }
-window.confirmDelBibleItem=function(stage,phase,idx,text){
+window.confirmDelBibleNode=function(stage,phase,pathStr,text){
   $('mo-content').innerHTML=`
     <div class="mo-title">確定要刪除這一項嗎？</div>
     <div class="mo-sub">「${text}」（連同底下的子項目一併刪除）</div>
-    <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-danger" id="mo-confirm-btn" onclick="closeMo();delBibleItem('${stage}','${phase}',${idx})">刪除</button></div>`;
+    <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-danger" id="mo-confirm-btn" onclick="closeMo();delBibleNodeAtPath('${stage}','${phase}','${pathStr}')">刪除</button></div>`;
   $('modal').style.display='flex';
   setTimeout(()=>{const b=$('mo-confirm-btn');if(b)b.focus();},0);
 }
-window.confirmDelBibleSubItem=function(stage,phase,idx,subIdx,text){
-  $('mo-content').innerHTML=`
-    <div class="mo-title">確定要刪除這個子項目嗎？</div>
-    <div class="mo-sub">「${text}」</div>
-    <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-danger" id="mo-confirm-btn" onclick="closeMo();delBibleSubItem('${stage}','${phase}',${idx},${subIdx})">刪除</button></div>`;
-  $('modal').style.display='flex';
-  setTimeout(()=>{const b=$('mo-confirm-btn');if(b)b.focus();},0);
-}
-window.delBibleItem=async function(stage,phase,idx){
+window.delBibleNodeAtPath=async function(stage,phase,pathStr){
   if(!isAdmin())return;
+  const path=pathStr.split(',').map(Number);
   const data=S.bible[stage]||{before:[],during:[],after:[]};
-  const before=data.before||[];const during=data.during||[];
-  let absIdx=0;
-  if(phase!=='before')absIdx+=flatPhaseCount(before);
-  if(phase==='after')absIdx+=flatPhaseCount(during);
   const arr=data[phase]||[];
-  for(let i=0;i<idx;i++)absIdx+=1+normalizeBibleItem(arr[i]).subs.length;
-  const removedCount=1+normalizeBibleItem(arr[idx]).subs.length;
-  const phaseItems=[...arr];phaseItems.splice(idx,1);
-  setSyncing();await setDoc(doc(db,'bible',stage),{...data,[phase]:phaseItems});
-  const snap=await getDocs(collection(db,'checks'));
-  const batch=writeBatch(db);
-  snap.docs.filter(d=>d.id.endsWith('_'+stage)).forEach(d=>{
-    const arr2=d.data().items||[];arr2.splice(absIdx,removedCount);
-    batch.set(doc(db,'checks',d.id),{items:arr2});
-  });
-  await batch.commit();setSynced();
-}
-window.delBibleSubItem=async function(stage,phase,idx,subIdx){
-  if(!isAdmin())return;
-  const data=S.bible[stage]||{before:[],during:[],after:[]};
-  const before=data.before||[];const during=data.during||[];
-  let absIdx=0;
-  if(phase!=='before')absIdx+=flatPhaseCount(before);
-  if(phase==='after')absIdx+=flatPhaseCount(during);
-  const arr=data[phase]||[];
-  for(let i=0;i<idx;i++)absIdx+=1+normalizeBibleItem(arr[i]).subs.length;
-  absIdx+=1+subIdx;
-  const item=normalizeBibleItem(arr[idx]);
-  const newSubs=[...item.subs];newSubs.splice(subIdx,1);
-  const newArr=[...arr];newArr[idx]={text:item.text,subs:newSubs};
+  const absIdx=flatIndexAtPath(data,phase,path);
+  const removedCount=1+flatPhaseCount(normalizeBibleItem(getNodeAtPath(arr,path)).subs);
+  const newArr=removeAtPath(arr,path);
   setSyncing();await setDoc(doc(db,'bible',stage),{...data,[phase]:newArr});
   const snap=await getDocs(collection(db,'checks'));
   const batch=writeBatch(db);
   snap.docs.filter(d=>d.id.endsWith('_'+stage)).forEach(d=>{
-    const arr2=d.data().items||[];arr2.splice(absIdx,1);
+    const arr2=d.data().items||[];arr2.splice(absIdx,removedCount);
     batch.set(doc(db,'checks',d.id),{items:arr2});
   });
   await batch.commit();setSynced();
