@@ -1112,7 +1112,7 @@ window.dcPickStage=function(projId,colName,stage){
   const menuEl=document.getElementById('dc-hash-'+projId+'-'+colName);
   if(menuEl)menuEl.style.display='none';
   saveDesignField(projId,colName,'#'+stage);
-  if(activePanel==='design')renderDesign();
+  setTimeout(function(){if(activePanel==='design')renderDesign();},0);
 }
 window.toggleDesignEditMode=function(){designEditMode=!designEditMode;renderDesign();}
 let resizing=null;
