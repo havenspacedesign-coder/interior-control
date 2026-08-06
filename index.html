@@ -984,6 +984,15 @@ function renderDesignCell(p,col){
       <div class="pn-mention-menu" id="dc-mention-${p.id}-${col.name}" style="display:none" onmouseenter="mCancelCloseMention()" onmouseleave="dcScheduleClose('${p.id}','${col.name}')"></div>
     </td>`;
   }
+  const dateVal=dp[col.name+'__date']||'';
+  const dparts=dateVal.split('-');
+  const dy=dparts[0]||'',dm=dparts[1]?parseInt(dparts[1],10):'',dd=dparts[2]?parseInt(dparts[2],10):'';
+  const curYear=new Date().getFullYear();
+  const dateRow=`<div style="display:flex;align-items:center;gap:2px;font-size:10px;color:var(--text2);padding:3px 4px 0">
+    <input id="ddy-${p.id}-${col.name}" type="number" value="${dy||curYear}" onchange="saveDesignDate('${p.id}','${col.name}')" style="width:40px;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">年
+    <input id="ddm-${p.id}-${col.name}" type="number" min="1" max="12" value="${dm}" onchange="saveDesignDate('${p.id}','${col.name}')" style="width:28px;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">月
+    <input id="ddd-${p.id}-${col.name}" type="number" min="1" max="31" value="${dd}" onchange="saveDesignDate('${p.id}','${col.name}')" style="width:28px;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">日
+  </div>`;
   // text column — supports #stage to link a 施工寶典 stage's checklist
   if(val.startsWith('#')){
     const stage=val.slice(1);
@@ -992,18 +1001,33 @@ function renderDesignCell(p,col){
       const allItems=projectBibleItems(p,stage);
       const done=allItems.filter((t,i)=>stored[i]?.done||stored[i]?.skip).length;
       return`<td>
-        <span onclick="openCheckMo('${p.id}','${stage}','${stage}','${p.name}')" style="cursor:pointer;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:5px;font-size:12px;font-weight:600;white-space:nowrap">#${stage} ${done}/${allItems.length}</span>
-        <span onclick="saveDesignField('${p.id}','${col.name}','')" title="改回文字輸入" style="cursor:pointer;color:var(--text3);font-size:11px;margin-left:4px">×</span>
+        ${dateRow}
+        <div style="padding:3px 4px 4px">
+          <span onclick="openCheckMo('${p.id}','${stage}','${stage}','${p.name}')" style="cursor:pointer;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:5px;font-size:12px;font-weight:600;white-space:nowrap">#${stage} ${done}/${allItems.length}</span>
+          <span onclick="saveDesignField('${p.id}','${col.name}','')" title="改回文字輸入" style="cursor:pointer;color:var(--text3);font-size:11px;margin-left:4px">×</span>
+        </div>
       </td>`;
     }
   }
   return`<td class="${!val.trim()?'empty-cell':''}">
-    <input type="text" class="design-cell-input" id="dcell-${p.id}-${col.name}" value="${escAttr(val)}" placeholder="—（可打 # 連結施工寶典階段）"
+    ${dateRow}
+    <input type="text" class="design-cell-input" id="dcell-${p.id}-${col.name}" value="${escAttr(val)}" placeholder="—（可打 # 連結施工寶典階段）" autocomplete="off"
       oninput="dcHashCheck(this,'${p.id}','${col.name}')"
       onblur="saveDesignField('${p.id}','${col.name}',this.value)"
       onkeydown="if(event.key==='Enter')this.blur()">
     <div class="pn-mention-menu" id="dc-hash-${p.id}-${col.name}" style="display:none"></div>
   </td>`;
+}
+window.saveDesignDate=async function(projId,colName){
+  const yEl=$(`ddy-${projId}-${colName}`),mEl=$(`ddm-${projId}-${colName}`),dEl=$(`ddd-${projId}-${colName}`);
+  const y=yEl?yEl.value.trim():'',m=mEl?mEl.value.trim():'',d=dEl?dEl.value.trim():'';
+  const val=(y&&m&&d)?`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`:'';
+  const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
+  const dp={...(proj.designProgress||{}),[colName+'__date']:val};
+  proj.designProgress=dp;
+  setSyncing();
+  await updateDoc(doc(db,'projects',projId),{designProgress:dp});
+  setSynced();
 }
 window.toggleDesignBlueCols=function(){designBlueColsGlobalOpen=!designBlueColsGlobalOpen;renderDesign();}
 window.toggleDesignProj=function(projId){expandedProjs[projId]=!expandedProjs[projId];renderDesign();}
