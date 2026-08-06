@@ -891,7 +891,7 @@ function renderDesign(){
   const cols=getDesignCols();
   const blueCols=cols.filter(c=>c.collapsible);
   const redCols=cols.filter(c=>!c.collapsible);
-  const allProjs=S.projects.filter(p=>['design','prog','cv'].includes(p.status));
+  const allProjs=S.projects.filter(p=>['contact','design','cv'].includes(p.status));
   const isOpen=designBlueColsGlobalOpen;
   el.innerHTML=`
   <div class="flex-sb" style="margin-bottom:1rem">
@@ -918,7 +918,7 @@ function renderDesign(){
           <span style="font-weight:500">${p.name}</span>
           <span style="font-size:11px;color:var(--text3);margin-left:4px">${statusInfo(p.status).l}</span>
         </td>
-        <td><input type="text" value="${escAttr(p.budget||'')}" onblur="saveProjectBudget('${p.id}',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%;box-sizing:border-box;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:12px;font-family:inherit"></td>
+        <td style="padding:6px 8px;font-size:12px">${escAttr(p.budget||'')}${p.budget?'萬':''}</td>
         ${blueCols.length?`<td></td>`:''}
         ${blueCols.length&&isOpen?blueCols.map(c=>renderDesignCell(p,c)).join(''):''}
         ${redCols.map(c=>renderDesignCell(p,c)).join('')}
@@ -3221,7 +3221,14 @@ function showProjectForm(projId){
       <input id="np-address" type="text" placeholder="案件地址" value="${escAttr(p?.address||'')}">
       <input id="np-type" type="text" placeholder="類型（住宅／商業…）" value="${escAttr(p?.type||'')}">
       <input id="np-designer" type="text" placeholder="設計師" value="${escAttr(p?.designer||'')}">
-      <input id="np-budget" type="text" placeholder="預算" value="${escAttr(p?.budget||'')}">
+      <div style="display:flex;align-items:center;gap:6px">
+        <input id="np-budget" type="text" placeholder="預算" value="${escAttr(p?.budget||'')}" style="flex:1">
+        <span style="font-size:13px;color:var(--text2)">萬</span>
+      </div>
+      <div style="display:flex;gap:16px;font-size:12px;color:var(--text2);margin-top:-6px">
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" id="np-budget-furniture" ${p?.budgetIncludeFurniture?'checked':''}> 含家具</label>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" id="np-budget-ac" ${p?.budgetIncludeAC?'checked':''}> 含空調</label>
+      </div>
       <div style="display:flex;gap:6px;align-items:center">
         <input id="np-area" type="number" placeholder="設計簽約坪數" oninput="updateNPAmount()" value="${escAttr(p?.area||'')}" style="flex:1">
         <span>×</span>
@@ -3256,6 +3263,8 @@ window.saveProjectForm=async function(projId){
     type:$('np-type').value.trim(),
     designer:$('np-designer').value.trim(),
     budget:$('np-budget').value.trim(),
+    budgetIncludeFurniture:$('np-budget-furniture').checked,
+    budgetIncludeAC:$('np-budget-ac').checked,
     area:$('np-area').value.trim(),
     pricePerPing:$('np-price').value.trim(),
     contractAmount:$('np-contract-amount').value.trim(),
@@ -3294,7 +3303,7 @@ window.showProjectDetail=function(projId){
       ${row('案件地址',p.address)}
       ${row('類型',p.type)}
       ${row('設計師',p.designer)}
-      ${row('預算',p.budget)}
+      ${row('預算',p.budget?`${p.budget}萬${p.budgetIncludeFurniture||p.budgetIncludeAC?'（'+[p.budgetIncludeFurniture?'含家具':'',p.budgetIncludeAC?'含空調':''].filter(Boolean).join('、')+'）':''}`:'')}
       ${row('設計簽約坪數',p.area)}
       ${row('單坪價格',p.pricePerPing)}
       ${row('設計合約金額',designAmount?designAmount.toLocaleString():'')}
