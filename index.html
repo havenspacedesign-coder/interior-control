@@ -363,6 +363,7 @@ let expandedBibleItems={};
 let openPicker=null;
 let expandedProjs={},expandedFields={};
 let designCols=null;
+let designColWidths={},designProjectOrder=[],designEditMode=false;
 let designBlueColsGlobalOpen=false;
 
 const $=id=>document.getElementById(id);
@@ -643,6 +644,14 @@ function initListeners(){
     designCols=snap.exists()?(snap.data().cols||DEFAULT_DESIGN_COLS):DEFAULT_DESIGN_COLS;
     renderActive();
   });
+  onSnapshot(doc(db,'settings','designColWidths'),snap=>{
+    designColWidths=snap.exists()?(snap.data().widths||{}):{};
+    if(activePanel==='design')renderDesign();
+  });
+  onSnapshot(doc(db,'settings','designProjectOrder'),snap=>{
+    designProjectOrder=snap.exists()?(snap.data().order||[]):[];
+    if(activePanel==='design')renderDesign();
+  });
   onSnapshot(doc(db,'settings','dateColors'),snap=>{
     S.dateColors=snap.exists()?(snap.data().colors||{}):{};
     if(activePanel==='progress')renderProgress();
@@ -886,34 +895,51 @@ window.saveSiteNote=async function(projId,val){
 }
 
 // ── Design ──
+let designRowDragInProgress=false,designRowDragSrc=null,pendingDesignRender=false;
+function sortDesignProjs(projs){
+  if(!designProjectOrder.length)return projs;
+  const order=designProjectOrder;
+  return[...projs].sort((a,b)=>{
+    const ia=order.indexOf(a.id),ib=order.indexOf(b.id);
+    const ra=ia<0?Infinity:ia,rb=ib<0?Infinity:ib;
+    return ra-rb;
+  });
+}
 function renderDesign(){
+  if(designRowDragInProgress){pendingDesignRender=true;return;}
   const el=$('panel-design');
   const cols=getDesignCols();
   const blueCols=cols.filter(c=>c.collapsible);
   const redCols=cols.filter(c=>!c.collapsible);
-  const allProjs=S.projects.filter(p=>['contact','design','cv'].includes(p.status));
+  const allProjs=sortDesignProjs(S.projects.filter(p=>['contact','design','cv'].includes(p.status)));
   const isOpen=designBlueColsGlobalOpen;
+  const editing=designEditMode;
+  function colW(key,fallback){return designColWidths[key]||fallback;}
+  const handle=(key)=>editing?`<span class="col-resize" onmousedown="startColResize(event,'${key}')"></span>`:'';
   el.innerHTML=`
   <div class="flex-sb" style="margin-bottom:1rem">
     <span style="font-size:14px;font-weight:500">設計進度</span>
+    ${isAdmin()?`<button class="btn btn-sm ${editing?'btn-p':''}" onclick="toggleDesignEditMode()">${editing?'✓ 編輯中':'✎ 編輯'}</button>`:''}
   </div>
   ${allProjs.length===0?`<div class="empty">尚無案件</div>`:`
   <div style="overflow-x:auto">
-  <table class="design-tbl">
+  <table class="design-tbl" id="design-table">
     <thead><tr>
-      <th style="width:150px;text-align:left">案件名稱</th>
-      <th style="width:90px">預算</th>
+      ${editing?`<th style="width:22px"></th>`:''}
+      <th style="width:${colW('name',150)}px;text-align:left;position:relative">案件名稱${handle('name')}</th>
+      <th style="width:${colW('budget',90)}px;position:relative">預算${handle('budget')}</th>
       ${blueCols.length?`<th style="width:22px;cursor:pointer;color:var(--purple)" onclick="toggleDesignBlueCols()" title="顯示/隱藏會議人員等欄位">${isOpen?'▼':'▶'}</th>`:''}
-      ${blueCols.length&&isOpen?blueCols.map(c=>{const ci=cols.indexOf(c);return`<th style="min-width:150px">
-        ${isAdmin()?`<input class="col-name-edit" value="${c.name}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c.name}</span>`}
+      ${blueCols.length&&isOpen?blueCols.map(c=>{const ci=cols.indexOf(c);return`<th style="width:${colW('c'+ci,150)}px;position:relative">
+        ${isAdmin()?`<input class="col-name-edit" value="${c.name}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c.name}</span>`}${handle('c'+ci)}
       </th>`;}).join(''):''}
-      ${redCols.map(c=>{const ci=cols.indexOf(c);return`<th style="min-width:150px">
-        ${isAdmin()?`<input class="col-name-edit" value="${c.name}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c.name}</span>`}
+      ${redCols.map(c=>{const ci=cols.indexOf(c);return`<th style="width:${colW('c'+ci,150)}px;position:relative">
+        ${isAdmin()?`<input class="col-name-edit" value="${c.name}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c.name}</span>`}${handle('c'+ci)}
       </th>`;}).join('')}
     </tr></thead>
     <tbody>
     ${allProjs.map(p=>{
-      return`<tr>
+      return`<tr data-proj="${p.id}"${editing?` draggable="true" ondragstart="designRowDragStart(event,'${p.id}')" ondragover="designRowDragOver(event,'${p.id}')" ondrop="designRowDrop(event,'${p.id}')" ondragend="designRowDragEnd()"`:''}>
+        ${editing?`<td style="text-align:center;cursor:grab;color:var(--text3)">⠿</td>`:''}
         <td style="text-align:left;white-space:nowrap">
           <span style="font-weight:500">${p.name}</span>
           <span style="font-size:11px;color:var(--text3);margin-left:4px">${statusInfo(p.status).l}</span>
@@ -985,7 +1011,10 @@ window.toggleDesignFields=function(projId){expandedFields[projId]=!expandedField
 window.saveDesignField=async function(projId,col,val){
   const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
   const dp={...(proj.designProgress||{}),[col]:val};
+  proj.designProgress=dp;
+  setSyncing();
   await updateDoc(doc(db,'projects',projId),{designProgress:dp});
+  setSynced();
 }
 function refreshDesignColSettingsIfOpen(){
   if($('modal').style.display==='flex'&&$('mo-content').querySelector('.mo-title')?.textContent==='欄位設定')openDesignColSettings();
@@ -1059,30 +1088,51 @@ window.dcPickStage=function(projId,colName,stage){
   saveDesignField(projId,colName,'#'+stage);
   if(activePanel==='design')renderDesign();
 }
+window.toggleDesignEditMode=function(){designEditMode=!designEditMode;renderDesign();}
 let resizing=null;
-window.startColResize=function(e,projId,ci){
+window.startColResize=function(e,key){
   e.preventDefault();
+  const th=e.target.closest('th');
   const startX=e.clientX;
-  const proj=S.projects.find(p=>p.id===projId);
-  const startW=(proj?.colWidths?.[ci])||120;
-  resizing={projId,ci,startX,startW};
+  const startW=th?th.getBoundingClientRect().width:(designColWidths[key]||150);
+  resizing={key,startX,startW,th};
   document.onmousemove=function(me){
     if(!resizing)return;
     const newW=Math.max(60,resizing.startW+(me.clientX-resizing.startX));
-    const tbl=$(`dtbl-${resizing.projId}`);
-    if(tbl){const ths=tbl.querySelectorAll('th');if(ths[resizing.ci])ths[resizing.ci].style.width=newW+'px';}
+    if(resizing.th)resizing.th.style.width=newW+'px';
   };
   document.onmouseup=async function(){
     if(!resizing)return;
-    const tbl=$(`dtbl-${resizing.projId}`);
-    const proj2=S.projects.find(p=>p.id===resizing.projId);
-    if(tbl&&proj2){
-      const ths=tbl.querySelectorAll('th');
-      const widths=Array.from(ths).map(th=>parseInt(th.style.width)||120);
-      await updateDoc(doc(db,'projects',resizing.projId),{colWidths:widths});
-    }
+    const newW=resizing.th?parseInt(resizing.th.style.width)||resizing.startW:resizing.startW;
+    const key=resizing.key;
     resizing=null;document.onmousemove=null;document.onmouseup=null;
+    designColWidths=Object.assign({},designColWidths,{[key]:newW});
+    setSyncing();
+    try{await setDoc(doc(db,'settings','designColWidths'),{widths:designColWidths});setSynced();}
+    catch(err){alert('欄位寬度存檔失敗：'+err.message);setSynced();}
   };
+}
+window.designRowDragStart=function(e,projId){if(!designEditMode)return;designRowDragSrc=projId;designRowDragInProgress=true;}
+window.designRowDragOver=function(e,projId){if(!designEditMode)return;e.preventDefault();}
+window.designRowDrop=async function(e,toProjId){
+  if(!designEditMode)return;e.preventDefault();
+  designRowDragInProgress=false;
+  if(!designRowDragSrc||designRowDragSrc===toProjId)return;
+  const cols=getDesignCols();
+  const allIds=sortDesignProjs(S.projects.filter(p=>['contact','design','cv'].includes(p.status))).map(p=>p.id);
+  const fi=allIds.indexOf(designRowDragSrc),ti=allIds.indexOf(toProjId);
+  if(fi<0||ti<0)return;
+  allIds.splice(fi,1);allIds.splice(ti,0,designRowDragSrc);
+  designProjectOrder=allIds;
+  renderDesign();
+  setSyncing();
+  try{await setDoc(doc(db,'settings','designProjectOrder'),{order:allIds});setSynced();}
+  catch(err){alert('順序存檔失敗：'+err.message);setSynced();}
+}
+window.designRowDragEnd=function(){
+  designRowDragSrc=null;
+  designRowDragInProgress=false;
+  if(pendingDesignRender){pendingDesignRender=false;renderDesign();}
 }
 
 // ── Progress ──
