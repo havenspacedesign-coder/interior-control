@@ -70,6 +70,8 @@ tr:hover td{background:#fafaf8}
 .btn-p{background:var(--purple);color:#fff;border-color:var(--purple)}.btn-p:hover{background:var(--pd)}
 .btn-sm{padding:3px 9px;font-size:12px}.btn-danger{background:var(--rl);color:var(--rd);border-color:var(--rl)}
 input[type=text],input[type=date],select,textarea{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;background:var(--surface);color:var(--text)}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .flex{display:flex;align-items:center;gap:8px}
 .flex-sb{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -1096,7 +1098,7 @@ window.dcHashCheck=function(el,projId,colName){
   if(!menuEl)return;
   if(hIdx>=0&&textBefore.indexOf(' ',hIdx)<0){
     const q=textBefore.substring(hIdx+1).toLowerCase();
-    const matches=getBibleStages().filter(s=>s.toLowerCase().includes(q));
+    const matches=getBibleStages().filter(s=>isDesignStage(s)&&s.toLowerCase().includes(q));
     if(matches.length){
       const rect=el.getBoundingClientRect();
       menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:140px;max-height:200px;overflow-y:auto';
@@ -1321,7 +1323,7 @@ function renderWeekView(shouldShow){
             oninput="filterStages('${p.id}','${ds}')"
             onkeydown="handleStageKey(event,'${p.id}','${ds}')">
           <div class="stage-search-list" id="ssl-${p.id}-${ds}">
-            ${getBibleStages().map(s=>`<div class="stage-search-item" onclick="addEvFromStage('${p.id}','${ds}','${s}')">${s}</div>`).join('')}
+            ${getBibleStages().filter(s=>!isDesignStage(s)).map(s=>`<div class="stage-search-item" onclick="addEvFromStage('${p.id}','${ds}','${s}')">${s}</div>`).join('')}
           </div>
         </div>`:''}
       </div>`:''}
@@ -2515,7 +2517,7 @@ window.filterStages=function(projId,ds){
   const inp=$(`ssi-${projId}-${ds}`);const list=$(`ssl-${projId}-${ds}`);
   if(!inp||!list)return;
   const val=inp.value.toLowerCase().trim();
-  const stages=getBibleStages();
+  const stages=getBibleStages().filter(s=>!isDesignStage(s));
   const filtered=val?stages.filter(s=>s.toLowerCase().includes(val)):stages;
   list.innerHTML=filtered.map(s=>`<div class="stage-search-item" onclick="addEvFromStage('${projId}','${ds}','${s}')">${s}</div>`).join('');
   if(filtered.length)list.querySelectorAll('.stage-search-item')[0]?.classList.add('hi');
@@ -2977,6 +2979,13 @@ function chineseNumPrefix(s){
   }
   total=section+num;
   return total;
+}
+// Stages numbered 一 through 十六 belong to the design workflow (設計進度);
+// everything else (十七 onward, or unnumbered custom stages) is a
+// construction-phase stage that belongs in 工程進度 instead.
+function isDesignStage(s){
+  const n=chineseNumPrefix(s);
+  return n!==null&&n<=16;
 }
 window.confirmSortStagesByNumber=function(){
   $('mo-content').innerHTML=`
