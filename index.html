@@ -1111,6 +1111,14 @@ window.dcHashCheck=function(el,projId,colName){
 window.dcPickStage=function(projId,colName,stage){
   const menuEl=document.getElementById('dc-hash-'+projId+'-'+colName);
   if(menuEl)menuEl.style.display='none';
+  // The input this dropdown belongs to is still focused. The upcoming
+  // re-render will remove it from the DOM, and removing a focused element
+  // fires a native blur on it — which would otherwise re-save whatever
+  // stale text (just "#") was still sitting in the input, clobbering the
+  // value we're about to save. Detach the blur handler first so that
+  // doesn't happen.
+  const inputEl=document.getElementById('dcell-'+projId+'-'+colName);
+  if(inputEl)inputEl.onblur=null;
   saveDesignField(projId,colName,'#'+stage);
   setTimeout(function(){if(activePanel==='design')renderDesign();},0);
 }
