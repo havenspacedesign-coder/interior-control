@@ -25,6 +25,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .login-sub{font-size:13px;color:var(--text2);margin-bottom:28px}
 .google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:11px 20px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);cursor:pointer;font-size:14px;font-family:inherit;font-weight:500}
 .google-btn:hover{background:var(--bg)}
+.test-btn{display:none;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:10px;padding:11px 20px;border:1px solid var(--purple);border-radius:var(--r);background:var(--pl);color:var(--pd);cursor:pointer;font-size:14px;font-family:inherit;font-weight:600}
+.test-btn:hover{background:#dedcf9}
+.test-hint{display:none;margin-top:9px;font-size:11px;line-height:1.5;color:var(--text3)}
 #pending-screen{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:1000}
 .pending-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:40px;width:380px;text-align:center}
 #app-screen{display:none}
@@ -109,8 +112,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .design-fields-arrow.open{transform:rotate(90deg)}
 .design-fields-body{display:none;overflow-x:auto;border-top:1px solid var(--border)}
 .design-fields-body.open{display:block}
-.design-tbl{width:100%;border-collapse:collapse;table-layout:fixed}
-.design-tbl th{padding:7px 10px;background:var(--bg);border:1px solid var(--border);font-weight:500;font-size:11px;color:var(--text2);text-align:center;white-space:nowrap;position:relative;min-width:80px}
+.design-tbl{border-collapse:collapse;table-layout:fixed}
+.design-tbl th{padding:7px 10px;background:var(--bg);border:1px solid var(--border);font-weight:500;font-size:11px;color:var(--text2);text-align:center;white-space:nowrap;position:relative;min-width:0}
 .design-tbl th .col-resize{position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize}
 .design-tbl th .col-resize:hover{background:var(--purple);opacity:.3}
 .design-tbl th input.col-name-edit{border:none;background:transparent;font-size:11px;font-weight:500;color:var(--text2);width:calc(100% - 10px);text-align:center;font-family:inherit;padding:0}
@@ -149,7 +152,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 /* Event */
 .ev-row{display:flex;align-items:center;gap:2px;margin-bottom:2px}
 .ev-row:hover .ev-del{opacity:.6}
-.ev-field{font-size:11px;cursor:text;padding:4px 6px;border-radius:3px;min-width:36px;min-height:16px;line-height:1.5;background:rgba(255,255,255,.6);color:inherit}
+.ev-field{font-size:11px;cursor:text;padding:4px 6px;border-radius:3px;min-width:0;min-height:16px;line-height:1.5;background:rgba(255,255,255,.6);color:inherit;flex:1;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
 .ev-field:empty{border:1px dashed rgba(0,0,0,.2)}
 .ev-field:hover{background:rgba(255,255,255,.9)}
 .ev-field[contenteditable=true]{outline:1.5px solid rgba(0,0,0,.2);background:#fff;min-width:44px}
@@ -277,6 +280,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
       <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       使用 Google 帳號登入
     </button>
+    <button class="test-btn" id="local-test-btn" onclick="enterLocalTestMode()">🧪 測試模式免登入</button>
+    <div class="test-hint" id="local-test-hint">僅在本機預覽顯示，不會讀寫正式 Firebase 資料。</div>
   </div>
 </div>
 
@@ -350,6 +355,8 @@ const auth=getAuth(app);
 const provider=new GoogleAuthProvider();
 
 let currentUser=null,currentRole=null;
+const IS_LOCAL_PREVIEW=['127.0.0.1','localhost'].includes(location.hostname);
+let localTestMode=false;
 let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},globalNotes:{},userTodos:[]};
 let userPrefs={todoProjects:[]};
 const MEETING_ROWS=[
@@ -423,6 +430,9 @@ function getMonthDates(){
 function getBibleStages(){
   if(S.bibleOrder&&S.bibleOrder.length)return[...new Set(S.bibleOrder)];
   return Object.keys(S.bible).filter(k=>k!=='orderConfig');
+}
+function displayStageName(stage){
+  return String(stage||'').replace(/^.*?、\s*/,'').trim();
 }
 function getBiblePhaseItems(stage,phase){const b=S.bible[stage];return(b&&b[phase])?b[phase]:[];}
 // A bible item used to always be a plain string. It can now be an object
@@ -535,17 +545,78 @@ function renderCheckItemRow(projId,stage,idx,item,isEstimate){
     ${isEstimate?`<input type="number" class="ck-amount" placeholder="金額" value="${item.amount||''}" onclick="event.stopPropagation()" onchange="setCheckAmount('${projId}','${stage}',${idx},this.value)">`:''}
   </div>`;
 }
-function setSynced(){$('sdot').style.background='#1D9E75';$('slbl').textContent='已同步'}
-function setSyncing(){$('sdot').style.background='var(--amber)';$('slbl').textContent='同步中'}
+function setSynced(){
+  if(localTestMode){$('sdot').style.background='var(--amber)';$('slbl').textContent='本機測試';return;}
+  $('sdot').style.background='#1D9E75';$('slbl').textContent='已同步';
+}
+function setSyncing(){
+  if(localTestMode){$('sdot').style.background='var(--amber)';$('slbl').textContent='本機測試';return;}
+  $('sdot').style.background='var(--amber)';$('slbl').textContent='同步中';
+}
 function setOffline(){$('sdot').style.background='var(--red)';$('slbl').textContent='離線'}
 
 // ── Auth ──
 window.signInWithGoogle=async function(){
   try{await signInWithPopup(auth,provider);}catch(e){alert('登入失敗：'+e.message);}
 }
-window.signOut=async function(){await fbSignOut(auth);location.reload();}
+window.signOut=async function(){
+  if(localTestMode){location.reload();return;}
+  await fbSignOut(auth);location.reload();
+}
 
-onAuthStateChanged(auth,async user=>{
+window.enterLocalTestMode=function(){
+  if(!IS_LOCAL_PREVIEW)return;
+  localTestMode=true;
+  currentRole='admin';
+  currentUser={uid:'local-test-admin',displayName:'本機測試管理員',email:'test@localhost',photoURL:''};
+  const ds=fmtDay(today());
+  const tomorrow=fmtDay(addDays(today(),1));
+  S.members=[
+    {id:currentUser.uid,uid:currentUser.uid,name:currentUser.displayName,email:currentUser.email,role:'admin',status:'active',tagInitial:'測'},
+    {id:'local-designer',uid:'local-designer',name:'王設計師',email:'designer@localhost',role:'staff',status:'active',tagInitial:'王'},
+    {id:'local-site-lead',uid:'local-site-lead',name:'陳工務',email:'site@localhost',role:'staff',status:'active',tagInitial:'陳'}
+  ];
+  S.bible=JSON.parse(JSON.stringify(WORD_BIBLE_IMPORT));
+  S.bibleOrder=Object.keys(S.bible);
+  const localStages=['測試－現場放樣','測試－材料進場','測試－完工驗收'];
+  localStages.forEach(function(stage){
+    if(!S.bible[stage])S.bible[stage]={before:['確認日期與負責人','確認材料及圖面'],during:['拍照記錄','核對施工品質'],after:['清潔現場','回報完成狀態']};
+    if(!S.bibleOrder.includes(stage))S.bibleOrder.push(stage);
+  });
+  S.projects=[{
+    id:'local-demo-project',name:'本機展示案件',owner:'測試業主',phone:'0900-000-000',address:'台北市測試路 80 號',
+    type:'住宅設計',designer:'本機測試管理員',budget:'300',area:'30',pricePerPing:'5000',contractAmount:'2500000',
+    contractStart:ds,contractEnd:fmtDay(addDays(today(),60)),finish:fmtDay(addDays(today(),60)),status:'prog',
+    process:'此案件只存在於本機測試模式，不會寫入正式 Firebase。',designProgress:{},
+    schedule:[{date:ds,time:'09:00',label:'現場確認',stage:'現場確認',note:'本機測試資料'},{date:tomorrow,time:'14:00',label:'工程排程',stage:'工程排程',note:'可用來檢查週／日檢視'}]
+  },{
+    id:'local-design-project',name:'設計階段展示案',owner:'設計測試業主',phone:'0900-111-111',address:'新北市預覽街 8 號',
+    type:'新成屋',designer:'本機測試管理員',budget:'180',area:'22',pricePerPing:'4500',contractAmount:'',
+    contractStart:ds,contractEnd:fmtDay(addDays(today(),45)),finish:fmtDay(addDays(today(),45)),status:'design',
+    process:'供設計進度頁面測試使用。',designProgress:{},schedule:[]
+  }];
+  userPrefs={todoProjects:['local-demo-project','local-design-project'],noteHeight:'300px'};
+  S.meetingLogs={};
+  S.meetingLogs['meet1_'+ds]={rowId:'meet1',date:ds,items:[{text:'本機測試會議－確認平面配置',mentions:['local-designer'],color:'',bg:''}]};
+  S.dailyLogs={};
+  S.dailyLogs['local-designer_'+ds]={uid:'local-designer',date:ds,text:'確認平面配置與工程項目',assigned:[{id:'local-task-1',text:'整理現場照片'}]};
+  S.userTodos=[{id:'local-todo-1',uid:currentUser.uid,projId:'local-demo-project',text:'確認本機下拉選單',done:false}];
+  $('login-screen').style.display='none';
+  $('pending-screen').style.display='none';
+  $('app-screen').style.display='block';
+  $('user-name').textContent=currentUser.displayName;
+  $('slbl').textContent='本機測試';
+  $('sdot').style.background='var(--amber)';
+  document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('show'));
+  renderOverview();
+}
+
+if(IS_LOCAL_PREVIEW){
+  $('local-test-btn').style.display='flex';
+  $('local-test-hint').style.display='block';
+}
+
+if(!IS_LOCAL_PREVIEW)onAuthStateChanged(auth,async user=>{
   if(!user){
     $('login-screen').style.display='flex';
     $('pending-screen').style.display='none';
@@ -917,6 +988,8 @@ function renderDesign(){
   const isOpen=designBlueColsGlobalOpen;
   const editing=designEditMode;
   function colW(key,fallback){return designColWidths[key]||fallback;}
+  const visibleCols=[...(blueCols.length&&isOpen?blueCols:[]),...redCols];
+  const designTableWidth=(editing?22:0)+colW('name',150)+colW('budget',90)+(blueCols.length?22:0)+visibleCols.reduce((sum,c)=>sum+colW('c'+cols.indexOf(c),150),0);
   const handle=(key)=>editing?`<span class="col-resize" onmousedown="startColResize(event,'${key}')"></span>`:'';
   el.innerHTML=`
   <div class="flex-sb" style="margin-bottom:1rem">
@@ -924,8 +997,8 @@ function renderDesign(){
     ${isAdmin()?`<button class="btn btn-sm ${editing?'btn-p':''}" onclick="toggleDesignEditMode()">${editing?'✓ 編輯中':'✎ 編輯'}</button>`:''}
   </div>
   ${allProjs.length===0?`<div class="empty">尚無案件</div>`:`
-  <div style="overflow-x:auto">
-  <table class="design-tbl" id="design-table">
+  <div style="overflow-x:auto;max-width:100%">
+  <table class="design-tbl" id="design-table" style="width:${designTableWidth}px;min-width:${designTableWidth}px">
     <thead><tr>
       ${editing?`<th style="width:22px"></th>`:''}
       <th style="width:${colW('name',150)}px;text-align:left;position:relative">案件名稱${handle('name')}</th>
@@ -1038,6 +1111,7 @@ window.saveDesignField=async function(projId,col,val){
   const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
   const dp={...(proj.designProgress||{}),[col]:val};
   proj.designProgress=dp;
+  if(localTestMode){setSynced();if(activePanel==='design')renderDesign();return;}
   setSyncing();
   await updateDoc(doc(db,'projects',projId),{designProgress:dp});
   setSynced();
@@ -1141,6 +1215,7 @@ window.startColResize=function(e,key){
     const key=resizing.key;
     resizing=null;document.onmousemove=null;document.onmouseup=null;
     designColWidths=Object.assign({},designColWidths,{[key]:newW});
+    if(localTestMode){setSynced();renderDesign();return;}
     setSyncing();
     try{await setDoc(doc(db,'settings','designColWidths'),{widths:designColWidths});setSynced();}
     catch(err){alert('欄位寬度存檔失敗：'+err.message);setSynced();}
@@ -1313,12 +1388,9 @@ function renderWeekView(shouldShow){
         const pn=pendingCount(p.id,ev.stage);
         const isSel=selectedTag&&selectedTag.projId===p.id&&selectedTag.ds===ds&&selectedTag.ei===ei;
         return`<div class="ev-row">
-          <span class="ev-field" data-proj="${p.id}" data-ds="${ds}" data-ei="${ei}" data-field="time"
-            ondblclick="event.stopPropagation();startFieldEdit(this)"
-            onclick="event.stopPropagation()">${ev.time||''}</span>
           <span class="ev-chip${isSel?' sel':''}" style="background:${sc(pi)};color:${tc(pi)}"
             draggable="true" ondragstart="evDragStart(event,'${p.id}','${ds}',${ei})"
-            onclick="event.stopPropagation();handleChipClick(event,'${p.id}','${ds}',${ei},'${ev.stage||''}')">${ev.label||ev.stage||'?'}${pendBadge(pn)}</span>
+            onclick="event.stopPropagation();handleChipClick(event,'${p.id}','${ds}',${ei},'${ev.stage||''}')">${displayStageName(ev.label||ev.stage||'?')}${pendBadge(pn)}</span>
           <span class="ev-field" data-proj="${p.id}" data-ds="${ds}" data-ei="${ei}" data-field="note"
             ondblclick="event.stopPropagation();startFieldEdit(this)"
             onclick="event.stopPropagation()">${ev.note||''}</span>
@@ -1331,7 +1403,7 @@ function renderWeekView(shouldShow){
             oninput="filterStages('${p.id}','${ds}')"
             onkeydown="handleStageKey(event,'${p.id}','${ds}')">
           <div class="stage-search-list" id="ssl-${p.id}-${ds}">
-            ${getBibleStages().filter(s=>!isDesignStage(s)).map(s=>`<div class="stage-search-item" onclick="addEvFromStage('${p.id}','${ds}','${s}')">${s}</div>`).join('')}
+            ${getBibleStages().filter(s=>!isDesignStage(s)).map(s=>`<div class="stage-search-item" onclick="addEvFromStage('${p.id}','${ds}','${s}')">${displayStageName(s)}</div>`).join('')}
           </div>
         </div>`:''}
       </div>`:''}
@@ -1698,6 +1770,12 @@ window.mToggleMention=async function(rowId,ds,idx,uid){
   items[idx]=Object.assign({},items[idx],{mentions});
   S.meetingLogs=Object.assign({},S.meetingLogs);
   S.meetingLogs[key]=Object.assign({},S.meetingLogs[key],{items});
+  if(localTestMode){
+    setSynced();
+    const menuEl=document.getElementById('meet-mention-'+rowId+'-'+ds);
+    if(menuEl&&menuEl.style.display==='block')menuEl.innerHTML=mMentionMenuHTML(rowId,ds,idx);
+    return;
+  }
   setSyncing();
   await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
   setSynced();
@@ -1932,6 +2010,7 @@ window.saveTodoProjectPicker=async function(){
   if(!currentUser)return;
   const boxes=document.querySelectorAll('#mo-content input[type=checkbox]:checked');
   const ids=Array.from(boxes).map(b=>b.value);
+  if(localTestMode){userPrefs.todoProjects=ids;closeMo();setSynced();renderProgress();return;}
   setSyncing();
   await setDoc(doc(db,'userPrefs',currentUser.uid),{todoProjects:ids},{merge:true});
   closeMo();setSynced();
@@ -2527,14 +2606,14 @@ window.filterStages=function(projId,ds){
   const val=inp.value.toLowerCase().trim();
   const stages=getBibleStages().filter(s=>!isDesignStage(s));
   const filtered=val?stages.filter(s=>s.toLowerCase().includes(val)):stages;
-  list.innerHTML=filtered.map(s=>`<div class="stage-search-item" onclick="addEvFromStage('${projId}','${ds}','${s}')">${s}</div>`).join('');
+  list.innerHTML=filtered.map(s=>`<div class="stage-search-item" data-stage="${escAttr(s)}" onclick="addEvFromStage('${projId}','${ds}','${s}')">${displayStageName(s)}</div>`).join('');
   if(filtered.length)list.querySelectorAll('.stage-search-item')[0]?.classList.add('hi');
 }
 window.handleStageKey=function(e,projId,ds){
   const list=$(`ssl-${projId}-${ds}`);
   if(e.key==='Enter'){
     const hi=list?.querySelector('.stage-search-item.hi')||list?.querySelector('.stage-search-item');
-    if(hi)addEvFromStage(projId,ds,hi.textContent.trim());
+    if(hi)addEvFromStage(projId,ds,hi.dataset.stage||hi.textContent.trim());
   }else if(e.key==='Escape'){openPicker=null;renderProgress();}
 }
 window.togglePicker=function(e,projId,ds,row){
@@ -2553,7 +2632,8 @@ window.togglePicker=function(e,projId,ds,row){
 window.addEvFromStage=async function(projId,ds,stage){
   openPicker=null;
   const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
-  const schedule=[...(proj.schedule||[]),{date:ds,stage,label:stage,time:'',note:''}];
+  const schedule=[...(proj.schedule||[]),{date:ds,stage,label:displayStageName(stage),time:'',note:''}];
+  if(localTestMode){proj.schedule=schedule;setSynced();renderProgress();return;}
   setSyncing();await updateDoc(doc(db,'projects',projId),{schedule});setSynced();
 }
 window.handleCellBg=function(e,projId,ds){
@@ -2722,6 +2802,12 @@ window.openCheckMo=function(projId,stage,label,projName){
   openCheckMoArgs={projId,stage,label,projName};
 }
 window.closeMo=function(){$('modal').style.display='none';openCheckMoArgs=null;$('mo-content').style.maxWidth='';}
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&$('modal').style.display==='flex'){
+    e.preventDefault();
+    closeMo();
+  }
+});
 window.setCheckStatus=async function(projId,stage,idx,status){
   const proj=S.projects.find(p=>p.id===projId);
   const allItems=projectBibleItems(proj,stage);
@@ -2792,7 +2878,7 @@ function renderBible(){
       ${stages.map((s,i)=>`<div class="bst-item ${s===activeBibleStage?'active':''} ${dragModeOn?'drag-enabled':''}" data-stage="${s}"
         ${dragModeOn?`draggable="true" ondragstart="bsDragStart(event,'${s}')" ondragover="bsDragOver(event,'${s}')" ondrop="bsDrop(event,'${s}')" ondragend="bsDragEnd()"`:''} 
         onclick="setActiveStage('${s}')">        <span class="drag-handle">⠿</span>
-        <span class="bst-name">${String(i+1).padStart(2,'0')}. ${s}</span>
+        <span class="bst-name">${displayStageName(s)}</span>
         <span class="bst-cnt">${getAllBibleItems(s).length}</span>
       </div>`).join('')}
     </div>
@@ -2810,7 +2896,7 @@ function renderBibleDetail(stage){
   ];
   return`
   <div class="flex-sb" style="margin-bottom:14px">
-    <span style="font-size:14px;font-weight:500" ondblclick="startEditBibleStageTitle('${stage}',this)">${stage}</span>
+    <span style="font-size:14px;font-weight:500" ondblclick="startEditBibleStageTitle('${stage}',this)">${displayStageName(stage)}</span>
     <span style="display:flex;gap:6px">
       ${isAdmin()&&dragModeOn?`<button class="btn btn-sm ${S.bible[stage]&&S.bible[stage].isEstimate?'btn-p':''}" onclick="toggleStageEstimate('${stage}')" title="開啟後,這個階段的項目在彈出視窗裡會多一個金額輸入框">${S.bible[stage]&&S.bible[stage].isEstimate?'💰 金額估算階段':'設為金額估算階段'}</button>`:''}
       ${isAdmin()&&dragModeOn?`<button class="btn btn-sm btn-danger" onclick="confirmDeleteStage('${stage}')">刪除此階段</button>`:''}
@@ -2843,7 +2929,7 @@ function renderBibleWorksite(stage){
     const key=`${activeBibleWs}_${s}`;const stored=S.checks[key]||[];
     const merged=metaItems.map((m,i)=>({text:m.text,isSub:m.isSub,done:stored[i]?.done||false,skip:stored[i]?.skip||false}));
     return`<div style="margin-top:16px">
-      <div style="font-size:13px;font-weight:600;margin-bottom:6px">${s}</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">${displayStageName(s)}</div>
       ${merged.map((item,i)=>renderCheckItemRow(activeBibleWs,s,i,item)).join('')}
     </div>`;
   }).join('')}`;
