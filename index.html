@@ -355,7 +355,7 @@ const auth=getAuth(app);
 const provider=new GoogleAuthProvider();
 
 let currentUser=null,currentRole=null;
-const IS_LOCAL_PREVIEW=['127.0.0.1','localhost'].includes(location.hostname);
+const IS_LOCAL_PREVIEW=location.protocol==='file:'||['127.0.0.1','localhost'].includes(location.hostname);
 let localTestMode=false;
 let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},globalNotes:{},userTodos:[]};
 let userPrefs={todoProjects:[]};
@@ -401,7 +401,8 @@ function dailyLogMembersList(){return activeMembersList().filter(m=>m.role!=='ma
 const DEFAULT_DESIGN_COL_NAMES=['會議人員','平面圖','客變圖','3D圖','施工圖','報價單'];
 const DEFAULT_DESIGN_COLS=[
   ...DEFAULT_DESIGN_COL_NAMES.map(name=>({name,kind:'member',collapsible:true})),
-  ...Array.from({length:9},(_,i)=>({name:String(i+1),kind:'text',collapsible:false}))
+  {name:'備註',kind:'note',collapsible:false},
+  ...Array.from({length:20},(_,i)=>({name:String(i+1),kind:'text',collapsible:false}))
 ];
 // Accepts either the old plain-string column list or the new {name,kind,collapsible}
 // shape, and always returns the new shape — so existing saved data keeps working.
@@ -993,7 +994,7 @@ function renderDesign(){
   const handle=(key)=>editing?`<span class="col-resize" onmousedown="startColResize(event,'${key}')"></span>`:'';
   el.innerHTML=`
   <div class="flex-sb" style="margin-bottom:1rem">
-    <span style="font-size:14px;font-weight:500">設計進度</span>
+    <span style="font-size:14px;font-weight:500">設計進度 <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px">可打 # 連結施工寶典階段</span></span>
     ${isAdmin()?`<button class="btn btn-sm ${editing?'btn-p':''}" onclick="toggleDesignEditMode()">${editing?'✓ 編輯中':'✎ 編輯'}</button>`:''}
   </div>
   ${allProjs.length===0?`<div class="empty">尚無案件</div>`:`
@@ -1016,8 +1017,10 @@ function renderDesign(){
       return`<tr data-proj="${p.id}"${editing?` draggable="true" ondragstart="designRowDragStart(event,'${p.id}')" ondragover="designRowDragOver(event,'${p.id}')" ondrop="designRowDrop(event,'${p.id}')" ondragend="designRowDragEnd()"`:''}>
         ${editing?`<td style="text-align:center;cursor:grab;color:var(--text3)">⠿</td>`:''}
         <td style="text-align:left;white-space:nowrap">
-          <span style="font-weight:500">${p.name}</span>
-          <span style="font-size:11px;color:var(--text3);margin-left:4px">${statusInfo(p.status).l}</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <span style="font-weight:500">${p.name}</span>
+            <span style="font-size:11px;color:var(--text3);margin-left:auto;text-align:right">${statusInfo(p.status).l}</span>
+          </div>
         </td>
         <td style="padding:6px 8px;font-size:12px">${escAttr(p.budget||'')}${p.budget?'萬':''}</td>
         ${blueCols.length?`<td></td>`:''}
@@ -1052,19 +1055,28 @@ function renderDesignCell(p,col){
   const dp=p.designProgress||{};
   const val=dp[col.name]||'';
   if(col.kind==='member'){
-    const m=S.members.find(x=>x.uid===val);
+    const memberIds=Array.isArray(val)?val:(val?[val]:[]);
+    const selectedMembers=memberIds.map(uid=>S.members.find(x=>x.uid===uid)).filter(Boolean);
     return`<td style="text-align:center">
-      ${m?`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:12px;font-size:12px">${memberDisplayName(m)}<span onclick="saveDesignField('${p.id}','${col.name}','')" style="cursor:pointer;font-weight:700">×</span></span>`
-        :`<span class="task-tag-btn" onmouseenter="dcOpenPicker(event,'${p.id}','${col.name}')" onmouseleave="dcScheduleClose('${p.id}','${col.name}')" style="font-size:11px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:9px;padding:2px 8px">+ 標記</span>`}
+      <div style="display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;padding:3px">
+        ${selectedMembers.map(m=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:12px;font-size:12px">${memberDisplayName(m)}<span onclick="dcToggleMember('${p.id}','${col.name}','${m.uid}',false)" style="cursor:pointer;font-weight:700">×</span></span>`).join('')}
+        <span class="task-tag-btn" onmouseenter="dcOpenPicker(event,'${p.id}','${col.name}')" onmouseleave="dcScheduleClose('${p.id}','${col.name}')" style="font-size:11px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:9px;padding:2px 8px">+ 標記</span>
+      </div>
       <div class="pn-mention-menu" id="dc-mention-${p.id}-${col.name}" style="display:none" onmouseenter="mCancelCloseMention()" onmouseleave="dcScheduleClose('${p.id}','${col.name}')"></div>
+    </td>`;
+  }
+  if(col.kind==='note'){
+    return`<td class="${!val.trim()?'empty-cell':''}">
+      <input type="text" class="design-cell-input" id="dcell-${p.id}-${col.name}" value="${escAttr(val)}" placeholder="輸入備註" autocomplete="off"
+        onblur="saveDesignField('${p.id}','${col.name}',this.value)"
+        onkeydown="if(event.key==='Enter')this.blur()">
     </td>`;
   }
   const dateVal=dp[col.name+'__date']||'';
   const dparts=dateVal.split('-');
   const dy=dparts[0]||'',dm=dparts[1]?parseInt(dparts[1],10):'',dd=dparts[2]?parseInt(dparts[2],10):'';
-  const curYear=new Date().getFullYear();
   const dateRow=`<div style="display:flex;align-items:center;gap:2px;font-size:10px;color:var(--text2);padding:3px 4px 0">
-    <input id="ddy-${p.id}-${col.name}" type="number" value="${dy||curYear}" onchange="saveDesignDate('${p.id}','${col.name}')" style="width:40px;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">年
+    <input id="ddy-${p.id}-${col.name}" type="number" value="${dy}" onchange="saveDesignDate('${p.id}','${col.name}')" style="width:40px;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">年
     <input id="ddm-${p.id}-${col.name}" type="number" min="1" max="12" value="${dm}" onchange="saveDesignDate('${p.id}','${col.name}')" style="width:28px;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">月
     <input id="ddd-${p.id}-${col.name}" type="number" min="1" max="31" value="${dd}" onchange="saveDesignDate('${p.id}','${col.name}')" style="width:28px;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">日
   </div>`;
@@ -1074,11 +1086,11 @@ function renderDesignCell(p,col){
     if(getBibleStages().includes(stage)){
       const key=`${p.id}_${stage}`;const stored=S.checks[key]||[];
       const allItems=projectBibleItems(p,stage);
-      const done=allItems.filter((t,i)=>stored[i]?.done||stored[i]?.skip).length;
+      const remaining=allItems.length-allItems.filter((t,i)=>stored[i]?.done||stored[i]?.skip).length;
       return`<td>
         ${dateRow}
         <div style="padding:3px 4px 4px">
-          <span onclick="openCheckMo('${p.id}','${stage}','${stage}','${p.name}')" style="cursor:pointer;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:5px;font-size:12px;font-weight:600;white-space:nowrap">#${stage} ${done}/${allItems.length}</span>
+          <span onclick="openCheckMo('${p.id}','${stage}','${stage}','${p.name}')" style="cursor:pointer;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:5px;font-size:12px;font-weight:600;white-space:nowrap">#${displayStageName(stage)}${pendBadge(remaining)}</span>
           <span onclick="saveDesignField('${p.id}','${col.name}','')" title="改回文字輸入" style="cursor:pointer;color:var(--text3);font-size:11px;margin-left:4px">×</span>
         </div>
       </td>`;
@@ -1086,7 +1098,7 @@ function renderDesignCell(p,col){
   }
   return`<td class="${!val.trim()?'empty-cell':''}">
     ${dateRow}
-    <input type="text" class="design-cell-input" id="dcell-${p.id}-${col.name}" value="${escAttr(val)}" placeholder="—（可打 # 連結施工寶典階段）" autocomplete="off"
+    <input type="text" class="design-cell-input" id="dcell-${p.id}-${col.name}" value="${escAttr(val)}" placeholder="" autocomplete="off"
       oninput="dcHashCheck(this,'${p.id}','${col.name}')"
       onblur="saveDesignField('${p.id}','${col.name}',this.value)"
       onkeydown="if(event.key==='Enter')this.blur()">
@@ -1100,6 +1112,7 @@ window.saveDesignDate=async function(projId,colName){
   const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
   const dp={...(proj.designProgress||{}),[colName+'__date']:val};
   proj.designProgress=dp;
+  if(localTestMode){setSynced();return;}
   setSyncing();
   await updateDoc(doc(db,'projects',projId),{designProgress:dp});
   setSynced();
@@ -1150,16 +1163,38 @@ window.dcOpenPicker=function(e,projId,colName){
   const menuEl=document.getElementById('dc-mention-'+projId+'-'+colName);
   if(!menuEl)return;
   const rect=e.currentTarget.getBoundingClientRect();
-  menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:140px;max-height:200px;overflow-y:auto';
+  menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:160px;max-height:220px;overflow-y:auto;padding:4px 0';
+  dcRenderMemberPicker(projId,colName);
+}
+function dcRenderMemberPicker(projId,colName){
+  const menuEl=document.getElementById('dc-mention-'+projId+'-'+colName);if(!menuEl)return;
+  const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
+  const raw=(proj.designProgress||{})[colName]||'';
+  const selected=Array.isArray(raw)?raw:(raw?[raw]:[]);
   menuEl.innerHTML=activeMembersList().map(function(m){
-    return'<div onmousedown="event.preventDefault();saveDesignField(\''+projId+'\',\''+colName+'\',\''+m.uid+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)">'+memberDisplayName(m)+'</div>';
+    const checked=selected.includes(m.uid);
+    return'<label style="display:flex;align-items:center;gap:7px;padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)"><input type="checkbox" '+(checked?'checked':'')+' onchange="dcToggleMember(\''+projId+'\',\''+colName+'\',\''+m.uid+'\',this.checked)">'+memberDisplayName(m)+'</label>';
   }).join('');
+}
+window.dcToggleMember=async function(projId,colName,uid,checked){
+  const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
+  const raw=(proj.designProgress||{})[colName]||'';
+  let ids=Array.isArray(raw)?[...raw]:(raw?[raw]:[]);
+  ids=checked?[...new Set([...ids,uid])]:ids.filter(id=>id!==uid);
+  const dp={...(proj.designProgress||{}),[colName]:ids};
+  proj.designProgress=dp;
+  const menuEl=document.getElementById('dc-mention-'+projId+'-'+colName);
+  const refreshMemberUi=()=>menuEl&&menuEl.style.display!=='none'?dcRenderMemberPicker(projId,colName):renderDesign();
+  if(localTestMode){setSynced();refreshMemberUi();return;}
+  setSyncing();await updateDoc(doc(db,'projects',projId),{designProgress:dp});setSynced();
+  refreshMemberUi();
 }
 window.dcScheduleClose=function(projId,colName){
   clearTimeout(mCloseTimer);
   mCloseTimer=setTimeout(function(){
     const menuEl=document.getElementById('dc-mention-'+projId+'-'+colName);
     if(menuEl)menuEl.style.display='none';
+    if(activePanel==='design')renderDesign();
   },250);
 }
 // "#" autocomplete for text-kind design columns, linking to a 施工寶典 stage
@@ -1176,7 +1211,7 @@ window.dcHashCheck=function(el,projId,colName){
     if(matches.length){
       const rect=el.getBoundingClientRect();
       menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:140px;max-height:200px;overflow-y:auto';
-      menuEl.innerHTML=matches.map(s=>'<div onmousedown="event.preventDefault();dcPickStage(\''+projId+'\',\''+colName+'\',\''+s+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)">#'+s+'</div>').join('');
+      menuEl.innerHTML=matches.map(s=>'<div onmousedown="event.preventDefault();dcPickStage(\''+projId+'\',\''+colName+'\',\''+s+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)">#'+displayStageName(s)+'</div>').join('');
       return;
     }
   }
