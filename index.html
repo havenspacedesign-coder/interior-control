@@ -196,12 +196,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .daily-log-table th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
 .daily-log-table td{padding:3px;border:1px solid var(--border);background:var(--surface);vertical-align:top}
 .daily-log-table td.log-name-cell{background:var(--bg);font-size:12px;font-weight:500;padding:6px 10px;position:sticky;left:0;z-index:5;border-right:2px solid var(--border);width:200px}
-.daily-member-name{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.daily-member-order{display:inline-flex;gap:2px;opacity:.45;transition:opacity .15s}
-.log-name-cell:hover .daily-member-order{opacity:1}
-.daily-order-btn{width:21px;height:21px;padding:0;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text2);font-size:10px;line-height:19px;cursor:pointer}
-.daily-order-btn:hover{border-color:var(--purple);color:var(--purple);background:var(--pl)}
-.daily-order-btn:disabled{opacity:.25;cursor:default}
+.daily-member-name{display:flex;align-items:flex-start;gap:8px}
+.daily-member-draggable{cursor:grab;user-select:none}
+.daily-member-draggable:active{cursor:grabbing}
 .log-textarea{width:100%;height:80px;border:none;resize:none;font-size:11px;font-family:inherit;padding:4px 6px;background:transparent;color:var(--text);line-height:1.4}
 .log-textarea:focus{outline:none;background:#faf9ff}
 .log-textarea.today{background:#faf9ff}
@@ -213,7 +210,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .help-btn{width:19px;height:19px;padding:0;border:1px solid #b9b3d9;border-radius:50%;background:var(--surface);color:var(--purple);font-size:11px;font-weight:700;line-height:17px;cursor:pointer}
 .help-btn:hover{background:var(--pl)}
 .help-pop{display:none;position:absolute;left:0;top:25px;width:300px;max-width:min(300px,80vw);padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.16);z-index:160;color:var(--text);font-size:11px;font-weight:400;white-space:normal}
-.help-pop.show{display:block}
+.help-pop.show{display:block;position:fixed;z-index:10000}
 .help-pop ul{margin:0;padding-left:18px}
 .help-pop li+li{margin-top:5px}
 .private-todo-wrap{overflow-x:auto}
@@ -540,11 +537,19 @@ function orderedDailyLogMembers(){
     return ar-br;
   });
 }
-window.moveDailyLogMember=async function(uid,dir){
+let dailyMemberDragUid=null;
+window.dailyMemberDragStart=function(e,uid){
+  if(currentRole!=='admin'){e.preventDefault();return;}
+  dailyMemberDragUid=uid;e.dataTransfer.effectAllowed='move';
+};
+window.dailyMemberDragOver=function(e){if(currentRole==='admin'&&dailyMemberDragUid){e.preventDefault();e.dataTransfer.dropEffect='move';}};
+window.dailyMemberDrop=async function(e,targetUid){
+  e.preventDefault();
+  if(currentRole!=='admin'||!dailyMemberDragUid||dailyMemberDragUid===targetUid)return;
   const members=orderedDailyLogMembers();
-  const idx=members.findIndex(m=>m.uid===uid),to=idx+dir;
-  if(idx<0||to<0||to>=members.length||!currentUser)return;
-  [members[idx],members[to]]=[members[to],members[idx]];
+  const from=members.findIndex(m=>m.uid===dailyMemberDragUid),to=members.findIndex(m=>m.uid===targetUid);
+  if(from<0||to<0||!currentUser)return;
+  const moved=members.splice(from,1)[0];members.splice(to,0,moved);dailyMemberDragUid=null;
   if(!S.privateNotes)S.privateNotes={work:{},personal:{}};
   S.privateNotes.dailyLogMemberOrder=members.map(m=>m.uid);
   setSyncing();
@@ -1701,8 +1706,9 @@ function renderWeekView(shouldShow){
       +'</span>';
     var hdr='<tr><td colspan="'+(days.length+1)+'" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:2px solid #1a1a1a">'
       +'<div style="position:sticky;left:8px;display:inline-block;white-space:nowrap">'
-      +'🗓 會議 / 其他事項'+mColorBar
+      +'🗓 會議 / 其他事項'
       +'<span class="help-wrap" style="margin-left:8px"><button class="help-btn" type="button" aria-label="會議操作說明" onclick="toggleHelpPop(event,\'meeting-help\')">?</button><span class="help-pop" id="meeting-help" onclick="event.stopPropagation()"><ul><li>單擊項目後可選擇文字與底色。</li><li>雙擊項目可編輯內容。</li><li>點「＋標記」可標記人員，並同步到對方的每日施工日誌。</li><li>按住 Ctrl 拖拉可複製項目。</li><li>按 Delete 可刪除已選取的項目。</li></ul></span></span>'
+      +mColorBar
       +'</div></td></tr>';
     var rows=MEETING_ROWS.map(function(row){
       var rh='<tr><td class="site-hd" style="color:var(--text2)">'+row.name+'</td>';
@@ -1761,8 +1767,8 @@ function renderWeekView(shouldShow){
   })()}
   </tbody></table></div>
   </div>
-  <div class="wtbl-wrap hscroll-sync hide-hscrollbar"><table class="wtbl" style="width:${200+days.length*180}px"><tbody>
-  <tr><td colspan="${days.length+1}" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:3px solid #1a1a1a"><div style="position:sticky;left:8px;display:inline-block">🏗 工地進度</div></td></tr>
+  <div class="wtbl-wrap hscroll-sync hide-hscrollbar"><table class="wtbl" style="width:${200+days.length*180}px"><colgroup><col style="width:200px">${days.map(()=>'<col style="width:180px">').join('')}</colgroup><tbody>
+  <tr><td colspan="${days.length+1}" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:3px solid #1a1a1a"><div style="position:sticky;left:8px;display:inline-flex;align-items:center;gap:7px">🏗 工地進度<span class="help-wrap"><button class="help-btn" type="button" aria-label="工地進度操作說明" onclick="toggleHelpPop(event,'work-progress-help')">?</button><span class="help-pop" id="work-progress-help" onclick="event.stopPropagation()"><ul><li>單擊色塊可開啟 checklist。</li><li>按住 Ctrl 再單擊可複製。</li><li>雙擊白色欄位可編輯。</li><li>直接拖拉可搬移項目。</li><li>按住 Ctrl 拖拉可複製項目。</li></ul></span></span></div></td></tr>
   ${projs.map((p,pi)=>`
     <tr>
       <td class="site-hd" style="color:${tc(pi)};cursor:pointer" onclick="showProjectDetail('${p.id}')" title="點擊查看案件詳細資料">
@@ -1772,8 +1778,7 @@ function renderWeekView(shouldShow){
       ${days.map(d=>renderCell(p,pi,d)).join('')}
     </tr>
   `).join('')}
-  </tbody></table></div>
-  <div style="font-size:11px;color:var(--text2);margin-top:8px">色塊單擊=checklist；Ctrl+單擊=複製；雙擊白格=編輯；拖拉可搬移，按住Ctrl+拖拉=複製</div>`;
+  </tbody></table></div>`;
 }
 
 // ── Daily Log Section ──
@@ -1840,8 +1845,8 @@ function renderDailyLogSection(days){
     <table class="daily-log-table" style="width:${200+days.length*180}px">
       <colgroup><col style="width:200px">${days.map(()=>'<col style="width:180px">').join('')}</colgroup>
       <tbody>
-      ${activeMembers.map((m,mi)=>`<tr>
-        <td class="log-name-cell"><div class="daily-member-name"><span>${memberDisplayName(m)}</span><span class="daily-member-order"><button class="daily-order-btn" type="button" title="往上移" ${mi===0?'disabled':''} onclick="moveDailyLogMember('${m.uid}',-1)">▲</button><button class="daily-order-btn" type="button" title="往下移" ${mi===activeMembers.length-1?'disabled':''} onclick="moveDailyLogMember('${m.uid}',1)">▼</button></span></div></td>
+      ${activeMembers.map(m=>`<tr>
+        <td class="log-name-cell ${currentRole==='admin'?'daily-member-draggable':''}" ${currentRole==='admin'?`draggable="true" ondragstart="dailyMemberDragStart(event,'${m.uid}')" ondragover="dailyMemberDragOver(event)" ondrop="dailyMemberDrop(event,'${m.uid}')"`:''} title="${currentRole==='admin'?'管理員可拖曳調整順序':''}"><div class="daily-member-name"><span>${memberDisplayName(m)}</span></div></td>
         ${days.map(d=>renderDailyLogCell(m,d,td)).join('')}
       </tr>`).join('')}
       </tbody>
@@ -2516,10 +2521,10 @@ function renderPrivateTodoSection(){
   return '<div style="border-top:3px solid #1a1a1a"></div>'
     +'<div class="private-section" style="border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">'
     +'<div class="private-section-hdr" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">'
-    +'🔒 私人記事 <span style="font-size:11px;color:var(--text2);font-weight:400">只有你自己看得到</span>'
-    +'<span class="help-wrap"><button class="help-btn" type="button" aria-label="私人記事操作說明" onclick="toggleHelpPop(event,\'private-help\')">?</button><span class="help-pop" id="private-help" onclick="event.stopPropagation()"><ul><li>雙擊項目可編輯內容。</li><li>輸入 @ 可搜尋並連結工地。</li><li>按住 Ctrl 拖拉可複製項目。</li><li>按 Delete 可刪除已選取的項目。</li></ul></span></span>'
-    +'<button class="btn btn-sm" style="margin-left:auto" onclick="openRecurringManager(true)">＋ 新增自動排程</button>'
-    +itemControls()
+    +'<span style="width:180px;display:inline-flex;align-items:center;gap:6px;flex:none">🔒 個人專區'
+    +'<span class="help-wrap"><button class="help-btn" type="button" aria-label="個人專區操作說明" onclick="toggleHelpPop(event,\'private-help\')">?</button><span class="help-pop" id="private-help" onclick="event.stopPropagation()"><ul><li>個人專區只有你自己看得到。</li><li>雙擊項目可編輯內容。</li><li>輸入 @ 可搜尋並連結工地。</li><li>按住 Ctrl 拖拉可複製項目。</li><li>按 Delete 可刪除已選取的項目。</li></ul></span></span></span>'
+    +'<span style="display:inline-flex;align-items:center;gap:4px"><button class="btn btn-sm" onclick="openRecurringManager(true)">＋ 新增自動排程</button>'
+    +itemControls()+'</span>'
     +'</div>'
     +'<div class="hscroll-sync hide-hscrollbar" style="overflow-x:auto"><table style="'+tblStyle+';width:'+(200+days.length*180)+'px">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
     +makeRow('work','工地記事')
@@ -2958,7 +2963,15 @@ document.addEventListener('click',function(e){
 window.toggleHelpPop=function(e,id){
   e.stopPropagation();
   document.querySelectorAll('.help-pop.show').forEach(function(el){if(el.id!==id)el.classList.remove('show');});
-  const pop=$(id);if(pop)pop.classList.toggle('show');
+  const pop=$(id);if(!pop)return;
+  const opening=!pop.classList.contains('show');pop.classList.toggle('show');
+  if(opening){
+    const r=e.currentTarget.getBoundingClientRect();
+    const width=Math.min(300,window.innerWidth-24);
+    pop.style.width=width+'px';
+    pop.style.left=Math.max(12,Math.min(r.left,window.innerWidth-width-12))+'px';
+    pop.style.top=Math.min(r.bottom+6,window.innerHeight-pop.offsetHeight-12)+'px';
+  }
 };
 
 async function savePrivateNoteData(){
