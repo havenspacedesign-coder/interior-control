@@ -118,7 +118,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .design-tbl th .col-resize:hover{background:var(--purple);opacity:.3}
 .design-tbl th input.col-name-edit{border:none;background:transparent;font-size:11px;font-weight:500;color:var(--text2);width:calc(100% - 10px);text-align:center;font-family:inherit;padding:0}
 .design-tbl th input.col-name-edit:focus{outline:none;background:var(--pl)}
-.design-tbl td{border:1px solid var(--border);padding:0}
+.design-tbl td{border:1px solid var(--border);padding:0;vertical-align:top}
 .design-tbl td input{border:none;padding:6px 8px;font-size:12px;width:100%;background:transparent;font-family:inherit}
 .design-tbl td input:focus{outline:none;background:var(--pl)}
 .design-tbl td.empty-cell{background:#fff8f8}
@@ -1218,7 +1218,9 @@ function renderDesignCell(p,col){
   }
   const dateVal=dp[colKey+'__date']||'';
   const dparts=dateVal.split('-');
-  const dy=dparts[0]||'',dm=dparts[1]?parseInt(dparts[1],10):'',dd=dparts[2]?parseInt(dparts[2],10):'';
+  const dy=dp[colKey+'__date_y']!==undefined?dp[colKey+'__date_y']:(dparts[0]||'');
+  const dm=dp[colKey+'__date_m']!==undefined?dp[colKey+'__date_m']:(dparts[1]?parseInt(dparts[1],10):'');
+  const dd=dp[colKey+'__date_d']!==undefined?dp[colKey+'__date_d']:(dparts[2]?parseInt(dparts[2],10):'');
   const dateRow=`<div style="display:flex;align-items:center;gap:2px;font-size:10px;color:var(--text2);padding:3px 4px 0">
     <input id="ddy-${p.id}-${colKey}" type="number" value="${dy}" onchange="saveDesignDate('${p.id}','${colKey}')" style="width:40px;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">年
     <input id="ddm-${p.id}-${colKey}" type="number" min="1" max="12" value="${dm}" onchange="saveDesignDate('${p.id}','${colKey}')" style="width:28px;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">月
@@ -1233,9 +1235,9 @@ function renderDesignCell(p,col){
       const remaining=allItems.length-allItems.filter((t,i)=>stored[i]?.done||stored[i]?.skip).length;
       return`<td>
         ${dateRow}
-        <div style="padding:3px 4px 4px">
-          <span onclick="openCheckMo('${p.id}','${stage}','${stage}','${p.name}')" style="cursor:pointer;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:5px;font-size:12px;font-weight:600;white-space:nowrap">#${displayStageName(stage)}${pendBadge(remaining)}</span>
-          <span onclick="saveDesignField('${p.id}','${colKey}','')" title="改回文字輸入" style="cursor:pointer;color:var(--text3);font-size:11px;margin-left:4px">×</span>
+        <div style="padding:3px 4px 4px;position:relative;min-height:38px">
+          <span onclick="openCheckMo('${p.id}','${stage}','${stage}','${p.name}')" style="cursor:pointer;background:var(--pl);color:var(--pd);padding:3px 22px 3px 7px;border-radius:5px;font-size:12px;font-weight:600;display:block;white-space:normal;overflow-wrap:break-word;word-break:normal;line-height:1.35;max-width:100%">#${displayStageName(stage)}${pendBadge(remaining)}</span>
+          <span onclick="saveDesignField('${p.id}','${colKey}','')" title="改回文字輸入" style="cursor:pointer;color:var(--text3);font-size:11px;position:absolute;right:8px;bottom:6px">×</span>
         </div>
       </td>`;
     }
@@ -1254,13 +1256,24 @@ window.saveDesignDate=async function(projId,colName){
   const y=yEl?yEl.value.trim():'',m=mEl?mEl.value.trim():'',d=dEl?dEl.value.trim():'';
   const val=(y&&m&&d)?`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`:'';
   const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
-  const dp={...(proj.designProgress||{}),[colName+'__date']:val};
+  const dp={...(proj.designProgress||{}),[colName+'__date']:val,[colName+'__date_y']:y,[colName+'__date_m']:m,[colName+'__date_d']:d};
   proj.designProgress=dp;
   if(localTestMode){setSynced();return;}
   setSyncing();
   await updateDoc(doc(db,'projects',projId),{designProgress:dp});
   setSynced();
 }
+document.addEventListener('keyup',event=>{
+  if(event.key!=='Shift'||event.ctrlKey||event.altKey||event.metaKey)return;
+  const current=document.activeElement;
+  if(!current||!current.id)return;
+  let nextId='';
+  if(current.id.startsWith('ddy-'))nextId=current.id.replace(/^ddy-/,'ddm-');
+  else if(current.id.startsWith('ddm-'))nextId=current.id.replace(/^ddm-/,'ddd-');
+  if(!nextId)return;
+  const next=$(nextId);
+  if(next){event.preventDefault();next.focus();next.select();}
+});
 window.toggleDesignBlueCols=function(){designBlueColsGlobalOpen=!designBlueColsGlobalOpen;renderDesign();}
 window.toggleDesignProj=function(projId){expandedProjs[projId]=!expandedProjs[projId];renderDesign();}
 window.toggleDesignFields=function(projId){expandedFields[projId]=!expandedFields[projId];renderDesign();}
@@ -1351,7 +1364,7 @@ window.dcHashCheck=function(el,projId,colName){
   if(!menuEl)return;
   if(hIdx>=0&&textBefore.indexOf(' ',hIdx)<0){
     const q=textBefore.substring(hIdx+1).toLowerCase();
-    const matches=getBibleStages().filter(s=>isDesignStage(s)&&s.toLowerCase().includes(q));
+    const matches=getDesignBibleStages().filter(s=>s.toLowerCase().includes(q));
     if(matches.length){
       const rect=el.getBoundingClientRect();
       menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:140px;max-height:200px;overflow-y:auto';
@@ -1455,6 +1468,7 @@ function renderProgress(){
   <div style="display:flex;gap:14px;align-items:flex-start">
   ${renderGlobalNotesPanel(viewMonth)}
   <div style="flex:1;min-width:0">
+  <div class="progress-sticky-board" style="position:sticky;top:49px;z-index:25;background:var(--bg);box-shadow:0 1px 0 var(--border)">
   <div class="wctrl">
     <div class="seg">
       <button class="${calMode==='week'||calMode==='month'?'on':''}" onclick="setCalMode('week')">週視圖</button>
@@ -1482,6 +1496,7 @@ function renderProgress(){
       onkeydown="pnFormulaKeyDown(event)">
   </div>`:''}
   ${calMode==='week'||calMode==='month'?renderWeekView(shouldShow):renderDayView()}
+  </div>
   ${calMode==='week'||calMode==='month'?renderDailyLogSection(weekDays):''}
   ${renderPrivateTodoSection()}
   <div style="height:500px"></div>
@@ -1710,6 +1725,54 @@ function renderWeekView(shouldShow){
 }
 
 // ── Daily Log Section ──
+let dailyAssignMemberUids=[];
+function renderDailyAssignBar(days){
+  if(!currentUser||!days.length)return'';
+  const base=days[Math.floor(days.length/2)];
+  const yyyy=base.getFullYear(),mm=String(base.getMonth()+1).padStart(2,'0');
+  const monthStart=`${yyyy}-${mm}-01`;
+  const monthEnd=`${yyyy}-${mm}-${String(new Date(yyyy,base.getMonth()+1,0).getDate()).padStart(2,'0')}`;
+  const td=today();
+  const defaultDate=(td.getFullYear()===yyyy&&td.getMonth()===base.getMonth())?fmtDay(td):monthStart;
+  const members=dailyLogMembersList();
+  return`<div style="display:flex;align-items:center;gap:6px;position:relative;font-weight:400">
+    <input type="date" id="daily-assign-date" min="${monthStart}" max="${monthEnd}" value="${defaultDate}" style="width:128px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:11px">
+    <input type="text" id="daily-assign-text" placeholder="輸入指派任務" style="width:180px;padding:4px 7px;border:1px solid var(--border);border-radius:5px;font-size:11px">
+    <button class="btn btn-sm" type="button" onclick="toggleDailyAssignPicker(event)">標記（可複選）</button>
+    <span id="daily-assign-summary" style="font-size:10px;color:var(--purple);max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+    <button class="btn btn-sm btn-p" type="button" onclick="submitDailyAssignment()">新增</button>
+    <div id="daily-assign-picker" style="display:none;position:absolute;right:42px;top:32px;width:190px;max-height:230px;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:7px;box-shadow:0 5px 18px rgba(0,0,0,.15);padding:7px;z-index:80">
+      ${members.map(m=>`<label style="display:flex;align-items:center;gap:7px;padding:5px 4px;font-size:11px;cursor:pointer"><input type="checkbox" value="${m.uid}" ${dailyAssignMemberUids.includes(m.uid)?'checked':''} onchange="toggleDailyAssignMember('${m.uid}',this.checked)">${memberDisplayName(m)}</label>`).join('')}
+    </div>
+  </div>`;
+}
+window.toggleDailyAssignPicker=function(event){
+  event.stopPropagation();
+  const el=$('daily-assign-picker');if(el)el.style.display=el.style.display==='block'?'none':'block';
+}
+window.toggleDailyAssignMember=function(uid,checked){
+  if(checked&&!dailyAssignMemberUids.includes(uid))dailyAssignMemberUids.push(uid);
+  if(!checked)dailyAssignMemberUids=dailyAssignMemberUids.filter(x=>x!==uid);
+  const names=dailyAssignMemberUids.map(uid=>memberDisplayName(S.members.find(m=>m.uid===uid))).filter(Boolean);
+  const el=$('daily-assign-summary');if(el)el.textContent=names.join('、');
+}
+window.submitDailyAssignment=async function(){
+  if(!currentUser)return;
+  const dateEl=$('daily-assign-date'),textEl=$('daily-assign-text');
+  const ds=dateEl?dateEl.value:'';const task=textEl?textEl.value.trim():'';
+  if(!ds||!task){alert('請先選擇日期並輸入指派任務');return;}
+  if(!dailyAssignMemberUids.length){alert('請至少標記一位成員');return;}
+  setSyncing();
+  for(const uid of dailyAssignMemberUids){
+    const key=uid+'_'+ds;const cur=S.dailyLogs[key]||{};
+    const list=(cur.assigned||[]).slice();
+    list.push({id:'a'+Date.now()+'_'+uid,text:task,authorUid:currentUser.uid});
+    await setDoc(doc(db,'dailyLogs',key),Object.assign({},cur,{uid,date:ds,assigned:list}));
+  }
+  dailyAssignMemberUids=[];
+  setSynced();
+  if(activePanel==='progress')renderProgress();
+}
 function renderDailyLogSection(days){
   const td=today();
   const activeMembers=dailyLogMembersList();
@@ -1719,7 +1782,7 @@ function renderDailyLogSection(days){
   <div class="daily-section" style="margin-top:0;border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">
     <div class="daily-section-hdr">
       <span>每日施工日誌</span>
-      <span style="font-size:11px;color:var(--text2)">格子裡可直接打字指派任務給任何人</span>
+      ${renderDailyAssignBar(days)}
     </div>
     <div class="hscroll-sync hide-hscrollbar" style="overflow-x:auto">
     <table class="daily-log-table" style="width:${200+days.length*180}px">
@@ -1767,9 +1830,6 @@ function renderDailyLogCell(m,d,td){
       h+=`<div style="margin-top:3px;padding:3px 6px;border-radius:4px;font-size:11px;background:var(--pl);color:var(--pd)">${escAttr(authorName)}：${escAttr(e.text||'')}</div>`;
     }
   });
-  if(currentUser){
-    h+=`<div onclick="addAssignedEntry('${m.uid}','${ds}')" style="margin-top:3px;font-size:10px;color:var(--text3);cursor:pointer;border:1px dashed var(--border);border-radius:4px;padding:2px 6px;text-align:center">＋ 指派</div>`;
-  }
   h+='</td>';
   return h;
 }
@@ -2860,6 +2920,18 @@ window.evDrop=async function(e,toProjId,toDs){
   const toProj=S.projects.find(p=>p.id===toProjId);if(!toProj){evDragSrc=null;return;}
   if(from.projId===toProjId&&from.ds===toDs){evDragSrc=null;return;}
   setSyncing();
+  if(!e.ctrlKey&&from.projId===toProjId){
+    const idx=(srcProj.schedule||[]).indexOf(ev);
+    if(idx>=0){
+      const moved=[...(srcProj.schedule||[])];
+      moved.splice(idx,1);
+      moved.push({...ev,date:toDs});
+      await updateDoc(doc(db,'projects',toProjId),{schedule:moved});
+    }
+    evDragSrc=null;
+    setSynced();
+    return;
+  }
   await updateDoc(doc(db,'projects',toProjId),{schedule:[...(toProj.schedule||[]),{...ev,date:toDs}]});
   if(!e.ctrlKey){
     const idx=(srcProj.schedule||[]).indexOf(ev);
@@ -3257,9 +3329,9 @@ function chineseNumPrefix(s){
 // everything else (十七 onward, or unnumbered custom stages) is a
 // construction-phase stage that belongs in 工程進度 instead.
 function isDesignStage(s){
-  const n=chineseNumPrefix(s);
-  return n!==null&&n<=16;
+  return getDesignBibleStages().includes(s);
 }
+function getDesignBibleStages(){return getBibleStages().slice(0,16);}
 window.confirmSortStagesByNumber=function(){
   $('mo-content').innerHTML=`
     <div class="mo-title">校正階段順序？</div>
