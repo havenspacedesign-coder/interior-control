@@ -107,6 +107,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .rr-toggle-label{color:var(--text3);transition:.18s}
 .rr-toggle:not(.on) .rr-toggle-off,.rr-toggle.on .rr-toggle-on{color:var(--purple);font-weight:600}
 
+/* Vendor information */
+.vendor-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-bottom:1rem}.vendor-head-info{grid-column:1}.vendor-tabs{grid-column:2;display:flex;gap:2px;background:var(--border);border-radius:var(--r);padding:2px}.vendor-tab{padding:6px 14px;border:0;background:transparent;border-radius:6px;color:var(--text2);cursor:pointer;font:500 13px inherit}.vendor-tab.on{background:var(--surface);color:var(--pd);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.vendor-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.vendor-toolbar input,.vendor-toolbar select{width:auto;min-width:180px}.vendor-group{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);margin-bottom:10px;overflow:hidden}.vendor-group-hdr{padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}.vendor-group-title{font-size:13px;font-weight:600;flex:1}
+.vendor-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)}.vendor-row:last-child{border-bottom:0}.vendor-row:hover{background:#fafaf8}.vendor-main{flex:1;min-width:0}.vendor-name{font-size:13px;font-weight:500}.vendor-meta{font-size:11px;color:var(--text2);margin-top:3px;word-break:break-word}.vendor-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.vendor-checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:7px;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);max-height:210px;overflow:auto}.vendor-check{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer}.vendor-check input{width:auto}.vendor-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}.vendor-tag{font-size:10px;padding:2px 7px;border-radius:12px;background:var(--tl);color:var(--td)}.qr-box{text-align:center;padding-top:12px}.qr-box img{width:220px;height:220px;max-width:100%;border:8px solid #fff;box-shadow:0 1px 8px rgba(0,0,0,.12)}
+.site-vendor-project{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);margin-bottom:12px;overflow:hidden}.site-vendor-project-hdr{padding:12px 15px;background:var(--pl);color:var(--pd);font-size:14px;font-weight:600}.site-vendor-category{padding:12px 15px;border-top:1px solid var(--border)}.site-vendor-category-title{font-size:13px;font-weight:600;margin-bottom:8px}.site-vendor-option{display:grid;grid-template-columns:minmax(180px,280px) minmax(200px,1fr);align-items:center;gap:10px;padding:6px 0}.site-vendor-option label{display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer}.site-vendor-option input[type=checkbox]{width:auto}.site-vendor-option input[type=text]{padding:6px 9px}.site-vendor-none{border-top:1px dashed var(--border);margin-top:4px;padding-top:9px}.site-vendor-hint{font-size:11px;color:var(--text3);margin:-4px 0 12px}
+@media(max-width:700px){.vendor-head{display:flex;flex-direction:column;align-items:stretch}.vendor-head-info{text-align:left}.vendor-tabs{align-self:center;max-width:100%;overflow-x:auto}.vendor-tab{padding:6px 10px;white-space:nowrap}.vendor-row{align-items:flex-start;flex-direction:column}.vendor-actions{justify-content:flex-start}.vendor-toolbar input,.vendor-toolbar select{width:100%}.site-vendor-option{grid-template-columns:1fr}.topnav{gap:.5rem}.nav-tab{padding:5px 9px}}
+
+
 /* Design Progress */
 .design-proj-row{border:1px solid var(--border);border-radius:var(--rl2);margin-bottom:8px;overflow:hidden}
 .design-proj-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:var(--surface);user-select:none}
@@ -328,6 +337,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
       <button class="nav-tab" data-tab="design">設計進度</button>
       <button class="nav-tab" data-tab="progress">工程進度</button>
       <button class="nav-tab" data-tab="bible">施工寶典</button>
+      <button class="nav-tab" data-tab="vendors">廠商資訊</button>
       <button class="nav-tab admin-only" data-tab="members">成員管理</button>
     </div>
     <div class="topnav-right">
@@ -342,6 +352,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
     <div id="panel-design" class="panel"></div>
     <div id="panel-progress" class="panel"></div>
     <div id="panel-bible" class="panel"></div>
+    <div id="panel-vendors" class="panel"></div>
     <div id="panel-members" class="panel"></div>
   </main>
 </div>
@@ -381,7 +392,7 @@ const provider=new GoogleAuthProvider();
 let currentUser=null,currentRole=null;
 const IS_LOCAL_PREVIEW=location.protocol==='file:'||['127.0.0.1','localhost'].includes(location.hostname);
 let localTestMode=false;
-let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},globalNotes:{},userTodos:[]};
+let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},globalNotes:{},userTodos:[],tradeCategories:[],tradeVendors:[],otherVendorCategories:[],otherVendors:[],projectTradeSelections:{}};
 let userPrefs={todoProjects:[]};
 let localRenderTimer=null;
 function localClone(v){return v===undefined?v:JSON.parse(JSON.stringify(v));}
@@ -894,6 +905,11 @@ function initListeners(){
     renderActive();
   });
   onSnapshot(collection(db,'members'),snap=>{S.members=snap.docs.map(d=>({id:d.id,...d.data()}));renderActive();});
+  onSnapshot(collection(db,'tradeCategories'),snap=>{S.tradeCategories=snap.docs.map(d=>({id:d.id,...d.data()}));if(activePanel==='vendors')renderVendors();});
+  onSnapshot(collection(db,'tradeVendors'),snap=>{S.tradeVendors=snap.docs.map(d=>({id:d.id,...d.data()}));if(activePanel==='vendors')renderVendors();});
+  onSnapshot(collection(db,'otherVendorCategories'),snap=>{S.otherVendorCategories=snap.docs.map(d=>({id:d.id,...d.data()}));if(activePanel==='vendors')renderVendors();});
+  onSnapshot(collection(db,'otherVendors'),snap=>{S.otherVendors=snap.docs.map(d=>({id:d.id,...d.data()}));if(activePanel==='vendors')renderVendors();});
+  onSnapshot(collection(db,'projectTradeSelections'),snap=>{S.projectTradeSelections={};snap.docs.forEach(d=>{S.projectTradeSelections[d.id]=d.data().categories||{}});if(activePanel==='vendors')renderVendors();});
   onSnapshot(doc(db,'settings','designCols'),snap=>{
     const saved=snap.exists()?(snap.data().cols||DEFAULT_DESIGN_COLS):DEFAULT_DESIGN_COLS;
     const normalized=normalizeDesignCols(saved);
@@ -964,6 +980,7 @@ function renderActive(){
   else if(activePanel==='design')renderDesign();
   else if(activePanel==='progress')renderProgress();
   else if(activePanel==='bible')renderBible();
+  else if(activePanel==='vendors')renderVendors();
   else if(activePanel==='members')renderMembers();
 }
 
@@ -3669,6 +3686,83 @@ window.deleteStage=async function(stage){
     await batch.commit();activeBibleStage=null;setSynced();
   }catch(err){alert('刪除階段失敗：'+err.message);setSynced();}
 }
+
+// ── Vendor information ──
+let vendorView='trade',otherVendorFilter='all',otherVendorSearch='';
+function vendorCategoryName(id,list){return(list.find(x=>x.id===id)||{}).name||'未分類';}
+function vendorSafeUrl(url){try{const u=new URL(url);return/^https?:$/.test(u.protocol)?u.href:'';}catch(e){return'';}}
+function renderVendors(){
+  const el=$('panel-vendors');if(!el)return;
+  el.innerHTML=`<div class="vendor-head"><div class="vendor-head-info"><div style="font-size:15px;font-weight:600">廠商資訊</div><div style="font-size:11px;color:var(--text3);margin-top:3px">獨立 ID 資料庫，工地設定以案件與廠商 ID 安全關聯</div></div><div class="vendor-tabs"><button class="vendor-tab ${vendorView==='trade'?'on':''}" onclick="setVendorView('trade')">施工廠商名錄</button><button class="vendor-tab ${vendorView==='sites'?'on':''}" onclick="setVendorView('sites')">案件工班</button><button class="vendor-tab ${vendorView==='other'?'on':''}" onclick="setVendorView('other')">廠商資料庫</button></div></div>${vendorView==='trade'?renderTradeVendors():vendorView==='sites'?renderSiteTradeVendors():renderOtherVendors()}`;
+}
+window.setVendorView=function(v){vendorView=v;renderVendors();}
+function projectTradeSelection(projectId,categoryId){
+  const byProject=S.projectTradeSelections[projectId]||{};
+  return byProject[categoryId]||{vendorIds:[],none:false,notes:{}};
+}
+function renderSiteTradeVendors(){
+  const projects=S.projects.filter(p=>p.status==='prog');
+  if(!projects.length)return`<div class="empty">案件總覽目前沒有設定為「施工中」的工地。</div>`;
+  return`<div class="site-vendor-hint">僅顯示案件總覽中狀態為「施工中」的工地。每個工程類別可複選廠商，且每家廠商都有獨立備註。</div>${projects.map(p=>`<section class="site-vendor-project"><div class="site-vendor-project-hdr">${escAttr(p.name)}</div>${S.tradeCategories.map(c=>renderProjectTradeCategory(p,c)).join('')||'<div class="empty">請先建立施工工程項目</div>'}</section>`).join('')}`;
+}
+function renderProjectTradeCategory(project,category){
+  const vendors=S.tradeVendors.filter(v=>v.categoryId===category.id),sel=projectTradeSelection(project.id,category.id),ids=sel.vendorIds||[],notes=sel.notes||{};
+  return`<div class="site-vendor-category"><div class="site-vendor-category-title">${escAttr(category.name)}</div>${vendors.map(v=>`<div class="site-vendor-option"><label><input type="checkbox" ${ids.includes(v.id)?'checked':''} onchange="toggleProjectTradeVendor('${project.id}','${category.id}','${v.id}',this.checked)"><span>${escAttr(v.companyName||'未命名')}${v.contactName?'｜'+escAttr(v.contactName):''}</span></label><input type="text" placeholder="此廠商負責範圍／備註" value="${escAttr(notes[v.id]||'')}" ${ids.includes(v.id)?'':'disabled'} onblur="saveProjectTradeNote('${project.id}','${category.id}','${v.id}',this.value)"></div>`).join('')}<div class="site-vendor-option site-vendor-none"><label><input type="checkbox" ${sel.none?'checked':''} onchange="toggleProjectTradeNone('${project.id}','${category.id}',this.checked)"><strong>無</strong><span style="font-size:11px;color:var(--text3)">此工地沒有這項工程</span></label><span></span></div></div>`;
+}
+async function writeProjectTradeSelection(projectId,categoryId,next){
+  S.projectTradeSelections={...(S.projectTradeSelections||{})};
+  S.projectTradeSelections[projectId]={...(S.projectTradeSelections[projectId]||{}),[categoryId]:next};
+  setSyncing();
+  await setDoc(doc(db,'projectTradeSelections',projectId),{categories:S.projectTradeSelections[projectId]});
+  setSynced();renderVendors();
+}
+window.toggleProjectTradeVendor=function(projectId,categoryId,vendorId,checked){
+  const cur=projectTradeSelection(projectId,categoryId),vendorIds=[...(cur.vendorIds||[])];
+  const nextIds=checked?[...new Set([...vendorIds,vendorId])]:vendorIds.filter(id=>id!==vendorId);
+  writeProjectTradeSelection(projectId,categoryId,{...cur,vendorIds:nextIds,none:checked?false:!!cur.none,notes:{...(cur.notes||{})}});
+}
+window.toggleProjectTradeNone=function(projectId,categoryId,checked){
+  const cur=projectTradeSelection(projectId,categoryId);
+  writeProjectTradeSelection(projectId,categoryId,{...cur,vendorIds:checked?[]:(cur.vendorIds||[]),none:checked,notes:{...(cur.notes||{})}});
+}
+window.saveProjectTradeNote=function(projectId,categoryId,vendorId,text){
+  const cur=projectTradeSelection(projectId,categoryId),notes={...(cur.notes||{}),[vendorId]:(text||'').trim()};
+  writeProjectTradeSelection(projectId,categoryId,{...cur,notes});
+}
+function renderTradeVendors(){
+  return`<div class="vendor-toolbar">${isAdmin()?'<button class="btn btn-p" onclick="showTradeVendorForm()">＋新增施工廠商</button><button class="btn" onclick="showCategoryForm(\'trade\')">＋新增工程項目</button>':''}<span style="font-size:11px;color:var(--text3)">${S.tradeCategories.length} 個工程項目 · ${S.tradeVendors.length} 家廠商</span></div>
+  ${S.tradeCategories.length?S.tradeCategories.map(c=>{const rows=S.tradeVendors.filter(v=>v.categoryId===c.id);return`<section class="vendor-group"><div class="vendor-group-hdr"><div class="vendor-group-title">${escAttr(c.name)}</div><span style="font-size:11px;color:var(--text3)">${rows.length} 家</span>${isAdmin()?`<button class="btn btn-sm" onclick="renameVendorCategory('trade','${c.id}')">修改名稱</button><button class="btn btn-sm btn-danger" onclick="deleteVendorCategory('trade','${c.id}')">刪除</button>`:''}</div>${rows.length?rows.map(renderTradeVendorRow).join(''):'<div class="empty" style="padding:1rem">尚無廠商</div>'}${isAdmin()?`<div style="padding:7px 14px"><button class="btn btn-sm" onclick="showTradeVendorForm(null,'${c.id}')">＋新增廠商</button></div>`:''}</section>`;}).join(''):'<div class="empty">尚無工程項目，請先新增工程項目。</div>'}`;
+}
+function renderTradeVendorRow(v){
+  const url=vendorSafeUrl(v.lineGroupUrl||'');
+  return`<div class="vendor-row"><div class="vendor-main"><div class="vendor-name">${escAttr(v.companyName||'未命名')} ${v.contactName?`<span style="font-weight:400;color:var(--text2)">｜${escAttr(v.contactName)}</span>`:''}</div><div class="vendor-meta">${[v.phone?`電話：${escAttr(v.phone)}`:'',v.lineId?`LINE ID：${escAttr(v.lineId)}`:''].filter(Boolean).join('　')||'尚無聯絡資訊'}</div></div><div class="vendor-actions">${url?`<button class="btn btn-sm" onclick="openVendorUrl('${escAttr(url)}')">開啟群組</button><button class="btn btn-sm" onclick="copyVendorUrl('${escAttr(url)}')">複製網址</button><button class="btn btn-sm" onclick="showVendorQr('${escAttr(url)}','${escAttr(v.companyName||'LINE 群組')}')">顯示 QR Code</button>`:''}${isAdmin()?`<button class="btn btn-sm" onclick="showTradeVendorForm('${v.id}')">編輯</button><button class="btn btn-sm btn-danger" onclick="deleteTradeVendor('${v.id}')">刪除</button>`:''}</div></div>`;
+}
+window.showTradeVendorForm=function(id,presetCategoryId){
+  if(!isAdmin())return;const v=id?S.tradeVendors.find(x=>x.id===id):null;if(!S.tradeCategories.length)return alert('請先新增工程項目');
+  $('mo-content').innerHTML=`<div class="mo-title">${v?'編輯施工廠商':'新增施工廠商'}</div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><select id="tv-category">${S.tradeCategories.map(c=>`<option value="${c.id}" ${(v?.categoryId||presetCategoryId)===c.id?'selected':''}>${escAttr(c.name)}</option>`).join('')}</select><input id="tv-company" type="text" placeholder="公司名稱*" value="${escAttr(v?.companyName||'')}"><input id="tv-contact" type="text" placeholder="聯絡人" value="${escAttr(v?.contactName||'')}"><input id="tv-phone" type="text" placeholder="電話" value="${escAttr(v?.phone||'')}"><input id="tv-line" type="text" placeholder="LINE ID" value="${escAttr(v?.lineId||'')}"><input id="tv-url" type="text" placeholder="LINE 群組邀請網址（https://…）" value="${escAttr(v?.lineGroupUrl||'')}"></div><div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="saveTradeVendor(${v?`'${v.id}'`:'null'})">儲存</button></div>`;$('modal').style.display='flex';
+}
+window.saveTradeVendor=async function(id){
+  const companyName=$('tv-company').value.trim(),lineGroupUrl=$('tv-url').value.trim();if(!companyName)return alert('請填寫公司名稱');if(lineGroupUrl&&!vendorSafeUrl(lineGroupUrl))return alert('請輸入有效的 http 或 https 網址');
+  const data={categoryId:$('tv-category').value,companyName,contactName:$('tv-contact').value.trim(),phone:$('tv-phone').value.trim(),lineId:$('tv-line').value.trim(),lineGroupUrl,updatedAt:new Date().toISOString()};setSyncing();if(id)await updateDoc(doc(db,'tradeVendors',id),data);else await addDoc(collection(db,'tradeVendors'),{...data,createdAt:new Date().toISOString()});closeMo();setSynced();renderVendors();
+}
+window.deleteTradeVendor=async function(id){const v=S.tradeVendors.find(x=>x.id===id);if(!v||!confirm(`確定刪除「${v.companyName}」？`))return;await deleteDoc(doc(db,'tradeVendors',id));renderVendors();}
+function renderOtherVendors(){
+  const filtered=S.otherVendors.filter(v=>(otherVendorFilter==='all'||(v.categoryIds||[]).includes(otherVendorFilter))&&(!otherVendorSearch||(v.companyName||'').toLowerCase().includes(otherVendorSearch.toLowerCase())));
+  return`<div class="vendor-toolbar">${isAdmin()?'<button class="btn btn-p" onclick="showOtherVendorForm()">＋新增其他廠商</button><button class="btn" onclick="showCategoryForm(\'other\')">＋新增類別</button>':''}<select onchange="setOtherVendorFilter(this.value)"><option value="all">全部類別</option>${S.otherVendorCategories.map(c=>`<option value="${c.id}" ${otherVendorFilter===c.id?'selected':''}>${escAttr(c.name)}</option>`).join('')}</select><input type="text" placeholder="搜尋公司名稱" value="${escAttr(otherVendorSearch)}" oninput="setOtherVendorSearch(this.value)"></div><div class="card"><div class="card-hdr"><span class="card-title">其他廠商（${filtered.length}）</span><button class="btn btn-sm" onclick="showOtherCategoryManager()">管理類別</button></div>${filtered.length?filtered.map(renderOtherVendorRow).join(''):'<div class="empty">沒有符合條件的廠商</div>'}</div>`;
+}
+function renderOtherVendorRow(v){const cats=(v.categoryIds||[]).map(id=>S.otherVendorCategories.find(c=>c.id===id)).filter(Boolean);return`<div class="vendor-row"><div class="vendor-main"><div class="vendor-name">${escAttr(v.companyName||'未命名')}</div><div class="vendor-tags">${cats.length?cats.map(c=>`<span class="vendor-tag">${escAttr(c.name)}</span>`).join(''):'<span class="vendor-tag" style="background:var(--bg);color:var(--text3)">未分類</span>'}</div>${v.note?`<div class="vendor-meta">${escAttr(v.note)}</div>`:''}</div>${isAdmin()?`<div class="vendor-actions"><button class="btn btn-sm" onclick="showOtherVendorForm('${v.id}')">編輯</button><button class="btn btn-sm btn-danger" onclick="deleteOtherVendor('${v.id}')">刪除</button></div>`:''}</div>`;}
+window.setOtherVendorFilter=function(v){otherVendorFilter=v;renderVendors();};window.setOtherVendorSearch=function(v){otherVendorSearch=v;renderVendors();const inp=$('panel-vendors')?.querySelector('input[placeholder="搜尋公司名稱"]');if(inp){inp.focus();inp.setSelectionRange(v.length,v.length);}};
+window.showOtherVendorForm=function(id){if(!isAdmin())return;const v=id?S.otherVendors.find(x=>x.id===id):null;$('mo-content').innerHTML=`<div class="mo-title">${v?'編輯其他廠商':'新增其他廠商'}</div><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px"><div style="font-size:12px;color:var(--text2)">類別（可複選）</div><div class="vendor-checks">${S.otherVendorCategories.length?S.otherVendorCategories.map(c=>`<label class="vendor-check"><input type="checkbox" name="ov-category" value="${c.id}" ${(v?.categoryIds||[]).includes(c.id)?'checked':''}> ${escAttr(c.name)}</label>`).join(''):'尚無類別，請先新增類別'}</div><input id="ov-company" type="text" placeholder="公司名稱*" value="${escAttr(v?.companyName||'')}"><textarea id="ov-note" rows="4" placeholder="備註">${escAttr(v?.note||'')}</textarea></div><div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="saveOtherVendor(${v?`'${v.id}'`:'null'})">儲存</button></div>`;$('modal').style.display='flex';}
+window.saveOtherVendor=async function(id){const companyName=$('ov-company').value.trim();if(!companyName)return alert('請填寫公司名稱');const categoryIds=[...document.querySelectorAll('input[name="ov-category"]:checked')].map(x=>x.value);const data={companyName,categoryIds,note:$('ov-note').value.trim(),updatedAt:new Date().toISOString()};if(id)await updateDoc(doc(db,'otherVendors',id),data);else await addDoc(collection(db,'otherVendors'),{...data,createdAt:new Date().toISOString()});closeMo();renderVendors();}
+window.deleteOtherVendor=async function(id){const v=S.otherVendors.find(x=>x.id===id);if(!v||!confirm(`確定刪除「${v.companyName}」？`))return;await deleteDoc(doc(db,'otherVendors',id));renderVendors();}
+window.showCategoryForm=function(type){if(!isAdmin())return;$('mo-content').innerHTML=`<div class="mo-title">新增${type==='trade'?'工程項目':'其他廠商類別'}</div><div style="margin-top:12px"><input id="vc-name" type="text" placeholder="類別名稱*" onkeydown="if(event.key==='Enter')saveVendorCategory('${type}')"></div><div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="saveVendorCategory('${type}')">新增</button></div>`;$('modal').style.display='flex';setTimeout(()=>$('vc-name')?.focus(),50);}
+window.saveVendorCategory=async function(type){const name=$('vc-name').value.trim(),list=type==='trade'?S.tradeCategories:S.otherVendorCategories,collectionName=type==='trade'?'tradeCategories':'otherVendorCategories';if(!name)return alert('請輸入名稱');if(list.some(x=>x.name===name))return alert('已有相同名稱');await addDoc(collection(db,collectionName),{name,createdAt:new Date().toISOString()});closeMo();renderVendors();}
+window.renameVendorCategory=async function(type,id){const list=type==='trade'?S.tradeCategories:S.otherVendorCategories,c=list.find(x=>x.id===id);if(!c)return;const name=prompt('修改類別名稱',c.name)?.trim();if(!name||name===c.name)return;if(list.some(x=>x.id!==id&&x.name===name))return alert('已有相同名稱');await updateDoc(doc(db,type==='trade'?'tradeCategories':'otherVendorCategories',id),{name});renderVendors();}
+window.deleteVendorCategory=async function(type,id){const isTrade=type==='trade',list=isTrade?S.tradeCategories:S.otherVendorCategories,c=list.find(x=>x.id===id);if(!c)return;const used=isTrade?S.tradeVendors.filter(v=>v.categoryId===id):S.otherVendors.filter(v=>(v.categoryIds||[]).includes(id));if(used.length)return alert(`「${c.name}」仍有 ${used.length} 家廠商使用，請先移除或改分類後再刪除。`);if(!confirm(`確定刪除類別「${c.name}」？`))return;await deleteDoc(doc(db,isTrade?'tradeCategories':'otherVendorCategories',id));if(!isTrade&&otherVendorFilter===id)otherVendorFilter='all';renderVendors();}
+window.showOtherCategoryManager=function(){$('mo-content').innerHTML=`<div class="mo-title">其他廠商類別管理</div><div style="margin-top:12px">${S.otherVendorCategories.map(c=>`<div class="vendor-row" style="padding:8px 0"><div class="vendor-main">${escAttr(c.name)}</div>${isAdmin()?`<button class="btn btn-sm" onclick="closeMo();renameVendorCategory('other','${c.id}')">修改</button><button class="btn btn-sm btn-danger" onclick="closeMo();deleteVendorCategory('other','${c.id}')">刪除</button>`:''}</div>`).join('')||'<div class="empty">尚無類別</div>'}</div><div class="mo-footer">${isAdmin()?'<button class="btn btn-p" onclick="closeMo();showCategoryForm(\'other\')">＋新增類別</button>':''}<button class="btn" onclick="closeMo()">關閉</button></div>`;$('modal').style.display='flex';}
+window.openVendorUrl=function(url){const safe=vendorSafeUrl(url);if(safe)window.open(safe,'_blank','noopener');};window.copyVendorUrl=async function(url){try{await navigator.clipboard.writeText(url);alert('網址已複製');}catch(e){prompt('請複製網址',url);}};
+window.showVendorQr=function(url,title){const safe=vendorSafeUrl(url);if(!safe)return;const qr='https://quickchart.io/qr?size=300&text='+encodeURIComponent(safe);$('mo-content').innerHTML=`<div class="mo-title">${escAttr(title)}</div><div class="qr-box"><img src="${qr}" alt="LINE 群組 QR Code"><div class="vendor-meta" style="margin-top:8px">掃描後開啟 LINE 群組邀請網址</div></div><div class="mo-footer"><button class="btn" onclick="copyVendorUrl('${escAttr(safe)}')">複製網址</button><button class="btn" onclick="closeMo()">關閉</button></div>`;$('modal').style.display='flex';}
+
 
 // ── Members ──
 let expandedMemberInfo={};
