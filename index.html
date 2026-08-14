@@ -14,6 +14,7 @@
   --amber:#BA7517;--al:#FAEEDA;--ad:#633806;
   --red:#E24B4A;--rl:#FCEBEB;--rd:#791F1F;
   --green:#639922;--gl:#EAF3DE;--gd:#27500A;
+  --company-1:#D6D1CA;--company-2:#968B83;--company-3:#C0B7B0;--company-4:#9A9794;--company-5:#C8C9C9;
   --r:8px;--rl2:12px;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
@@ -108,12 +109,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .rr-toggle:not(.on) .rr-toggle-off,.rr-toggle.on .rr-toggle-on{color:var(--purple);font-weight:600}
 
 /* Vendor information */
-.vendor-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-bottom:1rem}.vendor-head-info{grid-column:1}.vendor-tabs{grid-column:2;display:flex;gap:2px;background:var(--border);border-radius:var(--r);padding:2px}.vendor-tab{padding:6px 14px;border:0;background:transparent;border-radius:6px;color:var(--text2);cursor:pointer;font:500 13px inherit}.vendor-tab.on{background:var(--surface);color:var(--pd);box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.vendor-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.vendor-toolbar input,.vendor-toolbar select{width:auto;min-width:180px}.vendor-group{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);margin-bottom:10px;overflow:hidden}.vendor-group-hdr{padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}.vendor-group-title{font-size:13px;font-weight:600;flex:1}
+.vendor-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-bottom:1rem}.vendor-head-info{grid-column:1}.vendor-tabs{grid-column:2;display:flex;gap:2px;background:var(--border);border-radius:var(--r);padding:2px}.vendor-head-actions{grid-column:3;justify-self:end}.vendor-tab{padding:6px 14px;border:0;background:transparent;border-radius:6px;color:var(--text2);cursor:pointer;font:500 13px inherit}.vendor-tab.on{background:var(--surface);color:var(--pd);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.vendor-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.vendor-toolbar input,.vendor-toolbar select{width:auto;min-width:180px}.vendor-group{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);margin-bottom:10px;overflow:hidden}.vendor-group-hdr{padding:10px 14px;background:var(--company-1);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}.vendor-group-title{font-size:14px;font-weight:600;flex:1}
 .vendor-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)}.vendor-row:last-child{border-bottom:0}.vendor-row:hover{background:#fafaf8}.vendor-main{flex:1;min-width:0}.vendor-name{font-size:13px;font-weight:500}.vendor-meta{font-size:11px;color:var(--text2);margin-top:3px;word-break:break-word}.vendor-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 .vendor-checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:7px;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);max-height:210px;overflow:auto}.vendor-check{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer}.vendor-check input{width:auto}.vendor-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}.vendor-tag{font-size:10px;padding:2px 7px;border-radius:12px;background:var(--tl);color:var(--td)}.qr-box{text-align:center;padding-top:12px}.qr-box img{width:220px;height:220px;max-width:100%;border:8px solid #fff;box-shadow:0 1px 8px rgba(0,0,0,.12)}
 .site-vendor-project{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);margin-bottom:12px;overflow:hidden}.site-vendor-project-hdr{padding:12px 15px;background:var(--pl);color:var(--pd);font-size:14px;font-weight:600}.site-vendor-category{padding:12px 15px;border-top:1px solid var(--border)}.site-vendor-category-title{font-size:13px;font-weight:600;margin-bottom:8px}.site-vendor-option{display:grid;grid-template-columns:minmax(180px,280px) minmax(200px,1fr);align-items:center;gap:10px;padding:6px 0}.site-vendor-option label{display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer}.site-vendor-option input[type=checkbox]{width:auto}.site-vendor-option input[type=text]{padding:6px 9px}.site-vendor-none{border-top:1px dashed var(--border);margin-top:4px;padding-top:9px}.site-vendor-hint{font-size:11px;color:var(--text3);margin:-4px 0 12px}
-@media(max-width:700px){.vendor-head{display:flex;flex-direction:column;align-items:stretch}.vendor-head-info{text-align:left}.vendor-tabs{align-self:center;max-width:100%;overflow-x:auto}.vendor-tab{padding:6px 10px;white-space:nowrap}.vendor-row{align-items:flex-start;flex-direction:column}.vendor-actions{justify-content:flex-start}.vendor-toolbar input,.vendor-toolbar select{width:100%}.site-vendor-option{grid-template-columns:1fr}.topnav{gap:.5rem}.nav-tab{padding:5px 9px}}
+@media(max-width:700px){.vendor-head{display:flex;flex-direction:column;align-items:stretch}.vendor-head-info{text-align:left}.vendor-tabs{align-self:center;max-width:100%;overflow-x:auto}.vendor-head-actions{align-self:flex-end}.vendor-tab{padding:6px 10px;white-space:nowrap}.vendor-row{align-items:flex-start;flex-direction:column}.vendor-actions{justify-content:flex-start}.vendor-toolbar input,.vendor-toolbar select{width:100%}.site-vendor-option{grid-template-columns:1fr}.topnav{gap:.5rem}.nav-tab{padding:5px 9px}}
 
 
 /* Design Progress */
@@ -199,7 +200,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 
 /* Daily log section */
 .daily-section{margin-top:1rem;border:1px solid var(--border);border-radius:var(--rl2);overflow:hidden}
-.daily-section-hdr{padding:10px 16px;background:var(--bg);font-size:13px;font-weight:500;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.daily-section-hdr{padding:10px 16px;background:var(--bg);font-size:13px;font-weight:500;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:flex-start;gap:4px}
+.daily-section-title{width:180px;flex:none}
+.inline-link{color:var(--purple);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .daily-log-table{border-collapse:collapse;table-layout:fixed}
 .daily-log-table th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500;position:sticky;top:0;z-index:10}
 .daily-log-table th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
@@ -255,6 +258,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .bst-name{flex:1;font-size:12px}
 .bst-cnt{font-size:10px;background:var(--bg);color:var(--text2);padding:1px 6px;border-radius:10px;flex-shrink:0}
 .bible-detail{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:16px}
+.bible-worksite-stage{scroll-margin-top:68px}
 .phase-section{margin-bottom:16px}
 .phase-title{font-size:11px;font-weight:600;letter-spacing:.5px;padding:6px 0;border-bottom:2px solid var(--border);margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .phase-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
@@ -1531,14 +1535,7 @@ function renderProgress(){
   const el=$('panel-progress');
   const weekDays=getWeekDates();
   function shouldShow(p){
-    if(p.status==='prog')return true;
-    if(p.status==='done'){
-      return(p.schedule||[]).some(e=>{
-        const d=new Date(e.date+'T00:00:00');
-        return d>=weekDays[0]&&d<=weekDays[weekDays.length-1];
-      });
-    }
-    return false;
+    return p.status==='prog';
   }
   const viewMonth=weekDays[0].getFullYear()+'-'+String(weekDays[0].getMonth()+1).padStart(2,'0');
   el.innerHTML=`
@@ -1568,6 +1565,7 @@ function renderProgress(){
   ${calMode==='week'||calMode==='month'?`<div class="formula-bar${formulaBarState?' active':''}" id="pn-formula-bar">
     <span class="formula-bar-label" id="pn-formula-label">${formulaBarState?(formulaBarState.type==='meeting'?(MEETING_ROWS.find(r=>r.id===formulaBarState.rowId)?.name||'會議 / 其他事項'):(formulaBarState.type==='work'?'工地記事':'私人記事'))+' · '+formulaBarState.ds.slice(5).replace('-','/'):'選取儲存格'}</span>
     <input class="formula-bar-input" id="pn-formula-input" placeholder="選取色塊後在此編輯…" value="${formulaBarState?escAttr(formulaBarState.text||''):''}" autocomplete="off" spellcheck="false"
+      oncontextmenu="return insertUrlForSelection(event,this)"
       oninput="pnSyncFormulaText(this.value);pnFormulaInput(event)"
       onblur="formulaBarSave()"
       onkeydown="pnFormulaKeyDown(event)">
@@ -1763,6 +1761,7 @@ function renderWeekView(shouldShow){
               +' style="flex:1;min-width:0;box-sizing:border-box;border:none;padding:0;font-size:13px;line-height:1.3;font-family:inherit;background:transparent;color:inherit"'
               +' onblur="mBoxBlur(this,\''+row.id+'\',\''+ds+'\',0)"'
               +' onkeydown="if((event.key===\'Enter\'||event.key===\'Escape\')&&!event.isComposing&&event.keyCode!==229)this.blur()"'
+              +' oncontextmenu="return insertUrlForSelection(event,this)"'
               +' onclick="event.stopPropagation()"'
               +'>'
               +'<div style="display:flex;gap:3px;align-items:center;flex-shrink:0">'+dots
@@ -1773,7 +1772,7 @@ function renderWeekView(shouldShow){
               +' onclick="mSelect(\''+row.id+'\',\''+ds+'\',0)"'
               +' draggable="true"'
               +' ondragstart="mDragStart(event,\''+row.id+'\',\''+ds+'\',0)"'
-              +'>'+escAttr(item.text||'')
+              +'>'+renderLinkedText(item.text||'')
               +(dots?'<span style="position:absolute;top:2px;right:2px;display:flex;gap:2px">'+dots+'</span>':'')
               +'</div>';
           }
@@ -1860,7 +1859,7 @@ function renderDailyLogSection(days){
   return`<div style="border-top:3px solid #1a1a1a;margin-top:0"></div>
   <div class="daily-section" style="margin-top:0;border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">
     <div class="daily-section-hdr">
-      <span>每日施工日誌</span>
+      <span class="daily-section-title">每日施工日誌</span>
       ${renderDailyAssignBar(days)}
     </div>
     <div class="hscroll-sync hide-hscrollbar" style="overflow-x:auto">
@@ -2484,7 +2483,7 @@ function renderPrivateTodoSection(){
       .split(/(\[proj:[^\]]+\])/g).map(function(part){
         var m=part.match(/\[proj:([^\]]+)\]/);
         if(m)return'<span style="color:var(--purple);font-weight:600;background:var(--pl);padding:0 4px;border-radius:3px;font-size:10px">'+m[1]+'</span>';
-        return part.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return renderLinkedText(part);
       }).join('');
   }
 
@@ -2508,6 +2507,7 @@ function renderPrivateTodoSection(){
           +' oninput="pnSyncFormulaText(this.value);pnInput(event,\''+type+'\',\''+ds+'\','+i+')"'
           +' onblur="pnBoxBlur(this,\''+type+'\',\''+ds+'\','+i+')"'
           +' onkeydown="pnKeyDown(event,\''+type+'\',\''+ds+'\','+i+')"'
+          +' oncontextmenu="return insertUrlForSelection(event,this)"'
           +' onclick="event.stopPropagation()"'
           +'>'
           +'</div>';
@@ -2938,6 +2938,16 @@ document.addEventListener('wheel',function(e){
       }
     }
     el=el.parentElement;
+  }
+  const progressPanel=$('panel-progress');
+  if(activePanel==='progress'&&progressPanel&&progressPanel.contains(e.target)){
+    const scroller=Array.from(document.querySelectorAll('.hscroll-sync')).find(function(node){return node.scrollWidth>node.clientWidth;});
+    if(scroller){
+      scroller.scrollLeft+=e.deltaY||e.deltaX;
+      lastHScrollLeft=scroller.scrollLeft;
+      document.querySelectorAll('.hscroll-sync').forEach(function(other){if(other!==scroller)other.scrollLeft=lastHScrollLeft;});
+      e.preventDefault();
+    }
   }
 },{passive:false});
 document.addEventListener('keydown',function(e){
@@ -3393,14 +3403,20 @@ function renderBibleWorksite(stage){
     if(!metaItems.length)return'';
     const key=`${activeBibleWs}_${s}`;const stored=S.checks[key]||[];
     const merged=metaItems.map((m,i)=>({text:m.text,isSub:m.isSub,done:stored[i]?.done||false,skip:stored[i]?.skip||false}));
-    return`<div style="margin-top:16px">
+    return`<div class="bible-worksite-stage" data-worksite-stage="${escAttr(s)}" style="margin-top:16px">
       <div style="font-size:13px;font-weight:600;margin-bottom:6px">${displayStageName(s)}</div>
       ${merged.map((item,i)=>renderCheckItemRow(activeBibleWs,s,i,item)).join('')}
     </div>`;
   }).join('')}`;
 }
 window.setBibleView=function(v){bibleView=v;renderBible();}
-window.setActiveStage=function(s){activeBibleStage=s;renderBible();}
+window.setActiveStage=function(s){
+  activeBibleStage=s;renderBible();
+  if(bibleView==='worksite')requestAnimationFrame(function(){
+    const target=Array.from(document.querySelectorAll('[data-worksite-stage]')).find(function(el){return el.dataset.worksiteStage===s;});
+    if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+}
 window.setActiveWs=function(id){activeBibleWs=id;renderBible();}
 window.toggleDragMode=function(){dragModeOn=!dragModeOn;renderBible();}
 window.bsDragStart=function(e,s){if(!dragModeOn)return;dragSrc=s;stageDragInProgress=true;setTimeout(()=>document.querySelector(`[data-stage="${s}"]`)?.classList.add('dragging'),0);}
@@ -3688,14 +3704,15 @@ window.deleteStage=async function(stage){
 }
 
 // ── Vendor information ──
-let vendorView='trade',otherVendorFilter='all',otherVendorSearch='';
+let vendorView='trade',vendorEditMode=false,otherVendorFilter='all',otherVendorSearch='';
 function vendorCategoryName(id,list){return(list.find(x=>x.id===id)||{}).name||'未分類';}
 function vendorSafeUrl(url){try{const u=new URL(url);return/^https?:$/.test(u.protocol)?u.href:'';}catch(e){return'';}}
 function renderVendors(){
   const el=$('panel-vendors');if(!el)return;
-  el.innerHTML=`<div class="vendor-head"><div class="vendor-head-info"><div style="font-size:15px;font-weight:600">廠商資訊</div><div style="font-size:11px;color:var(--text3);margin-top:3px">獨立 ID 資料庫，工地設定以案件與廠商 ID 安全關聯</div></div><div class="vendor-tabs"><button class="vendor-tab ${vendorView==='trade'?'on':''}" onclick="setVendorView('trade')">施工廠商名錄</button><button class="vendor-tab ${vendorView==='sites'?'on':''}" onclick="setVendorView('sites')">案件工班</button><button class="vendor-tab ${vendorView==='other'?'on':''}" onclick="setVendorView('other')">廠商資料庫</button></div></div>${vendorView==='trade'?renderTradeVendors():vendorView==='sites'?renderSiteTradeVendors():renderOtherVendors()}`;
+  el.innerHTML=`<div class="vendor-head"><div class="vendor-head-info"><div style="font-size:15px;font-weight:600">廠商資訊</div><div style="font-size:11px;color:var(--text3);margin-top:3px">獨立 ID 資料庫，工地設定以案件與廠商 ID 安全關聯</div></div><div class="vendor-tabs"><button class="vendor-tab ${vendorView==='trade'?'on':''}" onclick="setVendorView('trade')">施工廠商名錄</button><button class="vendor-tab ${vendorView==='sites'?'on':''}" onclick="setVendorView('sites')">案件工班</button><button class="vendor-tab ${vendorView==='other'?'on':''}" onclick="setVendorView('other')">廠商資料庫</button></div>${isAdmin()&&vendorView==='trade'?`<div class="vendor-head-actions"><button class="btn btn-sm ${vendorEditMode?'btn-p':''}" onclick="toggleVendorEditMode()">${vendorEditMode?'✓ 完成':'✎ 編輯'}</button></div>`:''}</div>${vendorView==='trade'?renderTradeVendors():vendorView==='sites'?renderSiteTradeVendors():renderOtherVendors()}`;
 }
 window.setVendorView=function(v){vendorView=v;renderVendors();}
+window.toggleVendorEditMode=function(){vendorEditMode=!vendorEditMode;renderVendors();}
 function projectTradeSelection(projectId,categoryId){
   const byProject=S.projectTradeSelections[projectId]||{};
   return byProject[categoryId]||{vendorIds:[],none:false,notes:{}};
@@ -3730,12 +3747,12 @@ window.saveProjectTradeNote=function(projectId,categoryId,vendorId,text){
   writeProjectTradeSelection(projectId,categoryId,{...cur,notes});
 }
 function renderTradeVendors(){
-  return`<div class="vendor-toolbar">${isAdmin()?'<button class="btn btn-p" onclick="showTradeVendorForm()">＋新增施工廠商</button><button class="btn" onclick="showCategoryForm(\'trade\')">＋新增工程項目</button>':''}<span style="font-size:11px;color:var(--text3)">${S.tradeCategories.length} 個工程項目 · ${S.tradeVendors.length} 家廠商</span></div>
-  ${S.tradeCategories.length?S.tradeCategories.map(c=>{const rows=S.tradeVendors.filter(v=>v.categoryId===c.id);return`<section class="vendor-group"><div class="vendor-group-hdr"><div class="vendor-group-title">${escAttr(c.name)}</div><span style="font-size:11px;color:var(--text3)">${rows.length} 家</span>${isAdmin()?`<button class="btn btn-sm" onclick="renameVendorCategory('trade','${c.id}')">修改名稱</button><button class="btn btn-sm btn-danger" onclick="deleteVendorCategory('trade','${c.id}')">刪除</button>`:''}</div>${rows.length?rows.map(renderTradeVendorRow).join(''):'<div class="empty" style="padding:1rem">尚無廠商</div>'}${isAdmin()?`<div style="padding:7px 14px"><button class="btn btn-sm" onclick="showTradeVendorForm(null,'${c.id}')">＋新增廠商</button></div>`:''}</section>`;}).join(''):'<div class="empty">尚無工程項目，請先新增工程項目。</div>'}`;
+  return`<div class="vendor-toolbar">${isAdmin()?'<button class="btn btn-p" onclick="showCategoryForm(\'trade\')">＋新增工程項目</button><button class="btn" onclick="showTradeVendorForm()">＋新增施工廠商</button>':''}<span style="font-size:11px;color:var(--text3)">${S.tradeCategories.length} 個工程項目 · ${S.tradeVendors.length} 家廠商</span></div>
+  ${S.tradeCategories.length?S.tradeCategories.map(c=>{const rows=S.tradeVendors.filter(v=>v.categoryId===c.id);return`<section class="vendor-group"><div class="vendor-group-hdr"><div class="vendor-group-title">${escAttr(c.name)}</div><span style="font-size:11px;color:var(--text2)">${rows.length} 家</span>${isAdmin()&&vendorEditMode?`<button class="btn btn-sm" onclick="renameVendorCategory('trade','${c.id}')">修改名稱</button><button class="btn btn-sm btn-danger" onclick="deleteVendorCategory('trade','${c.id}')">刪除</button>`:''}</div>${rows.length?rows.map(renderTradeVendorRow).join(''):'<div class="empty" style="padding:1rem">尚無廠商</div>'}</section>`;}).join(''):'<div class="empty">尚無工程項目，請先新增工程項目。</div>'}`;
 }
 function renderTradeVendorRow(v){
   const url=vendorSafeUrl(v.lineGroupUrl||'');
-  return`<div class="vendor-row"><div class="vendor-main"><div class="vendor-name">${escAttr(v.companyName||'未命名')} ${v.contactName?`<span style="font-weight:400;color:var(--text2)">｜${escAttr(v.contactName)}</span>`:''}</div><div class="vendor-meta">${[v.phone?`電話：${escAttr(v.phone)}`:'',v.lineId?`LINE ID：${escAttr(v.lineId)}`:''].filter(Boolean).join('　')||'尚無聯絡資訊'}</div></div><div class="vendor-actions">${url?`<button class="btn btn-sm" onclick="openVendorUrl('${escAttr(url)}')">開啟群組</button><button class="btn btn-sm" onclick="copyVendorUrl('${escAttr(url)}')">複製網址</button><button class="btn btn-sm" onclick="showVendorQr('${escAttr(url)}','${escAttr(v.companyName||'LINE 群組')}')">顯示 QR Code</button>`:''}${isAdmin()?`<button class="btn btn-sm" onclick="showTradeVendorForm('${v.id}')">編輯</button><button class="btn btn-sm btn-danger" onclick="deleteTradeVendor('${v.id}')">刪除</button>`:''}</div></div>`;
+  return`<div class="vendor-row"><div class="vendor-main"><div class="vendor-name">${escAttr(v.companyName||'未命名')} ${v.contactName?`<span style="font-weight:400;color:var(--text2)">｜${escAttr(v.contactName)}</span>`:''}</div><div class="vendor-meta">${[v.phone?`電話：${escAttr(v.phone)}`:'',v.lineId?`LINE ID：${escAttr(v.lineId)}`:''].filter(Boolean).join('　')||'尚無聯絡資訊'}</div></div><div class="vendor-actions">${url?`<button class="btn btn-sm" onclick="showVendorQr('${escAttr(url)}','${escAttr(v.companyName||'LINE 群組')}')">LINE群組</button>`:''}${isAdmin()&&vendorEditMode?`<button class="btn btn-sm" onclick="showTradeVendorForm('${v.id}')">編輯</button><button class="btn btn-sm btn-danger" onclick="deleteTradeVendor('${v.id}')">刪除</button>`:''}</div></div>`;
 }
 window.showTradeVendorForm=function(id,presetCategoryId){
   if(!isAdmin())return;const v=id?S.tradeVendors.find(x=>x.id===id):null;if(!S.tradeCategories.length)return alert('請先新增工程項目');
@@ -4056,6 +4073,34 @@ window.pnSyncFormulaText=function(text){
 }
 var selGen=0;
 function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function renderLinkedText(text){
+  const source=String(text||'');
+  const linkRe=/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g;
+  let html='',last=0,match;
+  while((match=linkRe.exec(source))){
+    html+=escAttr(source.slice(last,match.index));
+    html+='<a class="inline-link" href="'+escAttr(match[2])+'" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">'+escAttr(match[1])+'</a>';
+    last=linkRe.lastIndex;
+  }
+  return html+escAttr(source.slice(last));
+}
+window.insertUrlForSelection=function(event,input){
+  const start=input.selectionStart,end=input.selectionEnd;
+  if(start==null||end==null||start===end)return true;
+  event.preventDefault();event.stopPropagation();
+  const selected=input.value.slice(start,end);
+  const url=prompt('貼上網址（Google 地圖或其他 http / https 網址）','https://');
+  if(url===null)return false;
+  let parsed;
+  try{parsed=new URL(url.trim());}catch(err){alert('網址格式不正確');return false;}
+  if(parsed.protocol!=='http:'&&parsed.protocol!=='https:'){alert('只支援 http 或 https 網址');return false;}
+  const replacement='['+selected+']('+parsed.href+')';
+  input.value=input.value.slice(0,start)+replacement+input.value.slice(end);
+  input.setSelectionRange(start,start+replacement.length);
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+  input.focus();
+  return false;
+}
 // Core save: always reads the live value straight off the given input element,
 // identified by explicit type/ds/idx (baked into that box at render time) —
 // never relies on a shared "current selection" variable that could be stale.
