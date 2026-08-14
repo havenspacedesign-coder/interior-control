@@ -189,6 +189,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .add-ev-wrap{position:relative;display:inline-block}
 .add-ev-btn{color:var(--text3);font-size:11px;padding:2px 5px;cursor:pointer;display:inline-block;border-radius:3px;user-select:none}
 .add-ev-btn:hover{color:var(--purple);background:var(--pl)}
+.meeting-toolbar{position:sticky;left:8px;display:grid;grid-template-columns:161px 28px max-content;align-items:center;white-space:nowrap;width:max-content}
+.meeting-toolbar-title{font-size:12px;font-weight:600}
+.meeting-toolbar-help{display:flex;align-items:center;justify-content:flex-start}
+.meeting-color-controls{display:grid;grid-template-columns:max-content repeat(6,16px) max-content repeat(6,16px);align-items:center;column-gap:4px}
+.meeting-color-label{font-size:11px;color:var(--text2);line-height:20px}
+.meeting-color-label-bg{margin-left:2px}
 
 /* Stage search popup - opens UP */
 .stage-search-box{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 16px rgba(0,0,0,.15);min-width:170px;z-index:500}
@@ -1728,14 +1734,14 @@ function renderWeekView(shouldShow){
         return'<span style="width:16px;height:16px;border-radius:50%;background:'+col.bg+';cursor:'+(mFound?'pointer':'default')+';display:inline-block;border:1.5px solid rgba(0,0,0,.2);vertical-align:middle;opacity:'+(mFound?1:0.35)+';'+(isActive?'outline:2px solid #333;outline-offset:1px':'')+'" title="'+col.l+'"'+oc+'></span>';
       }).join('');
     }
-    var mColorBar='<span style="display:inline-flex;align-items:center;gap:4px;margin-left:10px;vertical-align:middle;flex-wrap:wrap">'
-      +'<span style="font-size:12px;color:var(--text2);margin-left:0;line-height:20px;vertical-align:middle">文字</span>'+mDots('text',mFound?mFound.color:'')
-      +'<span style="font-size:11px;color:var(--text2);margin-left:6px;line-height:20px;vertical-align:middle">底色</span>'+mDots('bg',mFound?mFound.bg:'')
+    var mColorBar='<span class="meeting-color-controls">'
+      +'<span class="meeting-color-label">文字</span>'+mDots('text',mFound?mFound.color:'')
+      +'<span class="meeting-color-label meeting-color-label-bg">底色</span>'+mDots('bg',mFound?mFound.bg:'')
       +'</span>';
     var hdr='<tr><td colspan="'+(days.length+1)+'" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:2px solid #1a1a1a">'
-      +'<div style="position:sticky;left:8px;display:inline-block;white-space:nowrap">'
-      +'🗓 會議 / 其他事項'
-      +'<span class="help-wrap" style="margin-left:8px"><button class="help-btn" type="button" aria-label="會議操作說明" onclick="toggleHelpPop(event,\'meeting-help\')">?</button><span class="help-pop" id="meeting-help" onclick="event.stopPropagation()"><ul><li>單擊項目後可選擇文字與底色。</li><li>雙擊項目可編輯內容。</li><li>點「＋標記」可標記人員，並同步到對方的每日施工日誌。</li><li>按住 Ctrl 拖拉可複製項目。</li><li>按 Delete 可刪除已選取的項目。</li></ul></span></span>'
+      +'<div class="meeting-toolbar">'
+      +'<span class="meeting-toolbar-title">🗓 會議 / 其他事項</span>'
+      +'<span class="meeting-toolbar-help"><span class="help-wrap"><button class="help-btn" type="button" aria-label="會議操作說明" onclick="toggleHelpPop(event,\'meeting-help\')">?</button><span class="help-pop" id="meeting-help" onclick="event.stopPropagation()"><ul><li>單擊項目後可選擇文字與底色。</li><li>雙擊項目可編輯內容。</li><li>點「＋標記」可標記人員，並同步到對方的每日施工日誌。</li><li>按住 Ctrl 拖拉可複製項目。</li><li>按 Delete 可刪除已選取的項目。</li></ul></span></span></span>'
       +mColorBar
       +'</div></td></tr>';
     var rows=MEETING_ROWS.map(function(row){
