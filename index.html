@@ -229,7 +229,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .log-textarea.today{background:#faf9ff}
 
 /* Private todo */
-.private-section{margin-top:0;border:1px solid var(--border);border-radius:0 0 var(--rl2) var(--rl2);overflow:hidden}
+.private-section{margin-top:0;border:1px solid var(--border);border-radius:0 0 var(--rl2) var(--rl2);overflow:hidden}.meet-chip,.pn-chip{box-sizing:border-box;max-width:100%;overflow:hidden}.meet-chip:not(input),.pn-chip:not(input){white-space:nowrap;text-overflow:ellipsis}
 .private-section-hdr{padding:10px 16px;background:#fff8f8;font-size:13px;font-weight:500;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
 .help-wrap{position:relative;display:inline-flex;align-items:center}
 .help-btn{width:19px;height:19px;padding:0;border:1px solid #b9b3d9;border-radius:50%;background:var(--surface);color:var(--purple);font-size:11px;font-weight:700;line-height:17px;cursor:pointer}
@@ -399,7 +399,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
   </div>
 </div>
 
-<div id="modal" class="mo" style="display:none" onclick="closeMo()">
+<div id="modal" class="mo" style="display:none" onclick="if(!document.getElementById('mo-content').dataset.lockBackdrop)closeMo()">
   <div class="mo-box" onclick="event.stopPropagation()" id="mo-content"></div>
 </div>
 
@@ -1347,7 +1347,7 @@ function renderDesignCell(p,col){
         <div style="padding:3px 4px 4px;position:relative;min-height:38px">
           <span onclick="openCheckMo('${p.id}','${stage}','${stage}','${p.name}')" style="cursor:pointer;background:var(--pl);color:var(--pd);padding:3px 7px;border-radius:5px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:7px;max-width:100%;line-height:1.35">
             <span style="min-width:0;overflow-wrap:break-word;word-break:normal">#${displayStageName(stage)}${pendBadge(remaining)}</span>
-            <span onclick="event.stopPropagation();saveDesignField('${p.id}','${colKey}','')" title="改回文字輸入" style="cursor:pointer;color:var(--text3);font-size:14px;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">×</span>
+            <span onclick="event.stopPropagation();confirmClearDesignStage('${p.id}','${colKey}','${escAttr(displayStageName(stage))}')" title="刪除標記" style="cursor:pointer;color:var(--text3);font-size:14px;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">×</span>
           </span>
         </div>
       </td>`;
@@ -2598,6 +2598,8 @@ var taskSelected={};
 var taskSelGen=0;
 var pnMentionActive=null; // {type,ds,idx}
 var pnEditCanceled=false; // set right before an Escape-triggered blur, so the blur handler discards the edit instead of saving it
+function projectMentionLabel(p){return String(p?.siteTag||p?.name||'').trim();}
+function projectMentionMatches(query){const q=String(query||'').toLowerCase();return S.projects.filter(function(p){return p.status!=='done'&&(String(p.name||'')+' '+String(p.siteTag||'')).toLowerCase().includes(q);});}
 
 window.pnInput=function(e,type,ds,idx){
   var inp=e.target;
@@ -2608,15 +2610,15 @@ window.pnInput=function(e,type,ds,idx){
   var menuEl=document.getElementById('pn-global-mention');
   if(atIdx>=0&&textBefore.indexOf(' ',atIdx)<0){
     var q=textBefore.substring(atIdx+1).toLowerCase();
-    var projs=S.projects.filter(function(p){return p.status!=='done'&&p.name.toLowerCase().includes(q);});
+    var projs=projectMentionMatches(q);
     if(projs.length){
       pnMentionActive={type:type,ds:ds,idx:idx,atIdx:atIdx};
       var rect=inp.getBoundingClientRect();
       menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:9999;min-width:150px;max-height:180px;overflow-y:auto';
       menuEl.innerHTML=projs.map(function(p){
         return'<div style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)" '
-          +'onmousedown="pnInsertMention(event,\''+type+'\',\''+ds+'\','+idx+',\''+p.name+'\')">'
-          +p.name+'</div>';
+          +'onmousedown="pnInsertMention(event,\''+type+'\',\''+ds+'\','+idx+',\''+projectMentionLabel(p)+'\')">'
+          +escAttr(projectMentionLabel(p))+(p.siteTag?'<span style="font-size:10px;color:var(--text2);margin-left:5px">'+escAttr(p.name)+'</span>':'')+'</div>';
       }).join('');
       return;
     }
@@ -2661,15 +2663,15 @@ window.pnFormulaInput=function(e){
   if(!menuEl)return;
   if(atIdx>=0&&textBefore.indexOf(' ',atIdx)<0){
     var q=textBefore.substring(atIdx+1).toLowerCase();
-    var projs=S.projects.filter(function(p){return p.status!=='done'&&p.name.toLowerCase().includes(q);});
+    var projs=projectMentionMatches(q);
     if(projs.length){
       pnMentionActive={formula:true,atIdx:atIdx};
       var rect=inp.getBoundingClientRect();
       menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:9999;min-width:150px;max-height:180px;overflow-y:auto';
       menuEl.innerHTML=projs.map(function(p){
         return'<div style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)" '
-          +'onmousedown="pnFormulaInsertMention(event,\''+p.name+'\')">'
-          +p.name+'</div>';
+          +'onmousedown="pnFormulaInsertMention(event,\''+projectMentionLabel(p)+'\')">'
+          +escAttr(projectMentionLabel(p))+(p.siteTag?'<span style="font-size:10px;color:var(--text2);margin-left:5px">'+escAttr(p.name)+'</span>':'')+'</div>';
       }).join('');
       return;
     }
@@ -2949,6 +2951,11 @@ function alignProgressBottomScrollbar(){
   const rect=board.getBoundingClientRect();
   bar.style.left=Math.max(0,rect.left)+'px';
   bar.style.right=Math.max(0,window.innerWidth-rect.right)+'px';
+}
+window.confirmClearDesignStage=function(projId,col,label){
+  delete $('mo-content').dataset.lockBackdrop;
+  $('mo-content').innerHTML=`<div class="mo-title">確認刪除</div><div class="mo-sub">確定要刪除「${escAttr(label)}」標記嗎？</div><div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-danger" id="mo-confirm-btn" onclick="closeMo();saveDesignField('${projId}','${col}','')">刪除</button></div>`;
+  $('modal').style.display='flex';setTimeout(()=>$('mo-confirm-btn')?.focus(),50);
 }
 window.addEventListener('resize',alignProgressBottomScrollbar);
 document.addEventListener('scroll',function(e){
@@ -3322,9 +3329,9 @@ window.openCheckMo=function(projId,stage,label,projName){
   $('modal').style.display='flex';
   openCheckMoArgs={projId,stage,label,projName};
 }
-window.closeMo=function(){$('modal').style.display='none';openCheckMoArgs=null;$('mo-content').style.maxWidth='';$('mo-content').classList.remove('project-detail-modal');}
+window.closeMo=function(){$('modal').style.display='none';delete $('mo-content').dataset.lockBackdrop;openCheckMoArgs=null;$('mo-content').style.maxWidth='';$('mo-content').classList.remove('project-detail-modal');}
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'&&$('modal').style.display==='flex'){
+  if(e.key==='Escape'&&$('modal').style.display==='flex'&&!$('mo-content').dataset.lockBackdrop){
     e.preventDefault();
     closeMo();
   }
@@ -4029,6 +4036,7 @@ function showProjectForm(projId){
   $('mo-content').innerHTML=`<div class="mo-title">${p?'編輯案件':'新增案件'}</div>
     <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:65vh;overflow-y:auto">
       <input id="np-name" type="text" placeholder="案件名稱*" value="${escAttr(p?.name||'')}">
+      <input id="np-site-tag" type="text" maxlength="12" placeholder="工地標記顯示（例如：平等街，用於 @ 標記）" value="${escAttr(p?.siteTag||'')}">
       <input id="np-owner" type="text" placeholder="業主姓名" value="${escAttr(p?.owner||'')}">
       <input id="np-phone" type="text" placeholder="電話" value="${escAttr(p?.phone||'')}">
       <input id="np-address" type="text" placeholder="案件地址" value="${escAttr(p?.address||'')}">
@@ -4058,7 +4066,7 @@ function showProjectForm(projId){
       </select>
     </div>
     <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="saveProjectForm(${p?`'${p.id}'`:'null'})">${p?'儲存':'新增'}</button></div>`;
-  $('modal').style.display='flex';
+  $('mo-content').dataset.lockBackdrop='true';$('modal').style.display='flex';
   ymdSetFields('np-cs',p?.contractStart);
   ymdSetFields('np-ce',p?.contractEnd||(!p?.contractStart?p?.finish:''));
   requestAnimationFrame(function(){const ta=$('np-process');if(ta)autoGrow(ta);});
@@ -4070,6 +4078,7 @@ window.saveProjectForm=async function(projId){
   const contractEnd=ymdValue('np-ce');
   const data={
     name,
+    siteTag:$('np-site-tag').value.trim(),
     owner:$('np-owner').value.trim(),
     phone:$('np-phone').value.trim(),
     address:$('np-address').value.trim(),
