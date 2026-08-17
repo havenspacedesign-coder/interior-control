@@ -4219,6 +4219,11 @@ async function photoBlob(photo){
   if(cached)return cached;
   const response=await fetch(photo.url);if(!response.ok)throw new Error('photo fetch failed');return response.blob();
 }
+async function clipboardPhotoBlob(photo){
+  const image=await photoBitmap(photo),canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;
+  const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0,canvas.width,canvas.height);
+  return new Promise(function(resolve,reject){canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('photo conversion failed')),'image/png');});
+}
 async function buildPhotoCollage(p){
   const photos=projectPhotos(p);if(!photos.length)throw new Error('no photos');
   const images=await Promise.all(photos.map(photo=>photoBitmap(photo)));
@@ -4241,7 +4246,7 @@ window.setProjectDetailPhoto=async function(projectId,photoId,checked){
   selectedProjectDetailPhotoId=checked?photoId:'';selectedProjectDetailPhotoBlob=null;showProjectDetail(projectId);
   if(!checked)return;
   const p=S.projects.find(x=>x.id===projectId),photo=p&&projectPhotos(p).find(x=>x.id===photoId);if(!photo)return;
-  try{const blob=await photoBlob(photo);if(selectedProjectDetailId===projectId&&selectedProjectDetailPhotoId===photoId){selectedProjectDetailPhotoBlob=blob;showProjectDetail(projectId);}}
+  try{const blob=await clipboardPhotoBlob(photo);if(selectedProjectDetailId===projectId&&selectedProjectDetailPhotoId===photoId){selectedProjectDetailPhotoBlob=blob;showProjectDetail(projectId);}}
   catch(error){console.error(error);if(selectedProjectDetailId===projectId&&selectedProjectDetailPhotoId===photoId){selectedProjectDetailPhotoId='';selectedProjectDetailPhotoBlob=null;showProjectDetail(projectId);}alert('這張照片暫時無法準備複製，請稍後再試。');}
 }
 window.copySelectedProjectPhoto=async function(projectId){
