@@ -1345,8 +1345,10 @@ function renderDesignCell(p,col){
       return`<td>
         ${dateRow}
         <div style="padding:3px 4px 4px;position:relative;min-height:38px">
-          <span onclick="openCheckMo('${p.id}','${stage}','${stage}','${p.name}')" style="cursor:pointer;background:var(--pl);color:var(--pd);padding:3px 22px 3px 7px;border-radius:5px;font-size:12px;font-weight:600;display:block;white-space:normal;overflow-wrap:break-word;word-break:normal;line-height:1.35;max-width:100%">#${displayStageName(stage)}${pendBadge(remaining)}</span>
-          <span onclick="saveDesignField('${p.id}','${colKey}','')" title="改回文字輸入" style="cursor:pointer;color:var(--text3);font-size:11px;position:absolute;right:8px;bottom:6px">×</span>
+          <span onclick="openCheckMo('${p.id}','${stage}','${stage}','${p.name}')" style="cursor:pointer;background:var(--pl);color:var(--pd);padding:3px 7px;border-radius:5px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:7px;max-width:100%;line-height:1.35">
+            <span style="min-width:0;overflow-wrap:break-word;word-break:normal">#${displayStageName(stage)}${pendBadge(remaining)}</span>
+            <span onclick="event.stopPropagation();saveDesignField('${p.id}','${colKey}','')" title="改回文字輸入" style="cursor:pointer;color:var(--text3);font-size:14px;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">×</span>
+          </span>
         </div>
       </td>`;
     }
@@ -3240,7 +3242,9 @@ window.startFieldEdit=function(span){
 }
 window.openDatePicker=function(){
   const p=$('week-date-picker');if(!p)return;
-  p.style.cssText='position:fixed;top:60px;left:50%;transform:translateX(-50%);opacity:1;pointer-events:auto;z-index:999;width:auto;height:auto';
+  const label=document.querySelector('#panel-progress .nav-row .wk-lbl');
+  const rect=label?label.getBoundingClientRect():null;
+  p.style.cssText=rect?'position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;opacity:1;pointer-events:auto;z-index:999;width:'+rect.width+'px;height:'+rect.height+'px':'position:fixed;top:60px;right:20px;opacity:1;pointer-events:auto;z-index:999;width:auto;height:auto';
   try{p.showPicker();}catch(e){p.click();}
   p.onblur=()=>{p.style.cssText='position:fixed;opacity:0;pointer-events:none;width:0;height:0';}
 }
@@ -3251,6 +3255,7 @@ window.jumpToDate=function(dateStr){
   if(calMode==='month'){
     const base=today();
     monthOffset=(target.getFullYear()-base.getFullYear())*12+(target.getMonth()-base.getMonth());
+    lastHScrollLeft=Math.max(0,(target.getDate()-3)*180);
     renderProgress();
     return;
   }
@@ -3313,7 +3318,7 @@ window.openCheckMo=function(projId,stage,label,projName){
     <div class="pb-wrap"><div class="pb-fill" style="width:${pct}%;background:${pct===100?'var(--teal)':'var(--purple)'}"></div></div>
     ${itemsHtml}
     <div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;
-  $('mo-content').style.maxWidth=isEstimate?'520px':'';
+  $('mo-content').style.maxWidth=isEstimate?'520px':'880px';
   $('modal').style.display='flex';
   openCheckMoArgs={projId,stage,label,projName};
 }
@@ -3752,7 +3757,8 @@ function formatVendorPhone(value){const digits=String(value||'').replace(/\D/g,'
 window.formatVendorPhoneInput=function(input){input.value=formatVendorPhone(input.value);}
 function renderVendors(){
   const el=$('panel-vendors');if(!el)return;
-  el.innerHTML=`<div class="vendor-head"><div class="vendor-head-info"></div><div class="vendor-tabs"><button class="vendor-tab ${vendorView==='trade'?'on':''}" onclick="setVendorView('trade')">施工廠商名錄</button><button class="vendor-tab ${vendorView==='sites'?'on':''}" onclick="setVendorView('sites')">案件工班</button><button class="vendor-tab ${vendorView==='other'?'on':''}" onclick="setVendorView('other')">廠商資料庫</button></div>${isAdmin()&&vendorView==='trade'?`<div class="vendor-head-actions"><button class="btn btn-sm ${vendorEditMode?'btn-p':''}" onclick="toggleVendorEditMode()">${vendorEditMode?'✓ 完成':'✎ 編輯'}</button></div>`:''}</div>${vendorView==='trade'?renderTradeVendors():vendorView==='sites'?renderSiteTradeVendors():renderOtherVendors()}`;
+  const pendingSites=pendingTradeProjectsCount();
+  el.innerHTML=`<div class="vendor-head"><div class="vendor-head-info"></div><div class="vendor-tabs"><button class="vendor-tab ${vendorView==='trade'?'on':''}" onclick="setVendorView('trade')">施工廠商名錄</button><button class="vendor-tab ${vendorView==='sites'?'on':''}" onclick="setVendorView('sites')">案件工班${pendingSites?` <span class="pend pend-r">${pendingSites}</span>`:''}</button><button class="vendor-tab ${vendorView==='other'?'on':''}" onclick="setVendorView('other')">廠商資料庫</button></div>${isAdmin()&&vendorView==='trade'?`<div class="vendor-head-actions"><button class="btn btn-sm ${vendorEditMode?'btn-p':''}" onclick="toggleVendorEditMode()">${vendorEditMode?'✓ 完成':'✎ 編輯'}</button></div>`:''}</div>${vendorView==='trade'?renderTradeVendors():vendorView==='sites'?renderSiteTradeVendors():renderOtherVendors()}`;
 }
 window.setVendorView=function(v){vendorView=v;renderVendors();}
 window.toggleVendorEditMode=function(){vendorEditMode=!vendorEditMode;renderVendors();}
@@ -3760,6 +3766,15 @@ function projectTradeSelection(projectId,categoryId){
   const byProject=vendorProjectEditMode&&projectId===activeVendorProjectId?(vendorProjectDraft||{}):(S.projectTradeSelections[projectId]||{});
   return byProject[categoryId]||{vendorIds:[],none:false,notes:{}};
 }
+function projectTradeNeedsSetup(projectId){
+  if(!S.tradeCategories.length)return true;
+  const saved=S.projectTradeSelections[projectId]||{};
+  return S.tradeCategories.some(function(category){
+    const selection=saved[category.id];
+    return !selection||(!selection.none&&!(selection.vendorIds||[]).length);
+  });
+}
+function pendingTradeProjectsCount(){return S.projects.filter(p=>p.status==='prog'&&projectTradeNeedsSetup(p.id)).length;}
 function renderSiteTradeVendors(){
   const projects=S.projects.filter(p=>p.status==='prog');
   if(!projects.length)return`<div class="empty">案件總覽目前沒有設定為「施工中」的工地。</div>`;
