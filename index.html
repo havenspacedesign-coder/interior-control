@@ -323,6 +323,16 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .project-detail-trades-title{font-size:13px;font-weight:600;margin-bottom:8px}
 .project-detail-trades-list{font-size:12px;line-height:1.7;word-break:break-word}
 .project-detail-empty{font-size:12px;color:var(--text3)}
+.project-photo-panel{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.project-photo-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:13px;font-weight:600}
+.project-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.project-photo-card{position:relative;aspect-ratio:1;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg)}
+.project-photo-card img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
+.project-photo-delete{position:absolute;top:4px;right:4px;width:23px;height:23px;border:0;border-radius:50%;background:rgba(0,0,0,.62);color:#fff;font-size:15px;line-height:21px;cursor:pointer}
+.project-photo-name{position:absolute;left:0;right:0;bottom:0;padding:4px 6px;background:rgba(0,0,0,.58);color:#fff;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.project-photo-empty{padding:12px;border:1px dashed var(--border);border-radius:var(--r);color:var(--text3);font-size:12px;text-align:center}
+.project-share-actions{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0;background:var(--surface);position:sticky;top:0;z-index:2;padding:5px 0}
+.project-share-hint{margin-top:7px;color:var(--text3);font-size:11px;line-height:1.5}
 @media(max-width:760px){.mo-box.project-detail-modal{max-width:560px;overflow-y:auto}.project-detail-grid{grid-template-columns:1fr;max-height:none}.project-detail-main,.project-detail-trades{overflow:visible}.project-detail-trades{border-left:0;border-top:1px solid var(--border);padding:14px 0 0}}
 .pb-wrap{background:var(--bg);border-radius:4px;height:4px;margin-bottom:12px}
 .pb-fill{height:4px;border-radius:4px}
@@ -407,11 +417,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 import{initializeApp}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
 import{getFirestore,collection,doc,addDoc as fbAddDoc,updateDoc as fbUpdateDoc,deleteDoc as fbDeleteDoc,setDoc as fbSetDoc,getDoc as fbGetDoc,onSnapshot,serverTimestamp,getDocs as fbGetDocs,writeBatch as fbWriteBatch,query,where}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signOut as fbSignOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
+import{getStorage,ref as storageRef,uploadBytes,getDownloadURL,deleteObject}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-storage.js";
 
 const FC={apiKey:"AIzaSyA6W_C2H84heiVwDe_a6ElMwuEjvbR0aRo",authDomain:"have000.firebaseapp.com",projectId:"have000",storageBucket:"have000.firebasestorage.app",messagingSenderId:"758420593792",appId:"1:758420593792:web:29f485e949eca0ce031a65"};
 const app=initializeApp(FC);
 const db=getFirestore(app);
 const auth=getAuth(app);
+const storage=getStorage(app);
 const provider=new GoogleAuthProvider();
 
 let currentUser=null,currentRole=null;
@@ -4032,6 +4044,11 @@ window.showEditProject=function(projId){
 }
 function showProjectForm(projId){
   const p=projId?S.projects.find(x=>x.id===projId):null;
+  const formPhotos=projectPhotos(p);
+  const photoEditor=p?`<section class="project-photo-panel">
+      <div class="project-photo-head"><span>📷 案件照片（${formPhotos.length}）</span><label class="btn btn-sm" style="cursor:pointer">＋ 上傳照片<input type="file" accept="image/*" multiple hidden onchange="uploadProjectPhotos('${p.id}',this.files,true);this.value=''"></label></div>
+      ${formPhotos.length?`<div class="project-photo-grid">${formPhotos.map(photo=>`<div class="project-photo-card"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div><button class="project-photo-delete" title="刪除照片" onclick="deleteProjectPhotoFromForm('${p.id}','${photo.id}')">×</button></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
+    </section>`:`<div style="font-size:11px;color:var(--text3);border:1px dashed var(--border);border-radius:var(--r);padding:8px;text-align:center">📷 請先儲存新案件，再回到編輯案件上傳照片。</div>`;
   $('mo-content').classList.remove('project-detail-modal');
   $('mo-content').innerHTML=`<div class="mo-title">${p?'編輯案件':'新增案件'}</div>
     <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:65vh;overflow-y:auto">
@@ -4060,7 +4077,7 @@ function showProjectForm(projId){
       ${ymdInputs('np-cs','合約起始日')}
       ${ymdInputs('np-ce','完工日')}
       <textarea id="np-process" placeholder="廠商施工流程…" rows="10" oninput="autoGrow(this)" style="font-family:inherit;padding:8px;border:1px solid var(--border);border-radius:var(--r);overflow-y:auto;resize:none;min-height:190px;max-height:340px">${escAttr(p?.process||'')}</textarea>
-      <div style="font-size:11px;color:var(--text3);border:1px dashed var(--border);border-radius:var(--r);padding:8px;text-align:center">📷 照片上傳（尚未開通，之後啟用 Firebase Storage 後可用）</div>
+      ${photoEditor}
       <select id="np-status">
         ${STATUS_OPTS.map(o=>`<option value="${o.v}" ${p?.status===o.v?'selected':''}>${o.l}</option>`).join('')}
       </select>
@@ -4122,12 +4139,113 @@ function projectTradeSummary(projectId){
   });
   return lines.join('<br>');
 }
+function projectPhotos(p){return Array.isArray(p?.photos)?p.photos.filter(x=>x&&x.url):[];}
+function photoId(){return`photo-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;}
+function fileAsDataUrl(file){return new Promise(function(resolve,reject){const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});}
+function safePhotoFileName(name){return String(name||'photo').replace(/[^a-zA-Z0-9._-]/g,'_').slice(-80)||'photo';}
+window.uploadProjectPhotos=async function(projectId,files,returnToForm){
+  if(!isAdmin()||!files?.length)return;
+  const p=S.projects.find(x=>x.id===projectId);if(!p)return;
+  const selected=Array.from(files);
+  const invalid=selected.find(file=>!String(file.type||'').startsWith('image/')||file.size>10*1024*1024);
+  if(invalid){alert('只能上傳圖片，且單張不可超過 10 MB。');return;}
+  try{
+    setSyncing();
+    const added=[];
+    for(const file of selected){
+      const id=photoId();
+      let url,path='';
+      if(localTestMode){url=await fileAsDataUrl(file);path=`local/${projectId}/${id}`;}
+      else{
+        path=`projectPhotos/${projectId}/${id}-${safePhotoFileName(file.name)}`;
+        const fileRef=storageRef(storage,path);
+        await uploadBytes(fileRef,file,{contentType:file.type});
+        url=await getDownloadURL(fileRef);
+      }
+      added.push({id,name:file.name||'照片',size:file.size||0,path,url,uploadedAt:new Date().toISOString(),uploadedBy:currentUser?.uid||''});
+    }
+    await updateDoc(doc(db,'projects',projectId),{photos:[...projectPhotos(p),...added]});
+    setSynced();
+    if(returnToForm)showProjectForm(projectId);
+    else if(localTestMode)showProjectDetail(projectId);
+  }catch(error){
+    console.error(error);setOffline();
+    alert('照片上傳失敗。請確認已登入，並確認 Firebase Storage 安全規則已設定。');
+  }
+}
+window.deleteProjectPhoto=async function(projectId,photoIdValue){
+  if(!isAdmin())return;
+  const p=S.projects.find(x=>x.id===projectId);const photo=projectPhotos(p).find(x=>x.id===photoIdValue);if(!p||!photo)return;
+  if(!confirm(`確定要刪除「${photo.name||'這張照片'}」嗎？`))return;
+  try{
+    setSyncing();
+    if(!localTestMode&&photo.path)await deleteObject(storageRef(storage,photo.path));
+    await updateDoc(doc(db,'projects',projectId),{photos:projectPhotos(p).filter(x=>x.id!==photoIdValue)});
+    setSynced();if(localTestMode)showProjectDetail(projectId);
+  }catch(error){console.error(error);setOffline();alert('照片刪除失敗，請稍後再試。');}
+}
+window.deleteProjectPhotoFromForm=async function(projectId,photoIdValue){
+  await window.deleteProjectPhoto(projectId,photoIdValue);
+  if(localTestMode)showProjectForm(projectId);
+}
+function projectShareText(p){
+  const lines=[`【${p.name||'案件'}】`];
+  if(p.siteTag)lines.push(`工地標記：${p.siteTag}`);
+  if(p.owner)lines.push(`業主：${p.owner}`);
+  if(p.address)lines.push(`地址：${p.address}`);
+  if(p.designer)lines.push(`設計師：${p.designer}`);
+  if(p.status)lines.push(`狀態：${statusInfo(p.status).l}`);
+  if(p.process)lines.push(`施工流程：${p.process}`);
+  return lines.join('\n');
+}
+async function copyTextForLine(text){
+  try{await navigator.clipboard.writeText(text);alert('文字已複製，可直接到 LINE 貼上。');}
+  catch(error){prompt('請複製以下文字，再貼到 LINE：',text);}
+}
+function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight,maxLines){
+  const chars=Array.from(String(text||''));let line='';let lines=[];
+  for(const ch of chars){if(ch==='\n'){lines.push(line);line='';continue;}const trial=line+ch;if(ctx.measureText(trial).width>maxWidth&&line){lines.push(line);line=ch;}else line=trial;}
+  if(line)lines.push(line);lines=lines.slice(0,maxLines||lines.length);
+  lines.forEach((lineText,index)=>ctx.fillText(lineText,x,y+index*lineHeight));return lines.length*lineHeight;
+}
+async function photoBitmap(url){
+  const response=await fetch(url);if(!response.ok)throw new Error('photo fetch failed');
+  const blob=await response.blob();
+  if('createImageBitmap'in window)return createImageBitmap(blob);
+  return new Promise(function(resolve,reject){const objectUrl=URL.createObjectURL(blob);const img=new Image();img.onload=()=>{URL.revokeObjectURL(objectUrl);resolve(img);};img.onerror=reject;img.src=objectUrl;});
+}
+async function buildLineShareImage(p,withText){
+  const photos=projectPhotos(p);if(!photos.length)throw new Error('no photos');
+  const images=await Promise.all(photos.map(photo=>photoBitmap(photo.url)));
+  const width=1200,pad=40,gap=16,columns=Math.min(images.length,3),cellWidth=(width-pad*2-gap*(columns-1))/columns;
+  const rows=Math.ceil(images.length/columns),cellHeight=cellWidth*.72;
+  const titleHeight=withText?210:92,canvas=document.createElement('canvas');
+  canvas.width=width;canvas.height=Math.ceil(titleHeight+pad+rows*cellHeight+(rows-1)*gap+pad);
+  const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#26213b';ctx.font='bold 32px sans-serif';ctx.fillText(p.name||'案件照片',pad,52);
+  if(withText){ctx.fillStyle='#665f73';ctx.font='22px sans-serif';wrapCanvasText(ctx,projectShareText(p).replace(/^【.*】\n?/,''),pad,92,width-pad*2,31,3);}
+  images.forEach(function(image,index){const col=index%columns,row=Math.floor(index/columns),x=pad+col*(cellWidth+gap),y=titleHeight+row*(cellHeight+gap);const ratio=Math.max(cellWidth/image.width,cellHeight/image.height),dw=image.width*ratio,dh=image.height*ratio;ctx.save();ctx.beginPath();ctx.rect(x,y,cellWidth,cellHeight);ctx.clip();ctx.drawImage(image,x+(cellWidth-dw)/2,y+(cellHeight-dh)/2,dw,dh);ctx.restore();});
+  return new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+}
+async function copyImageForLine(blob,successText){
+  if(!blob)throw new Error('image generation failed');
+  if(navigator.clipboard&&window.ClipboardItem){await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);alert(successText);return;}
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='案件分享照片.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);alert('瀏覽器不支援直接複製圖片，已改為下載圖片；請將檔案拖曳或貼到 LINE。');
+}
+window.shareProjectText=function(projectId){const p=S.projects.find(x=>x.id===projectId);if(p)copyTextForLine(projectShareText(p));}
+window.shareProjectPhotos=async function(projectId,withText){
+  const p=S.projects.find(x=>x.id===projectId);if(!p)return;
+  if(!projectPhotos(p).length){alert('請先上傳至少一張照片。');return;}
+  try{const blob=await buildLineShareImage(p,!!withText);await copyImageForLine(blob,withText?'文字與照片已合成並複製，可直接到 LINE 貼上。':'照片已合成並複製，可直接到 LINE 貼上。');}
+  catch(error){console.error(error);alert('分享圖片準備失敗。請確認照片仍可讀取後再試。');}
+}
 window.showProjectDetail=function(projId){
   const p=S.projects.find(x=>x.id===projId);
   if(!p)return;
   const si=statusInfo(p.status);
   const designAmount=(parseFloat(p.area)||0)*(parseFloat(p.pricePerPing)||0);
   const tradeSummary=projectTradeSummary(p.id);
+  const photos=projectPhotos(p);
   function row(label,val){
     return`<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
       <div style="width:110px;flex-shrink:0;color:var(--text2)">${label}</div>
@@ -4154,7 +4272,12 @@ window.showProjectDetail=function(projId){
       ${row('狀態',`<span class="badge" style="background:${si.bg};color:${si.color}">${si.l}</span>`)}
       ${p.completionTypes&&p.completionTypes.length?row('完工類型',p.completionTypes.join('、')):''}
       ${row('廠商施工流程',p.process)}
-      <div style="font-size:11px;color:var(--text3);border:1px dashed var(--border);border-radius:var(--r);padding:8px;text-align:center;margin-top:6px">📷 照片（尚未開通）</div>
+      <section class="project-photo-panel">
+        <div class="project-photo-head"><span>📷 案件照片（${photos.length}）</span></div>
+        <div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm" onclick="shareProjectPhotos('${p.id}',false)">分享照片</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotos('${p.id}',true)">分享文字及照片</button></div>
+        <div class="project-share-hint">按下後會複製到剪貼簿，可直接到 LINE 貼上；照片會合成為一張分享圖片。</div>
+        ${photos.length?`<div class="project-photo-grid">${photos.map(photo=>`<div class="project-photo-card"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
+      </section>
       </div>
       <aside class="project-detail-trades">
         <div class="project-detail-trades-title">案件工班</div>
