@@ -436,7 +436,7 @@ let currentUser=null,currentRole=null;
 const IS_LOCAL_PREVIEW=location.protocol==='file:'||['127.0.0.1','localhost'].includes(location.hostname);
 let localTestMode=false;
 let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},globalNotes:{},userTodos:[],tradeCategories:[],tradeVendors:[],otherVendorCategories:[],otherVendors:[],projectTradeSelections:{}};
-let selectedProjectDetailId='',selectedProjectDetailPhotoId='';
+let selectedProjectDetailId='',selectedProjectDetailPhotoId='',selectedProjectDetailPhotoBlob=null;
 let userPrefs={todoProjects:[]};
 let localRenderTimer=null;
 function localClone(v){return v===undefined?v:JSON.parse(JSON.stringify(v));}
@@ -4236,13 +4236,17 @@ async function copyImageForLine(blob,successText){
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='案件分享照片.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);alert('瀏覽器不支援直接複製圖片，已改為下載圖片；請將檔案拖曳或貼到 LINE。');
 }
 window.shareProjectText=function(projectId){const p=S.projects.find(x=>x.id===projectId);if(!p)return;const text=projectShareText(p);if(!text){alert('尚未填寫「廠商施工流程」，沒有可分享的文字。');return;}copyTextForLine(text);}
-window.setProjectDetailPhoto=function(projectId,photoId,checked){
+window.setProjectDetailPhoto=async function(projectId,photoId,checked){
   if(selectedProjectDetailId!==projectId){selectedProjectDetailId=projectId;selectedProjectDetailPhotoId='';}
-  selectedProjectDetailPhotoId=checked?photoId:'';showProjectDetail(projectId);
+  selectedProjectDetailPhotoId=checked?photoId:'';selectedProjectDetailPhotoBlob=null;showProjectDetail(projectId);
+  if(!checked)return;
+  const p=S.projects.find(x=>x.id===projectId),photo=p&&projectPhotos(p).find(x=>x.id===photoId);if(!photo)return;
+  try{const blob=await photoBlob(photo);if(selectedProjectDetailId===projectId&&selectedProjectDetailPhotoId===photoId){selectedProjectDetailPhotoBlob=blob;showProjectDetail(projectId);}}
+  catch(error){console.error(error);if(selectedProjectDetailId===projectId&&selectedProjectDetailPhotoId===photoId){selectedProjectDetailPhotoId='';selectedProjectDetailPhotoBlob=null;showProjectDetail(projectId);}alert('這張照片暫時無法準備複製，請稍後再試。');}
 }
 window.copySelectedProjectPhoto=async function(projectId){
-  const p=S.projects.find(x=>x.id===projectId),photo=p&&projectPhotos(p).find(x=>x.id===selectedProjectDetailPhotoId);if(!photo)return;
-  try{await copyImageForLine(await photoBlob(photo),'已複製這張照片，可直接到 LINE 對話貼上。');}
+  if(selectedProjectDetailId!==projectId||!selectedProjectDetailPhotoBlob)return;
+  try{await copyImageForLine(selectedProjectDetailPhotoBlob,'已複製這張照片，可直接到 LINE 對話貼上。');}
   catch(error){console.error(error);alert('照片複製失敗，請確認照片仍可讀取後再試。');}
 }
 window.shareProjectPhotoCollage=async function(projectId){
@@ -4254,7 +4258,7 @@ window.shareProjectPhotoCollage=async function(projectId){
 window.showProjectDetail=function(projId){
   const p=S.projects.find(x=>x.id===projId);
   if(!p)return;
-  if(selectedProjectDetailId!==projId){selectedProjectDetailId=projId;selectedProjectDetailPhotoId='';}
+  if(selectedProjectDetailId!==projId){selectedProjectDetailId=projId;selectedProjectDetailPhotoId='';selectedProjectDetailPhotoBlob=null;}
   const si=statusInfo(p.status);
   const designAmount=(parseFloat(p.area)||0)*(parseFloat(p.pricePerPing)||0);
   const tradeSummary=projectTradeSummary(p.id);
@@ -4262,7 +4266,7 @@ window.showProjectDetail=function(projId){
   const photoPanel=`<section class="project-photo-panel">
       <div class="project-photo-head"><span>📷 案件照片（${photos.length}）</span></div>
       ${photos.length?`<div class="project-photo-grid">${photos.map(photo=>`<div class="project-photo-card"><input class="project-photo-select" type="checkbox" aria-label="選取 ${escAttr(photo.name||'案件照片')}" ${selectedProjectDetailPhotoId===photo.id?'checked':''} ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoId!==photo.id?'disabled':''} onchange="setProjectDetailPhoto('${p.id}','${photo.id}',this.checked)"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
-      <div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotoCollage('${p.id}')">分享照片（合成）</button><button class="btn btn-sm" onclick="copySelectedProjectPhoto('${p.id}')" ${selectedProjectDetailPhotoId?'':'disabled'}>當張複製</button></div>
+      <div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotoCollage('${p.id}')">分享照片（合成）</button><button class="btn btn-sm" onclick="copySelectedProjectPhoto('${p.id}')" ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoBlob?'':'disabled'}>單張複製</button></div>
       <div class="project-share-hint">請先勾選一張照片後再複製；一次僅能選取一張。分享照片（合成）會將全部照片排成一張，可直接貼到 LINE 訊息或記事本。</div>
     </section>`;
   function row(label,val){
