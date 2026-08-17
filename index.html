@@ -331,7 +331,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .project-photo-delete{position:absolute;top:4px;right:4px;width:23px;height:23px;border:0;border-radius:50%;background:rgba(0,0,0,.62);color:#fff;font-size:15px;line-height:21px;cursor:pointer}
 .project-photo-name{position:absolute;left:0;right:0;bottom:0;padding:4px 6px;background:rgba(0,0,0,.58);color:#fff;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .project-photo-empty{padding:12px;border:1px dashed var(--border);border-radius:var(--r);color:var(--text3);font-size:12px;text-align:center}
-.project-share-actions{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0;background:var(--surface);position:sticky;top:0;z-index:2;padding:5px 0}
+.project-share-actions{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0;background:var(--surface);position:sticky;bottom:0;z-index:2;padding:5px 0}
 .project-share-hint{margin-top:7px;color:var(--text3);font-size:11px;line-height:1.5}
 @media(max-width:760px){.mo-box.project-detail-modal{max-width:560px;overflow-y:auto}.project-detail-grid{grid-template-columns:1fr;max-height:none}.project-detail-main,.project-detail-trades{overflow:visible}.project-detail-trades{border-left:0;border-top:1px solid var(--border);padding:14px 0 0}}
 .pb-wrap{background:var(--bg);border-radius:4px;height:4px;margin-bottom:12px}
@@ -4140,6 +4140,7 @@ function projectTradeSummary(projectId){
   return lines.join('<br>');
 }
 function projectPhotos(p){return Array.isArray(p?.photos)?p.photos.filter(x=>x&&x.url):[];}
+const photoBlobCache=new Map();
 function photoId(){return`photo-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;}
 function fileAsDataUrl(file){return new Promise(function(resolve,reject){const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});}
 function safePhotoFileName(name){return String(name||'photo').replace(/[^a-zA-Z0-9._-]/g,'_').slice(-80)||'photo';}
@@ -4154,6 +4155,7 @@ window.uploadProjectPhotos=async function(projectId,files,returnToForm){
     const added=[];
     for(const file of selected){
       const id=photoId();
+      photoBlobCache.set(id,file);
       let url,path='';
       if(localTestMode){url=await fileAsDataUrl(file);path=`local/${projectId}/${id}`;}
       else{
@@ -4180,6 +4182,7 @@ window.deleteProjectPhoto=async function(projectId,photoIdValue){
   try{
     setSyncing();
     if(!localTestMode&&photo.path)await deleteObject(storageRef(storage,photo.path));
+    photoBlobCache.delete(photoIdValue);
     await updateDoc(doc(db,'projects',projectId),{photos:projectPhotos(p).filter(x=>x.id!==photoIdValue)});
     setSynced();if(localTestMode)showProjectDetail(projectId);
   }catch(error){console.error(error);setOffline();alert('照片刪除失敗，請稍後再試。');}
@@ -4208,15 +4211,15 @@ function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight,maxLines){
   if(line)lines.push(line);lines=lines.slice(0,maxLines||lines.length);
   lines.forEach((lineText,index)=>ctx.fillText(lineText,x,y+index*lineHeight));return lines.length*lineHeight;
 }
-async function photoBitmap(url){
-  const response=await fetch(url);if(!response.ok)throw new Error('photo fetch failed');
-  const blob=await response.blob();
+async function photoBitmap(photo){
+  const cached=photoBlobCache.get(photo.id);
+  const blob=cached||await (async function(){const response=await fetch(photo.url);if(!response.ok)throw new Error('photo fetch failed');return response.blob();})();
   if('createImageBitmap'in window)return createImageBitmap(blob);
   return new Promise(function(resolve,reject){const objectUrl=URL.createObjectURL(blob);const img=new Image();img.onload=()=>{URL.revokeObjectURL(objectUrl);resolve(img);};img.onerror=reject;img.src=objectUrl;});
 }
 async function buildLineShareImage(p,withText){
   const photos=projectPhotos(p);if(!photos.length)throw new Error('no photos');
-  const images=await Promise.all(photos.map(photo=>photoBitmap(photo.url)));
+  const images=await Promise.all(photos.map(photo=>photoBitmap(photo)));
   const width=1200,pad=40,gap=16,columns=Math.min(images.length,3),cellWidth=(width-pad*2-gap*(columns-1))/columns;
   const rows=Math.ceil(images.length/columns),cellHeight=cellWidth*.72;
   const titleHeight=withText?210:92,canvas=document.createElement('canvas');
@@ -4237,7 +4240,7 @@ window.shareProjectPhotos=async function(projectId,withText){
   const p=S.projects.find(x=>x.id===projectId);if(!p)return;
   if(!projectPhotos(p).length){alert('請先上傳至少一張照片。');return;}
   try{const blob=await buildLineShareImage(p,!!withText);await copyImageForLine(blob,withText?'文字與照片已合成並複製，可直接到 LINE 貼上。':'照片已合成並複製，可直接到 LINE 貼上。');}
-  catch(error){console.error(error);alert('分享圖片準備失敗。請確認照片仍可讀取後再試。');}
+  catch(error){console.error(error);alert('分享圖片準備失敗。剛上傳的照片可立即分享；已存照片需完成 Storage 的 CORS 設定後才能合成分享。');}
 }
 window.showProjectDetail=function(projId){
   const p=S.projects.find(x=>x.id===projId);
@@ -4274,9 +4277,9 @@ window.showProjectDetail=function(projId){
       ${row('廠商施工流程',p.process)}
       <section class="project-photo-panel">
         <div class="project-photo-head"><span>📷 案件照片（${photos.length}）</span></div>
+        ${photos.length?`<div class="project-photo-grid">${photos.map(photo=>`<div class="project-photo-card"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
         <div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm" onclick="shareProjectPhotos('${p.id}',false)">分享照片</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotos('${p.id}',true)">分享文字及照片</button></div>
         <div class="project-share-hint">按下後會複製到剪貼簿，可直接到 LINE 貼上；照片會合成為一張分享圖片。</div>
-        ${photos.length?`<div class="project-photo-grid">${photos.map(photo=>`<div class="project-photo-card"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
       </section>
       </div>
       <aside class="project-detail-trades">
