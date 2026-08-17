@@ -316,9 +316,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .mo-title{font-size:15px;font-weight:600;margin-bottom:4px}
 .mo-sub{font-size:12px;color:var(--text2);margin-bottom:12px}
 .mo-footer{margin-top:14px;display:flex;gap:8px;justify-content:flex-end}
-.mo-box.project-detail-modal{max-width:860px;overflow:hidden}
-.project-detail-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.85fr);gap:20px;margin-top:8px;max-height:65vh}
-.project-detail-main,.project-detail-trades{min-width:0;overflow-y:auto;padding-right:4px}
+.mo-box.project-detail-modal{max-width:860px;max-height:calc(100vh - 2rem);overflow:hidden;display:flex;flex-direction:column}
+.project-detail-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.85fr);gap:20px;margin-top:8px;flex:1;min-height:0}
+.project-detail-main,.project-detail-trades{min-width:0;min-height:0;overflow-y:auto;padding-right:4px}
 .project-detail-trades{border-left:1px solid var(--border);padding-left:20px}
 .project-detail-trades-title{font-size:13px;font-weight:600;margin-bottom:8px}
 .project-detail-trades-list{font-size:12px;line-height:1.7;word-break:break-word}
@@ -333,6 +333,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .project-photo-empty{padding:12px;border:1px dashed var(--border);border-radius:var(--r);color:var(--text3);font-size:12px;text-align:center}
 .project-share-actions{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0;background:var(--surface);position:sticky;bottom:0;z-index:2;padding:5px 0}
 .project-share-hint{margin-top:7px;color:var(--text3);font-size:11px;line-height:1.5}
+.project-detail-modal>.project-photo-panel{flex:0 0 170px;min-height:170px;max-height:170px;overflow-y:auto;margin-top:10px}
+.project-detail-modal>.project-photo-panel .project-photo-grid{grid-template-columns:repeat(auto-fill,86px);grid-auto-rows:86px;overflow-y:auto;max-height:88px}
+.project-detail-modal>.project-photo-panel .project-photo-card{aspect-ratio:1}
 @media(max-width:760px){.mo-box.project-detail-modal{max-width:560px;overflow-y:auto}.project-detail-grid{grid-template-columns:1fr;max-height:none}.project-detail-main,.project-detail-trades{overflow:visible}.project-detail-trades{border-left:0;border-top:1px solid var(--border);padding:14px 0 0}}
 .pb-wrap{background:var(--bg);border-radius:4px;height:4px;margin-bottom:12px}
 .pb-fill{height:4px;border-radius:4px}
@@ -4249,6 +4252,12 @@ window.showProjectDetail=function(projId){
   const designAmount=(parseFloat(p.area)||0)*(parseFloat(p.pricePerPing)||0);
   const tradeSummary=projectTradeSummary(p.id);
   const photos=projectPhotos(p);
+  const photoPanel=`<section class="project-photo-panel">
+      <div class="project-photo-head"><span>📷 案件照片（${photos.length}）</span></div>
+      ${photos.length?`<div class="project-photo-grid">${photos.map(photo=>`<div class="project-photo-card"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
+      <div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm" onclick="shareProjectPhotos('${p.id}',false)">分享照片</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotos('${p.id}',true)">分享文字及照片</button></div>
+      <div class="project-share-hint">按下後會複製到剪貼簿，可直接到 LINE 貼上；照片會合成為一張分享圖片。</div>
+    </section>`;
   function row(label,val){
     return`<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
       <div style="width:110px;flex-shrink:0;color:var(--text2)">${label}</div>
@@ -4275,18 +4284,13 @@ window.showProjectDetail=function(projId){
       ${row('狀態',`<span class="badge" style="background:${si.bg};color:${si.color}">${si.l}</span>`)}
       ${p.completionTypes&&p.completionTypes.length?row('完工類型',p.completionTypes.join('、')):''}
       ${row('廠商施工流程',p.process)}
-      <section class="project-photo-panel">
-        <div class="project-photo-head"><span>📷 案件照片（${photos.length}）</span></div>
-        ${photos.length?`<div class="project-photo-grid">${photos.map(photo=>`<div class="project-photo-card"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
-        <div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm" onclick="shareProjectPhotos('${p.id}',false)">分享照片</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotos('${p.id}',true)">分享文字及照片</button></div>
-        <div class="project-share-hint">按下後會複製到剪貼簿，可直接到 LINE 貼上；照片會合成為一張分享圖片。</div>
-      </section>
       </div>
       <aside class="project-detail-trades">
         <div class="project-detail-trades-title">案件工班</div>
         <div class="project-detail-trades-list">${tradeSummary||'<span class="project-detail-empty">尚未設定工班</span>'}</div>
       </aside>
     </div>
+    ${photoPanel}
     <div class="mo-footer">${isAdmin()?`<button class="btn" onclick="showEditProject('${p.id}')">編輯</button>`:''}<button class="btn" onclick="closeMo()">關閉</button></div>`;
   $('modal').style.display='flex';
 }
