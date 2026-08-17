@@ -328,6 +328,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .project-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
 .project-photo-card{position:relative;aspect-ratio:1;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg)}
 .project-photo-card img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
+.project-photo-select{position:absolute;top:5px;left:5px;z-index:2;width:18px;height:18px;accent-color:var(--primary);cursor:pointer}
+.project-photo-select:disabled{cursor:not-allowed;opacity:.35}
+.project-share-actions button:disabled{opacity:.42;cursor:not-allowed;pointer-events:none}
 .project-photo-delete{position:absolute;top:4px;right:4px;width:23px;height:23px;border:0;border-radius:50%;background:rgba(0,0,0,.62);color:#fff;font-size:15px;line-height:21px;cursor:pointer}
 .project-photo-name{position:absolute;left:0;right:0;bottom:0;padding:4px 6px;background:rgba(0,0,0,.58);color:#fff;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .project-photo-empty{padding:12px;border:1px dashed var(--border);border-radius:var(--r);color:var(--text3);font-size:12px;text-align:center}
@@ -433,6 +436,7 @@ let currentUser=null,currentRole=null;
 const IS_LOCAL_PREVIEW=location.protocol==='file:'||['127.0.0.1','localhost'].includes(location.hostname);
 let localTestMode=false;
 let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},globalNotes:{},userTodos:[],tradeCategories:[],tradeVendors:[],otherVendorCategories:[],otherVendors:[],projectTradeSelections:{}};
+let selectedProjectDetailId='',selectedProjectDetailPhotoId='';
 let userPrefs={todoProjects:[]};
 let localRenderTimer=null;
 function localClone(v){return v===undefined?v:JSON.parse(JSON.stringify(v));}
@@ -4232,11 +4236,14 @@ async function copyImageForLine(blob,successText){
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='案件分享照片.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);alert('瀏覽器不支援直接複製圖片，已改為下載圖片；請將檔案拖曳或貼到 LINE。');
 }
 window.shareProjectText=function(projectId){const p=S.projects.find(x=>x.id===projectId);if(!p)return;const text=projectShareText(p);if(!text){alert('尚未填寫「廠商施工流程」，沒有可分享的文字。');return;}copyTextForLine(text);}
-window.shareProjectPhotos=async function(projectId){
-  const p=S.projects.find(x=>x.id===projectId);if(!p)return;
-  if(!projectPhotos(p).length){alert('請先上傳至少一張照片。');return;}
-  try{const blobs=await Promise.all(projectPhotos(p).map(photoBlob));await navigator.clipboard.write(blobs.map(blob=>new ClipboardItem({'image/png':blob})));alert(`已複製 ${blobs.length} 張照片，可直接到 LINE 對話貼上。`);}
-  catch(error){console.error(error);alert('此瀏覽器無法一次複製多張照片。請改用「分享照片（合成）」將全部照片貼成一張。');}
+window.setProjectDetailPhoto=function(projectId,photoId,checked){
+  if(selectedProjectDetailId!==projectId){selectedProjectDetailId=projectId;selectedProjectDetailPhotoId='';}
+  selectedProjectDetailPhotoId=checked?photoId:'';showProjectDetail(projectId);
+}
+window.copySelectedProjectPhoto=async function(projectId){
+  const p=S.projects.find(x=>x.id===projectId),photo=p&&projectPhotos(p).find(x=>x.id===selectedProjectDetailPhotoId);if(!photo)return;
+  try{await copyImageForLine(await photoBlob(photo),'已複製這張照片，可直接到 LINE 對話貼上。');}
+  catch(error){console.error(error);alert('照片複製失敗，請確認照片仍可讀取後再試。');}
 }
 window.shareProjectPhotoCollage=async function(projectId){
   const p=S.projects.find(x=>x.id===projectId);if(!p)return;
@@ -4247,15 +4254,16 @@ window.shareProjectPhotoCollage=async function(projectId){
 window.showProjectDetail=function(projId){
   const p=S.projects.find(x=>x.id===projId);
   if(!p)return;
+  if(selectedProjectDetailId!==projId){selectedProjectDetailId=projId;selectedProjectDetailPhotoId='';}
   const si=statusInfo(p.status);
   const designAmount=(parseFloat(p.area)||0)*(parseFloat(p.pricePerPing)||0);
   const tradeSummary=projectTradeSummary(p.id);
   const photos=projectPhotos(p);
   const photoPanel=`<section class="project-photo-panel">
       <div class="project-photo-head"><span>📷 案件照片（${photos.length}）</span></div>
-      ${photos.length?`<div class="project-photo-grid">${photos.map(photo=>`<div class="project-photo-card"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
-      <div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm" onclick="shareProjectPhotos('${p.id}')">分享照片</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotoCollage('${p.id}')">分享照片（合成）</button></div>
-      <div class="project-share-hint">分享照片會逐張複製，適用於 LINE 對話；分享照片（合成）會將全部照片排成一張，適用於 LINE 訊息或記事本。</div>
+      ${photos.length?`<div class="project-photo-grid">${photos.map(photo=>`<div class="project-photo-card"><input class="project-photo-select" type="checkbox" aria-label="選取 ${escAttr(photo.name||'案件照片')}" ${selectedProjectDetailPhotoId===photo.id?'checked':''} ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoId!==photo.id?'disabled':''} onchange="setProjectDetailPhoto('${p.id}','${photo.id}',this.checked)"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
+      <div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotoCollage('${p.id}')">分享照片（合成）</button><button class="btn btn-sm" onclick="copySelectedProjectPhoto('${p.id}')" ${selectedProjectDetailPhotoId?'':'disabled'}>當張複製</button></div>
+      <div class="project-share-hint">請先勾選一張照片後再複製；一次僅能選取一張。分享照片（合成）會將全部照片排成一張，可直接貼到 LINE 訊息或記事本。</div>
     </section>`;
   function row(label,val){
     return`<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
