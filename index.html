@@ -151,7 +151,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .design-tbl td.empty-cell{background:#fff8f8}
 
 /* Week view */
-.wctrl{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
+.wctrl{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-bottom:1rem;gap:8px}
+.wctrl>.seg{grid-column:2}.wctrl>.nav-row{grid-column:3;justify-self:end}
 .seg{display:flex;gap:2px;background:var(--border);border-radius:var(--r);padding:2px}
 .seg button{padding:5px 12px;font-size:12px;border:none;background:none;cursor:pointer;border-radius:6px;color:var(--text2);font-family:inherit;font-weight:500}
 .seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
@@ -334,12 +335,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .project-photo-delete{position:absolute;top:4px;right:4px;width:23px;height:23px;border:0;border-radius:50%;background:rgba(0,0,0,.62);color:#fff;font-size:15px;line-height:21px;cursor:pointer}
 .project-photo-name{position:absolute;left:0;right:0;bottom:0;padding:4px 6px;background:rgba(0,0,0,.58);color:#fff;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .project-photo-empty{padding:12px;border:1px dashed var(--border);border-radius:var(--r);color:var(--text3);font-size:12px;text-align:center}
-.project-share-actions{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0;background:var(--surface);position:sticky;bottom:0;z-index:2;padding:5px 0}
-.project-share-hint{margin-top:7px;color:var(--text3);font-size:11px;line-height:1.5}
+.project-share-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;background:var(--surface);position:sticky;bottom:0;z-index:2;padding:5px 0}.project-share-actions{display:flex;flex-wrap:wrap;gap:7px}.project-detail-actions{display:flex;gap:7px;flex:0 0 auto}.project-photo-help{margin:0;padding-left:0}.project-photo-help .help-pop{width:270px}.project-photo-help ul{margin:0;padding-left:18px}
 .project-detail-modal>.project-photo-panel{flex:0 0 210px;min-height:210px;max-height:210px;overflow-y:auto;margin-top:10px}
 .project-detail-modal>.project-photo-panel .project-photo-grid{grid-template-columns:repeat(auto-fill,86px);grid-auto-rows:86px;overflow-y:auto;max-height:88px}
 .project-detail-modal>.project-photo-panel .project-photo-card{aspect-ratio:1}
-@media(max-width:760px){.mo-box.project-detail-modal{max-width:560px;overflow-y:auto}.project-detail-grid{grid-template-columns:1fr;max-height:none}.project-detail-main,.project-detail-trades{overflow:visible}.project-detail-trades{border-left:0;border-top:1px solid var(--border);padding:14px 0 0}}
+@media(max-width:760px){.wctrl{display:flex;flex-wrap:wrap;justify-content:center}.wctrl>.nav-row{margin-left:auto}.mo-box.project-detail-modal{max-width:560px;overflow-y:auto}.project-detail-grid{grid-template-columns:1fr;max-height:none}.project-detail-main,.project-detail-trades{overflow:visible}.project-detail-trades{border-left:0;border-top:1px solid var(--border);padding:14px 0 0}.project-share-row{align-items:flex-start;flex-direction:column}.project-detail-actions{align-self:flex-end}}
 .pb-wrap{background:var(--bg);border-radius:4px;height:4px;margin-bottom:12px}
 .pb-fill{height:4px;border-radius:4px}
 </style>
@@ -591,7 +591,7 @@ function markableMembersList(){return activeMembersList().filter(m=>m.role!=='ma
 function dailyLogMembersList(){return markableMembersList();}
 function orderedDailyLogMembers(){
   const members=dailyLogMembersList();
-  const saved=Array.isArray(S.privateNotes&&S.privateNotes.dailyLogMemberOrder)?S.privateNotes.dailyLogMemberOrder:[];
+  const saved=Array.isArray(S.globalNotes&&S.globalNotes.dailyLogMemberOrder&&S.globalNotes.dailyLogMemberOrder.order)?S.globalNotes.dailyLogMemberOrder.order:[];
   const rank=new Map(saved.map((uid,i)=>[uid,i]));
   return members.slice().sort((a,b)=>{
     const ar=rank.has(a.uid)?rank.get(a.uid):Number.MAX_SAFE_INTEGER;
@@ -610,12 +610,12 @@ window.dailyMemberDrop=async function(e,targetUid){
   if(currentRole!=='manager'||!dailyMemberDragUid||dailyMemberDragUid===targetUid)return;
   const members=orderedDailyLogMembers();
   const from=members.findIndex(m=>m.uid===dailyMemberDragUid),to=members.findIndex(m=>m.uid===targetUid);
-  if(from<0||to<0||!currentUser)return;
+  if(from<0||to<0)return;
   const moved=members.splice(from,1)[0];members.splice(to,0,moved);dailyMemberDragUid=null;
-  if(!S.privateNotes)S.privateNotes={work:{},personal:{}};
-  S.privateNotes.dailyLogMemberOrder=members.map(m=>m.uid);
+  if(!S.globalNotes)S.globalNotes={};
+  S.globalNotes.dailyLogMemberOrder={order:members.map(m=>m.uid)};
   setSyncing();
-  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+  await setDoc(doc(db,'globalNotes','dailyLogMemberOrder'),S.globalNotes.dailyLogMemberOrder);
   setSynced();
   if(activePanel==='progress')renderProgress();
 };
@@ -4269,10 +4269,9 @@ window.showProjectDetail=function(projId){
   const tradeSummary=projectTradeSummary(p.id);
   const photos=projectPhotos(p);
   const photoPanel=`<section class="project-photo-panel">
-      <div class="project-photo-head"><span>📷 案件照片（${photos.length}）</span></div>
+      <div class="project-photo-head"><span>📷 案件照片 <span class="help-wrap project-photo-help"><button class="help-btn" type="button" aria-label="案件照片操作說明" onclick="toggleHelpPop(event,'project-photo-help')">?</button><span class="help-pop" id="project-photo-help" onclick="event.stopPropagation()"><ul><li>勾選一張照片後，才能使用單張複製。</li><li>一次僅能選取一張照片。</li><li>分享照片（合成）會將全部照片排成一張。</li></ul></span></span>（${photos.length}）</span></div>
       ${photos.length?`<div class="project-photo-grid">${photos.map(photo=>`<div class="project-photo-card"><input class="project-photo-select" type="checkbox" aria-label="選取 ${escAttr(photo.name||'案件照片')}" ${selectedProjectDetailPhotoId===photo.id?'checked':''} ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoId!==photo.id?'disabled':''} onchange="setProjectDetailPhoto('${p.id}','${photo.id}',this.checked)"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
-      <div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotoCollage('${p.id}')">分享照片（合成）</button><button class="btn btn-sm" onclick="copySelectedProjectPhoto('${p.id}')" ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoBlob?'':'disabled'}>單張複製</button></div>
-      <div class="project-share-hint">請先勾選一張照片後再複製；一次僅能選取一張。分享照片（合成）會將全部照片排成一張，可直接貼到 LINE 訊息或記事本。</div>
+      <div class="project-share-row"><div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotoCollage('${p.id}')">分享照片（合成）</button><button class="btn btn-sm" onclick="copySelectedProjectPhoto('${p.id}')" ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoBlob?'':'disabled'}>單張複製</button></div><div class="project-detail-actions">${isAdmin()?`<button class="btn" onclick="showEditProject('${p.id}')">編輯</button>`:''}<button class="btn" onclick="closeMo()">關閉</button></div></div>
     </section>`;
   function row(label,val){
     return`<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
@@ -4306,8 +4305,7 @@ window.showProjectDetail=function(projId){
         <div class="project-detail-trades-list">${tradeSummary||'<span class="project-detail-empty">尚未設定工班</span>'}</div>
       </aside>
     </div>
-    ${photoPanel}
-    <div class="mo-footer">${isAdmin()?`<button class="btn" onclick="showEditProject('${p.id}')">編輯</button>`:''}<button class="btn" onclick="closeMo()">關閉</button></div>`;
+    ${photoPanel}`;
   $('modal').style.display='flex';
 }
 window.setCalMode=function(m){calMode=m;lastHScrollLeft=0;renderProgress();}
