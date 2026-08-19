@@ -65,12 +65,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .home-grid-wrap{position:relative;min-height:600px;border-radius:12px;padding:8px;overflow:hidden}
 .home-grid-wrap.editing{background-color:#f9f8fc;background-image:linear-gradient(to right,rgba(92,83,174,.10) 1px,transparent 1px),linear-gradient(to bottom,rgba(92,83,174,.10) 1px,transparent 1px);background-size:calc((100% - 16px)/12) var(--home-unit,90px)}
 .home-grid{position:relative;min-height:580px}
-.home-module{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(30,27,24,.05);transition:left .16s ease,top .16s ease,width .16s ease,height .16s ease}
+.home-module{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(30,27,24,.05);transition:left .16s ease,top .16s ease,width .16s ease,height .16s ease;user-select:none}
 .home-grid-wrap.editing .home-module{cursor:grab;border-color:#c9c4ed;box-shadow:0 3px 12px rgba(60,52,137,.10)}.home-grid-wrap.editing .home-module.dragging{cursor:grabbing;transition:none;z-index:10;opacity:.88}.home-grid-wrap.editing .home-module.resizing{transition:none;z-index:10}
 .home-module-head{height:42px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 12px;border-bottom:1px solid var(--border);background:#fff}.home-module-title{font-size:14px;font-weight:600}.home-module-badges{display:flex;align-items:center;gap:5px}.home-module-badge{font-size:10px;color:var(--text2);background:var(--bg);border-radius:12px;padding:2px 6px}
-.home-module-body{height:calc(100% - 42px);display:flex;align-items:center;justify-content:center;padding:16px;color:var(--text3);font-size:12px;text-align:center}.home-placeholder{border:1px dashed #d7d2ca;border-radius:8px;padding:12px 18px;background:#fbfaf8}
+.home-module-body{height:calc(100% - 42px);min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;padding:16px;color:var(--text3);font-size:12px;text-align:center;overflow:auto}.home-placeholder{border:1px dashed #d7d2ca;border-radius:8px;padding:12px 18px;background:#fbfaf8}.home-module[data-size-tier="small"] .home-module-body{font-size:11px}.home-module[data-size-tier="large"] .home-module-body{font-size:13px}
 .home-module-tools{display:none;gap:4px}.home-grid-wrap.editing .home-module-tools{display:flex}.home-tool{width:25px;height:25px;border:0;border-radius:5px;background:var(--bg);cursor:pointer;color:var(--text2)}.home-tool:hover{background:var(--rl);color:var(--rd)}
-.home-resize-handle{display:none;position:absolute;right:0;bottom:0;width:22px;height:22px;cursor:nwse-resize}.home-resize-handle:after{content:'';position:absolute;right:5px;bottom:5px;width:8px;height:8px;border-right:2px solid var(--purple);border-bottom:2px solid var(--purple)}.home-grid-wrap.editing .home-resize-handle{display:block}
+.home-resize-handle{display:none;position:absolute;z-index:6;right:0;bottom:0;width:28px;height:28px;cursor:nwse-resize;touch-action:none}.home-resize-handle:after{content:'';position:absolute;right:6px;bottom:6px;width:10px;height:10px;border-right:2px solid var(--purple);border-bottom:2px solid var(--purple)}.home-grid-wrap.editing .home-resize-handle{display:block}
 .home-empty{padding:60px 20px;text-align:center;color:var(--text3);border:1px dashed var(--border);border-radius:10px;background:rgba(255,255,255,.7)}
 .module-library{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}.module-library-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px;border:1px solid var(--border);border-radius:8px}.module-library-name{font-size:13px;font-weight:500}.module-library-note{font-size:10px;color:var(--text3);margin-top:2px}
 @media(max-width:900px){.home-head{align-items:flex-start;flex-direction:column}.home-actions{justify-content:flex-start}.home-brand-slot{display:none}.home-grid-wrap{overflow-x:auto}.home-grid{min-width:900px}.module-library{grid-template-columns:1fr}}
@@ -972,6 +972,7 @@ window.sendAI=async function(){
 }
 
 function initListeners(){
+  onSnapshot(doc(db,'homeLayouts','company-default'),snap=>{if(!snap.exists())return;companyHomeLayout=normalizeHomeLayout(snap.data());personalHomeLayout=syncPersonalHomeLayout(personalHomeLayout);if(activePanel==='home'&&!homeEditMode)renderHome();});
   onSnapshot(collection(db,'projects'),snap=>{S.projects=snap.docs.map(d=>({id:d.id,...d.data()}));renderActive();setSynced();},()=>setOffline());
   onSnapshot(collection(db,'checks'),snap=>{S.checks={};snap.docs.forEach(d=>{S.checks[d.id]=d.data().items||[]});renderActive();});
   onSnapshot(collection(db,'bible'),snap=>{
@@ -1076,6 +1077,7 @@ const HOME_MODULE_LIBRARY=[
   {type:'daily-choice',title:'每日殘酷二選一',min:null,max:null},
   {type:'daily-nonsense',title:'每日一句廢話',min:null,max:null}
 ];
+const HOME_INITIAL_MODULE_TYPES=HOME_MODULE_LIBRARY.map(x=>x.type);
 const HOME_COLS=12;
 let companyHomeLayout={version:1,modules:[]};
 let personalHomeLayout=null;
@@ -1085,16 +1087,27 @@ let homePointerState=null;
 let homeGridObserver=null;
 function homeClone(v){return JSON.parse(JSON.stringify(v));}
 function homeModuleDefinition(type){return HOME_MODULE_LIBRARY.find(x=>x.type===type);}
+function isSystemAdmin(){return currentRole==='admin'||(localTestMode&&currentUser?.uid==='local-test-admin');}
 function homeDefaultSize(){return{w:3,h:2};}
 function normalizeHomeModule(raw,index){
   const def=homeModuleDefinition(raw.type);if(!def)return null;
   const size=homeDefaultSize(),min=def.min||{w:1,h:1},max=def.max||{w:HOME_COLS,h:99};
   return{id:String(raw.id||`${raw.type}-${Date.now()}-${index}`),type:raw.type,x:Math.max(0,Math.min(HOME_COLS-1,Number(raw.x)||0)),y:Math.max(0,Number(raw.y)||0),w:Math.max(min.w,Math.min(max.w,HOME_COLS,Number(raw.w)||size.w)),h:Math.max(min.h,Math.min(max.h,Number(raw.h)||size.h)),required:!!raw.required,hidden:!!raw.hidden};
 }
-function normalizeHomeLayout(raw){return{version:1,modules:(Array.isArray(raw?.modules)?raw.modules:[]).map(normalizeHomeModule).filter(Boolean)};}
+function normalizeHomeLayout(raw){return{version:2,modules:(Array.isArray(raw?.modules)?raw.modules:[]).map(normalizeHomeModule).filter(Boolean)};}
+function initialCompanyHomeLayout(){
+  const modules=[];HOME_INITIAL_MODULE_TYPES.forEach((type,index)=>{const size=homeDefaultSize(),fresh=homeFindSpace({id:`company-${type}`,type,x:0,y:0,w:size.w,h:size.h,required:false,hidden:false},modules,0);modules.push(fresh);});return{version:2,modules};
+}
+function enabledCompanyModules(){return companyHomeLayout.modules.filter(m=>homeModuleDefinition(m.type));}
+function syncPersonalHomeLayout(raw){
+  const source=normalizeHomeLayout(raw),enabled=enabledCompanyModules(),enabledTypes=new Set(enabled.map(m=>m.type));
+  source.modules=source.modules.filter(m=>enabledTypes.has(m.type));
+  enabled.forEach(companyModule=>{let personal=source.modules.find(m=>m.type===companyModule.type);if(personal){personal.required=!!companyModule.required;personal.hidden=personal.required?false:!!personal.hidden;}else{const size=homeDefaultSize(),fresh=homeFindSpace({id:`personal-${companyModule.type}-${Date.now()}`,type:companyModule.type,x:companyModule.x,y:companyModule.y,w:companyModule.w||size.w,h:companyModule.h||size.h,required:!!companyModule.required,hidden:false},source.modules,companyModule.y);source.modules.push(fresh);}});
+  source.modules=homePack(source.modules);return source;
+}
 function activeHomeLayout(){
   if(homeLayoutMode==='company'&&isAdmin())return companyHomeLayout;
-  if(!personalHomeLayout)personalHomeLayout=homeClone(companyHomeLayout);
+  if(!personalHomeLayout)personalHomeLayout=syncPersonalHomeLayout(null);
   return personalHomeLayout;
 }
 function homeSizeTier(m){const area=m.w*m.h;return area<=6?'small':area<=15?'medium':'large';}
@@ -1120,31 +1133,31 @@ function homeModuleStyle(m){const unit=homeGridMetrics().unit;return`left:${m.x*
 function renderHome(){
   const el=$('panel-home');if(!el)return;
   if(homeLayoutMode==='company'&&!isAdmin())homeLayoutMode='personal';
-  const layout=activeHomeLayout(),adminCompany=isAdmin()&&homeLayoutMode==='company';
+  const layout=activeHomeLayout(),canManageGlobal=isSystemAdmin();
   const visible=layout.modules.filter(m=>!m.hidden);
   el.innerHTML=`<div class="home-shell">
     <div class="home-head"><div class="home-heading"><div><h1>我的首頁</h1><p>模塊化公司首頁</p></div></div>
       <div class="home-actions">
-        ${homeEditMode?`<button class="btn btn-sm" onclick="openHomeModuleLibrary()">＋ 新增模塊</button><button class="btn btn-p btn-sm" onclick="finishHomeEdit()">完成編輯</button>`:`<button class="btn btn-sm" onclick="startHomeEdit()">自訂首頁</button>`}
+        ${homeEditMode?`<button class="btn btn-sm" onclick="openHomeModuleLibrary()">模塊管理</button><button class="btn btn-p btn-sm" onclick="finishHomeEdit()">完成編輯</button>`:`<button class="btn btn-sm" onclick="startHomeEdit()">自訂首頁</button>`}
       </div>
     </div>
     <div class="home-grid-wrap ${homeEditMode?'editing':''}" id="home-grid-wrap"><div class="home-grid" id="home-grid">
-      ${visible.length?visible.map(m=>renderHomeModule(m,adminCompany)).join(''):`<div class="home-empty">${homeEditMode?'請從模塊庫新增模塊':'目前尚未加入模塊'}</div>`}
+      ${visible.length?visible.map(m=>renderHomeModule(m,canManageGlobal)).join(''):`<div class="home-empty">${homeEditMode?'可從模塊管理恢復已隱藏的模塊':'目前尚未顯示模塊'}</div>`}
     </div></div>
   </div>`;
   requestAnimationFrame(()=>{setHomeGridMetrics();if(homeGridObserver)homeGridObserver.disconnect();homeGridObserver=new ResizeObserver(setHomeGridMetrics);const grid=$('home-grid');if(grid)homeGridObserver.observe(grid);});
 }
-function renderHomeModule(m,adminCompany){
+function renderHomeModule(m,canManageGlobal){
   const def=homeModuleDefinition(m.type),tier=homeSizeTier(m);
   return`<section class="home-module" data-home-id="${m.id}" data-size-tier="${tier}" style="${homeModuleStyle(m)}" onpointerdown="homeModulePointerDown(event,'${m.id}')">
-    <div class="home-module-head"><span class="home-module-title">${def.title}</span><span class="home-module-badges">${m.required?'<span class="home-module-badge">必要</span>':''}<span class="home-module-badge">${tier==='small'?'小':tier==='medium'?'中':'大'}</span><span class="home-module-tools">${adminCompany?`<button class="home-tool" title="${m.required?'改為自由模塊':'設為必要模塊'}" onclick="event.stopPropagation();toggleHomeRequired('${m.id}')">${m.required?'●':'○'}</button>`:''}<button class="home-tool" title="移除或隱藏" onclick="event.stopPropagation();removeHomeModule('${m.id}')">×</button></span></span></div>
+    <div class="home-module-head"><span class="home-module-title">${def.title}</span><span class="home-module-badges"><span class="home-module-badge">${tier==='small'?'小':tier==='medium'?'中':'大'}</span>${m.required?'<span class="home-module-badge">必顯</span>':''}<span class="home-module-tools">${canManageGlobal?`<button class="home-tool" title="${m.required?'取消必定顯示':'設為必定顯示'}" onclick="event.stopPropagation();toggleHomeRequired('${m.type}')">${m.required?'●':'○'}</button>`:''}<button class="home-tool" title="${m.required?'必顯模塊不可隱藏':'隱藏模塊'}" ${m.required?'disabled':''} onclick="event.stopPropagation();removeHomeModule('${m.id}')">×</button></span></span></div>
     <div class="home-module-body"><div class="home-placeholder">Placeholder</div></div><div class="home-resize-handle" data-resize="true" onpointerdown="homeResizePointerDown(event,'${m.id}')"></div>
   </section>`;
 }
 window.switchHomeLayout=function(mode){if(homeEditMode)return;homeLayoutMode=mode==='company'&&isAdmin()?'company':'personal';renderHome();}
 window.startHomeEdit=function(){homeEditMode=true;renderHome();}
 window.finishHomeEdit=async function(){homeEditMode=false;await saveHomeLayout();renderHome();}
-window.toggleHomeRequired=function(id){if(!isAdmin()||homeLayoutMode!=='company')return;const m=companyHomeLayout.modules.find(x=>x.id===id);if(m){m.required=!m.required;renderHome();}}
+window.toggleHomeRequired=async function(type){if(!isSystemAdmin())return;const m=companyHomeLayout.modules.find(x=>x.type===type);if(m){m.required=!m.required;personalHomeLayout=syncPersonalHomeLayout(personalHomeLayout);await saveCompanyHomeLayout();renderHome();}}
 window.removeHomeModule=function(id){
   const layout=activeHomeLayout(),m=layout.modules.find(x=>x.id===id);if(!m)return;
   if(homeLayoutMode==='personal'){if(m.required)return;m.hidden=true;}else if(isAdmin())layout.modules=layout.modules.filter(x=>x.id!==id);
@@ -1152,41 +1165,41 @@ window.removeHomeModule=function(id){
 }
 window.openHomeModuleLibrary=function(){
   if(!homeEditMode)return;const layout=activeHomeLayout();
-  const rows=HOME_MODULE_LIBRARY.map(def=>{const existing=layout.modules.find(m=>m.type===def.type);const canRestore=homeLayoutMode==='personal'&&existing?.hidden&&!existing.required;return`<div class="module-library-item"><div><div class="module-library-name">${def.title}</div><div class="module-library-note">內容尚未開發</div></div><button class="btn btn-sm" ${existing&&!canRestore?'disabled':''} onclick="addHomeModule('${def.type}')">${canRestore?'恢復':'新增'}</button></div>`;}).join('');
-  $('mo-content').innerHTML=`<div class="mo-title">模塊庫</div><div class="mo-sub">選擇已建立的模塊種類加入首頁</div><div class="module-library">${rows}</div><div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;$('modal').style.display='flex';
+  const enabledTypes=new Set(enabledCompanyModules().map(m=>m.type));
+  const rows=HOME_MODULE_LIBRARY.map(def=>{const existing=layout.modules.find(m=>m.type===def.type),enabled=enabledTypes.has(def.type);let action='';if(enabled){action=existing?.hidden?`<button class="btn btn-sm" onclick="showHomeModule('${def.type}')">顯示</button>`:`<button class="btn btn-sm" ${existing?.required?'disabled':''} onclick="hideHomeModule('${def.type}')">隱藏</button>`;}else if(isSystemAdmin()){action=`<button class="btn btn-sm btn-p" onclick="enableCompanyHomeModule('${def.type}')">新增至全公司</button>`;}return`<div class="module-library-item"><div><div class="module-library-name">${def.title}</div><div class="module-library-note">${enabled?'公司已啟用':'尚未啟用'}</div></div>${action}</div>`;}).join('');
+  $('mo-content').innerHTML=`<div class="mo-title">模塊管理</div><div class="mo-sub">所有公司已啟用的模塊會自動加入每個人的首頁</div><div class="module-library">${rows}</div><div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;$('modal').style.display='flex';
 }
-window.addHomeModule=function(type){
-  const layout=activeHomeLayout(),existing=layout.modules.find(m=>m.type===type);if(existing){existing.hidden=false;}else{const def=homeModuleDefinition(type);if(!def)return;const size=homeDefaultSize(),fresh=homeFindSpace({id:`${type}-${Date.now()}`,type,x:0,y:0,w:size.w,h:size.h,required:false,hidden:false},layout.modules,0);layout.modules.push(fresh);}
-  closeMo();renderHome();
-}
+window.showHomeModule=function(type){const m=activeHomeLayout().modules.find(x=>x.type===type);if(m){m.hidden=false;closeMo();renderHome();}}
+window.hideHomeModule=function(type){const m=activeHomeLayout().modules.find(x=>x.type===type);if(m&&!m.required){m.hidden=true;closeMo();renderHome();}}
+window.enableCompanyHomeModule=async function(type){if(!isSystemAdmin()||companyHomeLayout.modules.some(m=>m.type===type))return;const size=homeDefaultSize(),fresh=homeFindSpace({id:`company-${type}`,type,x:0,y:0,w:size.w,h:size.h,required:false,hidden:false},companyHomeLayout.modules,0);companyHomeLayout.modules.push(fresh);personalHomeLayout=syncPersonalHomeLayout(personalHomeLayout);await saveCompanyHomeLayout();closeMo();renderHome();}
 window.homeModulePointerDown=function(e,id){
   if(!homeEditMode||e.button!==0||e.target.closest('button'))return;
   const layout=activeHomeLayout(),m=layout.modules.find(x=>x.id===id),el=e.currentTarget;if(!m||!el)return;
   const resizing=!!e.target.closest('[data-resize]');
-  e.preventDefault();el.setPointerCapture(e.pointerId);homePointerState={id,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,original:{...m},resizing,el};el.classList.add(resizing?'resizing':'dragging');
-  el.addEventListener('pointermove',homeModulePointerMove);el.addEventListener('pointerup',homeModulePointerUp,{once:true});el.addEventListener('pointercancel',homeModulePointerUp,{once:true});
+  beginHomePointer(e,id,m,el,resizing);
 }
 window.homeResizePointerDown=function(e,id){
   if(!homeEditMode||e.button!==0)return;e.preventDefault();e.stopPropagation();
   const layout=activeHomeLayout(),m=layout.modules.find(x=>x.id===id),el=e.target.closest('.home-module');if(!m||!el)return;
-  el.setPointerCapture(e.pointerId);homePointerState={id,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,original:{...m},resizing:true,el};el.classList.add('resizing');
-  el.addEventListener('pointermove',homeModulePointerMove);el.addEventListener('pointerup',homeModulePointerUp,{once:true});el.addEventListener('pointercancel',homeModulePointerUp,{once:true});
+  beginHomePointer(e,id,m,el,true);
 }
+function beginHomePointer(e,id,m,el,resizing){e.preventDefault();homePointerState={id,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,original:{...m},resizing,el};el.classList.add(resizing?'resizing':'dragging');document.addEventListener('pointermove',homeModulePointerMove);document.addEventListener('pointerup',homeModulePointerUp,{once:true});document.addEventListener('pointercancel',homeModulePointerUp,{once:true});}
 function homeModulePointerMove(e){
   const s=homePointerState;if(!s||e.pointerId!==s.pointerId)return;const unit=homeGridMetrics().unit,dx=Math.round((e.clientX-s.startX)/unit),dy=Math.round((e.clientY-s.startY)/unit);
   if(s.resizing){const def=homeModuleDefinition(s.original.type),min=def.min||{w:1,h:1},max=def.max||{w:HOME_COLS,h:99};const w=Math.max(min.w,Math.min(max.w,HOME_COLS-s.original.x,s.original.w+dx)),h=Math.max(min.h,Math.min(max.h,s.original.h+dy));s.preview={...s.original,w,h};s.el.style.width=(w*unit-8)+'px';s.el.style.height=(h*unit-8)+'px';}
   else{const x=Math.max(0,Math.min(HOME_COLS-s.original.w,s.original.x+dx)),y=Math.max(0,s.original.y+dy);s.preview={...s.original,x,y};s.el.style.left=(x*unit+4)+'px';s.el.style.top=(y*unit+4)+'px';}
 }
 function homeModulePointerUp(e){
-  const s=homePointerState;if(!s)return;s.el.classList.remove('dragging','resizing');s.el.removeEventListener('pointermove',homeModulePointerMove);if(s.preview){const layout=activeHomeLayout();layout.modules=homeReflow(layout.modules,s.id,s.preview);}homePointerState=null;renderHome();
+  const s=homePointerState;if(!s)return;s.el.classList.remove('dragging','resizing');document.removeEventListener('pointermove',homeModulePointerMove);document.removeEventListener('pointerup',homeModulePointerUp);document.removeEventListener('pointercancel',homeModulePointerUp);if(s.preview){const layout=activeHomeLayout();layout.modules=homeReflow(layout.modules,s.id,s.preview);}homePointerState=null;renderHome();
 }
 async function loadHomeLayouts(){
   try{
-    if(localTestMode){const savedCompany=localStorage.getItem('companyHomeLayout'),savedPersonal=localStorage.getItem('personalHomeLayout');companyHomeLayout=normalizeHomeLayout(savedCompany?JSON.parse(savedCompany):null);personalHomeLayout=savedPersonal?normalizeHomeLayout(JSON.parse(savedPersonal)):null;return;}
-    const companySnap=await getDoc(doc(db,'homeLayouts','company-default'));companyHomeLayout=normalizeHomeLayout(companySnap.exists()?companySnap.data():null);
-    if(currentUser){const personalSnap=await getDoc(doc(db,'homeLayouts','user-'+currentUser.uid));personalHomeLayout=personalSnap.exists()?normalizeHomeLayout(personalSnap.data()):homeClone(companyHomeLayout);}
+    if(localTestMode){const savedCompany=localStorage.getItem('companyHomeLayout'),savedPersonal=localStorage.getItem('personalHomeLayout');companyHomeLayout=savedCompany?normalizeHomeLayout(JSON.parse(savedCompany)):initialCompanyHomeLayout();personalHomeLayout=syncPersonalHomeLayout(savedPersonal?JSON.parse(savedPersonal):null);return;}
+    const companySnap=await getDoc(doc(db,'homeLayouts','company-default'));companyHomeLayout=companySnap.exists()?normalizeHomeLayout(companySnap.data()):initialCompanyHomeLayout();
+    if(currentUser){const personalSnap=await getDoc(doc(db,'homeLayouts','user-'+currentUser.uid));personalHomeLayout=syncPersonalHomeLayout(personalSnap.exists()?personalSnap.data():null);}
   }catch(error){console.error('home layout load failed',error);companyHomeLayout=normalizeHomeLayout(companyHomeLayout);}
 }
+async function saveCompanyHomeLayout(){try{companyHomeLayout=normalizeHomeLayout(companyHomeLayout);if(localTestMode){localStorage.setItem('companyHomeLayout',JSON.stringify(companyHomeLayout));return;}await setDoc(doc(db,'homeLayouts','company-default'),{...companyHomeLayout,ownerUid:'company',updatedAt:serverTimestamp()});}catch(error){console.error('company home layout save failed',error);alert('公司模塊設定暫時無法儲存，請稍後再試。');}}
 async function saveHomeLayout(){
   const layout=normalizeHomeLayout(activeHomeLayout());if(homeLayoutMode==='company'&&isAdmin())companyHomeLayout=layout;else personalHomeLayout=layout;
   try{if(localTestMode){localStorage.setItem(homeLayoutMode==='company'?'companyHomeLayout':'personalHomeLayout',JSON.stringify(layout));return;}const id=homeLayoutMode==='company'&&isAdmin()?'company-default':'user-'+currentUser.uid;await setDoc(doc(db,'homeLayouts',id),{...layout,ownerUid:homeLayoutMode==='company'?'company':currentUser.uid,updatedAt:serverTimestamp()});}catch(error){console.error('home layout save failed',error);alert('首頁版面暫時無法儲存，請稍後再試。');}
