@@ -53,6 +53,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .main{flex:1;padding:1.25rem;width:100%}
 .panel{display:none}.panel.active{display:block}
 
+/* Company home — isolated from the existing operational panels. */
+.home-nav-tab{font-size:15px;font-weight:700;color:var(--pd);padding:7px 16px;margin-right:8px;border:1px solid #d9d5f5;background:var(--pl)}
+.home-nav-tab:hover,.home-nav-tab.active{background:var(--purple);color:#fff}
+.home-brand-slot{display:flex;align-items:center;justify-content:center;min-width:118px;height:32px;padding:0 12px;border:1px dashed #c9c4bc;border-radius:var(--r);color:var(--text3);font-size:11px;background:#fbfaf8}
+.home-shell{max-width:1480px;margin:0 auto}
+.home-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
+.home-heading{display:flex;align-items:center;gap:12px}.home-heading h1{font-size:21px}.home-heading p{font-size:12px;color:var(--text2);margin-top:3px}
+.home-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.home-view-switch{display:flex;padding:3px;background:#eeece8;border-radius:8px}.home-view-switch button{border:0;background:transparent;padding:6px 10px;border-radius:6px;color:var(--text2);font:inherit;font-size:12px;cursor:pointer}.home-view-switch button.active{background:#fff;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.home-grid-wrap{position:relative;min-height:600px;border-radius:12px;padding:8px;overflow:hidden}
+.home-grid-wrap.editing{background-color:#f9f8fc;background-image:linear-gradient(to right,rgba(92,83,174,.10) 1px,transparent 1px),linear-gradient(to bottom,rgba(92,83,174,.10) 1px,transparent 1px);background-size:calc((100% - 16px)/12) var(--home-unit,90px)}
+.home-grid{position:relative;min-height:580px}
+.home-module{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(30,27,24,.05);transition:left .16s ease,top .16s ease,width .16s ease,height .16s ease}
+.home-grid-wrap.editing .home-module{cursor:grab;border-color:#c9c4ed;box-shadow:0 3px 12px rgba(60,52,137,.10)}.home-grid-wrap.editing .home-module.dragging{cursor:grabbing;transition:none;z-index:10;opacity:.88}.home-grid-wrap.editing .home-module.resizing{transition:none;z-index:10}
+.home-module-head{height:42px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 12px;border-bottom:1px solid var(--border);background:#fff}.home-module-title{font-size:14px;font-weight:600}.home-module-badges{display:flex;align-items:center;gap:5px}.home-module-badge{font-size:10px;color:var(--text2);background:var(--bg);border-radius:12px;padding:2px 6px}
+.home-module-body{height:calc(100% - 42px);display:flex;align-items:center;justify-content:center;padding:16px;color:var(--text3);font-size:12px;text-align:center}.home-placeholder{border:1px dashed #d7d2ca;border-radius:8px;padding:12px 18px;background:#fbfaf8}
+.home-module-tools{display:none;gap:4px}.home-grid-wrap.editing .home-module-tools{display:flex}.home-tool{width:25px;height:25px;border:0;border-radius:5px;background:var(--bg);cursor:pointer;color:var(--text2)}.home-tool:hover{background:var(--rl);color:var(--rd)}
+.home-resize-handle{display:none;position:absolute;right:0;bottom:0;width:22px;height:22px;cursor:nwse-resize}.home-resize-handle:after{content:'';position:absolute;right:5px;bottom:5px;width:8px;height:8px;border-right:2px solid var(--purple);border-bottom:2px solid var(--purple)}.home-grid-wrap.editing .home-resize-handle{display:block}
+.home-empty{padding:60px 20px;text-align:center;color:var(--text3);border:1px dashed var(--border);border-radius:10px;background:rgba(255,255,255,.7)}
+.module-library{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}.module-library-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px;border:1px solid var(--border);border-radius:8px}.module-library-name{font-size:13px;font-weight:500}.module-library-note{font-size:10px;color:var(--text3);margin-top:2px}
+@media(max-width:900px){.home-head{align-items:flex-start;flex-direction:column}.home-actions{justify-content:flex-start}.home-brand-slot{display:none}.home-grid-wrap{overflow-x:auto}.home-grid{min-width:900px}.module-library{grid-template-columns:1fr}}
+
 /* Common */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:1.25rem}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:14px 16px}
@@ -373,8 +395,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 <div class="app">
   <nav class="topnav">
     <div class="logo">空間<span>總控</span></div>
+    <div class="home-brand-slot" aria-label="公司 Logo／品牌圖片預留位置">公司 Logo／品牌</div>
     <div class="nav-tabs">
-      <button class="nav-tab active" data-tab="overview">案件總覽</button>
+      <button class="nav-tab home-nav-tab active" data-tab="home">首頁</button>
+      <button class="nav-tab" data-tab="overview">案件總覽</button>
       <button class="nav-tab" data-tab="design">設計進度</button>
       <button class="nav-tab" data-tab="progress">工程進度</button>
       <button class="nav-tab" data-tab="bible">施工寶典</button>
@@ -389,7 +413,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
     </div>
   </nav>
   <main class="main">
-    <div id="panel-overview" class="panel active"></div>
+    <div id="panel-home" class="panel active"></div>
+    <div id="panel-overview" class="panel"></div>
     <div id="panel-design" class="panel"></div>
     <div id="panel-progress" class="panel"></div>
     <div id="panel-bible" class="panel"></div>
@@ -554,7 +579,7 @@ const MEETING_ROWS=[
   {id:'meet3',name:'丈量'},
   {id:'meet4',name:'其他'}
 ];
-let activePanel='overview',calMode='week',weekOffset=0,monthOffset=0,selectedTag=null;
+let activePanel='home',calMode='week',weekOffset=0,monthOffset=0,selectedTag=null;
 let activeBibleStage=null,activeBibleWs=null,bibleView='edit',dragSrc=null,dragModeOn=false;
 let stageDragInProgress=false,pendingBibleRender=false;
 let expandedBibleItems={};
@@ -807,7 +832,7 @@ window.signOut=async function(){
   await fbSignOut(auth);location.reload();
 }
 
-window.enterLocalTestMode=function(){
+window.enterLocalTestMode=async function(){
   if(!IS_LOCAL_PREVIEW)return;
   localTestMode=true;
   currentRole='manager';
@@ -851,7 +876,8 @@ window.enterLocalTestMode=function(){
   $('slbl').textContent='本機測試';
   $('sdot').style.background='var(--amber)';
   document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('show'));
-  renderOverview();
+  await loadHomeLayouts();
+  renderHome();
 }
 
 if(IS_LOCAL_PREVIEW){
@@ -902,7 +928,7 @@ if(!IS_LOCAL_PREVIEW)onAuthStateChanged(auth,async user=>{
   if(user.photoURL){$('user-avatar').src=user.photoURL;$('user-avatar').style.display='block';}
   $('user-name').textContent=memberDisplayName(memberData);
   if(isAdmin())document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('show'));
-  initListeners();renderOverview();
+  initListeners();await loadHomeLayouts();renderHome();
 
 });
 
@@ -1027,12 +1053,143 @@ document.querySelectorAll('.nav-tab').forEach(t=>{
   });
 });
 function renderActive(){
-  if(activePanel==='overview')renderOverview();
+  if(activePanel==='home')renderHome();
+  else if(activePanel==='overview')renderOverview();
   else if(activePanel==='design')renderDesign();
   else if(activePanel==='progress')renderProgress();
   else if(activePanel==='bible')renderBible();
   else if(activePanel==='vendors')renderVendors();
   else if(activePanel==='members')renderMembers();
+}
+
+// ── Company home / modular grid ──
+const HOME_MODULE_LIBRARY=[
+  {type:'announcements',title:'公司公告',min:null,max:null},
+  {type:'message-board',title:'留言板',min:null,max:null},
+  {type:'recommendations',title:'推薦分享',min:null,max:null},
+  {type:'company-duty',title:'公司值日／掃地',min:null,max:null},
+  {type:'daily-knowledge',title:'最近新增知識（每日冷知識）',min:null,max:null},
+  {type:'today-news',title:'今日新聞',min:null,max:null},
+  {type:'today-challenge',title:'今日挑戰',min:null,max:null},
+  {type:'daily-quiz',title:'每日猜題',min:null,max:null},
+  {type:'daily-joke',title:'每日笑話',min:null,max:null},
+  {type:'daily-choice',title:'每日殘酷二選一',min:null,max:null},
+  {type:'daily-nonsense',title:'每日一句廢話',min:null,max:null}
+];
+const HOME_COLS=12;
+let companyHomeLayout={version:1,modules:[]};
+let personalHomeLayout=null;
+let homeLayoutMode='personal';
+let homeEditMode=false;
+let homePointerState=null;
+let homeGridObserver=null;
+function homeClone(v){return JSON.parse(JSON.stringify(v));}
+function homeModuleDefinition(type){return HOME_MODULE_LIBRARY.find(x=>x.type===type);}
+function homeDefaultSize(){return{w:3,h:2};}
+function normalizeHomeModule(raw,index){
+  const def=homeModuleDefinition(raw.type);if(!def)return null;
+  const size=homeDefaultSize(),min=def.min||{w:1,h:1},max=def.max||{w:HOME_COLS,h:99};
+  return{id:String(raw.id||`${raw.type}-${Date.now()}-${index}`),type:raw.type,x:Math.max(0,Math.min(HOME_COLS-1,Number(raw.x)||0)),y:Math.max(0,Number(raw.y)||0),w:Math.max(min.w,Math.min(max.w,HOME_COLS,Number(raw.w)||size.w)),h:Math.max(min.h,Math.min(max.h,Number(raw.h)||size.h)),required:!!raw.required,hidden:!!raw.hidden};
+}
+function normalizeHomeLayout(raw){return{version:1,modules:(Array.isArray(raw?.modules)?raw.modules:[]).map(normalizeHomeModule).filter(Boolean)};}
+function activeHomeLayout(){
+  if(homeLayoutMode==='company'&&isAdmin())return companyHomeLayout;
+  if(!personalHomeLayout)personalHomeLayout=homeClone(companyHomeLayout);
+  return personalHomeLayout;
+}
+function homeSizeTier(m){const area=m.w*m.h;return area<=6?'small':area<=15?'medium':'large';}
+function homeCellsOverlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
+function homeCanPlace(item,placed){return item.x>=0&&item.x+item.w<=HOME_COLS&&item.y>=0&&!placed.some(other=>homeCellsOverlap(item,other));}
+function homeFindSpace(item,placed,startY){
+  for(let y=Math.max(0,startY||0);y<200;y++)for(let x=0;x<=HOME_COLS-item.w;x++){const candidate={...item,x,y};if(homeCanPlace(candidate,placed))return candidate;}
+  return{...item,x:0,y:0};
+}
+function homeReflow(modules,targetId,targetRect){
+  const target=modules.find(m=>m.id===targetId);if(!target)return modules;
+  const first={...target,...targetRect,x:Math.max(0,Math.min(HOME_COLS-targetRect.w,targetRect.x)),y:Math.max(0,targetRect.y)};
+  const placed=[first];
+  modules.filter(m=>m.id!==targetId).sort((a,b)=>a.y-b.y||a.x-b.x).forEach(m=>{placed.push(homeCanPlace(m,placed)?{...m}:homeFindSpace(m,placed,m.y));});
+  return placed;
+}
+function homePack(modules){
+  const placed=[];modules.slice().sort((a,b)=>a.y-b.y||a.x-b.x).forEach(m=>placed.push(homeCanPlace(m,placed)?{...m}:homeFindSpace(m,placed,0)));return placed;
+}
+function homeGridMetrics(){const grid=$('home-grid');if(!grid)return{unit:80,gap:8};const width=grid.clientWidth;return{unit:width/HOME_COLS,gap:8};}
+function setHomeGridMetrics(){const wrap=$('home-grid-wrap'),grid=$('home-grid');if(!wrap||!grid)return;const unit=homeGridMetrics().unit;wrap.style.setProperty('--home-unit',unit+'px');const visible=activeHomeLayout().modules.filter(m=>!m.hidden);const rows=Math.max(6,...visible.map(m=>m.y+m.h));grid.style.height=Math.ceil(rows*unit)+'px';visible.forEach(m=>{const el=grid.querySelector(`[data-home-id="${m.id}"]`);if(el)el.setAttribute('style',homeModuleStyle(m));});}
+function homeModuleStyle(m){const unit=homeGridMetrics().unit;return`left:${m.x*unit+4}px;top:${m.y*unit+4}px;width:${m.w*unit-8}px;height:${m.h*unit-8}px`;}
+function renderHome(){
+  const el=$('panel-home');if(!el)return;
+  if(homeLayoutMode==='company'&&!isAdmin())homeLayoutMode='personal';
+  const layout=activeHomeLayout(),adminCompany=isAdmin()&&homeLayoutMode==='company';
+  const visible=layout.modules.filter(m=>!m.hidden);
+  el.innerHTML=`<div class="home-shell">
+    <div class="home-head"><div class="home-heading"><div><h1>我的首頁</h1><p>模塊化公司首頁</p></div></div>
+      <div class="home-actions">
+        ${homeEditMode?`<button class="btn btn-sm" onclick="openHomeModuleLibrary()">＋ 新增模塊</button><button class="btn btn-p btn-sm" onclick="finishHomeEdit()">完成編輯</button>`:`<button class="btn btn-sm" onclick="startHomeEdit()">自訂首頁</button>`}
+      </div>
+    </div>
+    <div class="home-grid-wrap ${homeEditMode?'editing':''}" id="home-grid-wrap"><div class="home-grid" id="home-grid">
+      ${visible.length?visible.map(m=>renderHomeModule(m,adminCompany)).join(''):`<div class="home-empty">${homeEditMode?'請從模塊庫新增模塊':'目前尚未加入模塊'}</div>`}
+    </div></div>
+  </div>`;
+  requestAnimationFrame(()=>{setHomeGridMetrics();if(homeGridObserver)homeGridObserver.disconnect();homeGridObserver=new ResizeObserver(setHomeGridMetrics);const grid=$('home-grid');if(grid)homeGridObserver.observe(grid);});
+}
+function renderHomeModule(m,adminCompany){
+  const def=homeModuleDefinition(m.type),tier=homeSizeTier(m);
+  return`<section class="home-module" data-home-id="${m.id}" data-size-tier="${tier}" style="${homeModuleStyle(m)}" onpointerdown="homeModulePointerDown(event,'${m.id}')">
+    <div class="home-module-head"><span class="home-module-title">${def.title}</span><span class="home-module-badges">${m.required?'<span class="home-module-badge">必要</span>':''}<span class="home-module-badge">${tier==='small'?'小':tier==='medium'?'中':'大'}</span><span class="home-module-tools">${adminCompany?`<button class="home-tool" title="${m.required?'改為自由模塊':'設為必要模塊'}" onclick="event.stopPropagation();toggleHomeRequired('${m.id}')">${m.required?'●':'○'}</button>`:''}<button class="home-tool" title="移除或隱藏" onclick="event.stopPropagation();removeHomeModule('${m.id}')">×</button></span></span></div>
+    <div class="home-module-body"><div class="home-placeholder">Placeholder</div></div><div class="home-resize-handle" data-resize="true" onpointerdown="homeResizePointerDown(event,'${m.id}')"></div>
+  </section>`;
+}
+window.switchHomeLayout=function(mode){if(homeEditMode)return;homeLayoutMode=mode==='company'&&isAdmin()?'company':'personal';renderHome();}
+window.startHomeEdit=function(){homeEditMode=true;renderHome();}
+window.finishHomeEdit=async function(){homeEditMode=false;await saveHomeLayout();renderHome();}
+window.toggleHomeRequired=function(id){if(!isAdmin()||homeLayoutMode!=='company')return;const m=companyHomeLayout.modules.find(x=>x.id===id);if(m){m.required=!m.required;renderHome();}}
+window.removeHomeModule=function(id){
+  const layout=activeHomeLayout(),m=layout.modules.find(x=>x.id===id);if(!m)return;
+  if(homeLayoutMode==='personal'){if(m.required)return;m.hidden=true;}else if(isAdmin())layout.modules=layout.modules.filter(x=>x.id!==id);
+  renderHome();
+}
+window.openHomeModuleLibrary=function(){
+  if(!homeEditMode)return;const layout=activeHomeLayout();
+  const rows=HOME_MODULE_LIBRARY.map(def=>{const existing=layout.modules.find(m=>m.type===def.type);const canRestore=homeLayoutMode==='personal'&&existing?.hidden&&!existing.required;return`<div class="module-library-item"><div><div class="module-library-name">${def.title}</div><div class="module-library-note">內容尚未開發</div></div><button class="btn btn-sm" ${existing&&!canRestore?'disabled':''} onclick="addHomeModule('${def.type}')">${canRestore?'恢復':'新增'}</button></div>`;}).join('');
+  $('mo-content').innerHTML=`<div class="mo-title">模塊庫</div><div class="mo-sub">選擇已建立的模塊種類加入首頁</div><div class="module-library">${rows}</div><div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;$('modal').style.display='flex';
+}
+window.addHomeModule=function(type){
+  const layout=activeHomeLayout(),existing=layout.modules.find(m=>m.type===type);if(existing){existing.hidden=false;}else{const def=homeModuleDefinition(type);if(!def)return;const size=homeDefaultSize(),fresh=homeFindSpace({id:`${type}-${Date.now()}`,type,x:0,y:0,w:size.w,h:size.h,required:false,hidden:false},layout.modules,0);layout.modules.push(fresh);}
+  closeMo();renderHome();
+}
+window.homeModulePointerDown=function(e,id){
+  if(!homeEditMode||e.button!==0||e.target.closest('button'))return;
+  const layout=activeHomeLayout(),m=layout.modules.find(x=>x.id===id),el=e.currentTarget;if(!m||!el)return;
+  const resizing=!!e.target.closest('[data-resize]');
+  e.preventDefault();el.setPointerCapture(e.pointerId);homePointerState={id,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,original:{...m},resizing,el};el.classList.add(resizing?'resizing':'dragging');
+  el.addEventListener('pointermove',homeModulePointerMove);el.addEventListener('pointerup',homeModulePointerUp,{once:true});el.addEventListener('pointercancel',homeModulePointerUp,{once:true});
+}
+window.homeResizePointerDown=function(e,id){
+  if(!homeEditMode||e.button!==0)return;e.preventDefault();e.stopPropagation();
+  const layout=activeHomeLayout(),m=layout.modules.find(x=>x.id===id),el=e.target.closest('.home-module');if(!m||!el)return;
+  el.setPointerCapture(e.pointerId);homePointerState={id,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,original:{...m},resizing:true,el};el.classList.add('resizing');
+  el.addEventListener('pointermove',homeModulePointerMove);el.addEventListener('pointerup',homeModulePointerUp,{once:true});el.addEventListener('pointercancel',homeModulePointerUp,{once:true});
+}
+function homeModulePointerMove(e){
+  const s=homePointerState;if(!s||e.pointerId!==s.pointerId)return;const unit=homeGridMetrics().unit,dx=Math.round((e.clientX-s.startX)/unit),dy=Math.round((e.clientY-s.startY)/unit);
+  if(s.resizing){const def=homeModuleDefinition(s.original.type),min=def.min||{w:1,h:1},max=def.max||{w:HOME_COLS,h:99};const w=Math.max(min.w,Math.min(max.w,HOME_COLS-s.original.x,s.original.w+dx)),h=Math.max(min.h,Math.min(max.h,s.original.h+dy));s.preview={...s.original,w,h};s.el.style.width=(w*unit-8)+'px';s.el.style.height=(h*unit-8)+'px';}
+  else{const x=Math.max(0,Math.min(HOME_COLS-s.original.w,s.original.x+dx)),y=Math.max(0,s.original.y+dy);s.preview={...s.original,x,y};s.el.style.left=(x*unit+4)+'px';s.el.style.top=(y*unit+4)+'px';}
+}
+function homeModulePointerUp(e){
+  const s=homePointerState;if(!s)return;s.el.classList.remove('dragging','resizing');s.el.removeEventListener('pointermove',homeModulePointerMove);if(s.preview){const layout=activeHomeLayout();layout.modules=homeReflow(layout.modules,s.id,s.preview);}homePointerState=null;renderHome();
+}
+async function loadHomeLayouts(){
+  try{
+    if(localTestMode){const savedCompany=localStorage.getItem('companyHomeLayout'),savedPersonal=localStorage.getItem('personalHomeLayout');companyHomeLayout=normalizeHomeLayout(savedCompany?JSON.parse(savedCompany):null);personalHomeLayout=savedPersonal?normalizeHomeLayout(JSON.parse(savedPersonal)):null;return;}
+    const companySnap=await getDoc(doc(db,'homeLayouts','company-default'));companyHomeLayout=normalizeHomeLayout(companySnap.exists()?companySnap.data():null);
+    if(currentUser){const personalSnap=await getDoc(doc(db,'homeLayouts','user-'+currentUser.uid));personalHomeLayout=personalSnap.exists()?normalizeHomeLayout(personalSnap.data()):homeClone(companyHomeLayout);}
+  }catch(error){console.error('home layout load failed',error);companyHomeLayout=normalizeHomeLayout(companyHomeLayout);}
+}
+async function saveHomeLayout(){
+  const layout=normalizeHomeLayout(activeHomeLayout());if(homeLayoutMode==='company'&&isAdmin())companyHomeLayout=layout;else personalHomeLayout=layout;
+  try{if(localTestMode){localStorage.setItem(homeLayoutMode==='company'?'companyHomeLayout':'personalHomeLayout',JSON.stringify(layout));return;}const id=homeLayoutMode==='company'&&isAdmin()?'company-default':'user-'+currentUser.uid;await setDoc(doc(db,'homeLayouts',id),{...layout,ownerUid:homeLayoutMode==='company'?'company':currentUser.uid,updatedAt:serverTimestamp()});}catch(error){console.error('home layout save failed',error);alert('首頁版面暫時無法儲存，請稍後再試。');}
 }
 
 // ── Overview ──
