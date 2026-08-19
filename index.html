@@ -1085,7 +1085,7 @@ let homePointerState=null;
 let homeGridObserver=null;
 function homeClone(v){return JSON.parse(JSON.stringify(v));}
 function homeModuleDefinition(type){return HOME_MODULE_LIBRARY.find(x=>x.type===type);}
-function isSystemAdmin(){return currentRole==='admin'||(localTestMode&&currentUser?.uid==='local-test-admin');}
+function isSystemAdmin(){return currentRole==='manager';}
 function homeDefaultSize(){return{w:3,h:2};}
 function normalizeHomeModule(raw,index){
   const def=homeModuleDefinition(raw.type);if(!def)return null;
