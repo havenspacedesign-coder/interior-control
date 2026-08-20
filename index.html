@@ -580,7 +580,7 @@ const MEETING_ROWS=[
   {id:'meet3',name:'丈量'},
   {id:'meet4',name:'其他'}
 ];
-let activePanel='home',calMode='week',weekOffset=0,monthOffset=0,selectedTag=null;
+let activePanel='home',calMode='month',monthOffset=0,selectedTag=null;
 let activeBibleStage=null,activeBibleWs=null,bibleView='edit',dragSrc=null,dragModeOn=false;
 let stageDragInProgress=false,pendingBibleRender=false;
 let expandedBibleItems={};
@@ -685,8 +685,7 @@ function fmtDate(d){return`${d.getMonth()+1}/${d.getDate()}`}
 function fmtDay(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function today(){return new Date()}
 function getWeekDates(){
-  if(calMode==='month')return getMonthDates();
-  const b=today();const dow=b.getDay();const diff=dow===0?-6:1-dow;const mon=addDays(b,diff+weekOffset*7);return Array.from({length:7},(_,i)=>addDays(mon,i));
+  return getMonthDates();
 }
 function getMonthDates(){
   const b=today();
@@ -1924,24 +1923,20 @@ function renderProgress(){
   <div class="progress-sticky-board" style="position:sticky;top:49px;z-index:25;background:var(--bg);box-shadow:0 1px 0 var(--border)">
   <div class="wctrl">
     <div class="seg">
-      <button class="${calMode==='week'||calMode==='month'?'on':''}" onclick="setCalMode('week')">週視圖</button>
+      <button class="${calMode==='month'?'on':''}" onclick="setCalMode('month')">月視圖</button>
       <button class="${calMode==='day'?'on':''}" onclick="setCalMode('day')">今日總覽</button>
       <button class="${calMode==='todo'?'on':''}" onclick="setCalMode('todo')">各工地待辦事項</button>
     </div>
-    ${calMode==='week'||calMode==='month'?`<div class="nav-row">
-      <span class="seg" style="margin-right:6px">
-        <button class="${calMode==='month'?'on':''}" onclick="setCalMode('month')" style="padding:3px 10px;font-size:12px">月</button>
-        <button class="${calMode==='week'?'on':''}" onclick="setCalMode('week')" style="padding:3px 10px;font-size:12px">週</button>
-      </span>
+    ${calMode==='month'?`<div class="nav-row">
       <button class="nav-btn" onclick="changePeriod(-1)">‹</button>
-      <span class="wk-lbl" onclick="openDatePicker()">${calMode==='month'?weekDays[0].getFullYear()+'年 '+(weekDays[0].getMonth()+1)+'月':weekDays[0].getFullYear()+'年 '+fmtDate(weekDays[0])+' – '+fmtDate(weekDays[weekDays.length-1])} 📅</span>
+      <span class="wk-lbl" onclick="openDatePicker()">${weekDays[0].getFullYear()+'年 '+(weekDays[0].getMonth()+1)+'月'} 📅</span>
       <input type="date" id="week-date-picker" style="position:fixed;opacity:0;pointer-events:none;width:0;height:0" onchange="jumpToDate(this.value)">
       <button class="nav-btn" onclick="changePeriod(1)">›</button>
     </div>`:''}
   </div>
   ${calMode==='todo'?renderTodoPanel()+'</div>':`
   ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
-  ${calMode==='week'||calMode==='month'?`<div class="formula-bar${formulaBarState?' active':''}" id="pn-formula-bar">
+  ${calMode==='month'?`<div class="formula-bar${formulaBarState?' active':''}" id="pn-formula-bar">
     <span class="formula-bar-label" id="pn-formula-label">${formulaBarState?(formulaBarState.type==='meeting'?(MEETING_ROWS.find(r=>r.id===formulaBarState.rowId)?.name||'會議 / 其他事項'):(formulaBarState.type==='work'?'工地記事':'私人記事'))+' · '+formulaBarState.ds.slice(5).replace('-','/'):'選取儲存格'}</span>
     <input class="formula-bar-input" id="pn-formula-input" placeholder="選取色塊後在此編輯…" value="${formulaBarState?escAttr(formulaBarState.text||''):''}" data-link-url="${formulaBarState?.link?escAttr(formulaBarState.link.url||''):''}" data-link-label="${formulaBarState?.link?escAttr(formulaBarState.link.label||''):''}" autocomplete="off" spellcheck="false"
       oncontextmenu="return insertUrlForSelection(event,this)"
@@ -1949,15 +1944,15 @@ function renderProgress(){
       onblur="formulaBarSave()"
       onkeydown="pnFormulaKeyDown(event)">
   </div>`:''}
-  ${calMode==='week'||calMode==='month'?renderWeekView(shouldShow):renderDayView()}
-  ${calMode==='week'||calMode==='month'?'':'</div>'}
-  ${calMode==='week'||calMode==='month'?renderDailyLogSection(weekDays):''}
+  ${calMode==='month'?renderWeekView(shouldShow):renderDayView()}
+  ${calMode==='month'?'':'</div>'}
+  ${calMode==='month'?renderDailyLogSection(weekDays):''}
   ${renderPrivateTodoSection()}
   <div style="height:500px"></div>
   `}
   </div>
   </div>
-  ${calMode==='week'||calMode==='month'?`<div class="hscroll-sync" id="progress-bottom-hscroll" style="position:fixed;bottom:0;height:14px;overflow-x:auto;overflow-y:hidden;background:var(--surface);border-top:1px solid var(--border);z-index:40">
+  ${calMode==='month'?`<div class="hscroll-sync" id="progress-bottom-hscroll" style="position:fixed;bottom:0;height:14px;overflow-x:auto;overflow-y:hidden;background:var(--surface);border-top:1px solid var(--border);z-index:40">
     <div style="width:${200+weekDays.length*180}px;height:1px"></div>
   </div>`:''}`;
   requestAnimationFrame(restoreHScroll);
@@ -2041,8 +2036,7 @@ function renderWeekView(shouldShow){
             draggable="true" ondragstart="evDragStart(event,'${p.id}','${ds}',${ei})"
             onclick="event.stopPropagation();handleChipClick(event,'${p.id}','${ds}',${ei},'${ev.stage||''}')">${displayStageName(ev.label||ev.stage||'?')}${pendBadge(pn)}</span>
           <span class="ev-field" data-proj="${p.id}" data-ds="${ds}" data-ei="${ei}" data-field="note"
-            ondblclick="event.stopPropagation();startFieldEdit(this)"
-            onclick="event.stopPropagation()">${ev.note||''}</span>
+            onclick="event.stopPropagation();startFieldEdit(this)">${ev.note||''}</span>
           ${!isDone?`<button class="ev-del" onclick="event.stopPropagation();removeEv('${p.id}','${ds}',${ei})">×</button>`:''}
         </div>`;}).join('')}
       ${!isDone?`<div class="add-ev-wrap">
@@ -2822,7 +2816,7 @@ window.toggleRecurringRule=async function(id){const list=recurringSchedules(),r=
 window.deleteRecurringRule=async function(id){const r=recurringSchedules().find(x=>x.id===id);if(!r||!confirm('刪除排程設定？過去與已完成項目會保留。'))return;await syncRecurringRule(r,true);S.privateNotes.recurringSchedules=recurringSchedules().filter(x=>x.id!==id);await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);openRecurringManager();}
 
 function renderPrivateTodoSection(){
-  if(calMode!=='week'&&calMode!=='month')return'';
+  if(calMode!=='month')return'';
   var days=getWeekDates();
   var td=today();
   var pn=S.privateNotes||{work:{},personal:{}};
@@ -3607,18 +3601,9 @@ window.jumpToDate=function(dateStr){
   if(!dateStr)return;
   const target=new Date(dateStr+'T00:00:00');
   lastHScrollLeft=0;
-  if(calMode==='month'){
-    const base=today();
-    monthOffset=(target.getFullYear()-base.getFullYear())*12+(target.getMonth()-base.getMonth());
-    lastHScrollLeft=Math.max(0,(target.getDate()-3)*180);
-    renderProgress();
-    return;
-  }
-  const base=today();const dow=base.getDay();const diff=dow===0?-6:1-dow;
-  const thisMon=addDays(base,diff);
-  const targetDow=target.getDay();const targetDiff=targetDow===0?-6:1-targetDow;
-  const targetMon=addDays(target,targetDiff);
-  weekOffset=Math.round((targetMon.getTime()-thisMon.getTime())/(7*24*60*60*1000));
+  const base=today();
+  monthOffset=(target.getFullYear()-base.getFullYear())*12+(target.getMonth()-base.getMonth());
+  lastHScrollLeft=Math.max(0,(target.getDate()-3)*180);
   renderProgress();
 }
 function renderDayView(){
@@ -4637,10 +4622,9 @@ window.showProjectDetail=function(projId){
     ${photoPanel}`;
   $('modal').style.display='flex';
 }
-window.setCalMode=function(m){calMode=m;lastHScrollLeft=0;renderProgress();}
-window.changeWeek=function(d){weekOffset+=d;lastHScrollLeft=0;renderProgress();}
+window.setCalMode=function(m){calMode=m==='week'?'month':m;lastHScrollLeft=0;renderProgress();}
 window.changePeriod=function(d){
-  if(calMode==='month')monthOffset+=d;else weekOffset+=d;
+  monthOffset+=d;
   lastHScrollLeft=0;
   renderProgress();
 }
