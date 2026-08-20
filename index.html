@@ -223,9 +223,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .meeting-toolbar{position:sticky;left:8px;display:grid;grid-template-columns:104px 28px 57px max-content;align-items:center;white-space:nowrap;width:max-content}
 .meeting-toolbar-title{font-size:12px;font-weight:600}
 .meeting-toolbar-help{display:flex;align-items:center;justify-content:flex-start}
-.meeting-color-controls{display:grid;grid-template-columns:max-content repeat(6,16px) max-content repeat(6,16px);align-items:center;column-gap:4px}
-.meeting-color-label{font-size:11px;color:var(--text2);line-height:20px}
-.meeting-color-label-bg{margin-left:2px}
+.meeting-color-controls{display:flex;align-items:center;gap:5px}.meeting-color-button{width:32px;height:28px;border:1px solid transparent;border-radius:4px;background:transparent;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;padding:3px}.meeting-color-button:hover,.meeting-color-button.active{background:#e9edf5;border-color:#d5dae5}.meeting-color-button:disabled{opacity:.35;cursor:default}.meeting-color-icon{font-size:15px;line-height:14px;font-weight:600;color:var(--text)}.meeting-color-bar{width:19px;height:3px;border-radius:2px;border:1px solid rgba(0,0,0,.12)}.meeting-color-palette{position:fixed;z-index:1200;width:214px;padding:10px;background:#fff;border:1px solid #d7dbe3;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.2)}.meeting-palette-reset{width:100%;border:0;background:transparent;text-align:left;padding:5px 3px 8px;font:inherit;font-size:12px;cursor:pointer;color:var(--text2);border-bottom:1px solid var(--border);margin-bottom:8px}.meeting-palette-reset:hover{background:var(--bg)}.meeting-palette-grid{display:grid;grid-template-columns:repeat(10,18px);gap:2px}.meeting-palette-swatch{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.13);cursor:pointer;padding:0;position:relative}.meeting-palette-swatch:hover{outline:2px solid #7d8796;outline-offset:1px}.meeting-palette-swatch.selected:after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 2px #000}.meeting-palette-standard{font-size:11px;color:var(--text2);margin:9px 0 5px}.meeting-palette-custom{display:flex;align-items:center;gap:7px;margin-top:9px;padding-top:8px;border-top:1px solid var(--border);font-size:11px;color:var(--text2)}.meeting-palette-custom input{width:30px;height:24px;border:0;padding:0;background:none;cursor:pointer}
+.meeting-color-button{height:30px;gap:0;padding:2px 3px}.meeting-color-icon{height:20px;display:flex;align-items:center;justify-content:center;font-size:initial;line-height:normal;font-weight:400}.meeting-text-color-glyph{font-size:17px;line-height:18px;font-weight:500;font-family:Arial,sans-serif}.meeting-fill-color-glyph{width:20px;height:20px;fill:currentColor;transform:translateY(1px)}.meeting-color-bar{width:20px;height:3px;border-radius:1px}
 
 /* Stage search popup - opens UP */
 .stage-search-box{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 16px rgba(0,0,0,.15);min-width:170px;z-index:500}
@@ -1082,6 +1081,17 @@ const HOME_MODULE_LIBRARY=[
   {type:'daily-choice',title:'每日殘酷二選一',min:null,max:null},
   {type:'daily-nonsense',title:'每日一句廢話',min:null,max:null}
 ];
+const MEETING_COLOR_ROWS=[
+  ['#000000','#434343','#666666','#999999','#b7b7b7','#cccccc','#d9d9d9','#efefef','#f3f3f3','#ffffff'],
+  ['#980000','#ff0000','#ff9900','#ffff00','#00ff00','#00ffff','#4a86e8','#0000ff','#9900ff','#ff00ff'],
+  ['#e6b8af','#f4cccc','#fce5cd','#fff2cc','#d9ead3','#d0e0e3','#c9daf8','#cfe2f3','#d9d2e9','#ead1dc'],
+  ['#dd7e6b','#ea9999','#f9cb9c','#ffe599','#b6d7a8','#a2c4c9','#a4c2f4','#9fc5e8','#b4a7d6','#d5a6bd'],
+  ['#cc4125','#e06666','#f6b26b','#ffd966','#93c47d','#76a5af','#6d9eeb','#6fa8dc','#8e7cc3','#c27ba0'],
+  ['#a61c00','#cc0000','#e69138','#f1c232','#6aa84f','#45818e','#3c78d8','#3d85c6','#674ea7','#a64d79'],
+  ['#85200c','#990000','#b45f06','#bf9000','#38761d','#134f5c','#1155cc','#0b5394','#351c75','#741b47'],
+  ['#5b0f00','#660000','#783f04','#7f6000','#274e13','#0c343d','#1c4587','#073763','#20124d','#4c1130']
+];
+const MEETING_STANDARD_COLORS=['#000000','#ffffff','#4a86e8','#e24b4a','#ef9f27','#f1c232','#1d9e75','#00a2ae'];
 const HOME_INITIAL_MODULE_TYPES=HOME_MODULE_LIBRARY.map(x=>x.type);
 const HOME_COLS=12;
 let companyHomeLayout={version:1,modules:[]};
@@ -2070,14 +2080,6 @@ function renderWeekView(shouldShow){
   </tr></thead>
   <tbody>
   ${(function(){
-    var MCOLS=[
-      {c:'',bg:'#e8e5e0',l:'無'},
-      {c:'#E24B4A',bg:'#E24B4A',l:'紅'},
-      {c:'#EF9F27',bg:'#EF9F27',l:'橘'},
-      {c:'#1D9E75',bg:'#1D9E75',l:'綠'},
-      {c:'#534AB7',bg:'#534AB7',l:'藍'},
-      {c:'#9c9690',bg:'#9c9690',l:'灰'}
-    ];
     var mFound=null;
     Object.keys(meetingSelected).forEach(function(k){
       if(meetingSelected[k]>=0){
@@ -2087,16 +2089,20 @@ function renderWeekView(shouldShow){
         if(mitems[meetingSelected[k]])mFound={rowId:rowId,ds:ds2,idx:meetingSelected[k],color:mitems[meetingSelected[k]].color||'',bg:mitems[meetingSelected[k]].bg||''};
       }
     });
-    function mDots(kind,curVal){
-      return MCOLS.map(function(col){
-        var isActive=mFound&&curVal===col.c;
-        var oc=mFound?(' onclick="mSetColor(\''+mFound.rowId+'\',\''+mFound.ds+'\','+mFound.idx+',\''+kind+'\',\''+col.c+'\')"'):'';
-        return'<span style="width:16px;height:16px;border-radius:50%;background:'+col.bg+';cursor:'+(mFound?'pointer':'default')+';display:inline-block;border:1.5px solid rgba(0,0,0,.2);vertical-align:middle;opacity:'+(mFound?1:0.35)+';'+(isActive?'outline:2px solid #333;outline-offset:1px':'')+'" title="'+col.l+'"'+oc+'></span>';
-      }).join('');
+    function mColorButton(kind,curVal){
+      var isText=kind==='text';
+      var label=isText?'文字顏色':'填滿顏色';
+      var icon=isText
+        ?'<span class="meeting-text-color-glyph">A</span>'
+        :'<svg class="meeting-fill-color-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.2 3.4 17.7 14.9l-6.8 6.8a2 2 0 0 1-2.8 0l-5.8-5.8a2 2 0 0 1 0-2.8l7-7-3.1-3.1 1.4-1.4 3.1 3.1 1.5-1.5 1.4 1.4-7.4 7.4 5.8 5.8 2.9-2.9L4.8 4.8 6.2 3.4Z"/><path d="M18.4 17.2s-2.5 2.8-2.5 4.3a2.5 2.5 0 0 0 5 0c0-1.5-2.5-4.3-2.5-4.3Z"/></svg>';
+      var bar=curVal||(isText?'#202124':'#ffffff');
+      var oc=mFound?(' onclick="openMeetingColorPalette(event,\''+mFound.rowId+'\',\''+mFound.ds+'\','+mFound.idx+',\''+kind+'\',\''+curVal+'\')"'):'';
+      return'<button type="button" class="meeting-color-button" aria-label="'+label+'" title="'+label+'" '+(mFound?'':'disabled')+oc+'>'
+        +'<span class="meeting-color-icon">'+icon+'</span><span class="meeting-color-bar" style="background:'+bar+'"></span></button>';
     }
     var mColorBar='<span class="meeting-color-controls">'
-      +'<span class="meeting-color-label">文字</span>'+mDots('text',mFound?mFound.color:'')
-      +'<span class="meeting-color-label meeting-color-label-bg">底色</span>'+mDots('bg',mFound?mFound.bg:'')
+      +mColorButton('text',mFound?mFound.color:'')
+      +mColorButton('bg',mFound?mFound.bg:'')
       +'</span>';
     var hdr='<tr><td colspan="'+(days.length+1)+'" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:2px solid #1a1a1a">'
       +'<div class="meeting-toolbar">'
@@ -2363,6 +2369,34 @@ window.mAdd=async function(rowId,ds){
     if(inp)inp.focus();
   },50);
 }
+window.closeMeetingColorPalette=function(){
+  const old=document.getElementById('meeting-color-palette');
+  if(old)old.remove();
+};
+window.openMeetingColorPalette=function(e,rowId,ds,idx,kind,current){
+  e.stopPropagation();
+  closeMeetingColorPalette();
+  const palette=document.createElement('div');
+  palette.id='meeting-color-palette';
+  palette.className='meeting-color-palette';
+  const swatch=function(color){
+    const selected=(current||'').toLowerCase()===color.toLowerCase();
+    return '<button type="button" class="meeting-palette-swatch'+(selected?' selected':'')+'" style="background:'+color+'" title="'+color+'" aria-label="選擇 '+color+'" onclick="mPickMeetingColor(\''+rowId+'\',\''+ds+'\','+idx+',\''+kind+'\',\''+color+'\')">'+(selected?'✓':'')+'</button>';
+  };
+  palette.innerHTML='<button type="button" class="meeting-palette-reset" onclick="mPickMeetingColor(\''+rowId+'\',\''+ds+'\','+idx+',\''+kind+'\',\'\')">↙&nbsp; 重設</button>'
+    +MEETING_COLOR_ROWS.map(function(row){return '<div class="meeting-palette-grid">'+row.map(swatch).join('')+'</div>';}).join('')
+    +'<div class="meeting-palette-standard">標準</div><div class="meeting-palette-grid">'+MEETING_STANDARD_COLORS.map(swatch).join('')+'</div>'
+    +'<label class="meeting-palette-custom"><span>自訂</span><input type="color" value="'+(current||'#000000')+'" aria-label="自訂顏色" onchange="mPickMeetingColor(\''+rowId+'\',\''+ds+'\','+idx+',\''+kind+'\',this.value)"><span class="meeting-custom-preview" style="background:'+(current||'#000000')+'"></span></label>';
+  document.body.appendChild(palette);
+  const rect=e.currentTarget.getBoundingClientRect();
+  const pr=palette.getBoundingClientRect();
+  palette.style.left=Math.max(8,Math.min(rect.left,window.innerWidth-pr.width-8))+'px';
+  palette.style.top=Math.max(8,Math.min(rect.bottom+6,window.innerHeight-pr.height-8))+'px';
+};
+window.mPickMeetingColor=async function(rowId,ds,idx,kind,val){
+  closeMeetingColorPalette();
+  await mSetColor(rowId,ds,idx,kind,val);
+};
 window.mSetColor=async function(rowId,ds,idx,kind,val){
   if(!currentUser)return;
   const key=rowId+'_'+ds;
@@ -3369,6 +3403,7 @@ document.addEventListener('keydown',function(e){
 // clears the purple "selected" highlight, whether or not that chip was
 // ever actually focused for typing — keeps the highlight behavior consistent.
 document.addEventListener('click',function(e){
+  if(!e.target.closest('.meeting-color-palette')&&!e.target.closest('.meeting-color-button'))closeMeetingColorPalette();
   if(!e.target.closest('.help-wrap')&&!e.target.closest('.help-pop'))closeHelpPops();
   if(!e.target.closest('.pn-mention-menu')){
     document.querySelectorAll('.pn-mention-menu').forEach(function(el){el.style.display='none';});
