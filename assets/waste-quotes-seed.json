@@ -1,0 +1,1395 @@
+{
+  "meta": {
+    "title": "每日一句廢話｜Threads 持續合併精選去重版",
+    "count": 275,
+    "language": "zh-TW",
+    "previous_count": 219,
+    "added_this_round": 56,
+    "content_rules": [
+      "合併上一版句庫與本次新增 Threads 內容",
+      "排除完全重複與同梗高度相似內容",
+      "排除 18 禁、過度粗俗及不適合公司首頁的內容",
+      "簡體字統一轉為台灣繁體中文",
+      "移除帳號、日期、Tag、收藏留言與上下文依賴內容",
+      "明顯歌詞或需原貼文脈絡才成立的內容不納入"
+    ],
+    "rotation_rule": "所有啟用句子完整輪完一輪後才能開始下一輪；同一輪內不得重複。下一輪重新隨機排序，且避免新一輪第一句與上一輪最後一句相同。"
+  },
+  "items": [
+    {
+      "id": "waste_001",
+      "text": "我一怒之下，就怒了一下。",
+      "enabled": true
+    },
+    {
+      "id": "waste_002",
+      "text": "上次寫這種句子還是在上一次。",
+      "enabled": true
+    },
+    {
+      "id": "waste_003",
+      "text": "如果我猜的沒錯，我猜的就是對的。",
+      "enabled": true
+    },
+    {
+      "id": "waste_004",
+      "text": "我都不知道要說什麼了，相信你也不知道吧。",
+      "enabled": true
+    },
+    {
+      "id": "waste_005",
+      "text": "東西在壞掉之前是好的。",
+      "enabled": true
+    },
+    {
+      "id": "waste_006",
+      "text": "這題看似簡單，其實一點都不難。",
+      "enabled": true
+    },
+    {
+      "id": "waste_007",
+      "text": "在我回到家之前，我還在外面。",
+      "enabled": true
+    },
+    {
+      "id": "waste_008",
+      "text": "如果有人踩到我的底線，我就後退一步再畫一條新的。",
+      "enabled": true
+    },
+    {
+      "id": "waste_009",
+      "text": "故障燈亮了，代表故障燈沒壞。",
+      "enabled": true
+    },
+    {
+      "id": "waste_010",
+      "text": "先苦不一定後甘，但先甘就一定是先甘。",
+      "enabled": true
+    },
+    {
+      "id": "waste_011",
+      "text": "做我們這行最忌諱的，就是做我們這行。",
+      "enabled": true
+    },
+    {
+      "id": "waste_012",
+      "text": "認識這麼久，終於認識你了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_013",
+      "text": "如果我在這邊看到你，那肯定就是在這邊看到。",
+      "enabled": true
+    },
+    {
+      "id": "waste_014",
+      "text": "我已經不再是當年的那個窮小子，我是今年的窮小子。",
+      "enabled": true
+    },
+    {
+      "id": "waste_015",
+      "text": "你的出發點不錯，但你先別出發。",
+      "enabled": true
+    },
+    {
+      "id": "waste_016",
+      "text": "不出意外的話，馬上就要出意外了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_017",
+      "text": "過一萬步講的話，根本聽不到你在講什麼。",
+      "enabled": true
+    },
+    {
+      "id": "waste_018",
+      "text": "在我忘記之前，是絕對不會忘記的。",
+      "enabled": true
+    },
+    {
+      "id": "waste_019",
+      "text": "我吃過的鹽比你吃過的飯還鹹。",
+      "enabled": true
+    },
+    {
+      "id": "waste_020",
+      "text": "我走過的路比你走過的路還多。",
+      "enabled": true
+    },
+    {
+      "id": "waste_021",
+      "text": "我年輕的時候很窮，但現在的我不一樣了，我不再年輕。",
+      "enabled": true
+    },
+    {
+      "id": "waste_022",
+      "text": "人生那些過不去的坎，我都選擇不過去。",
+      "enabled": true
+    },
+    {
+      "id": "waste_023",
+      "text": "我不會說漂亮的話，但漂亮的我會說話。",
+      "enabled": true
+    },
+    {
+      "id": "waste_024",
+      "text": "明明可以靠顏值，偏偏要工作。我不知道明明是誰，反正我是偏偏。",
+      "enabled": true
+    },
+    {
+      "id": "waste_025",
+      "text": "如果你惹毛我，我就毛絨絨的走開。",
+      "enabled": true
+    },
+    {
+      "id": "waste_026",
+      "text": "人生一波三折，好便宜。",
+      "enabled": true
+    },
+    {
+      "id": "waste_027",
+      "text": "人生千瘡百孔，好透氣。",
+      "enabled": true
+    },
+    {
+      "id": "waste_028",
+      "text": "面向陽光，你會被曬傷。",
+      "enabled": true
+    },
+    {
+      "id": "waste_029",
+      "text": "沒有人可以利用我，因為我沒有用。",
+      "enabled": true
+    },
+    {
+      "id": "waste_030",
+      "text": "聽君一席話，如聽一席話。",
+      "enabled": true
+    },
+    {
+      "id": "waste_031",
+      "text": "三人行，必有三人。",
+      "enabled": true
+    },
+    {
+      "id": "waste_032",
+      "text": "十年磨一劍，五年磨半劍。",
+      "enabled": true
+    },
+    {
+      "id": "waste_033",
+      "text": "七日不見，如隔一周。",
+      "enabled": true
+    },
+    {
+      "id": "waste_034",
+      "text": "據我所知，我一無所知。",
+      "enabled": true
+    },
+    {
+      "id": "waste_035",
+      "text": "十年生死兩茫茫，五年生死一茫茫。",
+      "enabled": true
+    },
+    {
+      "id": "waste_036",
+      "text": "在非洲，每六十秒，就有一分鐘過去。",
+      "enabled": true
+    },
+    {
+      "id": "waste_037",
+      "text": "誰能想得到，這名16歲少女，在四年前只是一名12歲少女。",
+      "enabled": true
+    },
+    {
+      "id": "waste_038",
+      "text": "當蝴蝶在南半球拍了兩下翅膀，她就會稍微飛高一點點。",
+      "enabled": true
+    },
+    {
+      "id": "waste_039",
+      "text": "只要每天省下買一杯奶茶的錢，十天後就能買十杯奶茶。",
+      "enabled": true
+    },
+    {
+      "id": "waste_040",
+      "text": "看起來很危險，實則一點也不安全。",
+      "enabled": true
+    },
+    {
+      "id": "waste_041",
+      "text": "能說出這種話的人，一定能說出這種話。",
+      "enabled": true
+    },
+    {
+      "id": "waste_042",
+      "text": "想不到二十四小時沒見到你，就好像過了一天一樣。",
+      "enabled": true
+    },
+    {
+      "id": "waste_043",
+      "text": "你知道嗎？我從前不知道。",
+      "enabled": true
+    },
+    {
+      "id": "waste_044",
+      "text": "過去軟弱的我已經不存在了，現在的我更加軟弱。",
+      "enabled": true
+    },
+    {
+      "id": "waste_045",
+      "text": "你蹲得越低、越久，你的腳就越麻。",
+      "enabled": true
+    },
+    {
+      "id": "waste_046",
+      "text": "我知道你很急，但你先別急。",
+      "enabled": true
+    },
+    {
+      "id": "waste_047",
+      "text": "你越是這樣，我悅氏礦泉水。",
+      "enabled": true
+    },
+    {
+      "id": "waste_048",
+      "text": "無心插柳柳橙汁。",
+      "enabled": true
+    },
+    {
+      "id": "waste_049",
+      "text": "堅持不自律，本身就是一種自律。",
+      "enabled": true
+    },
+    {
+      "id": "waste_050",
+      "text": "忍一時風平浪靜，退一步越想越氣。",
+      "enabled": true
+    },
+    {
+      "id": "waste_051",
+      "text": "信不信我一通電話打過去，電話就會響。",
+      "enabled": true
+    },
+    {
+      "id": "waste_052",
+      "text": "過去的事不會忘記，只是想不起來而已。",
+      "enabled": true
+    },
+    {
+      "id": "waste_053",
+      "text": "你先聽我說，我先說給你聽。",
+      "enabled": true
+    },
+    {
+      "id": "waste_054",
+      "text": "你先深呼吸，然後再吐氣。",
+      "enabled": true
+    },
+    {
+      "id": "waste_055",
+      "text": "秒針每動一下，就過去了一秒。",
+      "enabled": true
+    },
+    {
+      "id": "waste_056",
+      "text": "吃飽了之後，就吃飽了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_057",
+      "text": "故事是這樣的，是這樣的故事。",
+      "enabled": true
+    },
+    {
+      "id": "waste_058",
+      "text": "沒想到你這麼年輕。這沒什麼，我當年出生的時候還更年輕。",
+      "enabled": true
+    },
+    {
+      "id": "waste_059",
+      "text": "如果上帝幫你關了一扇窗，那就順便關門，因為我要開冷氣。",
+      "enabled": true
+    },
+    {
+      "id": "waste_060",
+      "text": "天無絕人之路，代表我還有一條絕路。",
+      "enabled": true
+    },
+    {
+      "id": "waste_061",
+      "text": "在吃飯跟吃麵中，我選擇了吃土。",
+      "enabled": true
+    },
+    {
+      "id": "waste_062",
+      "text": "生活不斷挫折我，只會讓我變得肉質緊實。",
+      "enabled": true
+    },
+    {
+      "id": "waste_063",
+      "text": "我除了醒著的時間，其他時間都在睡覺。",
+      "enabled": true
+    },
+    {
+      "id": "waste_064",
+      "text": "我不在意你，我在義大利。",
+      "enabled": true
+    },
+    {
+      "id": "waste_065",
+      "text": "肚子餓的時候就吃飽，肚子不餓就不吃。",
+      "enabled": true
+    },
+    {
+      "id": "waste_066",
+      "text": "我的夢想是在40歲實現財富自由，現在我已經達成一半了——我40歲了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_067",
+      "text": "我不想用我的腦袋，因為我的腦袋沒什麼用。",
+      "enabled": true
+    },
+    {
+      "id": "waste_068",
+      "text": "沒事千萬不要找我麻煩，有四千萬的話可以。",
+      "enabled": true
+    },
+    {
+      "id": "waste_069",
+      "text": "我再給你一次機會，如果還是這樣，那我再給一次。",
+      "enabled": true
+    },
+    {
+      "id": "waste_070",
+      "text": "老闆跟我介紹三種口味：香菇高麗菜包、高麗菜香菇包、綜合包，可以吃到香菇加高麗菜。",
+      "enabled": true
+    },
+    {
+      "id": "waste_071",
+      "text": "生活給了我一拳，我說沒上次重。",
+      "enabled": true
+    },
+    {
+      "id": "waste_072",
+      "text": "我的思想比較極端，但是我的窩囊彌補了這一點。",
+      "enabled": true
+    },
+    {
+      "id": "waste_073",
+      "text": "我存了很多要買的東西，但是我沒存錢。",
+      "enabled": true
+    },
+    {
+      "id": "waste_074",
+      "text": "人生將我擊倒，小睡一下。",
+      "enabled": true
+    },
+    {
+      "id": "waste_075",
+      "text": "前途一片陰暗，好涼快。",
+      "enabled": true
+    },
+    {
+      "id": "waste_076",
+      "text": "人生一眼望到頭，視力真好。",
+      "enabled": true
+    },
+    {
+      "id": "waste_077",
+      "text": "計畫又泡湯了，泡湯很舒服啊。",
+      "enabled": true
+    },
+    {
+      "id": "waste_078",
+      "text": "命運時常停電，好環保。",
+      "enabled": true
+    },
+    {
+      "id": "waste_079",
+      "text": "錢包空空如也，好輕盈。",
+      "enabled": true
+    },
+    {
+      "id": "waste_080",
+      "text": "話到嘴邊又咽了下去，每天以此來獲得飽腹感。",
+      "enabled": true
+    },
+    {
+      "id": "waste_081",
+      "text": "開心也是一天，不開心也是一天，就這樣過了兩天。",
+      "enabled": true
+    },
+    {
+      "id": "waste_082",
+      "text": "在正常情況下，情況總是正常的。",
+      "enabled": true
+    },
+    {
+      "id": "waste_083",
+      "text": "我十分冷靜，冷靜了十分鐘。",
+      "enabled": true
+    },
+    {
+      "id": "waste_084",
+      "text": "強扭的瓜不甜，但我會很開心。",
+      "enabled": true
+    },
+    {
+      "id": "waste_085",
+      "text": "只要我沒有道德，就沒有人能道德綁架我。",
+      "enabled": true
+    },
+    {
+      "id": "waste_086",
+      "text": "警察來了都想報警。",
+      "enabled": true
+    },
+    {
+      "id": "waste_087",
+      "text": "明知山有虎，不去明知山。",
+      "enabled": true
+    },
+    {
+      "id": "waste_088",
+      "text": "要是你敢跟我翻臉，我就把你的臉翻回來。",
+      "enabled": true
+    },
+    {
+      "id": "waste_089",
+      "text": "你敢惹我的話，我就會被你惹。",
+      "enabled": true
+    },
+    {
+      "id": "waste_090",
+      "text": "關於明天的事，我明後天就知道了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_091",
+      "text": "我以為我是設計師，但其實是我被設計了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_092",
+      "text": "人生最有意義的事，就是不要做沒有意義的事。",
+      "enabled": true
+    },
+    {
+      "id": "waste_093",
+      "text": "機會是留給有機會的人。",
+      "enabled": true
+    },
+    {
+      "id": "waste_094",
+      "text": "要成功，首先你不能失敗。",
+      "enabled": true
+    },
+    {
+      "id": "waste_095",
+      "text": "只要努力不一定會成功，但不努力就一定不會努力。",
+      "enabled": true
+    },
+    {
+      "id": "waste_096",
+      "text": "不管你信不信，只要有人出生，就會有人變成剛出生的人。",
+      "enabled": true
+    },
+    {
+      "id": "waste_097",
+      "text": "你永遠叫不醒一個裝睡的人，除非你把他叫醒。",
+      "enabled": true
+    },
+    {
+      "id": "waste_098",
+      "text": "時間會治癒一切，但有時候它也只是讓時間過去。",
+      "enabled": true
+    },
+    {
+      "id": "waste_099",
+      "text": "你永遠不知道下一秒會發生什麼，直到下一秒發生。",
+      "enabled": true
+    },
+    {
+      "id": "waste_100",
+      "text": "喜歡一個人很簡單，只要你喜歡他，你就會喜歡他。",
+      "enabled": true
+    },
+    {
+      "id": "waste_101",
+      "text": "感情這種事，不是你想談就能談，而是你想談也不一定能談。",
+      "enabled": true
+    },
+    {
+      "id": "waste_102",
+      "text": "減肥最難的部分，就是減肥。",
+      "enabled": true
+    },
+    {
+      "id": "waste_103",
+      "text": "一切都是過程，但我根本過不去。",
+      "enabled": true
+    },
+    {
+      "id": "waste_104",
+      "text": "當你照鏡子時，你會看見一個和你長得一模一樣的人。",
+      "enabled": true
+    },
+    {
+      "id": "waste_105",
+      "text": "吾日三省吾身，吾沒錯。",
+      "enabled": true
+    },
+    {
+      "id": "waste_106",
+      "text": "我一言既出，就出一言。",
+      "enabled": true
+    },
+    {
+      "id": "waste_107",
+      "text": "但凡我有一點本事，也不至於一點本事都沒有。",
+      "enabled": true
+    },
+    {
+      "id": "waste_108",
+      "text": "我不再討厭星期一了，我已經長大了，我討厭一整個月。",
+      "enabled": true
+    },
+    {
+      "id": "waste_109",
+      "text": "喝到最後一口茶，你就沒有下一口了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_110",
+      "text": "泡茶最重要的步驟，就是把茶泡開。",
+      "enabled": true
+    },
+    {
+      "id": "waste_111",
+      "text": "生氣的時候最討厭的行為，就是生氣。",
+      "enabled": true
+    },
+    {
+      "id": "waste_112",
+      "text": "好啦！我們各退一步，這樣距離就兩步了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_113",
+      "text": "以上內容純屬巧合，如有雷同，那就雷同。",
+      "enabled": true
+    },
+    {
+      "id": "waste_114",
+      "text": "成大事者，必成大事。",
+      "enabled": true
+    },
+    {
+      "id": "waste_115",
+      "text": "我最後悔的是，我沒有聽我媽的話。什麼話？我不知道，我沒有在聽。",
+      "enabled": true
+    },
+    {
+      "id": "waste_116",
+      "text": "人生就是起起落落落落落。",
+      "enabled": true
+    },
+    {
+      "id": "waste_117",
+      "text": "我得出一個結論，就是沒有結論。",
+      "enabled": true
+    },
+    {
+      "id": "waste_118",
+      "text": "世上無難事，只有有錢人。",
+      "enabled": true
+    },
+    {
+      "id": "waste_119",
+      "text": "昨天的明天就是今天，它同時也是明天的昨天。",
+      "enabled": true
+    },
+    {
+      "id": "waste_120",
+      "text": "你當我三歲小孩嗎？人家我今年四歲了耶。",
+      "enabled": true
+    },
+    {
+      "id": "waste_121",
+      "text": "你只要記住，不管記住什麼，只要記住就完了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_122",
+      "text": "可以問你一個問題嗎？可以。我問完了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_123",
+      "text": "明天過後是後天，後天過後是大後天。",
+      "enabled": true
+    },
+    {
+      "id": "waste_124",
+      "text": "少壯不努力，老大徒傷悲；可是努力，老大還是會傷悲。",
+      "enabled": true
+    },
+    {
+      "id": "waste_125",
+      "text": "欲窮千里目，更上一層樓；電梯上樓這邊請。",
+      "enabled": true
+    },
+    {
+      "id": "waste_126",
+      "text": "夢想這條路，跪著也要走完。可以搭車或搭飛機嗎？",
+      "enabled": true
+    },
+    {
+      "id": "waste_127",
+      "text": "當你看見這句話，就證明你看見這句話。",
+      "enabled": true
+    },
+    {
+      "id": "waste_128",
+      "text": "我一貧如洗，就一直洗。",
+      "enabled": true
+    },
+    {
+      "id": "waste_129",
+      "text": "年紀輕輕就這麼年輕。",
+      "enabled": true
+    },
+    {
+      "id": "waste_130",
+      "text": "記得提醒我要提醒你。",
+      "enabled": true
+    },
+    {
+      "id": "waste_131",
+      "text": "我少不了吃，就吃了不少。",
+      "enabled": true
+    },
+    {
+      "id": "waste_132",
+      "text": "你統一天下，我統一布丁。",
+      "enabled": true
+    },
+    {
+      "id": "waste_133",
+      "text": "我如果是你的話，我就是你了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_134",
+      "text": "你有在聽嗎？是的，我有在聽。那你的回答是？我有在聽，但是我沒有說要回答。",
+      "enabled": true
+    },
+    {
+      "id": "waste_135",
+      "text": "下次見面就是下次了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_136",
+      "text": "這杯咖啡如果被你喝了，那你就會喝到咖啡。",
+      "enabled": true
+    },
+    {
+      "id": "waste_137",
+      "text": "反正我們就視情況看看是什麼情況。",
+      "enabled": true
+    },
+    {
+      "id": "waste_138",
+      "text": "是這樣沒錯，但不是這樣。",
+      "enabled": true
+    },
+    {
+      "id": "waste_139",
+      "text": "我愣了一下，又愣了三下。",
+      "enabled": true
+    },
+    {
+      "id": "waste_140",
+      "text": "我覺得你可以考慮一下。考慮什麼？考慮一下。",
+      "enabled": true
+    },
+    {
+      "id": "waste_141",
+      "text": "錢不是問題，問題是沒錢。",
+      "enabled": true
+    },
+    {
+      "id": "waste_142",
+      "text": "我心情不好的時候，心情很不好。",
+      "enabled": true
+    },
+    {
+      "id": "waste_143",
+      "text": "如果你看清我，那我就被你看清了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_144",
+      "text": "我曾在極度憤怒的情況下極度憤怒。",
+      "enabled": true
+    },
+    {
+      "id": "waste_145",
+      "text": "人比人，氣死人；蛋糕比蛋糕，起司蛋糕。",
+      "enabled": true
+    },
+    {
+      "id": "waste_146",
+      "text": "我只能建議你，別聽任何人的建議。",
+      "enabled": true
+    },
+    {
+      "id": "waste_147",
+      "text": "在哪裡跌倒，就在哪裡躺好。",
+      "enabled": true
+    },
+    {
+      "id": "waste_148",
+      "text": "你可以幫我拿那個我自己拿得到的那個嗎？",
+      "enabled": true
+    },
+    {
+      "id": "waste_149",
+      "text": "我說想一下的時候，代表我忘記了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_150",
+      "text": "不約而同，所以不約兒童。",
+      "enabled": true
+    },
+    {
+      "id": "waste_151",
+      "text": "有朋自遠方來，所以他來的時候很遠。",
+      "enabled": true
+    },
+    {
+      "id": "waste_152",
+      "text": "當我等紅燈時，其實是在等綠燈。",
+      "enabled": true
+    },
+    {
+      "id": "waste_153",
+      "text": "一個半小時，就是三個半小時。",
+      "enabled": true
+    },
+    {
+      "id": "waste_154",
+      "text": "生魚片其實是死魚片。",
+      "enabled": true
+    },
+    {
+      "id": "waste_155",
+      "text": "我認識他，但他不認識我。",
+      "enabled": true
+    },
+    {
+      "id": "waste_156",
+      "text": "有困難一定要告訴我，我看看能不能幫倒忙。",
+      "enabled": true
+    },
+    {
+      "id": "waste_157",
+      "text": "據統計，離過婚的人基本上都結過婚。",
+      "enabled": true
+    },
+    {
+      "id": "waste_158",
+      "text": "有句俗話說，俗話說得好。",
+      "enabled": true
+    },
+    {
+      "id": "waste_159",
+      "text": "我以過來人的身分告訴你，我已經過來了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_160",
+      "text": "恭喜你，被我恭喜了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_161",
+      "text": "麥當勞沒跟你說的七個秘密，也沒跟我說。",
+      "enabled": true
+    },
+    {
+      "id": "waste_162",
+      "text": "醫生叫我不能喝冰的，那我就去冰。",
+      "enabled": true
+    },
+    {
+      "id": "waste_163",
+      "text": "那不是照片模糊，是我長得就模糊。",
+      "enabled": true
+    },
+    {
+      "id": "waste_164",
+      "text": "失敗為成功之母，母之成功為失敗。",
+      "enabled": true
+    },
+    {
+      "id": "waste_165",
+      "text": "驀然回首，我的脖子就扭到了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_166",
+      "text": "沒有期待，就沒有期待。",
+      "enabled": true
+    },
+    {
+      "id": "waste_167",
+      "text": "惹到我，你算是踢到棉花了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_168",
+      "text": "如果世界漆黑，那就是天黑。",
+      "enabled": true
+    },
+    {
+      "id": "waste_169",
+      "text": "簡單來說，非常簡單。",
+      "enabled": true
+    },
+    {
+      "id": "waste_170",
+      "text": "一山不容二虎，二山得六。",
+      "enabled": true
+    },
+    {
+      "id": "waste_171",
+      "text": "上次看到這種廢文，已經是上次的事了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_172",
+      "text": "千金難買早知道，我不是千金也難買早知道。",
+      "enabled": true
+    },
+    {
+      "id": "waste_173",
+      "text": "如果你曬到太陽，那太陽也曬到你了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_174",
+      "text": "欸不是，我跟你說，我忘了要說什麼。",
+      "enabled": true
+    },
+    {
+      "id": "waste_175",
+      "text": "我是一個非常有原則的人，但我的原則非常有彈性。",
+      "enabled": true
+    },
+    {
+      "id": "waste_176",
+      "text": "一個人講我沒有關係，兩個人講我，代表他們認識。",
+      "enabled": true
+    },
+    {
+      "id": "waste_177",
+      "text": "夜路走多了，總匯三明治。",
+      "enabled": true
+    },
+    {
+      "id": "waste_178",
+      "text": "年少不努力，開心又愜意。",
+      "enabled": true
+    },
+    {
+      "id": "waste_179",
+      "text": "曾經的我吃了那麼多的苦，直到現在我還是有吃不完的苦。",
+      "enabled": true
+    },
+    {
+      "id": "waste_180",
+      "text": "我一覺起來，就睡了一覺。",
+      "enabled": true
+    },
+    {
+      "id": "waste_181",
+      "text": "我不是這方面的專家，但看完之後我確定一件事：我果然不是這方面的專家。",
+      "enabled": true
+    },
+    {
+      "id": "waste_182",
+      "text": "本來可以上台大，但我忍住了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_183",
+      "text": "後天的努力很重要，所以我今天休息。",
+      "enabled": true
+    },
+    {
+      "id": "waste_184",
+      "text": "思來想去，就讓思來去吧。",
+      "enabled": true
+    },
+    {
+      "id": "waste_185",
+      "text": "我從不吃別人的醋，因為我不喜歡醋的味道。",
+      "enabled": true
+    },
+    {
+      "id": "waste_186",
+      "text": "老實說。那你平常都不老實嗎？",
+      "enabled": true
+    },
+    {
+      "id": "waste_187",
+      "text": "心情烏雲密布，好防曬。",
+      "enabled": true
+    },
+    {
+      "id": "waste_188",
+      "text": "感覺可以就可以了的感覺。",
+      "enabled": true
+    },
+    {
+      "id": "waste_189",
+      "text": "當你心情很差的時候就去運動，因為你會發現身體也很差。",
+      "enabled": true
+    },
+    {
+      "id": "waste_190",
+      "text": "我大吃一驚，就吃了一斤。",
+      "enabled": true
+    },
+    {
+      "id": "waste_191",
+      "text": "你的想法不錯，但你先別想。",
+      "enabled": true
+    },
+    {
+      "id": "waste_192",
+      "text": "一言既出，駟馬難追。我不是馬，所以幹嘛追？",
+      "enabled": true
+    },
+    {
+      "id": "waste_193",
+      "text": "俗話常說禍不單行，我只好把它嫁給你。",
+      "enabled": true
+    },
+    {
+      "id": "waste_194",
+      "text": "這個問題的關鍵，在於有沒有找到這個關鍵的問題。",
+      "enabled": true
+    },
+    {
+      "id": "waste_195",
+      "text": "撇除缺點的部分，就沒有缺點了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_196",
+      "text": "麻雀雖小，武藏小次郎。",
+      "enabled": true
+    },
+    {
+      "id": "waste_197",
+      "text": "積沙成塔，積少化痰。",
+      "enabled": true
+    },
+    {
+      "id": "waste_198",
+      "text": "在我迷路之前，我是知道路的。",
+      "enabled": true
+    },
+    {
+      "id": "waste_199",
+      "text": "我說白了，我白說了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_200",
+      "text": "今天你踢到我這塊鐵板，你的腳應該滿痛的。",
+      "enabled": true
+    },
+    {
+      "id": "waste_201",
+      "text": "你有時候是不是不知道怎麼了，然後也就不知道怎麼了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_202",
+      "text": "經過無數歷練，終於由一個靦腆的少年，成長為靦腆的中年。",
+      "enabled": true
+    },
+    {
+      "id": "waste_203",
+      "text": "我與太陽的距離，相當於我與太陽的距離。",
+      "enabled": true
+    },
+    {
+      "id": "waste_204",
+      "text": "人生走到現在，主要是因為沒別的路。",
+      "enabled": true
+    },
+    {
+      "id": "waste_205",
+      "text": "今天很積極地什麼都沒做。",
+      "enabled": true
+    },
+    {
+      "id": "waste_206",
+      "text": "本來打算休息一下，結果休息了一整天。",
+      "enabled": true
+    },
+    {
+      "id": "waste_207",
+      "text": "準備好了，只是還沒開始準備。",
+      "enabled": true
+    },
+    {
+      "id": "waste_208",
+      "text": "我很早就知道，要早點知道這些事。",
+      "enabled": true
+    },
+    {
+      "id": "waste_209",
+      "text": "換個角度想，還是同一個問題。",
+      "enabled": true
+    },
+    {
+      "id": "waste_210",
+      "text": "看開一點，反正也看不懂。",
+      "enabled": true
+    },
+    {
+      "id": "waste_211",
+      "text": "你說得對，但我不同意。",
+      "enabled": true
+    },
+    {
+      "id": "waste_212",
+      "text": "認真就輸了，可是不認真也贏不了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_213",
+      "text": "我曾經以為錢買不到快樂，後來發現我連錢都沒有。",
+      "enabled": true
+    },
+    {
+      "id": "waste_214",
+      "text": "有夢最美，但我睡不著。",
+      "enabled": true
+    },
+    {
+      "id": "waste_215",
+      "text": "我從不回頭看過去，因為記性不好。",
+      "enabled": true
+    },
+    {
+      "id": "waste_216",
+      "text": "我不在乎別人怎麼看我，除非他講得對。",
+      "enabled": true
+    },
+    {
+      "id": "waste_217",
+      "text": "人生如戲，但我沒拿到劇本。",
+      "enabled": true
+    },
+    {
+      "id": "waste_218",
+      "text": "下不為例炸醬麵，肥水不落阿華田。",
+      "enabled": true
+    },
+    {
+      "id": "waste_219",
+      "text": "八九不離十，八九七十二。",
+      "enabled": true
+    },
+    {
+      "id": "waste_220",
+      "text": "當我拿起刀，就要切蛋糕。",
+      "enabled": true
+    },
+    {
+      "id": "waste_221",
+      "text": "吃得苦中苦，就只會很苦。",
+      "enabled": true
+    },
+    {
+      "id": "waste_222",
+      "text": "有些工作剛開始做的時候累，做久了還是累。",
+      "enabled": true
+    },
+    {
+      "id": "waste_223",
+      "text": "我不怕一萬，只怕沒有一萬。",
+      "enabled": true
+    },
+    {
+      "id": "waste_224",
+      "text": "吃麵不吃蒜，等於沒吃蒜。",
+      "enabled": true
+    },
+    {
+      "id": "waste_225",
+      "text": "一定是，除非不是。",
+      "enabled": true
+    },
+    {
+      "id": "waste_226",
+      "text": "我不跟你說，你也不要跟別人說。",
+      "enabled": true
+    },
+    {
+      "id": "waste_227",
+      "text": "拋開事實不說，你說的都不是事實。",
+      "enabled": true
+    },
+    {
+      "id": "waste_228",
+      "text": "撇除大問題不看，剩下的問題都不大。",
+      "enabled": true
+    },
+    {
+      "id": "waste_229",
+      "text": "來，我吃一口，就吃了一口。",
+      "enabled": true
+    },
+    {
+      "id": "waste_230",
+      "text": "關關難過，但關關不說。",
+      "enabled": true
+    },
+    {
+      "id": "waste_231",
+      "text": "人生不如意十之八九，剩下的七六五四三二一也如意不到哪裡去。",
+      "enabled": true
+    },
+    {
+      "id": "waste_232",
+      "text": "我仔細想了一下，就一下。",
+      "enabled": true
+    },
+    {
+      "id": "waste_233",
+      "text": "我一失眠之下，睡著了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_234",
+      "text": "努力不一定會成功，不努力一定很輕鬆。",
+      "enabled": true
+    },
+    {
+      "id": "waste_235",
+      "text": "別的不說，說點別的。",
+      "enabled": true
+    },
+    {
+      "id": "waste_236",
+      "text": "如果你惹到我的話，恭喜你惹到了方圓百里之內最好惹的人。",
+      "enabled": true
+    },
+    {
+      "id": "waste_237",
+      "text": "不要在乎別人怎麼看你，因為根本沒有人在看你。",
+      "enabled": true
+    },
+    {
+      "id": "waste_238",
+      "text": "有一個人叫小明，但是小明沒理他。",
+      "enabled": true
+    },
+    {
+      "id": "waste_239",
+      "text": "每次都說等一下，就不會等兩下嗎？你的等一下要等多久？一下。",
+      "enabled": true
+    },
+    {
+      "id": "waste_240",
+      "text": "如果有一塊錢，那就是有錢。",
+      "enabled": true
+    },
+    {
+      "id": "waste_241",
+      "text": "如果你沒死，那你就是活的。",
+      "enabled": true
+    },
+    {
+      "id": "waste_242",
+      "text": "如果你看扁我，那我就扁扁地走開。",
+      "enabled": true
+    },
+    {
+      "id": "waste_243",
+      "text": "你想出去玩嗎？想。那你就慢慢想。",
+      "enabled": true
+    },
+    {
+      "id": "waste_244",
+      "text": "當下做了那個決定，所以就做那個了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_245",
+      "text": "不要看我過得很爽，就跟你說不要看。",
+      "enabled": true
+    },
+    {
+      "id": "waste_246",
+      "text": "世上無難事，只要肯放棄。",
+      "enabled": true
+    },
+    {
+      "id": "waste_247",
+      "text": "如果比你優秀的人都還在努力，那你努力幹嘛？",
+      "enabled": true
+    },
+    {
+      "id": "waste_248",
+      "text": "莫欺少年窮，莫欺青年窮，莫欺中年窮，莫欺老年窮。",
+      "enabled": true
+    },
+    {
+      "id": "waste_249",
+      "text": "如果還有如果，那如果會是如果。",
+      "enabled": true
+    },
+    {
+      "id": "waste_250",
+      "text": "生命會找到自己的出路，Google Maps 顯示沒這條路。",
+      "enabled": true
+    },
+    {
+      "id": "waste_251",
+      "text": "三個臭皮匠，勝過兩個臭皮匠。",
+      "enabled": true
+    },
+    {
+      "id": "waste_252",
+      "text": "你再這樣下去的話，你就會走到一樓大門口。",
+      "enabled": true
+    },
+    {
+      "id": "waste_253",
+      "text": "撇開金錢來說，我會選擇撇開的金錢。",
+      "enabled": true
+    },
+    {
+      "id": "waste_254",
+      "text": "如果有人敢惹我生氣，我就會讓他知道我氣消得有多快。",
+      "enabled": true
+    },
+    {
+      "id": "waste_255",
+      "text": "除了荒謬的部分以外，其他都滿合理的。",
+      "enabled": true
+    },
+    {
+      "id": "waste_256",
+      "text": "你問我為什麼昨天沒出席？那你就錯了，我以後也沒出息。",
+      "enabled": true
+    },
+    {
+      "id": "waste_257",
+      "text": "我一激動，就靜止不動。",
+      "enabled": true
+    },
+    {
+      "id": "waste_258",
+      "text": "如果你不想做一件事，代表這件事你不想做。",
+      "enabled": true
+    },
+    {
+      "id": "waste_259",
+      "text": "能力越小，責任越小。",
+      "enabled": true
+    },
+    {
+      "id": "waste_260",
+      "text": "如果莫札特沒死的話，那麼他現在還活著。",
+      "enabled": true
+    },
+    {
+      "id": "waste_261",
+      "text": "如果我沒有忘記，我會一直記得。",
+      "enabled": true
+    },
+    {
+      "id": "waste_262",
+      "text": "撇開我錯的部分，我是對的。",
+      "enabled": true
+    },
+    {
+      "id": "waste_263",
+      "text": "要不是我長得不夠帥，不然我就是帥哥了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_264",
+      "text": "服務到家，到家服務我。",
+      "enabled": true
+    },
+    {
+      "id": "waste_265",
+      "text": "我一想到你，就想到你了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_266",
+      "text": "說出來你可能不信，所以我就不說了。",
+      "enabled": true
+    },
+    {
+      "id": "waste_267",
+      "text": "想爭一口氣，最後吞了一整口氣。",
+      "enabled": true
+    },
+    {
+      "id": "waste_268",
+      "text": "這具屍體生前一定還活著。",
+      "enabled": true
+    },
+    {
+      "id": "waste_269",
+      "text": "一個人的能力越大，他的能力也就越大。",
+      "enabled": true
+    },
+    {
+      "id": "waste_270",
+      "text": "我吃早餐的時候，會開始吃早餐。",
+      "enabled": true
+    },
+    {
+      "id": "waste_271",
+      "text": "人帥真好，越帥越好。",
+      "enabled": true
+    },
+    {
+      "id": "waste_272",
+      "text": "在還沒花錢前，我是有錢的。",
+      "enabled": true
+    },
+    {
+      "id": "waste_273",
+      "text": "長得好看的人都滿漂亮的。",
+      "enabled": true
+    },
+    {
+      "id": "waste_274",
+      "text": "我因為腳痛，所以我覺得很痛。",
+      "enabled": true
+    },
+    {
+      "id": "waste_275",
+      "text": "如果你打開了一扇窗，那你開的就是那扇窗。",
+      "enabled": true
+    }
+  ]
+}

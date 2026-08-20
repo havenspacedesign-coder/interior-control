@@ -69,6 +69,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .home-grid-wrap.editing .home-module{cursor:grab;border-color:#c9c4ed;box-shadow:0 3px 12px rgba(60,52,137,.10)}.home-grid-wrap.editing .home-module.dragging{cursor:grabbing;transition:none;z-index:10;opacity:.88}.home-grid-wrap.editing .home-module.resizing{transition:none;z-index:10}
 .home-module-head{height:42px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 12px;border-bottom:1px solid var(--border);background:#fff}.home-module-title{font-size:14px;font-weight:600}.home-module-badges{display:flex;align-items:center;gap:5px}.home-module-badge{font-size:10px;color:var(--text2);background:var(--bg);border-radius:12px;padding:2px 6px}
 .home-module-body{height:calc(100% - 42px);min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;padding:16px;color:var(--text3);font-size:12px;text-align:center;overflow:auto}.home-placeholder{border:1px dashed #d7d2ca;border-radius:8px;padding:12px 18px;background:#fbfaf8}.home-module[data-size-tier="small"] .home-module-body{font-size:11px}.home-module[data-size-tier="large"] .home-module-body{font-size:13px}
+.daily-joke{width:100%;height:100%;display:flex;flex-direction:column;text-align:left;min-height:0}.daily-joke-loading,.daily-joke-empty{margin:auto;color:var(--text3);text-align:center}.daily-joke-title{font-weight:600;color:var(--text);margin-bottom:6px}.daily-joke-content{color:var(--text2);line-height:1.65;white-space:pre-wrap;overflow:auto;min-height:0;flex:1}.daily-joke-reactions{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)}.joke-reaction{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--border);border-radius:999px;background:#fff;padding:4px 8px;font:inherit;font-size:11px;cursor:pointer;color:var(--text2)}.joke-reaction:hover{border-color:var(--purple)}.joke-reaction.active{background:var(--pl);border-color:var(--purple);color:var(--pd);font-weight:600}.joke-vote-count{border:0;background:transparent;color:inherit;font:inherit;font-weight:600;cursor:pointer;padding:0}.daily-joke-admin{display:flex;gap:5px;margin-left:auto}.daily-joke-admin .btn{font-size:10px;padding:3px 7px}.home-module[data-size-tier="small"] .daily-joke-title{display:none}.home-module[data-size-tier="small"] .daily-joke-content{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}.home-module[data-size-tier="small"] .joke-reaction-label{display:none}.home-module[data-size-tier="small"] .daily-joke-admin{width:100%;justify-content:flex-end}.joke-voter-list{display:flex;flex-direction:column;gap:7px;margin-top:12px}.joke-voter{padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px}.joke-library-list{display:flex;flex-direction:column;gap:7px;max-height:45vh;overflow-y:auto;margin-top:12px}.joke-library-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:9px;border:1px solid var(--border);border-radius:7px}.joke-library-text{font-size:12px;line-height:1.45;white-space:pre-wrap}.joke-library-actions{display:flex;gap:5px;flex-shrink:0}
+.daily-quiz{width:100%;height:100%;display:flex;flex-direction:column;min-height:0;text-align:left;overflow:auto}.quiz-loading{margin:auto;color:var(--text3)}.quiz-question{font-weight:600;line-height:1.45;margin-bottom:7px}.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:5px;overflow:auto}.quiz-option{border:1px solid var(--border);border-radius:7px;background:#fff;padding:6px 8px;text-align:left;font:inherit;font-size:11px;cursor:pointer;color:var(--text2)}.quiz-option:hover:not(:disabled){border-color:var(--purple)}.quiz-option.selected{background:var(--pl);border-color:var(--purple);color:var(--pd)}.quiz-option.correct{background:#e9f8ef;border-color:#64b984;color:#24643b}.quiz-option.wrong{background:#fff0f0;border-color:#d88888;color:#8b3333}.quiz-option:disabled{cursor:default}.quiz-result{font-size:11px;line-height:1.45;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}.quiz-result strong.ok{color:#24814a}.quiz-result strong.bad{color:#b44343}.quiz-stats{display:flex;gap:7px;flex-wrap:wrap;margin-top:5px;color:var(--text3);font-size:10px}.quiz-stat-button{border:0;background:none;padding:0;color:var(--purple);font:inherit;cursor:pointer}.quiz-actions{display:flex;align-items:center;gap:5px;margin-top:6px}.quiz-actions .btn{font-size:10px;padding:3px 7px}.quiz-streak{font-size:10px;color:var(--text3);margin-right:auto}.home-module[data-size-tier="small"] .quiz-question{font-size:11px}.home-module[data-size-tier="small"] .quiz-option{padding:4px 6px}.home-module[data-size-tier="small"] .quiz-month-best{display:none}
+.daily-waste{width:100%;height:100%;display:flex;flex-direction:column;min-height:0;text-align:left}.waste-text{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.65;font-size:14px;color:var(--text2);overflow:auto;padding:4px}.waste-reactions{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:7px}.waste-reaction{display:inline-flex;align-items:center;gap:3px;border:1px solid var(--border);border-radius:999px;background:#fff;padding:4px 7px;font:inherit;font-size:10px;color:var(--text2);cursor:pointer}.waste-reaction.active{background:var(--pl);border-color:var(--purple);color:var(--pd);font-weight:600}.waste-count{border:0;background:none;color:inherit;font:inherit;font-weight:600;padding:0;cursor:pointer}.waste-admin{display:flex;gap:4px;margin-left:auto}.waste-admin .btn{font-size:10px;padding:3px 6px}.home-module[data-size-tier="small"] .waste-label{display:none}.waste-library-list{display:flex;flex-direction:column;gap:5px;max-height:48vh;overflow:auto;margin-top:10px}.waste-library-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid var(--border);border-radius:7px;padding:7px 9px}.waste-library-row.off{opacity:.55}.waste-library-copy{font-size:12px;line-height:1.45}.waste-library-tools{display:flex;gap:5px}.waste-library-summary{font-size:11px;color:var(--text3);margin-top:5px}
 .home-module-tools{display:none;gap:4px}.home-grid-wrap.editing .home-module-tools{display:flex}.home-tool{width:25px;height:25px;border:0;border-radius:5px;background:var(--bg);cursor:pointer;color:var(--text2)}.home-tool:hover{background:var(--rl);color:var(--rd)}
 .home-resize-handle{display:none;position:absolute;z-index:6;right:0;bottom:0;width:28px;height:28px;cursor:nwse-resize;touch-action:none}.home-resize-handle:after{content:'';position:absolute;right:6px;bottom:6px;width:10px;height:10px;border-right:2px solid var(--purple);border-bottom:2px solid var(--purple)}.home-grid-wrap.editing .home-resize-handle{display:block}
 .home-empty{padding:60px 20px;text-align:center;color:var(--text3);border:1px dashed var(--border);border-radius:10px;background:rgba(255,255,255,.7)}
@@ -444,7 +447,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
-import{getFirestore,collection,doc,addDoc as fbAddDoc,updateDoc as fbUpdateDoc,deleteDoc as fbDeleteDoc,setDoc as fbSetDoc,getDoc as fbGetDoc,onSnapshot,serverTimestamp,getDocs as fbGetDocs,writeBatch as fbWriteBatch,query,where}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
+import{getFirestore,collection,doc,addDoc as fbAddDoc,updateDoc as fbUpdateDoc,deleteDoc as fbDeleteDoc,setDoc as fbSetDoc,getDoc as fbGetDoc,onSnapshot,serverTimestamp,getDocs as fbGetDocs,writeBatch as fbWriteBatch,runTransaction as fbRunTransaction,query,where}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signOut as fbSignOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
 import{getStorage,ref as storageRef,uploadBytes,getDownloadURL,deleteObject}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-storage.js";
 
@@ -875,6 +878,9 @@ window.enterLocalTestMode=async function(){
   $('sdot').style.background='var(--amber)';
   document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('show'));
   await loadHomeLayouts();
+  initDailyJoke();
+  initDailyQuiz();
+  initDailyWaste();
   renderHome();
 }
 
@@ -970,6 +976,9 @@ window.sendAI=async function(){
 }
 
 function initListeners(){
+  initDailyJoke();
+  initDailyQuiz();
+  initDailyWaste();
   onSnapshot(doc(db,'homeLayouts','company-default'),snap=>{if(!snap.exists())return;companyHomeLayout=normalizeHomeLayout(snap.data());personalHomeLayout=syncPersonalHomeLayout(personalHomeLayout);if(activePanel==='home'&&!homeEditMode)renderHome();});
   onSnapshot(collection(db,'projects'),snap=>{S.projects=snap.docs.map(d=>({id:d.id,...d.data()}));renderActive();setSynced();},()=>setOffline());
   onSnapshot(collection(db,'checks'),snap=>{S.checks={};snap.docs.forEach(d=>{S.checks[d.id]=d.data().items||[]});renderActive();});
@@ -1069,7 +1078,6 @@ const HOME_MODULE_LIBRARY=[
   {type:'company-duty',title:'公司值日／掃地',min:null,max:null},
   {type:'daily-knowledge',title:'最近新增知識（每日冷知識）',min:null,max:null},
   {type:'today-news',title:'今日新聞',min:null,max:null},
-  {type:'today-challenge',title:'今日挑戰',min:null,max:null},
   {type:'daily-quiz',title:'每日猜題',min:null,max:null},
   {type:'daily-joke',title:'每日笑話',min:null,max:null},
   {type:'daily-choice',title:'每日殘酷二選一',min:null,max:null},
@@ -1083,6 +1091,19 @@ let homeLayoutMode='personal';
 let homeEditMode=false;
 let homePointerState=null;
 let homeGridObserver=null;
+let todayJoke=null,jokeVotes=[],customJokes=[],jokeDailyUnsub=null,jokeDocUnsub=null,jokeVotesUnsub=null,jokeCustomUnsub=null,jokeLoading=false;
+let todayQuiz=null,quizAnswers=[],quizMonthAnswers=[],quizUserAnswers=[],quizSelected='',quizDailyUnsub=null,quizDocUnsub=null,quizAnswersUnsub=null,quizMonthUnsub=null,quizUserUnsub=null,quizLoading=false;
+let todayWaste=null,wasteQuotes=[],wasteReactions=[],wasteFavorite=false,wasteLoading=false,wasteDailyUnsub=null,wasteQuotesUnsub=null,wasteReactionsUnsub=null,wasteFavoriteUnsub=null,localWasteRotation={round:0,usedIds:[],remainingIds:[],lastQuoteId:''};
+const LOCAL_QUIZ_FALLBACKS=[
+  {question:'下列哪一個是太陽系中體積最大的行星？',options:{A:'地球',B:'木星',C:'火星',D:'金星'},answer:'B',analytic:'木星是太陽系中體積與質量最大的行星。'},
+  {question:'人體中面積最大的器官是？',options:{A:'心臟',B:'肝臟',C:'皮膚',D:'肺'},answer:'C',analytic:'皮膚覆蓋全身，是人體面積最大的器官。'},
+  {question:'一公升的水大約等於多少公斤？',options:{A:'0.1 公斤',B:'0.5 公斤',C:'1 公斤',D:'10 公斤'},answer:'C',analytic:'在常溫下，一公升水的重量約為一公斤。'}
+];
+const LOCAL_JOKE_FALLBACKS=[
+  {title:'會議準時開始',content:'主管問：「為什麼今天大家都準時？」同事回答：「因為行事曆把會議寫成『準時下班說明會』。」'},
+  {title:'設計師的浪漫',content:'客戶問設計師：「這盞燈有什麼特色？」設計師說：「關掉之後，電費特別浪漫。」'},
+  {title:'工地冷知識',content:'師傅說今天一定能完工。大家聽完都笑了，因為今天是星期五。'}
+];
 function homeClone(v){return JSON.parse(JSON.stringify(v));}
 function homeModuleDefinition(type){return HOME_MODULE_LIBRARY.find(x=>x.type===type);}
 function isSystemAdmin(){return currentRole==='manager';}
@@ -1149,7 +1170,7 @@ function renderHomeModule(m,canManageGlobal){
   const def=homeModuleDefinition(m.type),tier=homeSizeTier(m);
   return`<section class="home-module" data-home-id="${m.id}" data-size-tier="${tier}" style="${homeModuleStyle(m)}" onpointerdown="homeModulePointerDown(event,'${m.id}')">
     <div class="home-module-head"><span class="home-module-title">${def.title}</span><span class="home-module-badges"><span class="home-module-badge">${tier==='small'?'小':tier==='medium'?'中':'大'}</span>${m.required?'<span class="home-module-badge">必顯</span>':''}</span></div>
-    <div class="home-module-body"><div class="home-placeholder">Placeholder</div></div><div class="home-resize-handle" data-resize="true" onpointerdown="homeResizePointerDown(event,'${m.id}')"></div>
+    <div class="home-module-body">${m.type==='daily-joke'?renderDailyJokeModule(tier):m.type==='daily-quiz'?renderDailyQuizModule(tier):m.type==='daily-nonsense'?renderDailyWasteModule(tier):'<div class="home-placeholder">Placeholder</div>'}</div><div class="home-resize-handle" data-resize="true" onpointerdown="homeResizePointerDown(event,'${m.id}')"></div>
   </section>`;
 }
 window.switchHomeLayout=function(mode){if(homeEditMode)return;homeLayoutMode=mode==='company'&&isAdmin()?'company':'personal';renderHome();}
@@ -1202,6 +1223,146 @@ async function saveHomeLayout(){
   const layout=normalizeHomeLayout(activeHomeLayout());if(homeLayoutMode==='company'&&isAdmin())companyHomeLayout=layout;else personalHomeLayout=layout;
   try{if(localTestMode){localStorage.setItem(homeLayoutMode==='company'?'companyHomeLayout':'personalHomeLayout',JSON.stringify(layout));return;}const id=homeLayoutMode==='company'&&isAdmin()?'company-default':'user-'+currentUser.uid;await setDoc(doc(db,'homeLayouts',id),{...layout,ownerUid:homeLayoutMode==='company'?'company':currentUser.uid,updatedAt:serverTimestamp()});}catch(error){console.error('home layout save failed',error);alert('首頁版面暫時無法儲存，請稍後再試。');}
 }
+
+// ── Daily joke module ──
+function jokeDayKey(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
+function jokeReactionOptions(){return[{id:'laugh',emoji:'🤣',label:'超好笑'},{id:'cold',emoji:'🥶',label:'好冷'},{id:'bad',emoji:'😑',label:'超難笑'}];}
+function jokeCurrentVote(){return currentUser?jokeVotes.find(v=>v.uid===currentUser.uid):null;}
+function jokeVoteCount(reaction){return jokeVotes.filter(v=>v.reaction===reaction).length;}
+function renderDailyJokeModule(tier){
+  if(jokeLoading&&!todayJoke)return'<div class="daily-joke-loading">今日笑話載入中…</div>';
+  if(!todayJoke)return`<div class="daily-joke-empty">今日笑話準備中${isSystemAdmin()?'<br><button class="btn btn-sm" style="margin-top:8px" onclick="event.stopPropagation();replaceTodayJoke()">取得一則</button>':''}</div>`;
+  const mine=jokeCurrentVote();
+  return`<div class="daily-joke"><div class="daily-joke-title">${escAttr(todayJoke.title||'今日笑話')}</div><div class="daily-joke-content">${escAttr(todayJoke.content||'')}</div><div class="daily-joke-reactions">${jokeReactionOptions().map(r=>`<button class="joke-reaction ${mine?.reaction===r.id?'active':''}" onclick="event.stopPropagation();voteDailyJoke('${r.id}')"><span>${r.emoji}</span><span class="joke-reaction-label">${r.label}</span><span class="joke-vote-count" onclick="event.stopPropagation();showJokeVoters('${r.id}')">${jokeVoteCount(r.id)}</span></button>`).join('')}${isSystemAdmin()?`<span class="daily-joke-admin"><button class="btn" onclick="event.stopPropagation();replaceTodayJoke()">換一則</button><button class="btn" onclick="event.stopPropagation();showCustomJokeLibrary()">笑話庫</button></span>`:''}</div></div>`;
+}
+function pickDifferentJoke(pool){const alternatives=pool.filter(item=>item.content!==todayJoke?.content),choices=alternatives.length?alternatives:pool;return choices[Math.floor(Math.random()*choices.length)];}
+function localJokePick(){const pool=customJokes.length?customJokes:LOCAL_JOKE_FALLBACKS,pick=pickDifferentJoke(pool);return{title:pick.title||'今日笑話',content:pick.content,source:customJokes.length?'custom':'local-fallback',sourceRef:pick.id||''};}
+async function fetchTianJoke(){
+  const response=await fetch('/api/joke',{headers:{accept:'application/json'}});if(!response.ok)throw new Error(`joke api ${response.status}`);
+  const data=await response.json();if(!data?.content)throw new Error(data?.message||'joke api empty');return{title:data.title||'今日笑話',content:data.content,source:'tianapi',sourceRef:data.sourceRef||''};
+}
+async function chooseNewJoke(){
+  if(localTestMode)return localJokePick();
+  try{return await fetchTianJoke();}catch(error){console.warn('TianAPI unavailable, using shared joke library',error);if(customJokes.length){const pick=pickDifferentJoke(customJokes);return{title:pick.title||'今日笑話',content:pick.content,source:'custom',sourceRef:pick.id};}return{...pickDifferentJoke(LOCAL_JOKE_FALLBACKS),source:'fallback',sourceRef:''};}
+}
+function makeJokeRecord(joke,reason){const day=jokeDayKey(),id=`joke-${day}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;return{id,day,title:joke.title||'今日笑話',content:joke.content,source:joke.source||'fallback',sourceRef:joke.sourceRef||'',reason,createdBy:currentUser?.uid||'',createdByName:currentUser?.displayName||currentUser?.email||'',createdAt:serverTimestamp()};}
+async function ensureTodayJoke(){
+  if(jokeLoading||todayJoke)return;jokeLoading=true;if(activePanel==='home')renderHome();
+  try{
+    const day=jokeDayKey();
+    if(localTestMode){const record=makeJokeRecord(localJokePick(),'daily');record.createdAt=new Date().toISOString();todayJoke=record;jokeVotes=[];return;}
+    const dailyRef=doc(db,'dailyJokes',day),existing=await getDoc(dailyRef);if(existing.exists())return;
+    const chosen=await chooseNewJoke(),record=makeJokeRecord(chosen,'daily'),jokeRef=doc(db,'jokes',record.id);
+    await fbRunTransaction(db,async tx=>{const latest=await tx.get(dailyRef);if(latest.exists())return;tx.set(jokeRef,record);tx.set(dailyRef,{day,currentJokeId:record.id,updatedAt:serverTimestamp(),reason:'daily'});});
+  }catch(error){console.error('daily joke creation failed',error);}finally{jokeLoading=false;if(activePanel==='home')renderHome();}
+}
+function subscribeJokeRecord(jokeId){
+  if(jokeDocUnsub)jokeDocUnsub();if(jokeVotesUnsub)jokeVotesUnsub();todayJoke=null;jokeVotes=[];
+  if(!jokeId){ensureTodayJoke();return;}
+  jokeDocUnsub=onSnapshot(doc(db,'jokes',jokeId),snap=>{todayJoke=snap.exists()?{id:snap.id,...snap.data()}:null;if(activePanel==='home')renderHome();});
+  jokeVotesUnsub=onSnapshot(query(collection(db,'jokeVotes'),where('jokeId','==',jokeId)),snap=>{jokeVotes=snap.docs.map(d=>({id:d.id,...d.data()}));if(activePanel==='home')renderHome();});
+}
+function initDailyJoke(){
+  if(localTestMode){if(!todayJoke)ensureTodayJoke();return;}
+  const day=jokeDayKey();if(jokeDailyUnsub)jokeDailyUnsub();jokeDailyUnsub=onSnapshot(doc(db,'dailyJokes',day),snap=>{if(snap.exists())subscribeJokeRecord(snap.data().currentJokeId);else ensureTodayJoke();},error=>{console.error('daily joke listener failed',error);});
+  if(jokeCustomUnsub)jokeCustomUnsub();jokeCustomUnsub=onSnapshot(collection(db,'customJokes'),snap=>{customJokes=snap.docs.map(d=>({id:d.id,...d.data()}));});
+}
+window.replaceTodayJoke=async function(){
+  if(!isSystemAdmin()||jokeLoading)return;jokeLoading=true;if(activePanel==='home')renderHome();
+  try{const chosen=await chooseNewJoke(),record=makeJokeRecord(chosen,'manual');if(localTestMode){todayJoke={...record,createdAt:new Date().toISOString()};jokeVotes=[];}else{await setDoc(doc(db,'jokes',record.id),record);await setDoc(doc(db,'dailyJokes',jokeDayKey()),{day:jokeDayKey(),currentJokeId:record.id,updatedAt:serverTimestamp(),reason:'manual',changedBy:currentUser.uid});}}catch(error){console.error(error);alert('暫時無法更換笑話，請稍後再試。');}finally{jokeLoading=false;if(activePanel==='home')renderHome();}
+}
+window.voteDailyJoke=async function(reaction){
+  if(!currentUser||!todayJoke||!jokeReactionOptions().some(r=>r.id===reaction))return;const vote={jokeId:todayJoke.id,uid:currentUser.uid,userName:currentUser.displayName||currentUser.email||memberDisplayName(S.members.find(m=>m.uid===currentUser.uid)),reaction,updatedAt:serverTimestamp()};
+  if(localTestMode){const old=jokeVotes.find(v=>v.uid===currentUser.uid);if(old)Object.assign(old,vote);else jokeVotes.push({...vote,id:`${todayJoke.id}_${currentUser.uid}`});renderHome();return;}
+  await setDoc(doc(db,'jokeVotes',`${todayJoke.id}_${currentUser.uid}`),vote);
+}
+window.showJokeVoters=function(reaction){
+  const option=jokeReactionOptions().find(r=>r.id===reaction),voters=jokeVotes.filter(v=>v.reaction===reaction);$('mo-content').classList.remove('module-manager-modal');$('mo-content').innerHTML=`<div class="mo-title">${option.emoji} ${option.label}（${voters.length}）</div><div class="joke-voter-list">${voters.length?voters.map(v=>`<div class="joke-voter">${escAttr(v.userName||'未命名成員')}</div>`).join(''):'<div class="empty">目前還沒有人選擇這個反應</div>'}</div><div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;$('modal').style.display='flex';
+}
+window.showCustomJokeLibrary=async function(){
+  if(!isSystemAdmin())return;if(!localTestMode){try{const snap=await getDocs(collection(db,'customJokes'));customJokes=snap.docs.map(d=>({id:d.id,...d.data()}));}catch(error){console.error(error);}}
+  $('mo-content').classList.remove('module-manager-modal');$('mo-content').style.maxWidth='700px';$('mo-content').innerHTML=`<div class="mo-title">自建笑話庫</div><div class="mo-sub">作為 TianAPI 無法使用時的備援來源</div><div style="display:grid;gap:7px;margin-top:12px"><input id="custom-joke-title" placeholder="笑話標題（可留白）"><textarea id="custom-joke-content" rows="4" placeholder="輸入笑話內容"></textarea><input id="custom-joke-id" type="hidden"><div style="display:flex;justify-content:flex-end;gap:7px"><button class="btn" onclick="resetCustomJokeForm()">清除</button><button class="btn btn-p" onclick="saveCustomJoke()">儲存笑話</button></div></div><div class="joke-library-list">${customJokes.length?customJokes.map(j=>`<div class="joke-library-row"><div class="joke-library-text"><strong>${escAttr(j.title||'未命名笑話')}</strong><br>${escAttr(j.content||'')}</div><div class="joke-library-actions"><button class="btn btn-sm" onclick="editCustomJoke('${j.id}')">編輯</button><button class="btn btn-sm btn-danger" onclick="deleteCustomJoke('${j.id}')">刪除</button></div></div>`).join(''):'<div class="empty">尚未建立自建笑話</div>'}</div><div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;$('modal').style.display='flex';
+}
+window.resetCustomJokeForm=function(){['custom-joke-id','custom-joke-title','custom-joke-content'].forEach(id=>{const el=$(id);if(el)el.value='';});}
+window.editCustomJoke=function(id){const j=customJokes.find(x=>x.id===id);if(!j)return;$('custom-joke-id').value=id;$('custom-joke-title').value=j.title||'';$('custom-joke-content').value=j.content||'';$('custom-joke-content').focus();}
+window.saveCustomJoke=async function(){if(!isSystemAdmin())return;const id=$('custom-joke-id').value||`custom-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,title=$('custom-joke-title').value.trim(),content=$('custom-joke-content').value.trim();if(!content)return alert('請輸入笑話內容。');const data={title:title||'未命名笑話',content,updatedBy:currentUser.uid,updatedAt:serverTimestamp()};if(localTestMode){const old=customJokes.find(x=>x.id===id);if(old)Object.assign(old,data);else customJokes.push({id,...data});}else await setDoc(doc(db,'customJokes',id),data);showCustomJokeLibrary();}
+window.deleteCustomJoke=async function(id){if(!isSystemAdmin()||!confirm('確定刪除這則自建笑話？'))return;if(localTestMode)customJokes=customJokes.filter(x=>x.id!==id);else await deleteDoc(doc(db,'customJokes',id));showCustomJokeLibrary();}
+
+// ── Daily quiz ──
+function quizMonthKey(day=jokeDayKey()){return day.slice(0,7);}
+function quizMine(){return quizAnswers.find(a=>a.uid===currentUser?.uid);}
+function quizStats(){const correct=quizAnswers.filter(a=>a.correct).length,total=quizAnswers.length;return{total,correct,wrong:total-correct,rate:total?Math.round(correct/total*100):0};}
+function quizDayNumber(day){return Math.floor(Date.parse(day+'T00:00:00Z')/86400000);}
+function uniqueQuizDays(rows){const days={};rows.forEach(a=>{if(!days[a.day]||a.quizId===todayQuiz?.id)days[a.day]=a;});return Object.values(days);}
+function currentQuizStreak(){
+  const mine=uniqueQuizDays(quizUserAnswers).sort((a,b)=>a.day.localeCompare(b.day)),last=mine.at(-1);if(!last||!last.correct)return 0;
+  const todayN=quizDayNumber(jokeDayKey()),lastN=quizDayNumber(last.day);if(todayN-lastN>1)return 0;
+  let streak=1;for(let i=mine.length-2;i>=0;i--){if(!mine[i].correct||quizDayNumber(mine[i+1].day)-quizDayNumber(mine[i].day)!==1)break;streak++;}return streak;
+}
+function quizMonthBest(){
+  const byUser={};quizMonthAnswers.forEach(a=>(byUser[a.uid]||(byUser[a.uid]=[])).push(a));let best=0,names=[];
+  Object.values(byUser).forEach(raw=>{const rows=uniqueQuizDays(raw).sort((a,b)=>a.day.localeCompare(b.day));let run=0,peak=0,prev=null;rows.forEach(a=>{run=a.correct&&(!prev||quizDayNumber(a.day)-quizDayNumber(prev)===1)?run+1:a.correct?1:0;peak=Math.max(peak,run);prev=a.day;});const name=rows.at(-1)?.userName||'同事';if(peak>best){best=peak;names=[name];}else if(peak&&peak===best&&!names.includes(name))names.push(name);});return{best,names};
+}
+function renderDailyQuizModule(){
+  if(quizLoading&&!todayQuiz)return'<div class="quiz-loading">今日題目載入中…</div>';if(!todayQuiz)return'<div class="quiz-loading">今日題目準備中…</div>';
+  const mine=quizMine(),stats=quizStats(),best=quizMonthBest(),letters=['A','B','C','D'];
+  const options=letters.map(letter=>{let cls=quizSelected===letter?'selected':'';if(mine){if(letter===todayQuiz.answer)cls='correct';else if(letter===mine.selectedAnswer)cls='wrong';}return`<button class="quiz-option ${cls}" ${mine?'disabled':''} onclick="event.stopPropagation();selectDailyQuizAnswer('${letter}')"><strong>${letter}.</strong> ${escAttr(todayQuiz.options?.[letter]||'')}</button>`;}).join('');
+  return`<div class="daily-quiz"><div class="quiz-question">${escAttr(todayQuiz.question)}</div><div class="quiz-options">${options}</div>${mine?`<div class="quiz-result"><strong class="${mine.correct?'ok':'bad'}">${mine.correct?'答對了！':'答錯了'}</strong>　正確答案：${todayQuiz.answer}<span class="quiz-result-explain">${todayQuiz.analytic?`<br>${escAttr(todayQuiz.analytic)}`:''}</span><div class="quiz-stats">今日 ${stats.total} 人作答　<button class="quiz-stat-button" onclick="event.stopPropagation();showQuizAnswerUsers(true)">答對 ${stats.correct}</button>　<button class="quiz-stat-button" onclick="event.stopPropagation();showQuizAnswerUsers(false)">答錯 ${stats.wrong}</button>　正確率 ${stats.rate}%</div></div>`:''}<div class="quiz-actions"><span class="quiz-streak">🔥 目前連勝 ${currentQuizStreak()} 天 <span class="quiz-month-best">${best.best?`・🏆 本月最高：${escAttr(best.names.join('、'))} ${best.best} 天`:''}</span></span>${!mine?`<button class="btn btn-p" ${quizSelected?'':'disabled'} onclick="event.stopPropagation();submitDailyQuizAnswer()">送出答案</button>`:''}${isSystemAdmin()?'<button class="btn" onclick="event.stopPropagation();replaceTodayQuiz()">換一題</button>':''}</div></div>`;
+}
+function localQuizPick(){const pool=LOCAL_QUIZ_FALLBACKS.filter(q=>q.question!==todayQuiz?.question),pick=(pool.length?pool:LOCAL_QUIZ_FALLBACKS)[Math.floor(Math.random()*(pool.length||LOCAL_QUIZ_FALLBACKS.length))];return{...pick,type:'multiple-choice',source:'local-fallback'};}
+async function fetchTianQuiz(){const response=await fetch('/api/quiz',{headers:{accept:'application/json'}});if(!response.ok)throw new Error(`quiz api ${response.status}`);const data=await response.json();if(!data?.question||!data?.answer)throw new Error('quiz api empty');return data;}
+async function chooseNewQuiz(){if(localTestMode)return localQuizPick();try{return await fetchTianQuiz();}catch(error){console.warn('TianAPI quiz unavailable, using fallback',error);return localQuizPick();}}
+function makeQuizRecord(item,reason){const day=jokeDayKey();return{id:`quiz-${day}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,day,month:quizMonthKey(day),type:item.type||'multiple-choice',question:item.question,options:item.options,answer:item.answer,analytic:item.analytic||'',source:item.source||'fallback',sourceRef:item.sourceRef||'',reason,createdBy:currentUser?.uid||'',createdAt:serverTimestamp()};}
+async function ensureTodayQuiz(){
+  if(quizLoading||todayQuiz)return;quizLoading=true;if(activePanel==='home')renderHome();try{const day=jokeDayKey();if(localTestMode){todayQuiz={...makeQuizRecord(localQuizPick(),'daily'),createdAt:new Date().toISOString()};quizAnswers=[];quizMonthAnswers=[];quizUserAnswers=[];return;}const dailyRef=doc(db,'dailyQuizzes',day),existing=await getDoc(dailyRef);if(existing.exists())return;const record=makeQuizRecord(await chooseNewQuiz(),'daily');await fbRunTransaction(db,async tx=>{const latest=await tx.get(dailyRef);if(latest.exists())return;tx.set(doc(db,'quizzes',record.id),record);tx.set(dailyRef,{day,currentQuizId:record.id,updatedAt:serverTimestamp(),reason:'daily'});});}catch(error){console.error('daily quiz creation failed',error);}finally{quizLoading=false;if(activePanel==='home')renderHome();}
+}
+function subscribeQuizRecord(quizId){if(quizDocUnsub)quizDocUnsub();if(quizAnswersUnsub)quizAnswersUnsub();todayQuiz=null;quizAnswers=[];quizSelected='';if(!quizId){ensureTodayQuiz();return;}quizDocUnsub=onSnapshot(doc(db,'quizzes',quizId),snap=>{todayQuiz=snap.exists()?{id:snap.id,...snap.data()}:null;if(activePanel==='home')renderHome();});quizAnswersUnsub=onSnapshot(query(collection(db,'quizAnswers'),where('quizId','==',quizId)),snap=>{quizAnswers=snap.docs.map(d=>({id:d.id,...d.data()}));if(activePanel==='home')renderHome();});}
+function initDailyQuiz(){if(localTestMode){if(!todayQuiz)ensureTodayQuiz();return;}const day=jokeDayKey();if(quizDailyUnsub)quizDailyUnsub();quizDailyUnsub=onSnapshot(doc(db,'dailyQuizzes',day),snap=>snap.exists()?subscribeQuizRecord(snap.data().currentQuizId):ensureTodayQuiz(),error=>console.error('daily quiz listener failed',error));if(quizMonthUnsub)quizMonthUnsub();quizMonthUnsub=onSnapshot(query(collection(db,'quizAnswers'),where('month','==',quizMonthKey(day))),snap=>{quizMonthAnswers=snap.docs.map(d=>({id:d.id,...d.data()}));if(activePanel==='home')renderHome();});if(quizUserUnsub)quizUserUnsub();quizUserUnsub=onSnapshot(query(collection(db,'quizAnswers'),where('uid','==',currentUser.uid)),snap=>{quizUserAnswers=snap.docs.map(d=>({id:d.id,...d.data()}));if(activePanel==='home')renderHome();});}
+window.selectDailyQuizAnswer=function(letter){if(quizMine())return;quizSelected=letter;renderHome();}
+window.submitDailyQuizAnswer=async function(){
+  if(!currentUser||!todayQuiz||!quizSelected||quizMine())return;const answer={quizId:todayQuiz.id,day:todayQuiz.day,month:todayQuiz.month||quizMonthKey(),uid:currentUser.uid,userName:currentUser.displayName||currentUser.email||'同事',selectedAnswer:quizSelected,correct:quizSelected===todayQuiz.answer,answeredAt:serverTimestamp()};if(localTestMode){quizAnswers=[{...answer,id:`${todayQuiz.id}_${currentUser.uid}`}];quizMonthAnswers=[...quizMonthAnswers.filter(a=>!(a.quizId===todayQuiz.id&&a.uid===currentUser.uid)),quizAnswers[0]];quizUserAnswers=[...quizUserAnswers.filter(a=>a.day!==answer.day),quizAnswers[0]];renderHome();return;}const ref=doc(db,'quizAnswers',`${todayQuiz.id}_${currentUser.uid}`);await fbRunTransaction(db,async tx=>{const existing=await tx.get(ref);if(!existing.exists())tx.set(ref,answer);});
+}
+window.replaceTodayQuiz=async function(){if(!isSystemAdmin()||quizLoading)return;quizLoading=true;if(activePanel==='home')renderHome();try{const record=makeQuizRecord(await chooseNewQuiz(),'manual');if(localTestMode){todayQuiz={...record,createdAt:new Date().toISOString()};quizAnswers=[];quizSelected='';}else{await setDoc(doc(db,'quizzes',record.id),record);await setDoc(doc(db,'dailyQuizzes',jokeDayKey()),{day:jokeDayKey(),currentQuizId:record.id,updatedAt:serverTimestamp(),reason:'manual',changedBy:currentUser.uid});}}catch(error){console.error(error);alert('目前無法更換題目，請稍後再試。');}finally{quizLoading=false;if(activePanel==='home')renderHome();}}
+window.showQuizAnswerUsers=function(correct){if(!quizMine())return;const rows=quizAnswers.filter(a=>a.correct===correct);$('mo-content').classList.remove('module-manager-modal');$('mo-content').innerHTML=`<div class="mo-title">${correct?'答對':'答錯'}（${rows.length}）</div><div class="joke-voter-list">${rows.length?rows.map(a=>`<div class="joke-voter">${escAttr(a.userName||'同事')}</div>`).join(''):'<div class="empty">目前沒有人</div>'}</div><div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;$('modal').style.display='flex';}
+
+// ── Daily waste quote ──
+function wasteMine(){return wasteReactions.find(r=>r.uid===currentUser?.uid);}
+function wasteCount(reaction){return wasteReactions.filter(r=>r.reaction===reaction).length;}
+function renderDailyWasteModule(){
+  if(wasteLoading&&!todayWaste)return'<div class="quiz-loading">今日廢話載入中…</div>';if(!todayWaste)return'<div class="quiz-loading">今日廢話準備中…</div>';const mine=wasteMine();
+  return`<div class="daily-waste"><div class="waste-text">${escAttr(todayWaste.text)}</div><div class="waste-reactions"><button class="waste-reaction ${mine?.reaction==='waste'?'active':''}" onclick="event.stopPropagation();toggleWasteReaction('waste')">🤡 <span class="waste-label">好廢</span> <span class="waste-count" onclick="event.stopPropagation();showWasteReactionUsers('waste')">${wasteCount('waste')}</span></button><button class="waste-reaction ${mine?.reaction==='truth'?'active':''}" onclick="event.stopPropagation();toggleWasteReaction('truth')">👍 <span class="waste-label">有道理</span> <span class="waste-count" onclick="event.stopPropagation();showWasteReactionUsers('truth')">${wasteCount('truth')}</span></button><button class="waste-reaction ${wasteFavorite?'active':''}" onclick="event.stopPropagation();toggleWasteFavorite()">❤️ <span class="waste-label">收藏</span></button>${isSystemAdmin()?`<span class="waste-admin"><button class="btn" onclick="event.stopPropagation();replaceTodayWaste()">換一句</button><button class="btn" onclick="event.stopPropagation();showWasteLibrary()">句庫</button></span>`:''}</div></div>`;
+}
+function shuffleWasteIds(ids){const result=ids.slice();for(let i=result.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[result[i],result[j]]=[result[j],result[i]];}return result;}
+function nextWasteState(raw,enabledIds){
+  const active=new Set(enabledIds),state={round:Number(raw?.round)||0,usedIds:(raw?.usedIds||[]).slice(),remainingIds:(raw?.remainingIds||[]).filter(id=>active.has(id)),lastQuoteId:raw?.lastQuoteId||''};const known=new Set([...state.usedIds,...state.remainingIds]),added=enabledIds.filter(id=>!known.has(id));state.remainingIds=shuffleWasteIds([...state.remainingIds,...added]);
+  if(!state.remainingIds.length){state.round++;state.usedIds=[];state.remainingIds=shuffleWasteIds(enabledIds);if(state.remainingIds.length>1&&state.remainingIds[0]===state.lastQuoteId)[state.remainingIds[0],state.remainingIds[1]]=[state.remainingIds[1],state.remainingIds[0]];}
+  const quoteId=state.remainingIds.shift();if(quoteId){state.usedIds.push(quoteId);state.lastQuoteId=quoteId;}return{quoteId,state};
+}
+async function loadWasteSeed(){const response=await fetch('assets/waste-quotes-seed.json',{cache:'no-store'});if(!response.ok)throw new Error('seed unavailable');const data=await response.json();return Array.isArray(data.items)?data.items:[];}
+async function ensureWasteSeed(){
+  if(localTestMode){if(!wasteQuotes.length)wasteQuotes=(await loadWasteSeed()).map(item=>({...item,source:'builtin'}));return;}
+  if(!isSystemAdmin())return;const markerRef=doc(db,'settings','wasteQuoteSeed'),seed=await loadWasteSeed(),existing=await getDocs(collection(db,'wasteQuotes')),existingIds=new Set(existing.docs.map(d=>d.id)),missing=seed.filter(item=>!existingIds.has(item.id));if(!missing.length){const marker=await getDoc(markerRef);if(!marker.exists()||Number(marker.data().count)!==seed.length)await setDoc(markerRef,{count:seed.length,updatedAt:serverTimestamp()},{merge:true});return;}
+  for(let i=0;i<missing.length;i+=400){const batch=fbWriteBatch(db);missing.slice(i,i+400).forEach(item=>batch.set(doc(db,'wasteQuotes',item.id),{text:item.text,enabled:item.enabled!==false,source:'builtin',createdAt:serverTimestamp()}));await batch.commit();}await setDoc(markerRef,{count:seed.length,updatedAt:serverTimestamp()},{merge:true});
+}
+async function advanceWasteQuote(reason,dailyOnly=false){
+  const enabled=wasteQuotes.filter(q=>q.enabled!==false);if(!enabled.length)return;const day=jokeDayKey();
+  if(localTestMode){if(dailyOnly&&todayWaste)return;const next=nextWasteState(localWasteRotation,enabled.map(q=>q.id));localWasteRotation=next.state;const quote=enabled.find(q=>q.id===next.quoteId);todayWaste={day,quoteId:quote.id,text:quote.text,round:next.state.round,reason};wasteReactions=[];wasteFavorite=false;return;}
+  const dailyRef=doc(db,'dailyWasteQuotes',day),stateRef=doc(db,'wasteRotation','current'),historyRef=doc(db,'wasteQuoteHistory',`waste-${day}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`);await fbRunTransaction(db,async tx=>{if(dailyOnly&&(await tx.get(dailyRef)).exists())return;const stateSnap=await tx.get(stateRef),next=nextWasteState(stateSnap.exists()?stateSnap.data():{},enabled.map(q=>q.id)),quote=enabled.find(q=>q.id===next.quoteId);if(!quote)return;const record={day,quoteId:quote.id,text:quote.text,round:next.state.round,reason,updatedAt:serverTimestamp(),changedBy:currentUser?.uid||''};tx.set(stateRef,{...next.state,updatedAt:serverTimestamp()});tx.set(historyRef,record);tx.set(dailyRef,record);});
+}
+function subscribeWasteInteractions(quoteId){if(wasteReactionsUnsub)wasteReactionsUnsub();if(wasteFavoriteUnsub)wasteFavoriteUnsub();wasteReactions=[];wasteFavorite=false;if(!quoteId)return;wasteReactionsUnsub=onSnapshot(query(collection(db,'wasteReactions'),where('quoteId','==',quoteId)),snap=>{wasteReactions=snap.docs.map(d=>({id:d.id,...d.data()}));if(activePanel==='home')renderHome();});wasteFavoriteUnsub=onSnapshot(doc(db,'wasteFavorites',`${quoteId}_${currentUser.uid}`),snap=>{wasteFavorite=snap.exists();if(activePanel==='home')renderHome();});}
+async function initDailyWaste(){
+  try{await ensureWasteSeed();if(localTestMode){await advanceWasteQuote('daily',true);if(activePanel==='home')renderHome();return;}if(wasteQuotesUnsub)wasteQuotesUnsub();wasteQuotesUnsub=onSnapshot(collection(db,'wasteQuotes'),snap=>{wasteQuotes=snap.docs.map(d=>({id:d.id,...d.data()}));if(!todayWaste&&wasteQuotes.some(q=>q.enabled!==false))advanceWasteQuote('daily',true);});if(wasteDailyUnsub)wasteDailyUnsub();wasteDailyUnsub=onSnapshot(doc(db,'dailyWasteQuotes',jokeDayKey()),snap=>{todayWaste=snap.exists()?snap.data():null;if(todayWaste)subscribeWasteInteractions(todayWaste.quoteId);else if(wasteQuotes.length)advanceWasteQuote('daily',true);if(activePanel==='home')renderHome();});}catch(error){console.error('daily waste initialization failed',error);}
+}
+window.toggleWasteReaction=async function(reaction){if(!todayWaste||!['waste','truth'].includes(reaction))return;const mine=wasteMine(),id=`${todayWaste.quoteId}_${currentUser.uid}`;if(localTestMode){if(mine?.reaction===reaction)wasteReactions=wasteReactions.filter(r=>r.uid!==currentUser.uid);else if(mine)mine.reaction=reaction;else wasteReactions.push({id,quoteId:todayWaste.quoteId,uid:currentUser.uid,userName:currentUser.displayName||currentUser.email||'同事',reaction});renderHome();return;}if(mine?.reaction===reaction)await deleteDoc(doc(db,'wasteReactions',id));else await setDoc(doc(db,'wasteReactions',id),{quoteId:todayWaste.quoteId,uid:currentUser.uid,userName:currentUser.displayName||currentUser.email||'同事',reaction,updatedAt:serverTimestamp()});}
+window.toggleWasteFavorite=async function(){if(!todayWaste)return;const ref=doc(db,'wasteFavorites',`${todayWaste.quoteId}_${currentUser.uid}`);if(localTestMode){wasteFavorite=!wasteFavorite;renderHome();return;}if(wasteFavorite)await deleteDoc(ref);else await setDoc(ref,{quoteId:todayWaste.quoteId,uid:currentUser.uid,createdAt:serverTimestamp()});}
+window.showWasteReactionUsers=function(reaction){const label=reaction==='waste'?'🤡 好廢':'👍 有道理',rows=wasteReactions.filter(r=>r.reaction===reaction);$('mo-content').classList.remove('module-manager-modal');$('mo-content').innerHTML=`<div class="mo-title">${label}（${rows.length}）</div><div class="joke-voter-list">${rows.length?rows.map(r=>`<div class="joke-voter">${escAttr(r.userName||'同事')}</div>`).join(''):'<div class="empty">目前沒有人</div>'}</div><div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;$('modal').style.display='flex';}
+window.replaceTodayWaste=async function(){if(!isSystemAdmin()||wasteLoading)return;wasteLoading=true;if(activePanel==='home')renderHome();try{await advanceWasteQuote('manual',false);}catch(error){console.error(error);alert('目前無法更換，請稍後再試。');}finally{wasteLoading=false;if(activePanel==='home')renderHome();}}
+window.showWasteLibrary=function(){if(!isSystemAdmin())return;const enabled=wasteQuotes.filter(q=>q.enabled!==false).length;$('mo-content').classList.remove('module-manager-modal');$('mo-content').style.maxWidth='800px';$('mo-content').innerHTML=`<div class="mo-title">廢話庫管理</div><div class="waste-library-summary">共 ${wasteQuotes.length} 句，啟用中 ${enabled} 句；輪播會依啟用中的實際數量自動調整。</div><div style="display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:10px"><textarea id="waste-library-text" rows="2" placeholder="輸入一句廢話"></textarea><input id="waste-library-id" type="hidden"><button class="btn btn-p" onclick="saveWasteQuote()">儲存</button></div><input id="waste-library-search" style="margin-top:8px" placeholder="搜尋句子" oninput="filterWasteLibrary(this.value)"><div class="waste-library-list" id="waste-library-list">${wasteQuotes.map(q=>`<div class="waste-library-row ${q.enabled===false?'off':''}" data-waste-search="${escAttr(q.text.toLowerCase())}"><div class="waste-library-copy">${escAttr(q.text)}</div><div class="waste-library-tools"><button class="btn btn-sm" onclick="editWasteQuote('${q.id}')">編輯</button><button class="btn btn-sm" onclick="toggleWasteQuoteEnabled('${q.id}')">${q.enabled===false?'啟用':'停用'}</button><button class="btn btn-sm btn-danger" onclick="deleteWasteQuote('${q.id}')">刪除</button></div></div>`).join('')}</div><div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;$('modal').style.display='flex';}
+window.filterWasteLibrary=function(value){const term=value.trim().toLowerCase();document.querySelectorAll('#waste-library-list .waste-library-row').forEach(row=>row.style.display=!term||row.dataset.wasteSearch.includes(term)?'grid':'none');}
+window.editWasteQuote=function(id){const item=wasteQuotes.find(q=>q.id===id);if(!item)return;$('waste-library-id').value=id;$('waste-library-text').value=item.text;$('waste-library-text').focus();}
+window.saveWasteQuote=async function(){if(!isSystemAdmin())return;const text=$('waste-library-text').value.trim(),id=$('waste-library-id').value||`waste_custom_${Date.now()}`;if(!text)return alert('請輸入句子。');if(localTestMode){const old=wasteQuotes.find(q=>q.id===id);if(old)old.text=text;else wasteQuotes.push({id,text,enabled:true,source:'custom'});}else await setDoc(doc(db,'wasteQuotes',id),{text,enabled:wasteQuotes.find(q=>q.id===id)?.enabled!==false,source:wasteQuotes.find(q=>q.id===id)?.source||'custom',updatedAt:serverTimestamp()},{merge:true});showWasteLibrary();}
+window.toggleWasteQuoteEnabled=async function(id){if(!isSystemAdmin())return;const item=wasteQuotes.find(q=>q.id===id);if(!item)return;const enabled=item.enabled===false;if(localTestMode)item.enabled=enabled;else await setDoc(doc(db,'wasteQuotes',id),{enabled,updatedAt:serverTimestamp()},{merge:true});showWasteLibrary();}
+window.deleteWasteQuote=async function(id){if(!isSystemAdmin()||!confirm('確定刪除這句廢話？'))return;if(localTestMode)wasteQuotes=wasteQuotes.filter(q=>q.id!==id);else await deleteDoc(doc(db,'wasteQuotes',id));showWasteLibrary();}
 
 // ── Overview ──
 let overviewStatusFilter=null;
