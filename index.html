@@ -899,9 +899,7 @@ if(!IS_LOCAL_PREVIEW)onAuthStateChanged(auth,async user=>{
   const memberSnap=await getDoc(memberRef);
   let memberData;
   if(!memberSnap.exists()){
-    const membersSnap=await getDocs(collection(db,'members'));
-    const hasAdmin=membersSnap.docs.some(d=>d.data().role==='admin');
-    const role=hasAdmin?'pending':'admin';
+    const role='pending';
     memberData={uid:user.uid,name:user.displayName,email:user.email,photoURL:user.photoURL,role,status:'active',createdAt:serverTimestamp()};
     await setDoc(memberRef,memberData);
     currentRole=role;
