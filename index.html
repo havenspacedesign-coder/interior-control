@@ -1034,10 +1034,13 @@ function initListeners(){
       if(activePanel==='progress')renderProgress();
     }
   );
-  onSnapshot(collection(db,'userTodos'),snap=>{
-    S.userTodos=snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(activePanel==='progress')renderProgress();
-  });
+  onSnapshot(
+    query(collection(db,'userTodos'),where('uid','==',currentUser.uid)),
+    snap=>{
+      S.userTodos=snap.docs.map(d=>({id:d.id,...d.data()}));
+      if(activePanel==='progress')renderProgress();
+    }
+  );
   // Private notes: per user
   if(currentUser){
     onSnapshot(doc(db,'userPrefs',currentUser.uid),snap=>{
