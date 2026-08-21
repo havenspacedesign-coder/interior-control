@@ -1026,11 +1026,14 @@ function initListeners(){
     snap.docs.forEach(d=>{S.meetingLogs[d.id]=d.data();});
     if(activePanel==='progress')renderProgress();
   });
-  onSnapshot(collection(db,'globalNotes'),snap=>{
-    S.globalNotes={};
-    snap.docs.forEach(d=>{S.globalNotes[d.id]=d.data();});
-    if(activePanel==='progress')renderProgress();
-  });
+  onSnapshot(
+    query(collection(db,'globalNotes'),where('uid','==',currentUser.uid)),
+    snap=>{
+      S.globalNotes={};
+      snap.docs.forEach(d=>{S.globalNotes[d.id]=d.data();});
+      if(activePanel==='progress')renderProgress();
+    }
+  );
   onSnapshot(collection(db,'userTodos'),snap=>{
     S.userTodos=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(activePanel==='progress')renderProgress();
