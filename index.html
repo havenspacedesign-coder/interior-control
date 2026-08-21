@@ -449,7 +449,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
 import{getFirestore,collection,doc,addDoc as fbAddDoc,updateDoc as fbUpdateDoc,deleteDoc as fbDeleteDoc,setDoc as fbSetDoc,getDoc as fbGetDoc,onSnapshot,serverTimestamp,getDocs as fbGetDocs,writeBatch as fbWriteBatch,runTransaction as fbRunTransaction,query,where}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
-import{getAuth,GoogleAuthProvider,signInWithPopup,signOut as fbSignOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signOut as fbSignOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
 import{getStorage,ref as storageRef,uploadBytes,getDownloadURL,deleteObject}from"https://www.gstatic.com/firebasejs/11.9.0/firebase-storage.js";
 
 const FC={apiKey:"AIzaSyA6W_C2H84heiVwDe_a6ElMwuEjvbR0aRo",authDomain:"have000.firebaseapp.com",projectId:"have000",storageBucket:"have000.firebasestorage.app",messagingSenderId:"758420593792",appId:"1:758420593792:web:29f485e949eca0ce031a65"};
@@ -825,8 +825,19 @@ function setSyncing(){
 function setOffline(){$('sdot').style.background='var(--red)';$('slbl').textContent='離線'}
 
 // ── Auth ──
+let googleSignInInProgress=false;
+const isIOSDevice=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const isStandaloneMode=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 window.signInWithGoogle=async function(){
-  try{await signInWithPopup(auth,provider);}catch(e){alert('登入失敗：'+e.message);}
+  if(googleSignInInProgress)return;
+  googleSignInInProgress=true;
+  try{
+    if(isIOSDevice||isStandaloneMode)await signInWithRedirect(auth,provider);
+    else await signInWithPopup(auth,provider);
+  }catch(e){
+    googleSignInInProgress=false;
+    alert('登入失敗：'+e.message);
+  }
 }
 window.signOut=async function(){
   if(localTestMode){location.reload();return;}
@@ -889,7 +900,10 @@ if(IS_LOCAL_PREVIEW){
   $('local-test-hint').style.display='block';
 }
 
-if(!IS_LOCAL_PREVIEW)onAuthStateChanged(auth,async user=>{
+if(!IS_LOCAL_PREVIEW){
+  try{await getRedirectResult(auth);}
+  catch(e){alert('登入失敗：'+e.message);}
+  onAuthStateChanged(auth,async user=>{
   if(!user){
     $('login-screen').style.display='flex';
     $('pending-screen').style.display='none';
@@ -932,7 +946,8 @@ if(!IS_LOCAL_PREVIEW)onAuthStateChanged(auth,async user=>{
   if(isAdmin())document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('show'));
   initListeners();await loadHomeLayouts();renderHome();
 
-});
+  });
+}
 
 // ── AI Assistant ──
 var aiOpen=false;
