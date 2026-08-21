@@ -343,12 +343,18 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .mo-title{font-size:15px;font-weight:600;margin-bottom:4px}
 .mo-sub{font-size:12px;color:var(--text2);margin-bottom:12px}
 .mo-footer{margin-top:14px;display:flex;gap:8px;justify-content:flex-end}
-.mo-box.project-detail-modal{max-width:860px;height:calc(100vh - 2rem);max-height:calc(100vh - 2rem);overflow:hidden;display:flex;flex-direction:column}
-.project-detail-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.85fr);gap:20px;margin-top:8px;flex:1;min-height:0}
-.project-detail-main,.project-detail-trades{min-width:0;min-height:0;overflow-y:auto;padding-right:4px}
-.project-detail-trades{border-left:1px solid var(--border);padding-left:20px}
+.mo-box.project-detail-modal{max-width:1000px;height:calc(100vh - 2rem);max-height:calc(100vh - 2rem);overflow:hidden;display:flex;flex-direction:column}
+.project-detail-grid{display:grid;grid-template-columns:370px minmax(0,1fr);gap:20px;margin-top:8px;flex:1;min-height:0}
+.project-detail-grid.has-design-progress{grid-template-columns:370px minmax(250px,1fr) minmax(180px,.7fr)}
+.project-detail-main,.project-detail-design,.project-detail-trades{min-width:0;min-height:0;overflow-y:auto;padding-right:4px}
+.project-detail-design,.project-detail-trades{border-left:1px solid var(--border);padding-left:20px}
 .project-detail-trades-title{font-size:13px;font-weight:600;margin-bottom:8px}
 .project-detail-trades-list{font-size:12px;line-height:1.7;word-break:break-word}
+.project-design-readonly{display:flex;flex-direction:column}
+.project-design-readonly-row{display:grid;grid-template-columns:100px minmax(0,1fr);gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;line-height:1.45}
+.project-design-readonly-label{color:var(--text2);word-break:break-word}
+.project-design-readonly-value{min-width:0;white-space:pre-wrap;word-break:break-word}
+.project-design-readonly-date{color:var(--text3);font-size:11px}
 .project-detail-empty{font-size:12px;color:var(--text3)}
 .project-photo-panel{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
 .project-photo-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:13px;font-weight:600}
@@ -365,7 +371,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .project-detail-modal>.project-photo-panel{flex:0 0 210px;min-height:210px;max-height:210px;overflow-y:auto;margin-top:10px}
 .project-detail-modal>.project-photo-panel .project-photo-grid{grid-template-columns:repeat(auto-fill,86px);grid-auto-rows:86px;overflow-y:auto;max-height:88px}
 .project-detail-modal>.project-photo-panel .project-photo-card{aspect-ratio:1}
-@media(max-width:760px){.wctrl{display:flex;flex-wrap:wrap;justify-content:center}.wctrl>.nav-row{margin-left:auto}.mo-box.project-detail-modal{max-width:560px;overflow-y:auto}.project-detail-grid{grid-template-columns:1fr;max-height:none}.project-detail-main,.project-detail-trades{overflow:visible}.project-detail-trades{border-left:0;border-top:1px solid var(--border);padding:14px 0 0}.project-share-row{align-items:flex-start;flex-direction:column}.project-detail-actions{align-self:flex-end}}
+@media(max-width:760px){.wctrl{display:flex;flex-wrap:wrap;justify-content:center}.wctrl>.nav-row{margin-left:auto}.mo-box.project-detail-modal{max-width:560px;overflow-y:auto}.project-detail-grid,.project-detail-grid.has-design-progress{grid-template-columns:1fr;max-height:none}.project-detail-main,.project-detail-design,.project-detail-trades{overflow:visible}.project-detail-design,.project-detail-trades{border-left:0;border-top:1px solid var(--border);padding:14px 0 0}.project-share-row{align-items:flex-start;flex-direction:column}.project-detail-actions{align-self:flex-end}}
 .pb-wrap{background:var(--bg);border-radius:4px;height:4px;margin-bottom:12px}
 .pb-fill{height:4px;border-radius:4px}
 </style>
@@ -2050,7 +2056,6 @@ function renderWeekView(shouldShow){
   const days=getWeekDates();const td=today();
   const WD=['日','一','二','三','四','五','六'];
   const projs=S.projects.filter(shouldShow);
-  if(!projs.length)return`<div class="empty">尚無施工中案件</div>`;
   const hint=selectedTag?`<div style="background:var(--pl);color:var(--pd);padding:6px 10px;border-radius:var(--r);margin-bottom:8px;font-size:12px">已選取色塊 — Ctrl+點格子複製，點空白取消</div>`:'';
 
   function renderCell(p,pi,d){
@@ -2193,7 +2198,7 @@ function renderWeekView(shouldShow){
   })()}
   </tbody></table></div>
   </div>
-  <div class="wtbl-wrap hscroll-sync hide-hscrollbar"><table class="wtbl" style="width:${200+days.length*180}px"><colgroup><col style="width:200px">${days.map(()=>'<col style="width:180px">').join('')}</colgroup><tbody>
+  ${projs.length?`<div class="wtbl-wrap hscroll-sync hide-hscrollbar"><table class="wtbl" style="width:${200+days.length*180}px"><colgroup><col style="width:200px">${days.map(()=>'<col style="width:180px">').join('')}</colgroup><tbody>
   <tr><td colspan="${days.length+1}" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:3px solid #1a1a1a"><div style="position:sticky;left:8px;display:inline-flex;align-items:center;gap:7px">🏗 工地進度<span class="help-wrap"><button class="help-btn" type="button" aria-label="工地進度操作說明" onclick="toggleHelpPop(event,'work-progress-help')">?</button><span class="help-pop" id="work-progress-help" onclick="event.stopPropagation()"><ul><li>單擊色塊可開啟 checklist。</li><li>按住 Ctrl 再單擊可複製。</li><li>雙擊白色欄位可編輯。</li><li>直接拖拉可搬移項目。</li><li>按住 Ctrl 拖拉可複製項目。</li></ul></span></span></div></td></tr>
   ${projs.map((p,pi)=>`
     <tr>
@@ -2204,7 +2209,7 @@ function renderWeekView(shouldShow){
       ${days.map(d=>renderCell(p,pi,d)).join('')}
     </tr>
   `).join('')}
-  </tbody></table></div>`;
+  </tbody></table></div>`:''}`;
 }
 
 // ── Daily Log Section ──
@@ -4651,6 +4656,35 @@ window.shareProjectPhotoCollage=async function(projectId){
   try{const blob=await buildPhotoCollage(p);await copyImageForLine(blob,'照片已合成並複製，可直接到 LINE 訊息或記事本貼上。');}
   catch(error){console.error(error);alert('照片合成失敗。剛上傳的照片可立即分享；已存照片需完成 Storage 的 CORS 設定後才能合成分享。');}
 }
+function renderProjectDesignReadOnly(p){
+  const dp=p.designProgress||{};
+  return getDesignCols().map(function(col){
+    const colKey=col.key||col.name;
+    const raw=dp[colKey];
+    let value='';
+    if(col.kind==='member'){
+      const ids=Array.isArray(raw)?raw:(raw?[raw]:[]);
+      value=ids.map(function(uid){
+        const member=S.members.find(function(item){return item.uid===uid;});
+        return member?memberDisplayName(member):uid;
+      }).filter(Boolean).join('、');
+    }else{
+      value=raw==null?'':String(raw).trim();
+      if(value.startsWith('#'))value='#'+displayStageName(value.slice(1));
+    }
+    const storedDate=String(dp[colKey+'__date']||'');
+    const dateParts=storedDate.split('-');
+    const year=dp[colKey+'__date_y']!==undefined?dp[colKey+'__date_y']:(dateParts[0]||'');
+    const month=dp[colKey+'__date_m']!==undefined?dp[colKey+'__date_m']:(dateParts[1]||'');
+    const day=dp[colKey+'__date_d']!==undefined?dp[colKey+'__date_d']:(dateParts[2]||'');
+    const date=[year,month,day].filter(function(part){return part!==''&&part!=null;}).join('/');
+    if(!value&&!date)return'';
+    return`<div class="project-design-readonly-row">
+      <div class="project-design-readonly-label">${escAttr(col.name)}</div>
+      <div class="project-design-readonly-value">${date?`<div class="project-design-readonly-date">${escAttr(date)}</div>`:''}${escAttr(value)}</div>
+    </div>`;
+  }).join('');
+}
 window.showProjectDetail=function(projId){
   const p=S.projects.find(x=>x.id===projId);
   if(!p)return;
@@ -4658,6 +4692,7 @@ window.showProjectDetail=function(projId){
   const si=statusInfo(p.status);
   const designAmount=(parseFloat(p.area)||0)*(parseFloat(p.pricePerPing)||0);
   const tradeSummary=projectTradeSummary(p.id);
+  const designProgressMarkup=renderProjectDesignReadOnly(p);
   const photos=projectPhotos(p);
   const photoPanel=`<section class="project-photo-panel">
       <div class="project-photo-head"><span>📷 案件照片 <span class="help-wrap project-photo-help"><button class="help-btn" type="button" aria-label="案件照片操作說明" onclick="toggleHelpPop(event,'project-photo-help')">?</button><span class="help-pop" id="project-photo-help" onclick="event.stopPropagation()"><ul><li>勾選一張照片後，才能使用單張複製。</li><li>一次僅能選取一張照片。</li><li>分享照片（合成）會將全部照片排成一張。</li></ul></span></span>（${photos.length}）</span></div>
@@ -4672,7 +4707,7 @@ window.showProjectDetail=function(projId){
   }
   $('mo-content').classList.add('project-detail-modal');
   $('mo-content').innerHTML=`<div class="mo-title">${p.name}</div>
-    <div class="project-detail-grid">
+    <div class="project-detail-grid has-design-progress">
       <div class="project-detail-main">
       ${row('業主姓名',p.owner)}
       ${row('電話',p.phone)}
@@ -4691,6 +4726,10 @@ window.showProjectDetail=function(projId){
       ${p.completionTypes&&p.completionTypes.length?row('完工類型',p.completionTypes.join('、')):''}
       ${row('廠商施工流程',p.process)}
       </div>
+      <section class="project-detail-design">
+        <div class="project-detail-trades-title">設計進度（唯讀）</div>
+        <div class="project-design-readonly">${designProgressMarkup}</div>
+      </section>
       <aside class="project-detail-trades">
         <div class="project-detail-trades-title">案件工班</div>
         <div class="project-detail-trades-list">${tradeSummary||'<span class="project-detail-empty">尚未設定工班</span>'}</div>
