@@ -191,6 +191,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .wtbl-wrap{overflow:auto;max-height:calc(100vh - 180px);border:1px solid var(--border);border-radius:var(--rl2)}
 .hide-hscrollbar{scrollbar-width:none}
 .hide-hscrollbar::-webkit-scrollbar{height:0}
+.hscroll-sync.is-pointer-dragging,.horizontal-card-list.is-pointer-dragging{cursor:grabbing!important;user-select:none}
 .wtbl{border-collapse:collapse;font-size:12px;table-layout:fixed}
 .wtbl th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500}
 .wtbl th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
@@ -407,8 +408,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
   #panel-progress .wk-lbl{min-width:0;flex:1;padding:10px 6px;font-size:14px}
   #panel-progress .formula-bar{width:100%;align-items:center;flex-wrap:nowrap;gap:7px;padding:7px 8px;margin:0}
   #panel-progress .formula-bar-label{width:auto;min-width:0;white-space:nowrap;flex:none}
-  #panel-progress .wtbl-wrap,#panel-progress .daily-section .hscroll-sync,#panel-progress .private-todo-wrap,#panel-progress .private-section .hscroll-sync{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;scroll-behavior:smooth;overscroll-behavior-x:contain}
-  #panel-progress .wtbl th:not(:first-child),#panel-progress .wtbl td:not(:first-child),#panel-progress .daily-log-table td:not(:first-child),#panel-progress .private-section td:not(:first-child){scroll-snap-align:start}
+  #panel-progress .wtbl-wrap,#panel-progress .daily-section .hscroll-sync,#panel-progress .private-todo-wrap,#panel-progress .private-section .hscroll-sync{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
   #panel-progress .wtbl-wrap{max-height:none}
   #panel-progress .daily-section-hdr{align-items:stretch;flex-wrap:wrap;padding:10px 12px}
   #panel-progress .daily-section-title{width:100%}
@@ -2743,7 +2743,7 @@ function renderTodoPanel(){
       <button class="btn btn-sm" onclick="openTodoProjectPicker()">⚙ 選擇工地</button>
     </div>
     ${projs.length===0?`<div style="font-size:12px;color:var(--text3)">尚未選擇要顯示的工地，點右上角「⚙ 選擇工地」設定</div>`:
-    `<div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px">
+    `<div class="horizontal-card-list" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px">
       ${projs.map(p=>renderTodoColumn(p)).join('')}
     </div>`}
   </div>`;
@@ -3462,21 +3462,105 @@ window.confirmClearDesignStage=function(projId,col,label){
   $('modal').style.display='flex';setTimeout(()=>$('mo-confirm-btn')?.focus(),50);
 }
 window.addEventListener('resize',alignProgressBottomScrollbar);
+function syncHScrollPosition(source,left){
+  const max=Math.max(0,source.scrollWidth-source.clientWidth);
+  const next=Math.max(0,Math.min(max,left));
+  hscrollSyncing=true;
+  lastHScrollLeft=next;
+  document.querySelectorAll('.hscroll-sync').forEach(function(other){other.scrollLeft=next;});
+  hscrollSyncing=false;
+  return next;
+}
+function setHorizontalScrollPosition(scroller,left){
+  if(scroller.classList.contains('hscroll-sync'))return syncHScrollPosition(scroller,left);
+  const max=Math.max(0,scroller.scrollWidth-scroller.clientWidth);
+  const next=Math.max(0,Math.min(max,left));
+  scroller.scrollLeft=next;
+  return next;
+}
 document.addEventListener('scroll',function(e){
   if(hscrollSyncing)return;
   const el=e.target;
   if(!el.classList||!el.classList.contains('hscroll-sync'))return;
-  hscrollSyncing=true;
-  lastHScrollLeft=el.scrollLeft;
-  document.querySelectorAll('.hscroll-sync').forEach(function(other){
-    if(other!==el)other.scrollLeft=el.scrollLeft;
-  });
-  hscrollSyncing=false;
+  syncHScrollPosition(el,el.scrollLeft);
 },true);
 function restoreHScroll(){
   if(!lastHScrollLeft)return;
   document.querySelectorAll('.hscroll-sync').forEach(function(el){el.scrollLeft=lastHScrollLeft;});
 }
+// Touch and trackpad scrolling keep the browser's native momentum and vertical-page
+// behaviour.  This adds the same free-running inertia only for mouse dragging.
+let horizontalPointerDrag=null;
+let horizontalInertiaFrame=0;
+let horizontalInertiaScroller=null;
+let suppressHorizontalClickUntil=0;
+function stopHorizontalInertia(){
+  if(horizontalInertiaFrame)cancelAnimationFrame(horizontalInertiaFrame);
+  horizontalInertiaFrame=0;
+  horizontalInertiaScroller=null;
+}
+function runHorizontalInertia(scroller,velocity){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches||Math.abs(velocity)<0.03)return;
+  stopHorizontalInertia();
+  horizontalInertiaScroller=scroller;
+  let lastTime=performance.now();
+  function step(now){
+    const elapsed=Math.min(32,Math.max(1,now-lastTime));
+    lastTime=now;
+    const max=Math.max(0,scroller.scrollWidth-scroller.clientWidth);
+    const before=scroller.scrollLeft;
+    const after=setHorizontalScrollPosition(scroller,before+velocity*elapsed);
+    velocity*=Math.pow(.92,elapsed/16);
+    if(after<=0||after>=max||Math.abs(velocity)<0.03){stopHorizontalInertia();return;}
+    horizontalInertiaFrame=requestAnimationFrame(step);
+  }
+  horizontalInertiaFrame=requestAnimationFrame(step);
+}
+function getHorizontalPointerScroller(target){
+  if(!target||!target.closest)return null;
+  return target.closest('.hscroll-sync,.horizontal-card-list');
+}
+document.addEventListener('pointerdown',function(e){
+  if(e.pointerType!=='mouse'||e.button!==0)return;
+  const scroller=getHorizontalPointerScroller(e.target);
+  if(!scroller||scroller.scrollWidth<=scroller.clientWidth+1)return;
+  if(e.target.closest('button,a,input,textarea,select,[contenteditable="true"],[draggable="true"],.ev-chip,.pn-chip,.meet-chip'))return;
+  stopHorizontalInertia();
+  horizontalPointerDrag={scroller:scroller,startX:e.clientX,lastX:e.clientX,lastTime:e.timeStamp,velocity:0,dragged:false};
+},true);
+document.addEventListener('pointermove',function(e){
+  const drag=horizontalPointerDrag;
+  if(!drag||e.pointerType!=='mouse')return;
+  const dx=e.clientX-drag.lastX;
+  const elapsed=Math.max(1,e.timeStamp-drag.lastTime);
+  if(!drag.dragged&&Math.abs(e.clientX-drag.startX)>4)drag.dragged=true;
+  if(drag.dragged){
+    if(e.cancelable)e.preventDefault();
+    drag.scroller.classList.add('is-pointer-dragging');
+    setHorizontalScrollPosition(drag.scroller,drag.scroller.scrollLeft-dx);
+    drag.velocity=(-dx)/elapsed;
+  }
+  drag.lastX=e.clientX;
+  drag.lastTime=e.timeStamp;
+},true);
+function finishHorizontalPointerDrag(){
+  const drag=horizontalPointerDrag;
+  if(!drag)return;
+  horizontalPointerDrag=null;
+  drag.scroller.classList.remove('is-pointer-dragging');
+  if(!drag.dragged)return;
+  suppressHorizontalClickUntil=Date.now()+350;
+  runHorizontalInertia(drag.scroller,drag.velocity);
+}
+document.addEventListener('pointerup',finishHorizontalPointerDrag,true);
+document.addEventListener('pointercancel',finishHorizontalPointerDrag,true);
+document.addEventListener('click',function(e){
+  if(Date.now()>suppressHorizontalClickUntil)return;
+  if(getHorizontalPointerScroller(e.target)){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+},true);
 // Shift + mouse wheel scrolls sideways instead of down, for any of the
 // horizontally-scrollable table wrappers in the app.
 document.addEventListener('wheel',function(e){
@@ -3497,9 +3581,7 @@ document.addEventListener('wheel',function(e){
   if(activePanel==='progress'&&progressPanel&&progressPanel.contains(e.target)){
     const scroller=Array.from(document.querySelectorAll('.hscroll-sync')).find(function(node){return node.scrollWidth>node.clientWidth;});
     if(scroller){
-      scroller.scrollLeft+=e.deltaY||e.deltaX;
-      lastHScrollLeft=scroller.scrollLeft;
-      document.querySelectorAll('.hscroll-sync').forEach(function(other){if(other!==scroller)other.scrollLeft=lastHScrollLeft;});
+      syncHScrollPosition(scroller,scroller.scrollLeft+(e.deltaY||e.deltaX));
       e.preventDefault();
     }
   }
