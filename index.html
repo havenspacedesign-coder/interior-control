@@ -243,6 +243,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 
 /* Daily log section */
 .daily-section{margin-top:1rem;border:1px solid var(--border);border-radius:var(--rl2);overflow:hidden}
+.mobile-progress-fixed-header{border-left:1px solid var(--border);border-right:1px solid var(--border)}
 .daily-section-hdr{padding:10px 16px;background:var(--bg);font-size:13px;font-weight:500;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:flex-start;gap:4px}
 .daily-section-title{width:180px;flex:none}
 .inline-link{color:#1155cc;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
@@ -417,6 +418,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
   #panel-progress .progress-horizontal-viewport>*{width:var(--progress-timeline-width);min-width:var(--progress-timeline-width)}
   #panel-progress .progress-horizontal-viewport .wtbl,#panel-progress .progress-horizontal-viewport .daily-log-table,#panel-progress .progress-horizontal-viewport .private-section table{width:var(--progress-timeline-width)!important}
   #panel-progress .progress-horizontal-viewport .hscroll-sync{max-width:none!important;overflow:visible!important;touch-action:auto}
+  #panel-progress .daily-section,#panel-progress .private-section{overflow:visible!important}
+  #panel-progress .mobile-progress-fixed-header{position:sticky;left:0;z-index:20;width:calc(100vw - 24px);min-width:0;box-sizing:border-box}
+  #panel-progress .daily-log-table td.log-name-cell,#panel-progress .private-section .hscroll-sync td.log-name-cell{position:sticky!important;left:0;z-index:12}
   #panel-progress #progress-bottom-hscroll{display:none}
   #panel-progress .mobile-progress-date-sticky{display:block;position:sticky;top:56px;z-index:30;overflow:hidden;margin:0;border:1px solid var(--border);border-bottom:3px solid #1a1a1a;border-radius:var(--rl2) var(--rl2) 0 0;background:var(--surface);box-shadow:0 2px 5px rgba(0,0,0,.06)}
   #panel-progress .mobile-progress-date-track{display:flex;will-change:transform}
@@ -2374,11 +2378,11 @@ function renderDailyLogSection(days){
   if(!activeMembers.length)return'';
   const WD=['日','一','二','三','四','五','六'];
   return`<div style="border-top:3px solid #1a1a1a;margin-top:0"></div>
-  <div class="daily-section" style="margin-top:0;border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">
-    <div class="daily-section-hdr">
+    <div class="daily-section-hdr mobile-progress-fixed-header">
       <span class="daily-section-title">每日施工日誌</span>
       ${renderDailyAssignBar(days)}
     </div>
+  <div class="daily-section" style="margin-top:0;border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">
     <div class="hscroll-sync hide-hscrollbar" style="overflow-x:auto">
     <table class="daily-log-table" style="width:${200+days.length*180}px">
       <colgroup><col style="width:200px">${days.map(()=>'<col style="width:180px">').join('')}</colgroup>
@@ -3105,13 +3109,13 @@ function renderPrivateTodoSection(){
   var colgroup='<colgroup><col style="width:200px">'+days.map(function(){return'<col style="width:180px">';}).join('')+'</colgroup>';
 
   return '<div style="border-top:3px solid #1a1a1a"></div>'
-    +'<div class="private-section" style="border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">'
-    +'<div class="private-section-hdr" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">'
+    +'<div class="private-section-hdr mobile-progress-fixed-header" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">'
     +'<span class="private-section-title" style="width:180px;display:inline-flex;align-items:center;gap:6px;flex:none">🔒 個人專區'
     +'<span class="help-wrap"><button class="help-btn" type="button" aria-label="個人專區操作說明" onclick="toggleHelpPop(event,\'private-help\')">?</button><span class="help-pop" id="private-help" onclick="event.stopPropagation()"><ul><li>個人專區只有你自己看得到。</li><li>雙擊項目可編輯內容。</li><li>輸入 @ 可搜尋並連結工地。</li><li>按住 Ctrl 拖拉可複製項目。</li><li>按 Delete 可刪除已選取的項目。</li></ul></span></span></span>'
     +'<span class="private-section-actions" style="display:inline-flex;align-items:center;gap:4px"><button class="btn btn-sm" onclick="openRecurringManager(true)">＋自動排程</button>'
     +itemControls()+'</span>'
     +'</div>'
+    +'<div class="private-section" style="border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">'
     +'<div class="hscroll-sync hide-hscrollbar" style="overflow-x:auto"><table style="'+tblStyle+';width:'+(200+days.length*180)+'px">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
     +makeRow('work','工地記事')
     +divider
