@@ -3449,6 +3449,9 @@ window.pnDrop=async function(e,toType,toDs){
 // timeline even though they're separate <table> elements.
 let hscrollSyncing=false;
 let lastHScrollLeft=0;
+let hscrollSyncFrame=0;
+let hscrollSyncSource=null;
+let hscrollSyncTarget=0;
 function alignProgressBottomScrollbar(){
   const bar=document.getElementById('progress-bottom-hscroll');
   const board=document.querySelector('#panel-progress .progress-sticky-board');
@@ -3466,10 +3469,19 @@ window.addEventListener('resize',alignProgressBottomScrollbar);
 function syncHScrollPosition(source,left){
   const max=Math.max(0,source.scrollWidth-source.clientWidth);
   const next=Math.max(0,Math.min(max,left));
-  hscrollSyncing=true;
+  if(Math.abs(source.scrollLeft-next)>.5)source.scrollLeft=next;
   lastHScrollLeft=next;
-  document.querySelectorAll('.hscroll-sync').forEach(function(other){other.scrollLeft=next;});
-  hscrollSyncing=false;
+  hscrollSyncSource=source;
+  hscrollSyncTarget=next;
+  if(!hscrollSyncFrame)hscrollSyncFrame=requestAnimationFrame(function(){
+    hscrollSyncFrame=0;
+    if(!hscrollSyncSource||!hscrollSyncSource.isConnected)return;
+    hscrollSyncing=true;
+    document.querySelectorAll('.hscroll-sync').forEach(function(other){
+      if(other!==hscrollSyncSource&&Math.abs(other.scrollLeft-hscrollSyncTarget)>.5)other.scrollLeft=hscrollSyncTarget;
+    });
+    hscrollSyncing=false;
+  });
   return next;
 }
 function setHorizontalScrollPosition(scroller,left){
@@ -3483,6 +3495,7 @@ document.addEventListener('scroll',function(e){
   if(hscrollSyncing)return;
   const el=e.target;
   if(!el.classList||!el.classList.contains('hscroll-sync'))return;
+  if(Math.abs(el.scrollLeft-lastHScrollLeft)<.5)return;
   syncHScrollPosition(el,el.scrollLeft);
 },true);
 function restoreHScroll(){
@@ -3526,8 +3539,8 @@ document.addEventListener('pointerdown',function(e){
   if((e.pointerType!=='mouse'&&e.pointerType!=='touch')||(e.pointerType==='mouse'&&e.button!==0))return;
   const scroller=getHorizontalPointerScroller(e.target);
   if(!scroller||scroller.scrollWidth<=scroller.clientWidth+1)return;
-  if(e.target.closest('button,a,[contenteditable="true"],[draggable="true"],.ev-chip,.pn-chip,.meet-chip'))return;
-  if(e.pointerType==='mouse'&&e.target.closest('input,textarea,select'))return;
+  if(e.target.closest('button,a,[contenteditable="true"]'))return;
+  if(e.pointerType==='mouse'&&e.target.closest('input,textarea,select,[draggable="true"],.ev-chip,.pn-chip,.meet-chip'))return;
   stopHorizontalInertia();
   horizontalPointerDrag={pointerId:e.pointerId,scroller:scroller,startX:e.clientX,startY:e.clientY,lastX:e.clientX,lastTime:e.timeStamp,velocity:0,dragged:false};
 },true);
