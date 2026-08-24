@@ -415,6 +415,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
   #panel-progress .wtbl-wrap,#panel-progress .daily-section .hscroll-sync,#panel-progress .private-todo-wrap,#panel-progress .private-section .hscroll-sync{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
   #panel-progress .progress-horizontal-viewport{display:block;max-width:100%;overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:auto}
   #panel-progress .progress-horizontal-viewport>*{width:var(--progress-timeline-width);min-width:var(--progress-timeline-width)}
+  #panel-progress .progress-horizontal-viewport .wtbl,#panel-progress .progress-horizontal-viewport .daily-log-table,#panel-progress .progress-horizontal-viewport .private-section table{width:var(--progress-timeline-width)!important}
   #panel-progress .progress-horizontal-viewport .hscroll-sync{max-width:none!important;overflow:visible!important;touch-action:auto}
   #panel-progress #progress-bottom-hscroll{display:none}
   #panel-progress .mobile-progress-date-sticky{display:block;position:sticky;top:56px;z-index:30;overflow:hidden;margin:0;border:1px solid var(--border);border-bottom:3px solid #1a1a1a;border-radius:var(--rl2) var(--rl2) 0 0;background:var(--surface);box-shadow:0 2px 5px rgba(0,0,0,.06)}
@@ -2027,10 +2028,14 @@ window.designRowDragEnd=function(){
 
 // ── Progress ──
 var pendingProgressRender=false;
+const MOBILE_PROGRESS_LABEL_WIDTH=96;
+const MOBILE_PROGRESS_DAY_WIDTH=180;
+function mobileProgressTimelineWidth(days){return MOBILE_PROGRESS_LABEL_WIDTH+days.length*MOBILE_PROGRESS_DAY_WIDTH;}
 function renderMobileProgressDateHeader(days){
   const WD=['日','一','二','三','四','五','六'];
   const td=today();
-  return`<div class="mobile-progress-date-sticky" id="mobile-progress-date-sticky"><div class="mobile-progress-date-track" id="mobile-progress-date-track" style="width:${96+days.length*180}px"><div class="mobile-progress-date-spacer"></div>${days.map(function(d){
+  const timelineWidth=mobileProgressTimelineWidth(days);
+  return`<div class="mobile-progress-date-sticky" id="mobile-progress-date-sticky"><div class="mobile-progress-date-track" id="mobile-progress-date-track" style="width:${timelineWidth}px"><div class="mobile-progress-date-spacer"></div>${days.map(function(d){
     const ds=fmtDay(d),dow=d.getDay(),dc=S.dateColors[ds]||{},color=dc.color||(dow===0||dow===6?'var(--red)':'');
     return`<div class="mobile-progress-date-cell" style="${color?'color:'+color:''}">${d.getMonth()+1}/${d.getDate()} <span style="font-weight:400;font-size:10px">週${WD[dow]}</span>${isSameDay(d,td)?'<span style="font-size:10px">●</span>':''}</div>`;
   }).join('')}</div></div>`;
@@ -2083,7 +2088,7 @@ function renderProgress(){
   </div>
   ${calMode==='todo'?renderTodoPanel()+'</div>':calMode==='notes'?renderGlobalNotesPanel(viewMonth)+'</div>':`
   ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
-  ${calMode==='month'?renderMobileProgressDateHeader(weekDays)+`<div class="progress-horizontal-viewport hide-hscrollbar" id="progress-horizontal-viewport" style="--progress-timeline-width:${200+weekDays.length*180}px">${renderWeekView(shouldShow)}${renderDailyLogSection(weekDays)}${renderPrivateTodoSection()}</div>`:renderDayView()}
+  ${calMode==='month'?renderMobileProgressDateHeader(weekDays)+`<div class="progress-horizontal-viewport hide-hscrollbar" id="progress-horizontal-viewport" style="--progress-timeline-width:${mobileProgressTimelineWidth(weekDays)}px">${renderWeekView(shouldShow)}${renderDailyLogSection(weekDays)}${renderPrivateTodoSection()}</div>`:renderDayView()}
   ${calMode==='month'?'':'</div>'}
   ${calMode==='month'?'':renderPrivateTodoSection()}
   <div style="height:500px"></div>
@@ -2191,6 +2196,7 @@ function renderWeekView(shouldShow){
   }
 
   return`${hint}<div class="progress-week-content"><div class="wtbl-wrap hscroll-sync hide-hscrollbar progress-meeting-table"><table class="wtbl" style="width:${200+days.length*180}px">
+  <colgroup><col style="width:200px">${days.map(()=>'<col style="width:180px">').join('')}</colgroup>
   <thead><tr>
     <th class="site-hd" style="width:200px"></th>
     ${days.map(d=>{
