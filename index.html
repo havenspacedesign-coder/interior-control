@@ -191,6 +191,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .wtbl-wrap{overflow:auto;max-height:calc(100vh - 180px);border:1px solid var(--border);border-radius:var(--rl2)}
 .hide-hscrollbar{scrollbar-width:none}
 .hide-hscrollbar::-webkit-scrollbar{height:0}
+.hscroll-sync,.horizontal-card-list{touch-action:pan-y}
 .hscroll-sync.is-pointer-dragging,.horizontal-card-list.is-pointer-dragging{cursor:grabbing!important;user-select:none}
 .wtbl{border-collapse:collapse;font-size:12px;table-layout:fixed}
 .wtbl th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500}
@@ -3511,7 +3512,7 @@ function runHorizontalInertia(scroller,velocity){
     const max=Math.max(0,scroller.scrollWidth-scroller.clientWidth);
     const before=scroller.scrollLeft;
     const after=setHorizontalScrollPosition(scroller,before+velocity*elapsed);
-    velocity*=Math.pow(.92,elapsed/16);
+    velocity*=Math.pow(.93,elapsed/16);
     if(after<=0||after>=max||Math.abs(velocity)<0.03){stopHorizontalInertia();return;}
     horizontalInertiaFrame=requestAnimationFrame(step);
   }
@@ -3522,19 +3523,22 @@ function getHorizontalPointerScroller(target){
   return target.closest('.hscroll-sync,.horizontal-card-list');
 }
 document.addEventListener('pointerdown',function(e){
-  if(e.pointerType!=='mouse'||e.button!==0)return;
+  if((e.pointerType!=='mouse'&&e.pointerType!=='touch')||(e.pointerType==='mouse'&&e.button!==0))return;
   const scroller=getHorizontalPointerScroller(e.target);
   if(!scroller||scroller.scrollWidth<=scroller.clientWidth+1)return;
-  if(e.target.closest('button,a,input,textarea,select,[contenteditable="true"],[draggable="true"],.ev-chip,.pn-chip,.meet-chip'))return;
+  if(e.target.closest('button,a,[contenteditable="true"],[draggable="true"],.ev-chip,.pn-chip,.meet-chip'))return;
+  if(e.pointerType==='mouse'&&e.target.closest('input,textarea,select'))return;
   stopHorizontalInertia();
-  horizontalPointerDrag={scroller:scroller,startX:e.clientX,lastX:e.clientX,lastTime:e.timeStamp,velocity:0,dragged:false};
+  horizontalPointerDrag={pointerId:e.pointerId,scroller:scroller,startX:e.clientX,startY:e.clientY,lastX:e.clientX,lastTime:e.timeStamp,velocity:0,dragged:false};
 },true);
 document.addEventListener('pointermove',function(e){
   const drag=horizontalPointerDrag;
-  if(!drag||e.pointerType!=='mouse')return;
+  if(!drag||e.pointerId!==drag.pointerId)return;
   const dx=e.clientX-drag.lastX;
   const elapsed=Math.max(1,e.timeStamp-drag.lastTime);
-  if(!drag.dragged&&Math.abs(e.clientX-drag.startX)>4)drag.dragged=true;
+  const movedX=e.clientX-drag.startX;
+  const movedY=e.clientY-drag.startY;
+  if(!drag.dragged&&Math.abs(movedX)>6&&Math.abs(movedX)>Math.abs(movedY))drag.dragged=true;
   if(drag.dragged){
     if(e.cancelable)e.preventDefault();
     drag.scroller.classList.add('is-pointer-dragging');
@@ -3546,9 +3550,9 @@ document.addEventListener('pointermove',function(e){
   drag.lastX=e.clientX;
   drag.lastTime=e.timeStamp;
 },true);
-function finishHorizontalPointerDrag(){
+function finishHorizontalPointerDrag(e){
   const drag=horizontalPointerDrag;
-  if(!drag)return;
+  if(!drag||e.pointerId!==drag.pointerId)return;
   horizontalPointerDrag=null;
   drag.scroller.classList.remove('is-pointer-dragging');
   if(!drag.dragged)return;
