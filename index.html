@@ -194,6 +194,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .hscroll-sync,.horizontal-card-list{touch-action:pan-y}
 .hscroll-sync.is-pointer-dragging,.horizontal-card-list.is-pointer-dragging{cursor:grabbing!important;user-select:none}
 .mobile-progress-date-sticky{display:none}
+.progress-horizontal-viewport{display:contents}
 .wtbl{border-collapse:collapse;font-size:12px;table-layout:fixed}
 .wtbl th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500}
 .wtbl th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
@@ -412,6 +413,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
   #panel-progress .formula-bar{width:100%;align-items:center;flex-wrap:nowrap;gap:7px;padding:7px 8px;margin:0}
   #panel-progress .formula-bar-label{width:auto;min-width:0;white-space:nowrap;flex:none}
   #panel-progress .wtbl-wrap,#panel-progress .daily-section .hscroll-sync,#panel-progress .private-todo-wrap,#panel-progress .private-section .hscroll-sync{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+  #panel-progress .progress-horizontal-viewport{display:block;max-width:100%;overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:auto}
+  #panel-progress .progress-horizontal-viewport .hscroll-sync{max-width:none!important;overflow:visible!important;touch-action:auto}
+  #panel-progress #progress-bottom-hscroll{display:none}
   #panel-progress .mobile-progress-date-sticky{display:block;position:sticky;top:56px;z-index:30;overflow:hidden;margin:0;border:1px solid var(--border);border-bottom:3px solid #1a1a1a;border-radius:var(--rl2) var(--rl2) 0 0;background:var(--surface);box-shadow:0 2px 5px rgba(0,0,0,.06)}
   #panel-progress .mobile-progress-date-track{display:flex;will-change:transform}
   #panel-progress .mobile-progress-date-spacer{width:96px;min-width:96px;height:46px;background:var(--bg);border-right:1px solid var(--border)}
@@ -2078,10 +2082,9 @@ function renderProgress(){
   </div>
   ${calMode==='todo'?renderTodoPanel()+'</div>':calMode==='notes'?renderGlobalNotesPanel(viewMonth)+'</div>':`
   ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
-  ${calMode==='month'?renderMobileProgressDateHeader(weekDays)+renderWeekView(shouldShow):renderDayView()}
+  ${calMode==='month'?renderMobileProgressDateHeader(weekDays)+`<div class="progress-horizontal-viewport hide-hscrollbar" id="progress-horizontal-viewport">${renderWeekView(shouldShow)}${renderDailyLogSection(weekDays)}${renderPrivateTodoSection()}</div>`:renderDayView()}
   ${calMode==='month'?'':'</div>'}
-  ${calMode==='month'?renderDailyLogSection(weekDays):''}
-  ${renderPrivateTodoSection()}
+  ${calMode==='month'?'':renderPrivateTodoSection()}
   <div style="height:500px"></div>
   `}
   </div>
@@ -2186,7 +2189,7 @@ function renderWeekView(shouldShow){
     </td>`;
   }
 
-  return`${hint}<div class="wtbl-wrap hscroll-sync hide-hscrollbar progress-meeting-table"><table class="wtbl" style="width:${200+days.length*180}px">
+  return`${hint}<div class="progress-week-content"><div class="wtbl-wrap hscroll-sync hide-hscrollbar progress-meeting-table"><table class="wtbl" style="width:${200+days.length*180}px">
   <thead><tr>
     <th class="site-hd" style="width:200px"></th>
     ${days.map(d=>{
@@ -3467,6 +3470,22 @@ let lastHScrollLeft=0;
 let hscrollSyncFrame=0;
 let hscrollSyncSource=null;
 let hscrollSyncTarget=0;
+const MOBILE_SCROLL_DEBUG=new URLSearchParams(location.search).has('scrollDebug');
+const mobileScrollDiagnostics=[];
+let mobileDateHeaderFrame=0;
+let mobileDateHeaderLeft=0;
+let mobileScrollDebugStopTimer=0;
+function isNativeMobileProgressScroller(target){
+  return matchMedia('(max-width: 768px)').matches&&!!target?.closest?.('.progress-horizontal-viewport');
+}
+function recordMobileScroll(kind,details){
+  if(!MOBILE_SCROLL_DEBUG)return;
+  const entry={time:Math.round(performance.now()),kind:kind,...details};
+  mobileScrollDiagnostics.push(entry);
+  if(mobileScrollDiagnostics.length>80)mobileScrollDiagnostics.shift();
+  window.__mobileScrollDiagnostics=mobileScrollDiagnostics;
+  console.debug('[mobile-scroll]',entry);
+}
 function alignProgressBottomScrollbar(){
   const bar=document.getElementById('progress-bottom-hscroll');
   const board=document.querySelector('#panel-progress .progress-sticky-board');
@@ -3511,20 +3530,40 @@ function setHorizontalScrollPosition(scroller,left){
   return next;
 }
 document.addEventListener('scroll',function(e){
-  if(hscrollSyncing)return;
   const el=e.target;
+  if(el.classList&&el.classList.contains('progress-horizontal-viewport')){
+    lastHScrollLeft=el.scrollLeft;
+    updateMobileProgressDateHeader(el.scrollLeft);
+    if(MOBILE_SCROLL_DEBUG){
+      clearTimeout(mobileScrollDebugStopTimer);
+      mobileScrollDebugStopTimer=setTimeout(function(){recordMobileScroll('native-scroll-settled',{left:Math.round(el.scrollLeft)});},120);
+    }
+    return;
+  }
+  if(hscrollSyncing)return;
   if(!el.classList||!el.classList.contains('hscroll-sync'))return;
   if(Math.abs(el.scrollLeft-lastHScrollLeft)<.5)return;
   syncHScrollPosition(el,el.scrollLeft);
 },true);
 function restoreHScroll(){
+  const mobileViewport=document.getElementById('progress-horizontal-viewport');
+  if(mobileViewport&&matchMedia('(max-width: 768px)').matches){
+    mobileViewport.scrollLeft=lastHScrollLeft;
+    updateMobileProgressDateHeader(lastHScrollLeft);
+    return;
+  }
   if(!lastHScrollLeft)return;
   document.querySelectorAll('.hscroll-sync').forEach(function(el){el.scrollLeft=lastHScrollLeft;});
   updateMobileProgressDateHeader(lastHScrollLeft);
 }
 function updateMobileProgressDateHeader(left){
-  const track=document.getElementById('mobile-progress-date-track');
-  if(track)track.style.transform='translate3d('+-Math.round(left)+'px,0,0)';
+  mobileDateHeaderLeft=left;
+  if(mobileDateHeaderFrame)return;
+  mobileDateHeaderFrame=requestAnimationFrame(function(){
+    mobileDateHeaderFrame=0;
+    const track=document.getElementById('mobile-progress-date-track');
+    if(track)track.style.transform='translate3d('+-Math.round(mobileDateHeaderLeft)+'px,0,0)';
+  });
 }
 // Touch and trackpad scrolling keep the browser's native momentum and vertical-page
 // behaviour.  This adds the same free-running inertia only for mouse dragging.
@@ -3563,8 +3602,17 @@ function runHorizontalInertia(scroller,velocity){
 }
 function getHorizontalPointerScroller(target){
   if(!target||!target.closest)return null;
+  if(isNativeMobileProgressScroller(target))return null;
   return target.closest('.hscroll-sync,.horizontal-card-list');
 }
+document.addEventListener('pointerdown',function(e){
+  const viewport=e.target.closest?.('.progress-horizontal-viewport');
+  if(viewport&&e.pointerType==='touch')recordMobileScroll('touch-start',{x:Math.round(e.clientX),y:Math.round(e.clientY),left:Math.round(viewport.scrollLeft)});
+},{capture:true,passive:true});
+document.addEventListener('pointerup',function(e){
+  const viewport=e.target.closest?.('.progress-horizontal-viewport');
+  if(viewport&&e.pointerType==='touch')recordMobileScroll('touch-end',{x:Math.round(e.clientX),y:Math.round(e.clientY),left:Math.round(viewport.scrollLeft)});
+},{capture:true,passive:true});
 document.addEventListener('pointerdown',function(e){
   if((e.pointerType!=='mouse'&&e.pointerType!=='touch')||(e.pointerType==='mouse'&&e.button!==0))return;
   const scroller=getHorizontalPointerScroller(e.target);
@@ -3614,6 +3662,7 @@ document.addEventListener('click',function(e){
 // Shift + mouse wheel scrolls sideways instead of down, for any of the
 // horizontally-scrollable table wrappers in the app.
 document.addEventListener('wheel',function(e){
+  if(isNativeMobileProgressScroller(e.target))return;
   if(!e.shiftKey)return;
   let el=e.target;
   while(el&&el!==document.body){
