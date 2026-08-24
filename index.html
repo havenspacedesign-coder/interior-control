@@ -372,6 +372,55 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .project-detail-modal>.project-photo-panel .project-photo-grid{grid-template-columns:repeat(auto-fill,86px);grid-auto-rows:86px;overflow-y:auto;max-height:88px}
 .project-detail-modal>.project-photo-panel .project-photo-card{aspect-ratio:1}
 @media(max-width:760px){.wctrl{display:flex;flex-wrap:wrap;justify-content:center}.wctrl>.nav-row{margin-left:auto}.mo-box.project-detail-modal{max-width:560px;overflow-y:auto}.project-detail-grid,.project-detail-grid.has-design-progress{grid-template-columns:1fr;max-height:none}.project-detail-main,.project-detail-design,.project-detail-trades{overflow:visible}.project-detail-design,.project-detail-trades{border-left:0;border-top:1px solid var(--border);padding:14px 0 0}.project-share-row{align-items:flex-start;flex-direction:column}.project-detail-actions{align-self:flex-end}}
+
+/* Mobile navigation and progress board: desktop layout remains unchanged. */
+.topnav-menu{display:contents}.mobile-nav-brand,.mobile-menu-toggle{display:none}
+@media(max-width:768px){
+  body{overflow-x:hidden}
+  .topnav{height:56px;padding:0 12px;justify-content:space-between;gap:8px;overflow:visible}
+  .mobile-nav-brand{display:block;min-width:0;font-size:14px;font-weight:600;color:var(--pd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mobile-menu-toggle{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border:0;border-radius:var(--r);background:var(--pl);color:var(--pd);font:inherit;font-size:22px;cursor:pointer}
+  .topnav-menu{display:none}
+  .topnav.mobile-menu-open .topnav-menu{display:flex;position:absolute;top:56px;left:0;right:0;z-index:55;flex-direction:column;gap:10px;padding:10px 12px 14px;background:var(--surface);border-bottom:1px solid var(--border);box-shadow:0 8px 16px rgba(0,0,0,.10);max-height:calc(100dvh - 56px);overflow-y:auto}
+  .nav-tabs{display:flex;flex:none;flex-direction:column;gap:2px;overflow:visible;width:100%}
+  .nav-tab{width:100%;min-height:44px;padding:10px 12px;text-align:left;font-size:14px}
+  .home-nav-tab{margin:0;border:0;font-size:14px;font-weight:500;background:none;color:var(--text2)}
+  .home-nav-tab:hover,.home-nav-tab.active{background:var(--pl);color:var(--pd)}
+  .topnav-right{width:100%;padding-top:10px;border-top:1px solid var(--border);justify-content:flex-start;gap:10px;flex-wrap:wrap;white-space:normal}
+  .user-name{max-width:calc(100vw - 190px)}
+  .topnav-right .btn{min-height:40px;padding:7px 12px}
+  .main{padding:12px;overflow-x:clip}
+
+  #panel-progress{min-width:0}
+  #panel-progress .progress-layout{flex-direction:column!important;gap:12px!important;align-items:stretch!important}
+  #panel-progress .global-notes-panel{width:100%!important;position:static!important;max-height:none!important;min-height:0!important}
+  #panel-progress .progress-main{width:100%;min-width:0}
+  #panel-progress .progress-sticky-board{position:static!important;top:auto!important}
+  #panel-progress .wctrl{display:flex;justify-content:flex-start;gap:10px;margin-bottom:12px}
+  #panel-progress .seg{width:100%;flex-wrap:wrap;background:transparent;padding:0;gap:6px}
+  #panel-progress .seg button{flex:1 1 calc(50% - 3px);min-height:40px;padding:8px 10px;border:1px solid var(--border);background:var(--surface);font-size:13px}
+  #panel-progress .seg button.on{border-color:var(--purple);background:var(--pl)}
+  #panel-progress .nav-row{width:100%;justify-content:center;gap:8px}
+  #panel-progress .nav-btn{width:40px;height:40px;font-size:20px;flex-shrink:0}
+  #panel-progress .wk-lbl{min-width:0;flex:1;padding:10px 6px;font-size:14px}
+  #panel-progress .formula-bar{align-items:stretch;flex-wrap:wrap;gap:5px;padding:8px}
+  #panel-progress .formula-bar-label{width:100%;min-width:0;white-space:normal}
+  #panel-progress .wtbl-wrap,#panel-progress .daily-section .hscroll-sync,#panel-progress .private-todo-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #panel-progress .wtbl-wrap{max-height:none}
+  #panel-progress .daily-section-hdr{align-items:stretch;flex-wrap:wrap;padding:10px 12px}
+  #panel-progress .daily-section-title{width:100%}
+  #panel-progress .daily-section-hdr>div{width:100%;flex-wrap:wrap;gap:8px!important}
+  #panel-progress #daily-assign-date{width:128px!important;flex:0 1 128px}
+  #panel-progress #daily-assign-text{width:auto!important;min-width:150px;flex:1 1 150px}
+  #panel-progress .daily-section-hdr .btn{min-height:36px}
+  #panel-progress .site-hd,#panel-progress .daily-log-table td.log-name-cell,#panel-progress .private-todo-table td.ptd-label{width:150px!important}
+  #panel-progress .meeting-toolbar{left:6px;grid-template-columns:1fr auto auto auto;max-width:calc(100vw - 36px)}
+  #panel-progress .meeting-toolbar-title{white-space:normal}
+  #progress-bottom-hscroll{display:none!important}
+  .mo{padding:12px;align-items:flex-start;overflow-y:auto}
+  .mo-box{width:calc(100vw - 24px);max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);margin:auto 0}
+  .mo-footer{position:sticky;bottom:-20px;padding:12px 0 0;background:var(--surface)}
+}
 .pb-wrap{background:var(--bg);border-radius:4px;height:4px;margin-bottom:12px}
 .pb-fill{height:4px;border-radius:4px}
 </style>
@@ -404,6 +453,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 <div id="app-screen">
 <div class="app">
   <nav class="topnav">
+    <div class="mobile-nav-brand" id="mobile-nav-brand">首頁</div>
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" type="button" aria-label="開啟導覽選單" aria-expanded="false" onclick="toggleMobileNav()">☰</button>
+    <div class="topnav-menu" id="topnav-menu">
     <div class="nav-tabs">
       <button class="nav-tab home-nav-tab active" data-tab="home">首頁</button>
       <button class="nav-tab" data-tab="overview">案件總覽</button>
@@ -418,6 +470,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
       <img class="user-avatar" id="user-avatar" src="" style="display:none">
       <span class="user-name" id="user-name"></span>
       <button class="btn btn-sm" onclick="signOut()">登出</button>
+    </div>
     </div>
   </nav>
   <main class="main">
@@ -1082,9 +1135,20 @@ document.querySelectorAll('.nav-tab').forEach(t=>{
     document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
     t.classList.add('active');activePanel=t.dataset.tab;
+    const mobileBrand=$('mobile-nav-brand');if(mobileBrand)mobileBrand.textContent=t.textContent.trim();
+    closeMobileNav();
     $(`panel-${activePanel}`).classList.add('active');renderActive();
   });
 });
+window.toggleMobileNav=function(){
+  const nav=document.querySelector('.topnav'),button=$('mobile-menu-toggle');if(!nav||!button)return;
+  const opening=!nav.classList.contains('mobile-menu-open');
+  nav.classList.toggle('mobile-menu-open',opening);button.setAttribute('aria-expanded',String(opening));button.textContent=opening?'×':'☰';
+};
+function closeMobileNav(){
+  const nav=document.querySelector('.topnav'),button=$('mobile-menu-toggle');if(!nav||!button)return;
+  nav.classList.remove('mobile-menu-open');button.setAttribute('aria-expanded','false');button.textContent='☰';
+}
 function renderActive(){
   if(activePanel==='home')renderHome();
   else if(activePanel==='overview')renderOverview();
@@ -1954,9 +2018,9 @@ function renderProgress(){
   }
   const viewMonth=weekDays[0].getFullYear()+'-'+String(weekDays[0].getMonth()+1).padStart(2,'0');
   el.innerHTML=`
-  <div style="display:flex;gap:14px;align-items:flex-start">
+  <div class="progress-layout" style="display:flex;gap:14px;align-items:flex-start">
   ${renderGlobalNotesPanel(viewMonth)}
-  <div style="flex:1;min-width:0">
+  <div class="progress-main" style="flex:1;min-width:0">
   <div class="progress-sticky-board" style="position:sticky;top:49px;z-index:25;background:var(--bg);box-shadow:0 1px 0 var(--border)">
   <div class="wctrl">
     <div class="seg">
@@ -2033,7 +2097,7 @@ function renderGlobalNotesPanel(viewMonth){
   const curMonth=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0');
   const isFuture=viewMonth>curMonth;
   const heightStyle=globalNoteBoxHeight?`height:${globalNoteBoxHeight}`:'min-height:300px';
-  return`<div style="width:300px;flex-shrink:0;position:sticky;top:60px;border:1px solid var(--border);border-radius:var(--rl2);background:var(--surface);padding:10px;max-height:calc(100vh - 80px);overflow-y:auto">
+  return`<div class="global-notes-panel" style="width:300px;flex-shrink:0;position:sticky;top:60px;border:1px solid var(--border);border-radius:var(--rl2);background:var(--surface);padding:10px;max-height:calc(100vh - 80px);overflow-y:auto">
     <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text2)">📝 我的記事本${isFuture?' <span style="font-weight:400;color:var(--text3)">（未來月份，鎖定）</span>':''}</div>
     <textarea id="global-note-box" placeholder="點此輸入…" ${isFuture?'readonly':`onblur="globalNoteBoxHeight=this.style.height;saveGlobalNote('${viewMonth}',this.value);saveNoteHeight(this.style.height)" onmouseup="globalNoteBoxHeight=this.style.height;saveNoteHeight(this.style.height)"`} style="width:100%;box-sizing:border-box;${heightStyle};border:1px solid var(--border);border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;${isFuture?'background:var(--bg);color:var(--text3);cursor:not-allowed':''}">${escAttr(text)}</textarea>
   </div>`;
