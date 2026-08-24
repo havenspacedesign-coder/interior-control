@@ -3494,6 +3494,7 @@ let horizontalPointerDrag=null;
 let horizontalInertiaFrame=0;
 let horizontalInertiaScroller=null;
 let suppressHorizontalClickUntil=0;
+const maxHorizontalInertiaSpeed=8;
 function stopHorizontalInertia(){
   if(horizontalInertiaFrame)cancelAnimationFrame(horizontalInertiaFrame);
   horizontalInertiaFrame=0;
@@ -3538,7 +3539,9 @@ document.addEventListener('pointermove',function(e){
     if(e.cancelable)e.preventDefault();
     drag.scroller.classList.add('is-pointer-dragging');
     setHorizontalScrollPosition(drag.scroller,drag.scroller.scrollLeft-dx);
-    drag.velocity=(-dx)/elapsed;
+    // Keep a very fast pointer event from reaching the edge in the first
+    // animation frame, while still allowing a quick flick to travel far.
+    drag.velocity=Math.max(-maxHorizontalInertiaSpeed,Math.min(maxHorizontalInertiaSpeed,(-dx)/elapsed));
   }
   drag.lastX=e.clientX;
   drag.lastTime=e.timeStamp;
