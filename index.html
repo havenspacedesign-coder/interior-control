@@ -193,6 +193,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .hide-hscrollbar::-webkit-scrollbar{height:0}
 .hscroll-sync,.horizontal-card-list{touch-action:pan-y}
 .hscroll-sync.is-pointer-dragging,.horizontal-card-list.is-pointer-dragging{cursor:grabbing!important;user-select:none}
+.mobile-progress-date-sticky{display:none}
 .wtbl{border-collapse:collapse;font-size:12px;table-layout:fixed}
 .wtbl th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500}
 .wtbl th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
@@ -396,6 +397,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 
   #panel-progress{min-width:0}
   #panel-progress .progress-layout{flex-direction:column!important;gap:12px!important;align-items:stretch!important}
+  #panel-progress .progress-sticky-board{display:contents;position:static!important;top:auto!important}
   #panel-progress .progress-layout>.global-notes-panel{display:none}
   #panel-progress .progress-main .global-notes-panel{display:block;width:100%!important;position:static!important;max-height:none!important;min-height:0!important}
   #panel-progress .progress-main{width:100%;min-width:0}
@@ -410,6 +412,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
   #panel-progress .formula-bar{width:100%;align-items:center;flex-wrap:nowrap;gap:7px;padding:7px 8px;margin:0}
   #panel-progress .formula-bar-label{width:auto;min-width:0;white-space:nowrap;flex:none}
   #panel-progress .wtbl-wrap,#panel-progress .daily-section .hscroll-sync,#panel-progress .private-todo-wrap,#panel-progress .private-section .hscroll-sync{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+  #panel-progress .mobile-progress-date-sticky{display:block;position:sticky;top:56px;z-index:30;overflow:hidden;margin:0;border:1px solid var(--border);border-bottom:3px solid #1a1a1a;border-radius:var(--rl2) var(--rl2) 0 0;background:var(--surface);box-shadow:0 2px 5px rgba(0,0,0,.06)}
+  #panel-progress .mobile-progress-date-track{display:flex;will-change:transform}
+  #panel-progress .mobile-progress-date-spacer{width:96px;min-width:96px;height:46px;background:var(--bg);border-right:1px solid var(--border)}
+  #panel-progress .mobile-progress-date-cell{width:180px;min-width:180px;height:46px;display:flex;align-items:center;justify-content:center;gap:4px;border-right:1px solid var(--border);background:var(--bg);font-size:13px;font-weight:600;white-space:nowrap}
+  #panel-progress .progress-meeting-table .wtbl>thead{display:none}
   #panel-progress .wtbl-wrap{max-height:none}
   #panel-progress .daily-section-hdr{align-items:stretch;flex-wrap:wrap;padding:10px 12px}
   #panel-progress .daily-section-title{width:100%}
@@ -2015,6 +2022,14 @@ window.designRowDragEnd=function(){
 
 // ── Progress ──
 var pendingProgressRender=false;
+function renderMobileProgressDateHeader(days){
+  const WD=['日','一','二','三','四','五','六'];
+  const td=today();
+  return`<div class="mobile-progress-date-sticky" id="mobile-progress-date-sticky"><div class="mobile-progress-date-track" id="mobile-progress-date-track" style="width:${96+days.length*180}px"><div class="mobile-progress-date-spacer"></div>${days.map(function(d){
+    const ds=fmtDay(d),dow=d.getDay(),dc=S.dateColors[ds]||{},color=dc.color||(dow===0||dow===6?'var(--red)':'');
+    return`<div class="mobile-progress-date-cell" style="${color?'color:'+color:''}">${d.getMonth()+1}/${d.getDate()} <span style="font-weight:400;font-size:10px">週${WD[dow]}</span>${isSameDay(d,td)?'<span style="font-size:10px">●</span>':''}</div>`;
+  }).join('')}</div></div>`;
+}
 function renderProgress(){
   var af=document.activeElement;
   var menuOpen=false;
@@ -2063,7 +2078,7 @@ function renderProgress(){
   </div>
   ${calMode==='todo'?renderTodoPanel()+'</div>':calMode==='notes'?renderGlobalNotesPanel(viewMonth)+'</div>':`
   ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
-  ${calMode==='month'?renderWeekView(shouldShow):renderDayView()}
+  ${calMode==='month'?renderMobileProgressDateHeader(weekDays)+renderWeekView(shouldShow):renderDayView()}
   ${calMode==='month'?'':'</div>'}
   ${calMode==='month'?renderDailyLogSection(weekDays):''}
   ${renderPrivateTodoSection()}
@@ -2171,7 +2186,7 @@ function renderWeekView(shouldShow){
     </td>`;
   }
 
-  return`${hint}<div class="wtbl-wrap hscroll-sync hide-hscrollbar"><table class="wtbl" style="width:${200+days.length*180}px">
+  return`${hint}<div class="wtbl-wrap hscroll-sync hide-hscrollbar progress-meeting-table"><table class="wtbl" style="width:${200+days.length*180}px">
   <thead><tr>
     <th class="site-hd" style="width:200px"></th>
     ${days.map(d=>{
@@ -3471,6 +3486,7 @@ function syncHScrollPosition(source,left){
   const next=Math.max(0,Math.min(max,left));
   if(Math.abs(source.scrollLeft-next)>.5)source.scrollLeft=next;
   lastHScrollLeft=next;
+  updateMobileProgressDateHeader(next);
   hscrollSyncSource=source;
   hscrollSyncTarget=next;
   if(!hscrollSyncFrame)hscrollSyncFrame=requestAnimationFrame(function(){
@@ -3485,10 +3501,13 @@ function syncHScrollPosition(source,left){
   return next;
 }
 function setHorizontalScrollPosition(scroller,left){
-  if(scroller.classList.contains('hscroll-sync'))return syncHScrollPosition(scroller,left);
   const max=Math.max(0,scroller.scrollWidth-scroller.clientWidth);
   const next=Math.max(0,Math.min(max,left));
-  scroller.scrollLeft=next;
+  if(Math.abs(scroller.scrollLeft-next)>.5)scroller.scrollLeft=next;
+  if(scroller.classList.contains('hscroll-sync')){
+    lastHScrollLeft=next;
+    updateMobileProgressDateHeader(next);
+  }
   return next;
 }
 document.addEventListener('scroll',function(e){
@@ -3501,6 +3520,11 @@ document.addEventListener('scroll',function(e){
 function restoreHScroll(){
   if(!lastHScrollLeft)return;
   document.querySelectorAll('.hscroll-sync').forEach(function(el){el.scrollLeft=lastHScrollLeft;});
+  updateMobileProgressDateHeader(lastHScrollLeft);
+}
+function updateMobileProgressDateHeader(left){
+  const track=document.getElementById('mobile-progress-date-track');
+  if(track)track.style.transform='translate3d('+-Math.round(left)+'px,0,0)';
 }
 // Touch and trackpad scrolling keep the browser's native momentum and vertical-page
 // behaviour.  This adds the same free-running inertia only for mouse dragging.
@@ -3515,7 +3539,10 @@ function stopHorizontalInertia(){
   horizontalInertiaScroller=null;
 }
 function runHorizontalInertia(scroller,velocity){
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches||Math.abs(velocity)<0.03)return;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches||Math.abs(velocity)<0.03){
+    if(scroller.classList.contains('hscroll-sync'))syncHScrollPosition(scroller,scroller.scrollLeft);
+    return;
+  }
   stopHorizontalInertia();
   horizontalInertiaScroller=scroller;
   let lastTime=performance.now();
@@ -3526,7 +3553,10 @@ function runHorizontalInertia(scroller,velocity){
     const before=scroller.scrollLeft;
     const after=setHorizontalScrollPosition(scroller,before+velocity*elapsed);
     velocity*=Math.pow(.93,elapsed/16);
-    if(after<=0||after>=max||Math.abs(velocity)<0.03){stopHorizontalInertia();return;}
+    if(after<=0||after>=max||Math.abs(velocity)<0.03){
+      if(scroller.classList.contains('hscroll-sync'))syncHScrollPosition(scroller,after);
+      stopHorizontalInertia();return;
+    }
     horizontalInertiaFrame=requestAnimationFrame(step);
   }
   horizontalInertiaFrame=requestAnimationFrame(step);
