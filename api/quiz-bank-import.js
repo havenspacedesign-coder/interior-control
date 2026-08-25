@@ -31,7 +31,7 @@ async function fetchTriviaCandidates(){
   return [...fromTrivia,...fromOpenTdb].filter(isSafeCandidate);
 }
 async function translateCandidates(candidates,batchSize){
-  const prompt=`你是台灣公司內部輕量每日猜題的內容編輯。請從下列英文四選一候選題中，最多保留 ${batchSize} 題，翻譯成自然的台灣繁體中文。必須排除政治、宗教爭議、成人、暴力血腥、答案易隨年份改變、太冷門、題意或答案有爭議的題目；不要自行捏造事實。每一題必須有清楚的四個不同選項，答案只能是 A、B、C 或 D。保留 source、sourceId、category、difficulty；category 請翻成簡短台灣繁體中文，difficulty 只可為 easy、medium、hard。analytic 用一句簡短台灣繁體中文說明答案；沒有把握就不要保留。\n\n候選資料：\n${JSON.stringify(candidates)}`;
+  const prompt=`你是台灣公司內部輕量每日猜題的內容編輯。請從下列英文四選一候選題中，最多保留 ${batchSize} 題，翻譯成自然的台灣繁體中文。必須排除政治、宗教爭議、成人、暴力血腥、答案易隨年份改變、太冷門、題意或答案有爭議的題目；不要自行捏造事實。每一題必須有清楚的四個不同選項，答案只能是 A、B、C 或 D。保留 source、sourceId、category、difficulty；category 請翻成簡短台灣繁體中文，difficulty 只可為 easy、medium、hard。analytic 用一句簡短台灣繁體中文說明答案；沒有把握就不要保留。請只輸出一個有效的 JSON object，格式為 {"items":[...]}; 不要輸出 Markdown 或其他文字。\n\n候選資料：\n${JSON.stringify(candidates)}`;
   const ai=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model:process.env.QUIZ_TRANSLATION_MODEL||'gpt-4o-mini',store:false,input:prompt,text:{format:{type:'json_object'}},max_output_tokens:6000})});
   const data=await ai.json();if(!ai.ok)throw new Error(data?.error?.message||'翻譯服務暫時無法使用');
   const text=data.output_text||data.output?.flatMap(item=>item.content||[]).find(part=>part.type==='output_text')?.text||'';
