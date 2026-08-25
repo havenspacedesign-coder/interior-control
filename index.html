@@ -195,6 +195,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .hscroll-sync.is-pointer-dragging,.horizontal-card-list.is-pointer-dragging{cursor:grabbing!important;user-select:none}
 .mobile-progress-date-sticky{display:none}
 .progress-horizontal-viewport{display:contents}
+.progress-meeting-sticky-board{position:sticky;top:calc(49px + var(--progress-controls-height,0px));z-index:24;background:var(--bg);box-shadow:0 1px 0 var(--border)}
 @media(min-width:769px){#panel-progress .progress-layout>.global-notes-panel{margin-top:101px}}
 .wtbl{border-collapse:collapse;font-size:12px;table-layout:fixed}
 .wtbl th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500}
@@ -401,6 +402,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
   #panel-progress{min-width:0}
   #panel-progress .progress-layout{flex-direction:column!important;gap:12px!important;align-items:stretch!important}
   #panel-progress .progress-sticky-board{display:contents;position:static!important;top:auto!important}
+  #panel-progress .progress-meeting-sticky-board{position:static!important;top:auto!important;box-shadow:none}
   #panel-progress .progress-layout>.global-notes-panel{display:none}
   #panel-progress .progress-main .global-notes-panel{display:block;width:100%!important;position:static!important;max-height:none!important;min-height:0!important}
   #panel-progress .progress-main{width:100%;min-width:0}
@@ -2092,10 +2094,10 @@ function renderProgress(){
       <button class="nav-btn" onclick="changePeriod(1)">›</button>
     </div>`:''}
   </div>
-  ${calMode==='todo'?renderTodoPanel()+'</div>':calMode==='notes'?renderGlobalNotesPanel(viewMonth)+'</div>':`
+  </div>
+  ${calMode==='todo'?renderTodoPanel():calMode==='notes'?renderGlobalNotesPanel(viewMonth):`
   ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
-  ${calMode==='month'?renderMobileProgressDateHeader(weekDays)+`<div class="progress-horizontal-viewport hide-hscrollbar" id="progress-horizontal-viewport" style="--progress-timeline-width:${mobileProgressTimelineWidth(weekDays)}px">${renderWeekView(shouldShow)}${renderDailyLogSection(weekDays)}${renderPrivateTodoSection()}</div>`:renderDayView()}
-  ${calMode==='month'?'':'</div>'}
+  ${calMode==='month'?renderMobileProgressDateHeader(weekDays)+`<div class="progress-horizontal-viewport hide-hscrollbar" id="progress-horizontal-viewport" style="--progress-timeline-width:${mobileProgressTimelineWidth(weekDays)}px"><div class="progress-meeting-sticky-board">${renderWeekView(shouldShow)}</div>${renderDailyLogSection(weekDays)}${renderPrivateTodoSection()}</div>`:renderDayView()}
   ${calMode==='month'?'':renderPrivateTodoSection()}
   <div style="height:500px"></div>
   `}
@@ -2104,7 +2106,7 @@ function renderProgress(){
   ${calMode==='month'?`<div class="hscroll-sync" id="progress-bottom-hscroll" style="position:fixed;bottom:0;height:14px;overflow-x:auto;overflow-y:hidden;background:var(--surface);border-top:1px solid var(--border);z-index:40">
     <div style="width:${200+weekDays.length*180}px;height:1px"></div>
   </div>`:''}`;
-  requestAnimationFrame(restoreHScroll);
+  requestAnimationFrame(function(){restoreHScroll();syncProgressMeetingStickyOffset();});
   requestAnimationFrame(alignProgressBottomScrollbar);
   requestAnimationFrame(watchNoteBoxResize);
 }
@@ -3506,6 +3508,12 @@ function alignProgressBottomScrollbar(){
   const rect=board.getBoundingClientRect();
   bar.style.left=Math.max(0,rect.left)+'px';
   bar.style.right=Math.max(0,window.innerWidth-rect.right)+'px';
+}
+function syncProgressMeetingStickyOffset(){
+  const controls=document.querySelector('#panel-progress .progress-sticky-board');
+  const meeting=document.querySelector('#panel-progress .progress-meeting-sticky-board');
+  if(!controls||!meeting)return;
+  meeting.style.setProperty('--progress-controls-height',Math.ceil(controls.getBoundingClientRect().height)+'px');
 }
 window.confirmClearDesignStage=function(projId,col,label){
   delete $('mo-content').dataset.lockBackdrop;
