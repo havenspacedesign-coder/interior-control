@@ -9,7 +9,7 @@ function normalise(value=''){return htmlDecode(value).toLowerCase().replace(/<[^
 function isSafeCandidate(item){const text=normalise(`${item.question} ${item.correctAnswer} ${(item.incorrectAnswers||[]).join(' ')}`);if(!item.question||!item.correctAnswer||!Array.isArray(item.incorrectAnswers)||item.incorrectAnswers.length!==3)return false;if(text.length<12||text.length>500)return false;return !BLOCKED_TERMS.some(term=>text.includes(term));}
 function firestoreString(value){return{stringValue:String(value??'')}}
 function firestoreBool(value){return{booleanValue:!!value}}
-function firestoreFields(item){return{question:firestoreString(item.question),options:{mapValue:{fields:{A:firestoreString(item.options.A),B:firestoreString(item.options.B),C:firestoreString(item.options.C),D:firestoreString(item.options.D)}}},answer:firestoreString(item.answer),analytic:firestoreString(item.analytic||''),category:firestoreString(item.category||'一般常識'),difficulty:firestoreString(item.difficulty||'medium'),source:firestoreString(item.source),sourceId:firestoreString(item.sourceId||''),enabled:firestoreBool(true),createdBy:firestoreString(item.createdBy),createdAt:{timestampValue:new Date().toISOString()}}}
+function firestoreFields(item){return{question:firestoreString(item.question),options:{mapValue:{fields:{A:firestoreString(item.options.A),B:firestoreString(item.options.B),C:firestoreString(item.options.C),D:firestoreString(item.options.D)}}},answer:firestoreString(item.answer),analytic:firestoreString(item.analytic||''),category:firestoreString(item.category||'一般常識'),difficulty:firestoreString(item.difficulty||'medium'),source:firestoreString(item.source),sourceId:firestoreString(item.sourceId||''),enabled:firestoreBool(item.enabled!==false),createdBy:firestoreString(item.createdBy),createdAt:{timestampValue:new Date().toISOString()}}}
 function fieldValue(document,name){return document?.fields?.[name]?.stringValue||'';}
 
 async function authenticateManager(request){
@@ -47,15 +47,35 @@ async function listExistingQuestions(token){
 }
 async function writeBankItems(token,uid,items){
   if(!items.length)return;
-  const writes=items.map(item=>{const id=`quiz_${item.source.replace(/[^a-z0-9]+/gi,'_')}_${hash(`${item.sourceId}|${item.question}`)}`;return{update:{name:`projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/quizBank/${id}`,fields:firestoreFields({...item,createdBy:uid})}};});
-  const response=await fetch(`https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents:commit`,{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${token}`},body:JSON.stringify({writes})});if(!response.ok){const error=await response.json();throw new Error(error?.error?.message||'題庫寫入失敗');}
+  for(let start=0;start<items.length;start+=400){
+    const writes=items.slice(start,start+400).map(item=>{const id=`quiz_${item.source.replace(/[^a-z0-9]+/gi,'_')}_${hash(`${item.sourceId}|${item.question}`)}`;return{update:{name:`projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/quizBank/${id}`,fields:firestoreFields({...item,createdBy:uid})}};});
+    const response=await fetch(`https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents:commit`,{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${token}`},body:JSON.stringify({writes})});if(!response.ok){const error=await response.json();throw new Error(error?.error?.message||'題庫寫入失敗');}
+  }
+}
+function normaliseUploadedItems(rawItems){
+  if(!Array.isArray(rawItems)||!rawItems.length||rawItems.length>1200)throw new Error('JSON 題庫需包含 1～1200 題。');
+  return rawItems.map((item,index)=>{
+    const question=String(item?.question||'').trim(),rawOptions=Array.isArray(item?.options)?item.options:[];
+    if(!question||rawOptions.length!==4)throw new Error(`第 ${index+1} 題格式不正確：必須有題目與四個選項。`);
+    const optionValues=rawOptions.map(value=>String(value||'').trim());
+    if(optionValues.some(value=>!value)||new Set(optionValues).size!==4)throw new Error(`第 ${index+1} 題的四個選項不可空白或重複。`);
+    const rawAnswer=String(item?.answer||'').trim(),letter=['A','B','C','D'].includes(rawAnswer)?rawAnswer:['A','B','C','D'][optionValues.indexOf(rawAnswer)];
+    if(!letter)throw new Error(`第 ${index+1} 題的答案不在四個選項中。`);
+    return{question,options:{A:optionValues[0],B:optionValues[1],C:optionValues[2],D:optionValues[3]},answer:letter,analytic:String(item.explanation||item.analytic||'').trim(),category:String(item.category||'一般常識').trim(),difficulty:['easy','medium','hard'].includes(item.difficulty)?item.difficulty:'medium',source:'uploaded-json',sourceId:String(item.id||`row-${index+1}`),enabled:item.enabled!==false};
+  });
 }
 
 export default async function handler(request,response){
   if(request.method!=='POST')return response.status(405).json({message:'Method not allowed'});
-  if(!process.env.OPENAI_API_KEY)return response.status(503).json({message:'翻譯服務尚未設定。'});
   try{
-    const {token,uid}=await authenticateManager(request);const batchSize=Math.max(3,Math.min(15,Number(request.body?.batchSize)||10));
+    const {token,uid}=await authenticateManager(request);
+    if(Array.isArray(request.body?.items)){
+      const existing=new Set(await listExistingQuestions(token)),uploaded=normaliseUploadedItems(request.body.items),unique=[],seen=new Set(existing);
+      for(const item of uploaded){const key=normalise(item.question);if(!key||seen.has(key))continue;seen.add(key);unique.push(item);}
+      await writeBankItems(token,uid,unique);return response.status(200).json({added:unique.length,skipped:uploaded.length-unique.length,total:existing.size+unique.length});
+    }
+    if(!process.env.OPENAI_API_KEY)return response.status(503).json({message:'翻譯服務尚未設定。'});
+    const batchSize=Math.max(3,Math.min(15,Number(request.body?.batchSize)||10));
     const existing=new Set(await listExistingQuestions(token));const candidates=(await fetchTriviaCandidates()).filter(item=>!existing.has(normalise(item.question)));
     const translated=await translateCandidates(candidates,batchSize);const unique=[];const seen=new Set(existing);
     for(const item of translated){const key=normalise(item.question);if(!key||seen.has(key))continue;seen.add(key);unique.push(item);if(unique.length>=batchSize)break;}
