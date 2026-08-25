@@ -178,8 +178,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .design-tbl td.empty-cell{background:#fff8f8}
 
 /* Week view */
-.wctrl{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-bottom:1rem;gap:8px}
-.wctrl>.seg{grid-column:2}.wctrl>.nav-row{grid-column:3;justify-self:end}
+.wctrl{display:grid;grid-template-columns:335px auto 1fr;grid-template-rows:45px auto;align-items:end;margin-bottom:1rem;gap:8px}
+.wctrl>.formula-bar{grid-column:1;grid-row:2;margin-bottom:0}.wctrl>.seg{grid-column:2;grid-row:2}.wctrl>.nav-row{grid-column:3;grid-row:2;justify-self:end}
 .seg{display:flex;gap:2px;background:var(--border);border-radius:var(--r);padding:2px}
 .seg button{padding:5px 12px;font-size:12px;border:none;background:none;cursor:pointer;border-radius:6px;color:var(--text2);font-family:inherit;font-weight:500}
 .seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
@@ -405,6 +405,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
   #panel-progress .progress-main{width:100%;min-width:0}
   #panel-progress .progress-sticky-board{position:static!important;top:auto!important}
   #panel-progress .wctrl{display:flex;justify-content:flex-start;gap:10px;margin-bottom:12px}
+  #panel-progress .wctrl>.formula-bar,#panel-progress .wctrl>.seg,#panel-progress .wctrl>.nav-row{transform:none}
   #panel-progress .seg{width:100%;flex-wrap:wrap;background:transparent;padding:0;gap:6px}
   #panel-progress .seg button{flex:1 1 calc(50% - 3px);min-height:40px;padding:8px 10px;border:1px solid var(--border);background:var(--surface);font-size:13px}
   #panel-progress .seg button.on{border-color:var(--purple);background:var(--pl)}
@@ -735,7 +736,7 @@ window.dailyMemberDrop=async function(e,targetUid){
   if(!S.globalNotes)S.globalNotes={};
   S.globalNotes.dailyLogMemberOrder={order:members.map(m=>m.uid)};
   setSyncing();
-  await setDoc(doc(db,'globalNotes','dailyLogMemberOrder'),S.globalNotes.dailyLogMemberOrder);
+  await setDoc(doc(db,'globalNotes','dailyLogMemberOrder'),{...S.globalNotes.dailyLogMemberOrder,uid:currentUser.uid});
   setSynced();
   if(activePanel==='progress')renderProgress();
 };
@@ -5145,9 +5146,12 @@ window.formulaBarSave=async function(){
 }
 
 // Date color picker
+function defaultDateDayType(ds){const day=new Date(ds+'T00:00:00').getDay();return day===0||day===6?'holiday':'work';}
+function dateDayType(ds){const type=S.dateColors[ds]?.dayType;return type==='holiday'||type==='work'?type:defaultDateDayType(ds);}
 window.openDateColorPicker=function(ds){
   if(!isAdmin())return;
   var dc=S.dateColors[ds]||{};
+  var dayType=dateDayType(ds);
   $('mo-content').innerHTML=`<div class="mo-title">${ds.slice(5).replace('-','/')} 日期設定</div>
     <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
       <div>
@@ -5166,18 +5170,26 @@ window.openDateColorPicker=function(ds){
         <div style="font-size:12px;color:var(--text2);margin-bottom:6px">備註（如：中秋節、補班日）</div>
         <input type="text" id="dcp-note" value="${dc.note||''}" placeholder="可不填">
       </div>
+      <div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px">日期類型（六、日預設休假；一至五預設工作）</div>
+        <input type="hidden" id="dcp-day-type" value="${dayType}">
+        <div style="display:flex;gap:7px">
+          ${[{v:'work',l:'工作日'},{v:'holiday',l:'休假日'}].map(type=>`<button type="button" class="btn btn-sm ${dayType===type.v?'btn-p':''}" data-dcp-day-type="${type.v}" onclick="document.getElementById('dcp-day-type').value='${type.v}';document.querySelectorAll('[data-dcp-day-type]').forEach(el=>el.classList.toggle('btn-p',el.dataset.dcpDayType==='${type.v}'))">${type.l}</button>`).join('')}
+        </div>
+      </div>
     </div>
     <div class="mo-footer">
-      <button class="btn btn-danger btn-sm" onclick="saveDateColor('${ds}','','')">清除</button>
+      <button class="btn btn-danger btn-sm" onclick="saveDateColor('${ds}','','',defaultDateDayType('${ds}'))">清除</button>
       <button class="btn" onclick="closeMo()">取消</button>
-      <button class="btn btn-p" onclick="saveDateColor('${ds}',document.getElementById('dcp-color').value,document.getElementById('dcp-note').value)">儲存</button>
+      <button class="btn btn-p" onclick="saveDateColor('${ds}',document.getElementById('dcp-color').value,document.getElementById('dcp-note').value,document.getElementById('dcp-day-type').value)">儲存</button>
     </div>`;
   $('modal').style.display='flex';
 }
-window.saveDateColor=async function(ds,color,note){
+window.saveDateColor=async function(ds,color,note,dayType){
   var colors=Object.assign({},S.dateColors);
-  if(!color&&!note){delete colors[ds];}
-  else{colors[ds]={color:color||'',note:note||''};}
+  var type=dayType==='holiday'||dayType==='work'?dayType:defaultDateDayType(ds);
+  if(!color&&!note&&type===defaultDateDayType(ds)){delete colors[ds];}
+  else{colors[ds]={color:color||'',note:note||'',dayType:type};}
   S.dateColors=colors;
   setSyncing();
   await setDoc(doc(db,'settings','dateColors'),{colors});
