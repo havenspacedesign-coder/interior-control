@@ -1671,7 +1671,8 @@ function renderSiteReport(projId){
             const st=stored[i]||{};
             const icon=st.done?'✓':(st.skip?'✗':'○');
             const color=st.done?'var(--teal)':'var(--text3)';
-            return`<div style="font-size:12px;padding:3px 0 3px ${m.isSub?'26px':'0'};display:flex;gap:6px"><span style="color:${color};font-weight:600;width:14px">${icon}</span>${m.isSub?'└ ':''}${m.text}</div>`;
+            const depth=m.depth||(m.isSub?1:0);
+            return`<div style="font-size:12px;padding:3px 0 3px ${depth*26}px;display:flex;gap:6px"><span style="color:${color};font-weight:600;width:14px">${icon}</span>${depth>0?'└ ':''}${m.text}</div>`;
           }).join('')}
         </div>`;
       }).join('');
@@ -1878,7 +1879,7 @@ function renderDesignCell(p,col){
     return`<td style="text-align:center">
       <div style="display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;padding:3px">
         ${selectedMembers.map(m=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:12px;font-size:12px">${memberDisplayName(m)}<span onclick="dcToggleMember('${p.id}','${colKey}','${m.uid}',false)" style="cursor:pointer;font-weight:700">×</span></span>`).join('')}
-        <span class="task-tag-btn" onmouseenter="dcOpenPicker(event,'${p.id}','${colKey}')" onmouseleave="dcScheduleClose('${p.id}','${colKey}')" style="font-size:11px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:9px;padding:2px 8px">+ 標記</span>
+        <span class="task-tag-btn" aria-label="標記人員" title="標記人員" onmouseenter="dcOpenPicker(event,'${p.id}','${colKey}')" onmouseleave="dcScheduleClose('${p.id}','${colKey}')" style="width:20px;height:20px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px;font-size:14px;line-height:1;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:50%;padding:0">+</span>
       </div>
       <div class="pn-mention-menu" id="dc-mention-${p.id}-${colKey}" style="display:none" onmouseenter="mCancelCloseMention()" onmouseleave="dcScheduleClose('${p.id}','${colKey}')"></div>
     </td>`;
@@ -1996,8 +1997,17 @@ window.dcOpenPicker=function(e,projId,colName){
   const menuEl=document.getElementById('dc-mention-'+projId+'-'+colName);
   if(!menuEl)return;
   const rect=e.currentTarget.getBoundingClientRect();
-  menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:160px;max-height:220px;overflow-y:auto;padding:4px 0';
+  menuEl.style.cssText='display:block;position:fixed;top:0;left:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:9999;min-width:160px;max-height:220px;overflow-y:auto;padding:4px 0';
   dcRenderMemberPicker(projId,colName);
+  const gap=4,edge=8;
+  const menuRect=menuEl.getBoundingClientRect();
+  const left=Math.max(edge,Math.min(rect.left,window.innerWidth-menuRect.width-edge));
+  const below=rect.bottom+gap;
+  const top=below+menuRect.height<=window.innerHeight-edge
+    ?below
+    :Math.max(edge,rect.top-menuRect.height-gap);
+  menuEl.style.left=left+'px';
+  menuEl.style.top=top+'px';
 }
 function dcRenderMemberPicker(projId,colName){
   const menuEl=document.getElementById('dc-mention-'+projId+'-'+colName);if(!menuEl)return;
@@ -4082,7 +4092,7 @@ window.openCheckMo=function(projId,stage,label,projName){
   if(!metaItems.length){alert('此階段尚無項目');return;}
   const isEstimate=!!(S.bible[stage]&&S.bible[stage].isEstimate);
   const key=`${projId}_${stage}`;const stored=S.checks[key]||[];
-  const merged=metaItems.map((m,i)=>({text:m.text,isSub:m.isSub,done:stored[i]?.done||false,skip:stored[i]?.skip||false,amount:stored[i]?.amount||''}));
+  const merged=metaItems.map((m,i)=>({text:m.text,depth:m.depth,isSub:m.isSub,done:stored[i]?.done||false,skip:stored[i]?.skip||false,amount:stored[i]?.amount||''}));
   const done=merged.filter(x=>x.done||x.skip).length;const pct=Math.round(done/merged.length*100);
   const totalAmount=merged.reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
   const bData=projectBibleData(proj,stage);
@@ -4232,7 +4242,7 @@ function renderBibleWorksite(stage){
     const metaItems=getAllBibleItemsMeta(s);
     if(!metaItems.length)return'';
     const key=`${activeBibleWs}_${s}`;const stored=S.checks[key]||[];
-    const merged=metaItems.map((m,i)=>({text:m.text,isSub:m.isSub,done:stored[i]?.done||false,skip:stored[i]?.skip||false}));
+    const merged=metaItems.map((m,i)=>({text:m.text,depth:m.depth,isSub:m.isSub,done:stored[i]?.done||false,skip:stored[i]?.skip||false}));
     return`<div class="bible-worksite-stage" data-worksite-stage="${escAttr(s)}" style="margin-top:16px">
       <div style="font-size:13px;font-weight:600;margin-bottom:6px">${displayStageName(s)}</div>
       ${merged.map((item,i)=>renderCheckItemRow(activeBibleWs,s,i,item)).join('')}
