@@ -723,7 +723,7 @@ function markableMembersList(){return activeMembersList().filter(m=>m.role!=='ma
 function dailyLogMembersList(){return markableMembersList();}
 function orderedDailyLogMembers(){
   const members=dailyLogMembersList();
-  const saved=Array.isArray(S.globalNotes&&S.globalNotes.dailyLogMemberOrder&&S.globalNotes.dailyLogMemberOrder.order)?S.globalNotes.dailyLogMemberOrder.order:[];
+  const saved=dailyLogMemberOrder;
   const rank=new Map(saved.map((uid,i)=>[uid,i]));
   return members.slice().sort((a,b)=>{
     const ar=rank.has(a.uid)?rank.get(a.uid):Number.MAX_SAFE_INTEGER;
@@ -731,23 +731,23 @@ function orderedDailyLogMembers(){
     return ar-br;
   });
 }
+let dailyLogMemberOrder=[];
 let dailyMemberDragUid=null;
 window.dailyMemberDragStart=function(e,uid){
-  if(currentRole!=='manager'){e.preventDefault();return;}
+  if(!isAdmin()){e.preventDefault();return;}
   dailyMemberDragUid=uid;e.dataTransfer.effectAllowed='move';
 };
-window.dailyMemberDragOver=function(e){if(currentRole==='manager'&&dailyMemberDragUid){e.preventDefault();e.dataTransfer.dropEffect='move';}};
+window.dailyMemberDragOver=function(e){if(isAdmin()&&dailyMemberDragUid){e.preventDefault();e.dataTransfer.dropEffect='move';}};
 window.dailyMemberDrop=async function(e,targetUid){
   e.preventDefault();
-  if(currentRole!=='manager'||!dailyMemberDragUid||dailyMemberDragUid===targetUid)return;
+  if(!isAdmin()||!dailyMemberDragUid||dailyMemberDragUid===targetUid)return;
   const members=orderedDailyLogMembers();
   const from=members.findIndex(m=>m.uid===dailyMemberDragUid),to=members.findIndex(m=>m.uid===targetUid);
   if(from<0||to<0)return;
   const moved=members.splice(from,1)[0];members.splice(to,0,moved);dailyMemberDragUid=null;
-  if(!S.globalNotes)S.globalNotes={};
-  S.globalNotes.dailyLogMemberOrder={order:members.map(m=>m.uid)};
+  dailyLogMemberOrder=members.map(m=>m.uid);
   setSyncing();
-  await setDoc(doc(db,'globalNotes','dailyLogMemberOrder'),{...S.globalNotes.dailyLogMemberOrder,uid:currentUser.uid});
+  await setDoc(doc(db,'globalNotes','dailyLogMemberOrder'),{order:dailyLogMemberOrder,uid:currentUser.uid,updatedAt:serverTimestamp()},{merge:true});
   setSynced();
   if(activePanel==='progress')renderProgress();
 };
@@ -1147,6 +1147,10 @@ function initListeners(){
   onSnapshot(collection(db,'meetingLogs'),snap=>{
     S.meetingLogs={};
     snap.docs.forEach(d=>{S.meetingLogs[d.id]=d.data();});
+    if(activePanel==='progress')renderProgress();
+  });
+  onSnapshot(doc(db,'globalNotes','dailyLogMemberOrder'),snap=>{
+    dailyLogMemberOrder=snap.exists()&&Array.isArray(snap.data().order)?snap.data().order:[];
     if(activePanel==='progress')renderProgress();
   });
   onSnapshot(
@@ -2463,7 +2467,7 @@ function renderDailyLogSection(days){
       <colgroup><col style="width:200px">${days.map(()=>'<col style="width:180px">').join('')}</colgroup>
       <tbody>
       ${activeMembers.map(m=>`<tr>
-        <td class="log-name-cell ${currentRole==='manager'?'daily-member-draggable':''}" ${currentRole==='manager'?`draggable="true" ondragstart="dailyMemberDragStart(event,'${m.uid}')" ondragover="dailyMemberDragOver(event)" ondrop="dailyMemberDrop(event,'${m.uid}')"`:''} title="${currentRole==='manager'?'管理員可拖曳調整順序':''}"><div class="daily-member-name"><span>${memberDisplayName(m)}</span></div></td>
+        <td class="log-name-cell ${isAdmin()?'daily-member-draggable':''}" ${isAdmin()?`draggable="true" ondragstart="dailyMemberDragStart(event,'${m.uid}')" ondragover="dailyMemberDragOver(event)" ondrop="dailyMemberDrop(event,'${m.uid}')"`:''} title="${isAdmin()?'管理員可拖曳調整順序':''}"><div class="daily-member-name"><span>${memberDisplayName(m)}</span></div></td>
         ${days.map(d=>renderDailyLogCell(m,d,td)).join('')}
       </tr>`).join('')}
       </tbody>
