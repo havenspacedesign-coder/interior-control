@@ -354,6 +354,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .mo-title{font-size:15px;font-weight:600;margin-bottom:4px}
 .mo-sub{font-size:12px;color:var(--text2);margin-bottom:12px}
 .mo-footer{margin-top:14px;display:flex;gap:8px;justify-content:flex-end}
+.mo-box.estimate-check-modal{height:88vh;overflow:hidden;padding:0;display:flex;flex-direction:column}
+.estimate-check-head{flex:none;padding:20px 20px 12px;background:var(--surface);border-bottom:1px solid var(--border);position:relative;z-index:2}
+.estimate-check-head .pb-wrap{margin-bottom:0}
+.estimate-check-list{flex:1;min-height:0;overflow-y:auto;padding:0 20px 20px}
 .mo-box.project-detail-modal{max-width:1000px;height:calc(100vh - 2rem);max-height:calc(100vh - 2rem);overflow:hidden;display:flex;flex-direction:column}
 .project-detail-grid{display:grid;grid-template-columns:370px minmax(0,1fr);gap:20px;margin-top:8px;flex:1;min-height:0}
 .project-detail-grid.has-design-progress{grid-template-columns:370px minmax(250px,1fr) minmax(180px,.7fr)}
@@ -461,6 +465,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
   #progress-bottom-hscroll{display:none!important}
   .mo{padding:12px;align-items:flex-start;overflow-y:auto}
   .mo-box{width:calc(100vw - 24px);max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);margin:auto 0}
+  .mo-box.estimate-check-modal{height:calc(100dvh - 24px)}
+  .estimate-check-head{padding:16px 14px 11px}
+  .estimate-check-list{padding:0 14px 14px}
   .mo-footer{position:sticky;bottom:-20px;padding:12px 0 0;background:var(--surface)}
 }
 .pb-wrap{background:var(--bg);border-radius:4px;height:4px;margin-bottom:12px}
@@ -4106,17 +4113,20 @@ window.openCheckMo=function(projId,stage,label,projName){
       itemsHtml+=renderCheckItemRow(projId,stage,i,merged[i],isEstimate);
     }
   });
-  $('mo-content').innerHTML=`
-    <div class="mo-title">${label}</div>
+  const oldScroll=$('mo-content').querySelector('.estimate-check-list')?.scrollTop||0;
+  $('mo-content').classList.toggle('estimate-check-modal',isEstimate);
+  const summary=`<div class="mo-title">${label}</div>
     <div class="mo-sub">${projName} — ${done}/${merged.length} 完成${isEstimate?`　｜　粗估總金額：<strong>${totalAmount.toLocaleString()}</strong>`:''}</div>
-    <div class="pb-wrap"><div class="pb-fill" style="width:${pct}%;background:${pct===100?'var(--teal)':'var(--purple)'}"></div></div>
-    ${itemsHtml}
-    <div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;
+    <div class="pb-wrap"><div class="pb-fill" style="width:${pct}%;background:${pct===100?'var(--teal)':'var(--purple)'}"></div></div>`;
+  $('mo-content').innerHTML=isEstimate
+    ?`<div class="estimate-check-head">${summary}</div><div class="estimate-check-list">${itemsHtml}<div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div></div>`
+    :`${summary}${itemsHtml}<div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;
+  if(isEstimate)$('mo-content').querySelector('.estimate-check-list').scrollTop=oldScroll;
   $('mo-content').style.maxWidth=isEstimate?'520px':'880px';
   $('modal').style.display='flex';
   openCheckMoArgs={projId,stage,label,projName};
 }
-window.closeMo=function(){$('modal').style.display='none';delete $('mo-content').dataset.lockBackdrop;openCheckMoArgs=null;$('mo-content').style.maxWidth='';$('mo-content').classList.remove('project-detail-modal','module-manager-modal','company-duty-settings','sticky-wall-modal');}
+window.closeMo=function(){$('modal').style.display='none';delete $('mo-content').dataset.lockBackdrop;openCheckMoArgs=null;$('mo-content').style.maxWidth='';$('mo-content').classList.remove('project-detail-modal','module-manager-modal','company-duty-settings','sticky-wall-modal','estimate-check-modal');}
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'&&$('modal').style.display==='flex'&&!$('mo-content').dataset.lockBackdrop){
     e.preventDefault();
