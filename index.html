@@ -140,6 +140,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .rr-toggle.on .rr-toggle-knob{transform:translateX(19px)}
 .rr-toggle-label{color:var(--text3);transition:.18s}
 .rr-toggle:not(.on) .rr-toggle-off,.rr-toggle.on .rr-toggle-on{color:var(--purple);font-weight:600}
+.mo-box.recurring-manager-modal{max-width:800px}
+.rr-manager-list{margin-top:12px;max-height:58vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.rr-manager-section{border:1px solid var(--border);border-radius:9px;overflow:hidden}
+.rr-manager-section-title{padding:9px 12px;background:var(--bg);font-size:13px;font-weight:600}
+.rr-manager-row{display:grid;grid-template-columns:minmax(120px,1.2fr) minmax(100px,.8fr) minmax(125px,.9fr) auto auto;align-items:center;gap:12px;padding:10px 12px;border-top:1px solid var(--border)}
+.rr-manager-name{min-width:0;font-size:13px;font-weight:600;overflow-wrap:anywhere}
+.rr-manager-info{font-size:12px;color:var(--text2);white-space:nowrap}
+.rr-manager-actions{display:flex;align-items:center;gap:6px}
+.rr-manager-empty{padding:15px;text-align:center;color:var(--text3);font-size:12px}
 
 /* Vendor information */
 .vendor-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-bottom:1rem}.vendor-head-info{grid-column:1}.vendor-tabs{grid-column:2;display:flex;gap:2px;background:var(--border);border-radius:var(--r);padding:2px}.vendor-head-actions{grid-column:3;justify-self:end}.vendor-tab{padding:6px 14px;border:0;background:transparent;border-radius:6px;color:var(--text2);cursor:pointer;font:500 13px inherit}.vendor-tab.on{background:var(--surface);color:var(--pd);box-shadow:0 1px 3px rgba(0,0,0,.08)}
@@ -468,6 +477,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
   .mo-box.estimate-check-modal{height:calc(100dvh - 24px)}
   .estimate-check-head{padding:16px 14px 11px}
   .estimate-check-list{padding:0 14px 14px}
+  .rr-manager-row{grid-template-columns:minmax(0,1fr) auto;gap:7px 10px}
+  .rr-manager-info{white-space:normal}
+  .rr-manager-row>.rr-toggle,.rr-manager-actions{justify-self:end}
   .mo-footer{position:sticky;bottom:-20px;padding:12px 0 0;background:var(--surface)}
 }
 .pb-wrap{background:var(--bg);border-radius:4px;height:4px;margin-bottom:12px}
@@ -3004,7 +3016,7 @@ window.saveTodoProjectPicker=async function(){
   closeMo();setSynced();
 }
 
-let recurringSyncRunning=false;
+let recurringSyncQueue=Promise.resolve();
 function recurringSchedules(){return Array.isArray(S.privateNotes?.recurringSchedules)?S.privateNotes.recurringSchedules:[];}
 function recurringMatches(rule,ds){
   const d=new Date(ds+'T00:00:00'),start=new Date(rule.startDate+'T00:00:00');
@@ -3016,7 +3028,7 @@ function recurringMatches(rule,ds){
   if(rule.frequency==='custom')return Math.floor((d-start)/86400000)%Math.max(1,Number(rule.intervalDays)||1)===0;
   return false;
 }
-async function syncRecurringRule(rule,removeOnly){
+async function syncRecurringRule(rule,removeOnly,throughDate){
   if(!currentUser)return;
   const td=today(),todayDs=fmtDay(td),pn=S.privateNotes||{work:{},personal:{}};
   const next=Object.assign({},pn,{work:Object.assign({},pn.work||{}),personal:Object.assign({},pn.personal||{})});
@@ -3031,6 +3043,7 @@ async function syncRecurringRule(rule,removeOnly){
   if(!removeOnly&&rule.enabled){
     const startFloor=[todayDs,rule.startDate,rule.enabledFrom||rule.startDate].sort().pop();
     const start=new Date(startFloor+'T00:00:00'),end=new Date(start);end.setDate(end.getDate()+120);
+    if(throughDate){const requestedEnd=new Date(throughDate+'T00:00:00');if(requestedEnd>end)end.setTime(requestedEnd.getTime());}
     if(rule.endDate&&new Date(rule.endDate+'T00:00:00')<end)end.setTime(new Date(rule.endDate+'T00:00:00').getTime());
     for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
       const ds=fmtDay(d);if(!recurringMatches(rule,ds))continue;
@@ -3044,9 +3057,11 @@ async function syncRecurringRule(rule,removeOnly){
   }
   if(changed){S.privateNotes=next;await setDoc(doc(db,'privateNotes',currentUser.uid),next);}
 }
-async function syncAllRecurringSchedules(){
-  if(recurringSyncRunning||!currentUser)return;recurringSyncRunning=true;
-  try{for(const rule of recurringSchedules())await syncRecurringRule(rule,!rule.enabled);}finally{recurringSyncRunning=false;}
+function syncAllRecurringSchedules(throughDate){
+  if(!currentUser)return Promise.resolve();
+  const run=async function(){for(const rule of recurringSchedules())await syncRecurringRule(rule,!rule.enabled,throughDate);};
+  recurringSyncQueue=recurringSyncQueue.then(run,run);
+  return recurringSyncQueue;
 }
 function recurringFreqLabel(r){
   if(r.frequency==='daily')return'每天';
@@ -3055,21 +3070,30 @@ function recurringFreqLabel(r){
   if(r.frequency==='yearly'){const p=(r.startDate||'').split('-');return`每年 ${Number(r.yearMonth||p[1])}/${Number(r.yearDay||p[2])}`;}
   return`每 ${r.intervalDays||1} 天`;
 }
+function recurringEndLabel(r){return r.endDate?`至 ${String(r.endDate).replace(/-/g,'/')}`:'無期限';}
+function recurringManagerSection(list,target,label){
+  const rows=list.filter(r=>r.target===target);
+  return`<section class="rr-manager-section"><div class="rr-manager-section-title">${label}</div>${rows.length?rows.map(r=>`<div class="rr-manager-row">
+    <div class="rr-manager-name">${escAttr(r.name)}</div>
+    <div class="rr-manager-info">重複：${recurringFreqLabel(r)}</div>
+    <div class="rr-manager-info">結束：${recurringEndLabel(r)}</div>
+    <button class="rr-toggle ${r.enabled?'on':''}" onclick="toggleRecurringRule('${r.id}')"><span class="rr-toggle-label rr-toggle-off">暫停</span><span class="rr-toggle-track"><span class="rr-toggle-knob"></span></span><span class="rr-toggle-label rr-toggle-on">啟動中</span></button>
+    <div class="rr-manager-actions">${recurringManageEditMode?`<button class="btn btn-sm" onclick="openRecurringForm('${r.id}')">編輯</button><button class="btn btn-sm btn-danger" onclick="deleteRecurringRule('${r.id}')">刪除</button>`:''}</div>
+  </div>`).join(''):'<div class="rr-manager-empty">尚無排程</div>'}</section>`;
+}
 let recurringManageEditMode=false;
 window.openRecurringManager=function(resetMode){
   if(resetMode===true)recurringManageEditMode=false;
   const list=recurringSchedules();
+  $('mo-content').classList.add('recurring-manager-modal');
   $('mo-content').innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><div class="mo-title">自動排程</div><button class="btn btn-sm" onclick="toggleRecurringManageEdit()">${recurringManageEditMode?'完成':'編輯'}</button></div><div class="mo-sub">自動產生至工地記事或私人記事；歷史與已完成項目不會被回頭修改。</div>
-    <div style="margin-top:12px;max-height:55vh;overflow-y:auto">${list.length?list.map(r=>`<div style="border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:7px;display:flex;align-items:center;gap:8px">
-      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${escAttr(r.name)}</div><div style="font-size:11px;color:var(--text2);margin-top:3px">${recurringFreqLabel(r)}・${r.target==='personal'?'私人記事':'工地記事'}</div></div>
-      <button class="rr-toggle ${r.enabled?'on':''}" onclick="toggleRecurringRule('${r.id}')"><span class="rr-toggle-label rr-toggle-off">暫停</span><span class="rr-toggle-track"><span class="rr-toggle-knob"></span></span><span class="rr-toggle-label rr-toggle-on">啟動中</span></button>
-      ${recurringManageEditMode?`<button class="btn btn-sm" onclick="openRecurringForm('${r.id}')">編輯</button><button class="btn btn-sm btn-danger" onclick="deleteRecurringRule('${r.id}')">刪除</button>`:''}
-    </div>`).join(''):'<div class="empty">尚未設定自動排程</div>'}</div>
+    <div class="rr-manager-list">${recurringManagerSection(list,'work','工地記事')}${recurringManagerSection(list,'personal','私人記事')}</div>
     <div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button><button class="btn btn-p" onclick="openRecurringForm()">＋自動排程</button></div>`;
   $('modal').style.display='flex';
 }
 window.toggleRecurringManageEdit=function(){recurringManageEditMode=!recurringManageEditMode;openRecurringManager();}
 window.openRecurringForm=function(id){
+  $('mo-content').classList.remove('recurring-manager-modal');
   const r=recurringSchedules().find(x=>x.id===id)||{name:'',frequency:'daily',weekday:1,monthDay:1,intervalDays:1,startDate:fmtDay(today()),endDate:'',note:'',enabled:true,target:'work'};
   $('mo-content').innerHTML=`<div class="mo-title">${id?'編輯':'新增'}自動排程</div><div style="margin-top:12px;display:flex;flex-direction:column;gap:9px">
     <input id="rr-name" type="text" placeholder="項目名稱" value="${escAttr(r.name)}">
@@ -4024,6 +4048,8 @@ window.removeEv=async function(projId,ds,ei){
   const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
   const dayEvs=(proj.schedule||[]).filter(e=>e.date===ds);
   const toRemove=dayEvs[ei];if(!toRemove)return;
+  const eventName=toRemove.label||toRemove.stage||'此工程排程';
+  if(!window.confirm(`確定要刪除「${eventName}」嗎？\n\n按 Enter 可確認刪除，按 Esc 可取消。`))return;
   const idx=(proj.schedule||[]).indexOf(toRemove);
   const ns=[...(proj.schedule||[]).slice(0,idx),...(proj.schedule||[]).slice(idx+1)];
   setSyncing();await updateDoc(doc(db,'projects',projId),{schedule:ns});setSynced();
@@ -4058,13 +4084,14 @@ window.openDatePicker=function(){
   try{p.showPicker();}catch(e){p.click();}
   p.onblur=()=>{p.style.cssText='position:fixed;opacity:0;pointer-events:none;width:0;height:0';}
 }
-window.jumpToDate=function(dateStr){
+window.jumpToDate=async function(dateStr){
   if(!dateStr)return;
   const target=new Date(dateStr+'T00:00:00');
   lastHScrollLeft=0;
   const base=today();
   monthOffset=(target.getFullYear()-base.getFullYear())*12+(target.getMonth()-base.getMonth());
   lastHScrollLeft=Math.max(0,(target.getDate()-3)*180);
+  await syncAllRecurringSchedules(fmtDay(new Date(target.getFullYear(),target.getMonth()+1,0)));
   renderProgress();
 }
 function renderDayView(){
@@ -4126,7 +4153,7 @@ window.openCheckMo=function(projId,stage,label,projName){
   $('modal').style.display='flex';
   openCheckMoArgs={projId,stage,label,projName};
 }
-window.closeMo=function(){$('modal').style.display='none';delete $('mo-content').dataset.lockBackdrop;openCheckMoArgs=null;$('mo-content').style.maxWidth='';$('mo-content').classList.remove('project-detail-modal','module-manager-modal','company-duty-settings','sticky-wall-modal','estimate-check-modal');}
+window.closeMo=function(){$('modal').style.display='none';delete $('mo-content').dataset.lockBackdrop;openCheckMoArgs=null;$('mo-content').style.maxWidth='';$('mo-content').classList.remove('project-detail-modal','module-manager-modal','company-duty-settings','sticky-wall-modal','estimate-check-modal','recurring-manager-modal');}
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'&&$('modal').style.display==='flex'&&!$('mo-content').dataset.lockBackdrop){
     e.preventDefault();
@@ -5123,9 +5150,11 @@ window.showProjectDetail=function(projId){
   $('modal').style.display='flex';
 }
 window.setCalMode=function(m){calMode=m==='week'?'month':m;lastHScrollLeft=0;renderProgress();}
-window.changePeriod=function(d){
+window.changePeriod=async function(d){
   monthOffset+=d;
   lastHScrollLeft=0;
+  const visibleDays=getWeekDates();
+  await syncAllRecurringSchedules(fmtDay(visibleDays[visibleDays.length-1]));
   renderProgress();
 }
 
