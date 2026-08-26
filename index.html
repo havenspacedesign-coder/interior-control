@@ -140,9 +140,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .rr-toggle.on .rr-toggle-knob{transform:translateX(19px)}
 .rr-toggle-label{color:var(--text3);transition:.18s}
 .rr-toggle:not(.on) .rr-toggle-off,.rr-toggle.on .rr-toggle-on{color:var(--purple);font-weight:600}
-.mo-box.recurring-manager-modal{max-width:800px}
-.rr-manager-list{margin-top:12px;max-height:58vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
-.rr-manager-section{border:1px solid var(--border);border-radius:9px;overflow:hidden}
+.mo-box.recurring-manager-modal{max-width:800px;height:min(88vh,720px);overflow:hidden;display:flex;flex-direction:column}
+.rr-manager-list{margin-top:12px;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-right:3px}
+.recurring-manager-modal>.mo-footer{flex:none;background:var(--surface)}
+.rr-manager-section{flex:none;border:1px solid var(--border);border-radius:9px;overflow:hidden}
 .rr-manager-section-title{padding:9px 12px;background:var(--bg);font-size:13px;font-weight:600}
 .rr-manager-row{display:grid;grid-template-columns:minmax(120px,1.2fr) minmax(100px,.8fr) minmax(125px,.9fr) auto auto;align-items:center;gap:12px;padding:10px 12px;border-top:1px solid var(--border)}
 .rr-manager-name{min-width:0;font-size:13px;font-weight:600;overflow-wrap:anywhere}
@@ -477,6 +478,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
   .mo-box.estimate-check-modal{height:calc(100dvh - 24px)}
   .estimate-check-head{padding:16px 14px 11px}
   .estimate-check-list{padding:0 14px 14px}
+  .mo-box.recurring-manager-modal{height:calc(100dvh - 24px)}
   .rr-manager-row{grid-template-columns:minmax(0,1fr) auto;gap:7px 10px}
   .rr-manager-info{white-space:normal}
   .rr-manager-row>.rr-toggle,.rr-manager-actions{justify-self:end}
@@ -3028,7 +3030,7 @@ function recurringMatches(rule,ds){
   if(rule.frequency==='custom')return Math.floor((d-start)/86400000)%Math.max(1,Number(rule.intervalDays)||1)===0;
   return false;
 }
-async function syncRecurringRule(rule,removeOnly,throughDate){
+async function syncRecurringRule(rule,removeOnly,throughDate,deferSave){
   if(!currentUser)return;
   const td=today(),todayDs=fmtDay(td),pn=S.privateNotes||{work:{},personal:{}};
   const next=Object.assign({},pn,{work:Object.assign({},pn.work||{}),personal:Object.assign({},pn.personal||{})});
@@ -3055,11 +3057,16 @@ async function syncRecurringRule(rule,removeOnly,throughDate){
       next[type][ds]=arr;changed=true;
     }
   }
-  if(changed){S.privateNotes=next;await setDoc(doc(db,'privateNotes',currentUser.uid),next);}
+  if(changed){S.privateNotes=next;if(!deferSave)await setDoc(doc(db,'privateNotes',currentUser.uid),next);}
+  return changed;
 }
 function syncAllRecurringSchedules(throughDate){
   if(!currentUser)return Promise.resolve();
-  const run=async function(){for(const rule of recurringSchedules())await syncRecurringRule(rule,!rule.enabled,throughDate);};
+  const run=async function(){
+    let changed=false;
+    for(const rule of recurringSchedules())changed=(await syncRecurringRule(rule,!rule.enabled,throughDate,true))||changed;
+    if(changed)await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+  };
   recurringSyncQueue=recurringSyncQueue.then(run,run);
   return recurringSyncQueue;
 }
