@@ -1333,7 +1333,7 @@ function homePack(modules){
   const placed=[];modules.slice().sort((a,b)=>a.y-b.y||a.x-b.x).forEach(m=>placed.push(homeCanPlace(m,placed)?{...m}:homeFindSpace(m,placed,0)));return placed;
 }
 function homeGridMetrics(){const grid=$('home-grid');if(!grid)return{unit:80,gap:8};const width=grid.clientWidth;return{unit:width/HOME_COLS,gap:8};}
-function stableHomeMembers(){const roleOrder={manager:0,admin:1,staff:2};return activeMembersList().slice().sort((a,b)=>(roleOrder[a.role]??3)-(roleOrder[b.role]??3));}
+function stableHomeMembers(){const roleOrder={admin:0,staff:1};return activeMembersList().filter(m=>m.role!=='manager').sort((a,b)=>(roleOrder[a.role]??2)-(roleOrder[b.role]??2));}
 function homeStickyModuleRect(module){const count=Math.max(1,stableHomeMembers().length),w=Math.max(3,Math.min(12,Math.round((Number(module.w)||3)/3)*3)),columns=Math.max(1,w/3),rows=Math.ceil(count/columns);return{w,h:rows+1,columns};}
 function homeDisplayModules(){
   const modules=activeHomeLayout().modules.map(m=>({...m,hidden:false}));
