@@ -734,7 +734,7 @@ const WORD_BIBLE_IMPORT = {"一、規劃平面配置圖前之會議": {"before":
 const STATUS_OPTS=[
   {v:'contact',l:'接洽中',bg:'#F1EFE8',color:'#6B6558'},
   {v:'cv',l:'客變案',bg:'#FCEBEB',color:'var(--red)'},
-  {v:'design',l:'設計中',bg:'#F0EDFB',color:'#4A3FA0'},
+  {v:'design',l:'設計中',bg:'var(--gl)',color:'var(--gd)'},
   {v:'prog',l:'施工中',bg:'var(--pl)',color:'var(--pd)'},
   {v:'done',l:'已完工',bg:'var(--gl)',color:'var(--gd)'},
 ];
@@ -1183,7 +1183,7 @@ function initListeners(){
   });
   onSnapshot(doc(db,'settings','designProjectOrder'),snap=>{
     designProjectOrder=snap.exists()?(snap.data().order||[]):[];
-    if(activePanel==='design')renderDesign();
+    if(activePanel==='design')renderDesign();else if(activePanel==='overview')renderOverview();else if(activePanel==='progress')renderProgress();
   });
   onSnapshot(doc(db,'settings','dateColors'),snap=>{
     S.dateColors=snap.exists()?(snap.data().colors||{}):{};
