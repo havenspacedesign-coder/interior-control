@@ -743,6 +743,8 @@ const STCS=["#3C3489","#085041","#633806","#791F1F","#0C447C","#27500A","#72243E
 function sc(i){return SCOLS[i%SCOLS.length]}function tc(i){return STCS[i%STCS.length]}
 function statusInfo(v){return STATUS_OPTS.find(o=>o.v===v)||STATUS_OPTS[0]}
 function isAdmin(){return currentRole==='admin'||currentRole==='manager'}
+function canEditProjects(role=currentRole){return role==='manager'||role==='admin'||role==='staff'}
+function canDeleteProjects(role=currentRole){return role==='manager'}
 function memberDisplayName(m){if(!m)return'成員';return m.displayName||m.name||(m.email?m.email.split('@')[0]:'成員');}
 function memberTag(m){if(!m)return'?';if(m.tagInitial)return m.tagInitial;return memberDisplayName(m).charAt(0);}
 function activeMembersList(){return S.members.filter(m=>(m.role==='admin'||m.role==='staff'||m.role==='manager')&&m.status!=='resigned');}
@@ -1710,11 +1712,11 @@ function renderOverview(){
       <div style="display:flex;align-items:center;gap:10px"><span class="card-title">${overviewStatusFilter?statusInfo(overviewStatusFilter).l+'案件':'所有案件'}</span>
         ${isAdmin()?`<button class="btn btn-p btn-sm" onclick="showAddProject()">＋ 新增案件</button>`:''}
       </div>
-      ${isAdmin()?`<button class="btn btn-sm" onclick="toggleOverviewEditMode()">${overviewEditMode?'完成':'編輯'}</button>`:''}
+      ${canEditProjects()?`<button class="btn btn-sm" onclick="toggleOverviewEditMode()">${overviewEditMode?'完成':'編輯'}</button>`:''}
     </div>
     ${shown.length===0?`<div class="empty">尚無案件</div>`:`
     <div style="overflow-x:auto"><table>
-      <thead><tr><th>案件名稱</th><th>狀態</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>完工日</th>${isAdmin()&&overviewEditMode?'<th>操作</th>':''}</tr></thead>
+      <thead><tr><th>案件名稱</th><th>狀態</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>完工日</th>${canEditProjects()&&overviewEditMode?'<th>操作</th>':''}</tr></thead>
       <tbody>${shown.map(p=>{
         const si=statusInfo(p.status);
         return`<tr>
@@ -1725,13 +1727,13 @@ function renderOverview(){
           <td>${p.owner||''}</td><td style="color:var(--text2)">${p.type||''}</td>
           <td>${p.designer||''}</td><td>${p.budget||''}</td>
           <td style="color:var(--text2)">${p.contractEnd||p.finish||''}</td>
-          ${isAdmin()&&overviewEditMode?`<td><button class="btn btn-sm" onclick="showEditProject('${p.id}')">編輯</button> <button class="btn btn-sm" onclick="deleteProject('${p.id}')">刪除</button></td>`:''}
+          ${canEditProjects()&&overviewEditMode?`<td><button class="btn btn-sm" onclick="showEditProject('${p.id}')">編輯</button>${canDeleteProjects()?` <button class="btn btn-sm" onclick="deleteProject('${p.id}')">刪除</button>`:''}</td>`:''}
         </tr>`;}).join('')}</tbody>
     </table></div>`}
   </div>`;
 }
 window.setOverviewFilter=function(v){overviewStatusFilter=overviewStatusFilter===v?null:v;renderOverview();}
-window.toggleOverviewEditMode=function(){overviewEditMode=!overviewEditMode;renderOverview();}
+window.toggleOverviewEditMode=function(){if(!canEditProjects())return;overviewEditMode=!overviewEditMode;renderOverview();}
 window.showSiteReport=function(id){overviewReportProjId=id;renderOverview();}
 window.closeSiteReport=function(){overviewReportProjId=null;renderOverview();}
 function renderSiteReport(projId){
@@ -4936,7 +4938,7 @@ window.showAddProject=function(){
   showProjectForm(null);
 }
 window.showEditProject=function(projId){
-  if(!isAdmin())return;
+  if(!canEditProjects())return;
   showProjectForm(projId);
 }
 function showProjectForm(projId){
@@ -4984,7 +4986,7 @@ function showProjectForm(projId){
   requestAnimationFrame(function(){const ta=$('np-process');if(ta)autoGrow(ta);});
 }
 window.saveProjectForm=async function(projId){
-  if(!isAdmin())return;
+  if(projId?!canEditProjects():!isAdmin())return;
   const name=$('np-name').value.trim();if(!name)return alert('請填寫案件名稱');
   const contractStart=ymdValue('np-cs');
   const contractEnd=ymdValue('np-ce');
@@ -5019,7 +5021,7 @@ window.saveProjectForm=async function(projId){
   closeMo();setSynced();
 }
 window.deleteProject=async function(id){
-  if(!isAdmin())return;if(!confirm('確定刪除？'))return;
+  if(!canDeleteProjects())return;if(!confirm('確定刪除？'))return;
   await deleteDoc(doc(db,'projects',id));
 }
 function projectTradeSummary(projectId){
@@ -5192,7 +5194,7 @@ window.showProjectDetail=function(projId){
   const photoPanel=`<section class="project-photo-panel">
       <div class="project-photo-head"><span>📷 案件照片 <span class="help-wrap project-photo-help"><button class="help-btn" type="button" aria-label="案件照片操作說明" onclick="toggleHelpPop(event,'project-photo-help')">?</button><span class="help-pop" id="project-photo-help" onclick="event.stopPropagation()"><ul><li>勾選一張照片後，才能使用單張複製。</li><li>一次僅能選取一張照片。</li><li>分享照片（合成）會將全部照片排成一張。</li></ul></span></span>（${photos.length}）</span></div>
       ${photos.length?`<div class="project-photo-grid">${photos.map(photo=>`<div class="project-photo-card"><input class="project-photo-select" type="checkbox" aria-label="選取 ${escAttr(photo.name||'案件照片')}" ${selectedProjectDetailPhotoId===photo.id?'checked':''} ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoId!==photo.id?'disabled':''} onchange="setProjectDetailPhoto('${p.id}','${photo.id}',this.checked)"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
-      <div class="project-share-row"><div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotoCollage('${p.id}')">分享照片（合成）</button><button class="btn btn-sm" onclick="copySelectedProjectPhoto('${p.id}')" ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoBlob?'':'disabled'}>單張複製</button></div><div class="project-detail-actions">${isAdmin()?`<button class="btn" onclick="showEditProject('${p.id}')">編輯</button>`:''}<button class="btn" onclick="closeMo()">關閉</button></div></div>
+      <div class="project-share-row"><div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotoCollage('${p.id}')">分享照片（合成）</button><button class="btn btn-sm" onclick="copySelectedProjectPhoto('${p.id}')" ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoBlob?'':'disabled'}>單張複製</button></div><div class="project-detail-actions">${canEditProjects()?`<button class="btn" onclick="showEditProject('${p.id}')">編輯</button>`:''}<button class="btn" onclick="closeMo()">關閉</button></div></div>
     </section>`;
   function row(label,val){
     return`<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
