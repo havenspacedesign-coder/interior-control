@@ -5056,7 +5056,9 @@ window.saveProjectForm=async function(projId){
   if(projId){
     await updateDoc(doc(db,'projects',projId),data);
   }else{
-    await addDoc(collection(db,'projects'),Object.assign({},data,{schedule:[],designProgress:{},createdAt:serverTimestamp()}));
+    const created=await addDoc(collection(db,'projects'),Object.assign({},data,{schedule:[],designProgress:{},createdAt:serverTimestamp()}));
+    const order=[created.id,...sortDesignProjs(S.projects).map(p=>p.id).filter(id=>id!==created.id)];designProjectOrder=order;
+    await setDoc(doc(db,'settings','designProjectOrder'),{order});
   }
   closeMo();setSynced();
 }
