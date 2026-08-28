@@ -3099,6 +3099,10 @@ window.saveTodoProjectPicker=async function(){
 
 let recurringSyncQueue=Promise.resolve();
 function recurringSchedules(){return Array.isArray(S.privateNotes?.recurringSchedules)?S.privateNotes.recurringSchedules:[];}
+function recurringSyncThroughDate(baseDate=today()){
+  const base=new Date(baseDate);
+  return fmtDay(new Date(base.getFullYear()+1,11,31));
+}
 function recurringMatches(rule,ds){
   const d=new Date(ds+'T00:00:00'),start=new Date(rule.startDate+'T00:00:00');
   if(ds<rule.startDate||rule.endDate&&ds>rule.endDate)return false;
@@ -3141,6 +3145,8 @@ async function syncRecurringRule(rule,removeOnly,throughDate,deferSave){
 }
 function syncAllRecurringSchedules(throughDate){
   if(!currentUser)return Promise.resolve();
+  const yearlyThrough=recurringSyncThroughDate();
+  if(!throughDate||throughDate<yearlyThrough)throughDate=yearlyThrough;
   const run=async function(){
     let changed=false;
     for(const rule of recurringSchedules())changed=(await syncRecurringRule(rule,!rule.enabled,throughDate,true))||changed;
@@ -3212,9 +3218,9 @@ window.saveRecurringRule=async function(){
   const endDate=$('rr-end-mode').value==='limited'?$('rr-end').value:'';if($('rr-end-mode').value==='limited'&&!endDate)return alert('請選擇結束日期');
   const id=$('rr-id').value||('rr'+Date.now()),old=recurringSchedules().find(x=>x.id===id),enabled=$('rr-enabled').value==='1';
   const rule={id,name,target:$('rr-target').value,frequency:$('rr-frequency').value,weekday:Number($('rr-weekday-value').value||old?.weekday||1),monthDay:Number($('rr-monthday')?.value||old?.monthDay||1),intervalDays:Number($('rr-interval')?.value||old?.intervalDays||1),yearMonth:Number($('rr-yearmonth')?.value||old?.yearMonth||1),yearDay:Number($('rr-yearday')?.value||old?.yearDay||1),startDate,endDate,note:$('rr-note').value.trim(),enabled,enabledFrom:enabled&&(!old||!old.enabled)?fmtDay(today()):(old?.enabledFrom||startDate)};
-  const list=recurringSchedules().filter(x=>x.id!==id);list.push(rule);S.privateNotes.recurringSchedules=list;await syncRecurringRule(rule,!enabled);await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);openRecurringManager();
+  const list=recurringSchedules().filter(x=>x.id!==id);list.push(rule);S.privateNotes.recurringSchedules=list;await syncRecurringRule(rule,!enabled,recurringSyncThroughDate());await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);openRecurringManager();
 }
-window.toggleRecurringRule=async function(id){const list=recurringSchedules(),r=list.find(x=>x.id===id);if(!r)return;r.enabled=!r.enabled;if(r.enabled)r.enabledFrom=fmtDay(today());S.privateNotes.recurringSchedules=list;await syncRecurringRule(r,!r.enabled);await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);openRecurringManager();}
+window.toggleRecurringRule=async function(id){const list=recurringSchedules(),r=list.find(x=>x.id===id);if(!r)return;r.enabled=!r.enabled;if(r.enabled)r.enabledFrom=fmtDay(today());S.privateNotes.recurringSchedules=list;await syncRecurringRule(r,!r.enabled,recurringSyncThroughDate());await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);openRecurringManager();}
 window.deleteRecurringRule=async function(id){const r=recurringSchedules().find(x=>x.id===id);if(!r||!confirm('刪除排程設定？過去與已完成項目會保留。'))return;await syncRecurringRule(r,true);S.privateNotes.recurringSchedules=recurringSchedules().filter(x=>x.id!==id);await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);openRecurringManager();}
 
 function renderPrivateTodoSection(){
