@@ -79,6 +79,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sticky-wall{width:100%;display:flex;flex-direction:column;text-align:left;color:var(--text2)}.sticky-wall-preview,.sticky-wall-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));grid-auto-rows:100px;gap:12px;width:100%;overflow:visible;padding:3px}.sticky-note{position:relative;width:100%;height:100px;min-width:200px;padding:8px 10px;box-sizing:border-box;border-radius:3px 8px 6px 4px;background:#fff2a8;box-shadow:0 2px 5px rgba(75,61,23,.16);transform:rotate(-.35deg);display:flex;flex-direction:column;overflow:hidden}.sticky-note:nth-child(2n){background:#dff3df;transform:rotate(.35deg)}.sticky-note:nth-child(3n){background:#e6e1fa;transform:rotate(-.2deg)}.sticky-note.own-note{cursor:pointer}.sticky-note.own-note:hover{outline:2px solid rgba(92,83,174,.28);outline-offset:1px}.sticky-note-head{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex:none}.sticky-note-avatar{width:20px;height:20px;border-radius:50%;object-fit:cover;background:#fff}.sticky-note-avatar-fallback{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--pd)}.sticky-note-name{font-weight:600;color:var(--text);font-size:11px}.sticky-note-text{color:var(--text);font-size:12px;line-height:1.35;white-space:pre-wrap;overflow-wrap:anywhere;height:48px;min-height:48px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}.sticky-note-time{display:none}.sticky-wall-actions{display:flex;justify-content:flex-end;margin-top:9px}.sticky-wall-actions .btn{font-size:10px;padding:3px 7px}.sticky-wall-modal{max-width:920px!important}.sticky-wall-grid{margin-top:10px}.sticky-wall-editor{margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:9px;background:var(--bg)}.sticky-wall-editor textarea{width:100%;min-height:76px;resize:vertical;box-sizing:border-box;padding:9px;border:1px solid var(--border);border-radius:7px;font:inherit}.sticky-wall-editor-foot{display:flex;align-items:center;gap:7px;margin-top:7px}.sticky-wall-count{margin-right:auto;color:var(--text3);font-size:11px}.sticky-note-admin{position:absolute;right:6px;top:6px;border:0;background:rgba(255,255,255,.65);border-radius:5px;padding:2px 5px;cursor:pointer;font-size:10px}
 .sticky-wall-editor{width:280px;min-height:190px;margin:14px auto 0;padding:14px;box-sizing:border-box;border:0;border-radius:3px 9px 6px 4px;background:#fff2a8;color:var(--sticky-text,#202124);box-shadow:0 3px 9px rgba(75,61,23,.18)}.sticky-wall-editor textarea{min-height:88px;resize:none;border-color:rgba(80,66,28,.18);background:rgba(255,255,255,.35);color:inherit}.sticky-wall-editor-foot{gap:6px;flex-wrap:wrap}.sticky-note-format{display:flex;align-items:center;margin:7px 0}.sticky-note-name,.sticky-note-text,.sticky-note-time{color:var(--sticky-text,var(--text))}.sticky-note-time{opacity:.58}.project-form-pair,.project-form-title{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center}.project-form-title{box-sizing:border-box;padding-right:15px}.project-form-title .mo-title{margin:0}.project-ymd-fields{display:flex;align-items:center;gap:4px}.project-ymd-fields input{box-sizing:border-box;width:auto;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;background:var(--surface);color:var(--text)}.project-ymd-fields .project-year{width:64px}.project-ymd-fields .project-month,.project-ymd-fields .project-day{width:46px}.project-budget-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center}.project-budget-field{position:relative;display:block}.project-budget-field input{box-sizing:border-box;width:100%;padding-right:28px}.project-budget-unit{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text2);pointer-events:none}.project-budget-options{display:flex;align-items:center;gap:14px;color:var(--text2);font-size:12px;white-space:nowrap}.project-budget-options label{display:flex;align-items:center;gap:5px;cursor:pointer}.project-number-input{box-sizing:border-box;width:100%;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;background:var(--surface);color:var(--text)}.project-panorama-link{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid #c9c4ed;border-radius:7px;background:var(--pl);color:var(--pd);font-size:12px;font-weight:600;text-decoration:none}.project-panorama-link:hover{background:#e6e1fa}@media(max-width:600px){.project-form-pair,.project-form-title,.project-budget-row{grid-template-columns:1fr}.project-form-title{padding-right:0}.project-budget-options{min-height:33px}.sticky-wall-editor{width:min(280px,100%)}}
 #panel-home .home-module[data-home-type="message-board"] .home-module-body{align-items:flex-start;justify-content:flex-start;padding:8px;overflow:visible}
+.project-ymd-fields .project-year{width:54px}.project-ymd-fields .project-month,.project-ymd-fields .project-day{width:36px}
+.mo-box.project-form-modal{max-width:500px}.project-type-pair,.project-date-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}.project-date-pair>div{min-width:0}@media(max-width:600px){.project-type-pair,.project-date-pair{grid-template-columns:1fr}.mo-box.project-form-modal{max-width:calc(100vw - 24px)}}
 #panel-home .home-module[data-home-type="message-board"] .sticky-wall-actions{margin-top:3px}
 #panel-home .sticky-wall-preview{grid-template-columns:repeat(var(--sticky-columns,1),minmax(0,1fr));gap:5px}
 .home-module-tools{display:none;gap:4px}.home-grid-wrap.editing .home-module-tools{display:flex}.home-tool{width:25px;height:25px;border:0;border-radius:5px;background:var(--bg);cursor:pointer;color:var(--text2)}.home-tool:hover{background:var(--rl);color:var(--rd)}
@@ -4957,21 +4959,34 @@ window.showEditProject=function(projId){
   if(!canEditProjects())return;
   showProjectForm(projId);
 }
-function showProjectForm(projId){
+let projectFormDraft=null;
+window.captureProjectFormDraft=function(){
+  const ids=['np-referrer','np-name','np-site-tag','np-owner','np-phone','np-address','np-panorama-url','np-type-kind','np-type-building','np-designer','np-budget','np-area','np-price','np-contract-amount','np-process','np-status'];
+  const values={};ids.forEach(id=>{const el=$(id);if(el)values[id]=el.value;});
+  values.budgetIncludeFurniture=!!$('np-budget-furniture')?.checked;values.budgetIncludeAC=!!$('np-budget-ac')?.checked;
+  values.contractStart=ymdValue('np-cs');values.contractEnd=ymdValue('np-ce');projectFormDraft=values;return values;
+}
+function restoreProjectFormDraft(draft){
+  if(!draft)return;Object.entries(draft).forEach(([id,value])=>{const el=$(id);if(el&&id!=='budgetIncludeFurniture'&&id!=='budgetIncludeAC')el.value=value??'';});
+  if($('np-budget-furniture'))$('np-budget-furniture').checked=!!draft.budgetIncludeFurniture;if($('np-budget-ac'))$('np-budget-ac').checked=!!draft.budgetIncludeAC;
+  ymdSetFields('np-cs',draft.contractStart);ymdSetFields('np-ce',draft.contractEnd);updateNPAmount();
+}
+function showProjectForm(projId,draft=null){
   const p=projId?S.projects.find(x=>x.id===projId):null;
+  const typeParts=String(p?.type||'').split('／');
   const formPhotos=projectPhotos(p);
   const photoEditor=p?`<section class="project-photo-panel">
-      <div class="project-photo-head"><span>📷 案件照片（${formPhotos.length}）</span><label class="btn btn-sm" style="cursor:pointer">＋ 上傳照片<input type="file" accept="image/*" multiple hidden onchange="uploadProjectPhotos('${p.id}',this.files,true);this.value=''"></label></div>
+      <div class="project-photo-head"><span>📷 案件照片（${formPhotos.length}）</span><label class="btn btn-sm" style="cursor:pointer">＋ 上傳照片<input type="file" accept="image/*" multiple hidden onchange="captureProjectFormDraft();uploadProjectPhotos('${p.id}',this.files,true);this.value=''"></label></div>
       ${formPhotos.length?`<div class="project-photo-grid">${formPhotos.map(photo=>`<div class="project-photo-card"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div><button class="project-photo-delete" title="刪除照片" onclick="deleteProjectPhotoFromForm('${p.id}','${photo.id}')">×</button></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
     </section>`:`<div style="font-size:11px;color:var(--text3);border:1px dashed var(--border);border-radius:var(--r);padding:8px;text-align:center">📷 請先儲存新案件，再回到編輯案件上傳照片。</div>`;
-  $('mo-content').classList.remove('project-detail-modal');
+  $('mo-content').classList.remove('project-detail-modal');$('mo-content').classList.add('project-form-modal');
   $('mo-content').innerHTML=`<div class="project-form-title"><div class="mo-title">${p?'編輯案件':'新增案件'}</div><input id="np-referrer" type="text" placeholder="介紹人" value="${escAttr(p?.referrer||'')}"></div>
     <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:65vh;overflow-y:auto">
       <div class="project-form-pair"><input id="np-name" type="text" placeholder="案件名稱*" value="${escAttr(p?.name||'')}"><input id="np-site-tag" type="text" maxlength="12" placeholder="工地標記（例如：平等街）" value="${escAttr(p?.siteTag||'')}"></div>
       <div class="project-form-pair"><input id="np-owner" type="text" placeholder="業主姓名" value="${escAttr(p?.owner||'')}"><input id="np-phone" type="text" placeholder="電話" value="${escAttr(p?.phone||'')}"></div>
       <input id="np-address" type="text" placeholder="案件地址" value="${escAttr(p?.address||'')}">
       <input id="np-panorama-url" type="text" inputmode="url" placeholder="Google 相簿 3D 環景網址（https://…）" value="${escAttr(p?.panoramaUrl||'')}">
-      <input id="np-type" type="text" placeholder="類型（住宅／商業…）" value="${escAttr(p?.type||'')}">
+      <div class="project-type-pair"><select id="np-type-kind" onchange="updateProjectTypeRequired()"><option value=""></option>${['預售屋','新成屋','中古屋'].map(v=>`<option value="${v}" ${typeParts.includes(v)?'selected':''}>${v}</option>`).join('')}</select><select id="np-type-building" onchange="updateProjectTypeRequired()"><option value=""></option>${['公寓','電梯大樓','透天別墅'].map(v=>`<option value="${v}" ${typeParts.includes(v)?'selected':''}>${v}</option>`).join('')}</select></div>
       <input id="np-designer" type="text" placeholder="設計師" value="${escAttr(p?.designer||'')}">
       <div class="project-budget-row">
         <label class="project-budget-field"><input id="np-budget" type="text" placeholder="預算" value="${escAttr(p?.budget||'')}"><span class="project-budget-unit">萬</span></label>
@@ -4987,23 +5002,25 @@ function showProjectForm(projId){
       </div>
       <div style="font-size:12px;color:var(--text2)">設計合約金額（自動計算）：<span id="np-design-amount" style="font-weight:600;color:var(--text)">${p?((parseFloat(p.area)||0)*(parseFloat(p.pricePerPing)||0)).toLocaleString():'0'}</span></div>
       <input id="np-contract-amount" type="text" placeholder="工程合約金額" value="${escAttr(p?.contractAmount||'')}">
-      ${ymdInputs('np-cs','合約起始日')}
-      ${ymdInputs('np-ce','完工日')}
+      <div class="project-date-pair">${ymdInputs('np-cs','合約起始日')}${ymdInputs('np-ce','完工日')}</div>
       <textarea id="np-process" placeholder="廠商施工流程…" rows="10" oninput="autoGrow(this)" style="font-family:inherit;padding:8px;border:1px solid var(--border);border-radius:var(--r);overflow-y:auto;resize:none;min-height:190px;max-height:340px">${escAttr(p?.process||'')}</textarea>
       ${photoEditor}
       <select id="np-status">
         ${STATUS_OPTS.map(o=>`<option value="${o.v}" ${p?.status===o.v?'selected':''}>${o.l}</option>`).join('')}
       </select>
     </div>
-    <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="saveProjectForm(${p?`'${p.id}'`:'null'})">${p?'儲存':'新增'}</button></div>`;
+    <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button id="np-save-btn" class="btn btn-p" onclick="saveProjectForm(${p?`'${p.id}'`:'null'})" ${p?'':'disabled'}>${p?'儲存':'新增'}</button></div>`;
   $('mo-content').dataset.lockBackdrop='true';$('modal').style.display='flex';
-  ymdSetFields('np-cs',p?.contractStart);
-  ymdSetFields('np-ce',p?.contractEnd||(!p?.contractStart?p?.finish:''));
+  if(draft)restoreProjectFormDraft(draft);else{ymdSetFields('np-cs',p?.contractStart);ymdSetFields('np-ce',p?.contractEnd||(!p?.contractStart?p?.finish:''));}if(!p)updateProjectTypeRequired();
   requestAnimationFrame(function(){const ta=$('np-process');if(ta)autoGrow(ta);});
+}
+window.updateProjectTypeRequired=function(){
+  const saveButton=$('np-save-btn');if(saveButton)saveButton.disabled=!$('np-type-kind').value||!$('np-type-building').value;
 }
 window.saveProjectForm=async function(projId){
   if(projId?!canEditProjects():!isAdmin())return;
   const name=$('np-name').value.trim();if(!name)return alert('請填寫案件名稱');
+  if(!projId&&(!$('np-type-kind').value||!$('np-type-building').value))return alert('請選擇房屋狀態與建築類型');
   const contractStart=ymdValue('np-cs');
   const contractEnd=ymdValue('np-ce');
   const panoramaUrl=$('np-panorama-url').value.trim();if(panoramaUrl&&!/^https:\/\//i.test(panoramaUrl))return alert('3D 環景網址請使用 https:// 開頭。');
@@ -5015,7 +5032,7 @@ window.saveProjectForm=async function(projId){
     phone:$('np-phone').value.trim(),
     panoramaUrl,
     address:$('np-address').value.trim(),
-    type:$('np-type').value.trim(),
+    type:[$('np-type-kind').value,$('np-type-building').value].filter(Boolean).join('／'),
     designer:$('np-designer').value.trim(),
     budget:$('np-budget').value.trim(),
     budgetIncludeFurniture:$('np-budget-furniture').checked,
@@ -5084,7 +5101,7 @@ window.uploadProjectPhotos=async function(projectId,files,returnToForm){
     }
     await updateDoc(doc(db,'projects',projectId),{photos:[...projectPhotos(p),...added]});
     setSynced();
-    if(returnToForm)showProjectForm(projectId);
+    if(returnToForm){const draft=projectFormDraft;projectFormDraft=null;showProjectForm(projectId,draft);}
     else if(localTestMode)showProjectDetail(projectId);
   }catch(error){
     console.error(error);setOffline();
@@ -5104,8 +5121,9 @@ window.deleteProjectPhoto=async function(projectId,photoIdValue){
   }catch(error){console.error(error);setOffline();alert('照片刪除失敗，請稍後再試。');}
 }
 window.deleteProjectPhotoFromForm=async function(projectId,photoIdValue){
+  const draft=window.captureProjectFormDraft();
   await window.deleteProjectPhoto(projectId,photoIdValue);
-  if(localTestMode)showProjectForm(projectId);
+  if(localTestMode)showProjectForm(projectId,draft);
 }
 function projectShareText(p){return String(p?.process||'').trim();}
 async function copyTextForLine(text){
