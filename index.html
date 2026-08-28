@@ -1705,8 +1705,7 @@ function renderOverview(){
   const inDesign=S.projects.filter(p=>p.status==='design').length;
   const inProg=S.projects.filter(p=>p.status==='prog').length;
   const done=S.projects.filter(p=>p.status==='done').length;
-  const shown=(overviewStatusFilter?S.projects.filter(p=>p.status===overviewStatusFilter):S.projects)
-    .slice().sort((a,b)=>(STATUS_SORT_RANK[a.status]??9)-(STATUS_SORT_RANK[b.status]??9));
+  const shown=sortDesignProjs(overviewStatusFilter?S.projects.filter(p=>p.status===overviewStatusFilter):S.projects);
   function statCard(v,n,color,label){
     const on=overviewStatusFilter===v;
     return`<div class="stat" style="cursor:pointer;${on?'outline:2px solid '+color+';border-radius:var(--r)':''}" onclick="setOverviewFilter(${v?`'${v}'`:'null'})"><div class="stat-n" style="color:${color}">${n}</div><div class="stat-l">${label}</div></div>`;
@@ -1728,10 +1727,10 @@ function renderOverview(){
     </div>
     ${shown.length===0?`<div class="empty">尚無案件</div>`:`
     <div style="overflow-x:auto"><table>
-      <thead><tr><th>案件名稱</th><th>狀態</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>完工日</th>${canEditProjects()&&overviewEditMode?'<th>操作</th>':''}</tr></thead>
+      <thead><tr>${isAdmin()&&overviewEditMode?'<th style="width:34px"></th>':''}<th>案件名稱</th><th>狀態</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>完工日</th>${canEditProjects()&&overviewEditMode?'<th>操作</th>':''}</tr></thead>
       <tbody>${shown.map(p=>{
         const si=statusInfo(p.status);
-        return`<tr>
+        return`<tr ${isAdmin()&&overviewEditMode?`draggable="true" ondragstart="overviewRowDragStart(event,'${p.id}')" ondragover="overviewRowDragOver(event)" ondrop="overviewRowDrop(event,'${p.id}')"`:''}>${isAdmin()&&overviewEditMode?'<td style="text-align:center;cursor:grab;color:var(--text3)">⠿</td>':''}
           <td><strong style="font-weight:500;cursor:pointer;color:var(--purple)" onclick="${p.status==='done'?`showSiteReport('${p.id}')`:`showProjectDetail('${p.id}')`}">${p.name}</strong>${p.status==='done'?' <span style="font-size:10px;color:var(--text3)">(查看總報告表)</span>':''}</td>
           <td>${isAdmin()?`<select class="status-sel" style="background:${si.bg};color:${si.color}" onchange="handleStatusChange('${p.id}',this)">
             ${STATUS_OPTS.map(o=>`<option value="${o.v}" ${p.status===o.v?'selected':''}>${o.l}</option>`).join('')}
@@ -1746,6 +1745,14 @@ function renderOverview(){
 }
 window.setOverviewFilter=function(v){overviewStatusFilter=overviewStatusFilter===v?null:v;renderOverview();}
 window.toggleOverviewEditMode=function(){if(!canEditProjects())return;overviewEditMode=!overviewEditMode;renderOverview();}
+let overviewRowDragSrc=null;
+window.overviewRowDragStart=function(e,id){if(!isAdmin())return e.preventDefault();overviewRowDragSrc=id;e.dataTransfer.effectAllowed='move';}
+window.overviewRowDragOver=function(e){if(isAdmin()&&overviewRowDragSrc)e.preventDefault();}
+window.overviewRowDrop=async function(e,targetId){e.preventDefault();if(!isAdmin()||!overviewRowDragSrc||overviewRowDragSrc===targetId)return;const ids=sortDesignProjs(S.projects).map(p=>p.id),from=ids.indexOf(overviewRowDragSrc),to=ids.indexOf(targetId);if(from<0||to<0)return;ids.splice(from,1);ids.splice(to,0,overviewRowDragSrc);designProjectOrder=ids;overviewRowDragSrc=null;renderOverview();await setDoc(doc(db,'settings','designProjectOrder'),{order:ids});}
+let workProjectDragSrc=null;
+window.workProjectDragStart=function(e,id){if(currentRole!=='manager')return e.preventDefault();workProjectDragSrc=id;e.dataTransfer.effectAllowed='move';}
+window.workProjectDragOver=function(e){if(currentRole==='manager'&&workProjectDragSrc)e.preventDefault();}
+window.workProjectDragDrop=async function(e,targetId){e.preventDefault();if(currentRole!=='manager'||!workProjectDragSrc||workProjectDragSrc===targetId)return;const ids=sortDesignProjs(S.projects).map(p=>p.id),from=ids.indexOf(workProjectDragSrc),to=ids.indexOf(targetId);if(from<0||to<0)return;ids.splice(from,1);ids.splice(to,0,workProjectDragSrc);designProjectOrder=ids;workProjectDragSrc=null;renderProgress();await setDoc(doc(db,'settings','designProjectOrder'),{order:ids});}
 window.showSiteReport=function(id){overviewReportProjId=id;renderOverview();}
 window.closeSiteReport=function(){overviewReportProjId=null;renderOverview();}
 function renderSiteReport(projId){
@@ -2370,7 +2377,7 @@ window.saveGlobalNote=async function(viewMonth,text){
 function renderWeekView(shouldShow){
   const days=getWeekDates();const td=today();
   const WD=['日','一','二','三','四','五','六'];
-  const projs=S.projects.filter(shouldShow);
+  const projs=sortDesignProjs(S.projects.filter(shouldShow));
   const hint=selectedTag?`<div style="background:var(--pl);color:var(--pd);padding:6px 10px;border-radius:var(--r);margin-bottom:8px;font-size:12px">已選取色塊 — Ctrl+點格子複製，點空白取消</div>`:'';
 
   function renderCell(p,pi,d){
@@ -2517,8 +2524,8 @@ function renderWeekView(shouldShow){
   ${projs.length?`<div class="wtbl-wrap hscroll-sync hide-hscrollbar"><table class="wtbl" style="width:${200+days.length*180}px"><colgroup><col style="width:200px">${days.map(()=>'<col style="width:180px">').join('')}</colgroup><tbody>
   <tr><td colspan="${days.length+1}" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:3px solid #1a1a1a"><div style="position:sticky;left:8px;display:inline-flex;align-items:center;gap:7px">🏗 工地進度<span class="help-wrap"><button class="help-btn" type="button" aria-label="工地進度操作說明" onclick="toggleHelpPop(event,'work-progress-help')">?</button><span class="help-pop" id="work-progress-help" onclick="event.stopPropagation()"><ul><li>單擊色塊可開啟 checklist。</li><li>按住 Ctrl 再單擊可複製。</li><li>雙擊白色欄位可編輯。</li><li>直接拖拉可搬移項目。</li><li>按住 Ctrl 拖拉可複製項目。</li></ul></span></span></div></td></tr>
   ${projs.map((p,pi)=>`
-    <tr>
-      <td class="site-hd" style="color:${tc(pi)};cursor:pointer" onclick="showProjectDetail('${p.id}')" title="點擊查看案件詳細資料">
+    <tr ${currentRole==='manager'?`draggable="true" ondragstart="workProjectDragStart(event,'${p.id}')" ondragover="workProjectDragOver(event)" ondrop="workProjectDragDrop(event,'${p.id}')"`:''}>
+      <td class="site-hd" style="color:${tc(pi)};cursor:${currentRole==='manager'?'grab':'pointer'}" onclick="showProjectDetail('${p.id}')" title="${currentRole==='manager'?'拖曳可調整工地順序':'點擊查看案件詳細資料'}">${currentRole==='manager'?'<span style="color:var(--text3);margin-right:6px">⠿</span>':''}
         ${p.name}${p.status==='done'?`<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">完工</span>`:''}
         <textarea onclick="event.stopPropagation()" onblur="saveSiteNote('${p.id}',this.value)" placeholder="共用備註…" style="width:100%;box-sizing:border-box;margin-top:5px;font-size:11px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;resize:vertical;min-height:44px;cursor:text;color:var(--text)">${escAttr(p.siteNote||'')}</textarea>
       </td>
