@@ -3646,10 +3646,7 @@ function clearSpreadsheetSelections(keep){
 window.pnPointerSelect=function(e,type,ds,idx){
   var editing=S.privateEditing;
   if(!editing||(editing.type===type&&editing.ds===ds&&editing.idx===idx))return;
-  e.preventDefault();e.stopPropagation();
-  var input=document.getElementById('pnbox-'+editing.type+'-'+editing.ds+'-'+editing.idx);
-  if(input)pnSaveBox(input,editing.type,editing.ds,editing.idx);
-  pnSelect(type,ds,idx);
+  S.privatePendingSelection={type:type,ds:ds,idx:idx};
 }
 var excelTextClipboard='';
 function privateSelectedCell(){var key=null,idx=-1;Object.keys(S.privateSelected||{}).forEach(function(k){if(S.privateSelected[k]>=0){key=k;idx=S.privateSelected[k];}});if(!key)return null;var p=key.split('|');return{type:p[0],ds:p[1],idx:idx};}
@@ -5509,7 +5506,11 @@ window.pnSaveBox=async function(el,type,ds,idx){
 }
 // Box (in-place chip) blur — identity is baked into the call at render time.
 window.pnBoxBlur=function(el,type,ds,idx){
-  pnSaveBox(el,type,ds,idx);
+  var pending=S.privatePendingSelection;
+  S.privatePendingSelection=null;
+  pnSaveBox(el,type,ds,idx).then(function(){
+    if(pending)pnSelect(pending.type,pending.ds,pending.idx);
+  });
 }
 function updateFormulaBar(type,ds,idx,text,rowId,link){
   const same=formulaBarState&&formulaBarState.type===type&&formulaBarState.ds===ds&&formulaBarState.idx===idx;
