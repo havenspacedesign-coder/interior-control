@@ -303,9 +303,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .ptd-item{margin-bottom:4px}
 .ptd-add-btn{font-size:11px;color:var(--text3);cursor:pointer;padding:2px 4px;display:block;text-align:left;border:none;background:none;font-family:inherit}
 .ptd-add-btn:hover{color:var(--purple)}
-.pn-chip{transition:opacity .1s}
+.pn-chip{transition:opacity .1s,transform 190ms cubic-bezier(.2,1.22,.35,1);will-change:transform}
 .pn-chip:hover{opacity:.85}
 .pn-chip-sel{box-shadow:0 0 0 2px var(--purple)!important}
+.pn-chip[draggable="true"]{cursor:grab}
+.pn-chip.pn-dragging{opacity:.18;cursor:grabbing}
+.pn-chip.pn-drag-ghost{opacity:1!important;transform:scale(1.02);box-shadow:0 10px 22px rgba(58,45,120,.24);cursor:grabbing}
 .private-divider{border-top:3px solid #1a1a1a;margin:0}
 .ptd-color-dots{display:flex;gap:3px;margin-top:2px;flex-wrap:wrap}
 .ptd-color-dot{width:12px;height:12px;border-radius:50%;cursor:pointer;border:1px solid rgba(0,0,0,.15);flex-shrink:0;transition:transform .1s}
@@ -3360,7 +3363,7 @@ function renderPrivateTodoSection(){
     var items=(pn[type]&&pn[type][ds])||[];
     var selKey=type+'|'+ds;
     var selIdx=(sel[selKey]!=null)?sel[selKey]:-1;
-    var h='<td style="vertical-align:top;padding:4px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'" ondragover="event.preventDefault()" ondrop="pnDrop(event,\''+type+'\',\''+ds+'\')">';
+    var h='<td data-pn-cell="'+type+'|'+ds+'" style="vertical-align:top;padding:4px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'" ondragover="pnPreviewCell(event,\''+type+'\',\''+ds+'\')" ondrop="pnDrop(event,\''+type+'\',\''+ds+'\')">';
     items.forEach(function(item,i){
       var color=item.color||'';var linkedItem=normalizeLinkedItem(item);
       var isSel=selIdx===i;
@@ -3380,19 +3383,22 @@ function renderPrivateTodoSection(){
           +'>'
           +'</div>';
       }else{
-        h+='<div class="pn-chip" style="background:var(--surface);border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;position:relative;'+textStyle+'"'
+        h+='<div class="pn-chip" data-pn-index="'+i+'" style="background:var(--surface);border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;position:relative;'+textStyle+'"'
           +' onmousedown="pnPointerSelect(event,\''+type+'\',\''+ds+'\','+i+')"'
           +' onclick="pnSelect(\''+type+'\',\''+ds+'\','+i+')"'
           +' ondblclick="event.stopPropagation();pnStartEdit(\''+type+'\',\''+ds+'\','+i+')"'
           +' draggable="true"'
           +' ondragstart="pnDragStart(event,\''+type+'\',\''+ds+'\','+i+')"'
+          +' ondragend="pnDragEnd()"'
+          +' ondragover="pnPreviewReorder(event,\''+type+'\',\''+ds+'\','+i+')"'
+          +' ondrop="pnDrop(event,\''+type+'\',\''+ds+'\','+i+')"'
           +'>';
         h+=renderItemText(item);
         if(item.completed)h+='<span style="position:absolute;top:2px;right:4px;font-size:10px;color:var(--red)">✓</span>';
         h+='</div>';
       }
     });
-    h+='<button style="font-size:12px;padding:6px 8px;border:1px dashed var(--border);background:none;cursor:pointer;color:var(--text3);width:100%;text-align:left;margin-top:2px;border-radius:5px;font-family:inherit;min-height:30px" onclick="pnAdd(\''+type+'\',\''+ds+'\')">＋ 新增</button>';
+    h+='<button style="font-size:12px;padding:6px 8px;border:1px dashed var(--border);background:none;cursor:pointer;color:var(--text3);width:100%;text-align:left;margin-top:2px;border-radius:5px;font-family:inherit;min-height:30px" onmousedown="pnPrepareAdd(\''+type+'\',\''+ds+'\')" onclick="pnAdd(\''+type+'\',\''+ds+'\')">＋ 新增</button>';
     h+='</td>';
     return h;
   }
@@ -3425,6 +3431,77 @@ function renderPrivateTodoSection(){
 }
 
 var pnDragSrc=null;
+var pnDragPreview=null;
+var pnDragLayout=null;
+function pnClearDragPreview(){
+  document.querySelectorAll('.pn-chip.pn-dragging').forEach(function(el){el.classList.remove('pn-dragging');});
+  document.querySelectorAll('[data-pn-cell] .pn-chip[draggable="true"]').forEach(function(el){el.style.transform='';});
+  pnDragPreview=null;
+  pnDragLayout=null;
+}
+function pnApplyDragPreview(type,ds,previewIndex){
+  if(!pnDragSrc||pnDragSrc.type!==type||pnDragSrc.ds!==ds)return;
+  var cell=document.querySelector('[data-pn-cell="'+type+'|'+ds+'"]');
+  if(!cell)return;
+  var chips=[...cell.querySelectorAll('.pn-chip[draggable="true"]')];
+  var source=pnDragSrc.idx;
+  var sourceEl=chips[source];
+  if(!sourceEl)return;
+  var shift=sourceEl.getBoundingClientRect().height+4;
+  chips.forEach(function(el,i){
+    el.style.transform='';
+    if(i===source){el.classList.add('pn-dragging');return;}
+    if(previewIndex<source&&i>=previewIndex&&i<source)el.style.transform='translateY('+shift+'px)';
+    if(previewIndex>source&&i>source&&i<=previewIndex)el.style.transform='translateY(-'+shift+'px)';
+  });
+}
+function pnSetDropEffect(e){
+  if(e.dataTransfer)e.dataTransfer.dropEffect=e.ctrlKey?'copy':'move';
+}
+function pnPreviewAtY(e,type,ds){
+  if(!pnDragSrc||pnDragSrc.type!==type||pnDragSrc.ds!==ds||!pnDragLayout)return;
+  // 用拖曳開始時的中心線判定，避免已讓位的 transform 反過來改變門檻而閃爍。
+  var previewIndex=0;
+  pnDragLayout.forEach(function(item,i){if(i!==pnDragSrc.idx&&e.clientY>item.center)previewIndex++;});
+  if(pnDragPreview&&pnDragPreview.type===type&&pnDragPreview.ds===ds&&pnDragPreview.index===previewIndex)return;
+  pnDragPreview={type:type,ds:ds,index:previewIndex};
+  pnApplyDragPreview(type,ds,previewIndex);
+}
+window.pnPreviewReorder=function(e,type,ds){
+  e.preventDefault();e.stopPropagation();
+  pnSetDropEffect(e);
+  pnPreviewAtY(e,type,ds);
+}
+window.pnPreviewCell=function(e,type,ds){
+  e.preventDefault();
+  pnSetDropEffect(e);
+  pnPreviewAtY(e,type,ds);
+}
+// 第一格上方也保留一段有效放置區，讓往上拖出框線時仍可預覽／放到最上方。
+function pnAllowNativeDrop(e){
+  if(!pnDragSrc)return false;
+  // 原生 HTML5 拖曳若沒有明確 preventDefault，瀏覽器就會顯示禁止游標。
+  e.preventDefault();pnSetDropEffect(e);
+  return true;
+}
+document.addEventListener('dragenter',function(e){pnAllowNativeDrop(e);},true);
+document.addEventListener('dragover',function(e){
+  if(!pnAllowNativeDrop(e))return;
+  var cell=document.querySelector('[data-pn-cell="'+pnDragSrc.type+'|'+pnDragSrc.ds+'"]');
+  var targetCell=e.target.closest?.('[data-pn-cell]');
+  if(!cell||(targetCell&&targetCell!==cell))return;
+  var rect=cell.getBoundingClientRect();
+  if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top-96||e.clientY>rect.bottom+20)return;
+  pnPreviewAtY(e,pnDragSrc.type,pnDragSrc.ds);
+},true);
+document.addEventListener('drop',function(e){
+  if(!pnDragSrc||e.target.closest?.('[data-pn-cell]'))return;
+  var cell=document.querySelector('[data-pn-cell="'+pnDragSrc.type+'|'+pnDragSrc.ds+'"]');
+  if(!cell)return;
+  var rect=cell.getBoundingClientRect();
+  if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top-72||e.clientY>rect.bottom)return;
+  e.preventDefault();window.pnDrop(e,pnDragSrc.type,pnDragSrc.ds,0);
+});
 var meetingSelected={};
 var meetingEditing=null,meetingEditCanceled=false;
 var meetingSelGen=0;
@@ -3645,7 +3722,22 @@ function clearSpreadsheetSelections(keep){
 }
 window.pnPointerSelect=function(e,type,ds,idx){
   var editing=S.privateEditing;
-  if(!editing||(editing.type===type&&editing.ds===ds&&editing.idx===idx))return;
+  if(!editing){
+    var key=type+'|'+ds;
+    if(S.privateSelected?.[key]===idx)return;
+    var previous=privateSelectedCell();
+    clearSpreadsheetSelections('private');
+    selGen++;S.privateSelected={};S.privateSelected[key]=idx;
+    var item=(((S.privateNotes||{})[type]||{})[ds]||[])[idx]||{};
+    updateFormulaBar(type,ds,idx,normalizeLinkedItem(item).text);
+    // 拖曳開始前不能重繪整張表，否則原生 drag source 會消失；先直接切換外框。
+    if(previous){var previousCell=document.querySelector('[data-pn-cell="'+previous.type+'|'+previous.ds+'"]');var previousEl=previousCell?.querySelector('.pn-chip[data-pn-index="'+previous.idx+'"]');if(previousEl)previousEl.style.border='1.5px solid var(--border)';}
+    document.querySelectorAll('.pn-chip[draggable="true"].pn-chip-sel').forEach(function(el){el.classList.remove('pn-chip-sel');});
+    e.currentTarget.classList.add('pn-chip-sel');
+    e.currentTarget.style.border='2px solid var(--purple)';
+    return;
+  }
+  if(editing.type===type&&editing.ds===ds&&editing.idx===idx)return;
   S.privatePendingSelection={type:type,ds:ds,idx:idx};
 }
 var excelTextClipboard='';
@@ -3729,16 +3821,23 @@ window.pnToggleStrike=async function(type,ds,idx){
 }
 window.pnAdd=async function(type,ds){
   if(!currentUser)return;
+  if(S.privateAddingFromBlur)return;
+  if(S.privatePendingAdd&&S.privatePendingAdd.type===type&&S.privatePendingAdd.ds===ds)return;
+  if(S.privateEditing){
+    S.privatePendingAdd={type:type,ds:ds};
+    var editing=S.privateEditing;
+    var editingInput=document.getElementById('pnbox-'+editing.type+'-'+editing.ds+'-'+editing.idx);
+    if(editingInput)editingInput.blur();
+    return;
+  }
   var pn=S.privateNotes||{work:{},personal:{}};
   var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
   items.push({text:'',color:''});
   S.privateNotes=Object.assign({},pn);
   S.privateNotes[type]=Object.assign({},pn[type]||{});
   S.privateNotes[type][ds]=items;
-  setSyncing();
-  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
-  setSynced();
   var newIdx=items.length-1;
+  // 新空白模塊先立即呈現為「已單擊選取」，不等待資料同步完成。
   clearSpreadsheetSelections('private');
   selGen++;
   S.privateSelected={};
@@ -3746,6 +3845,12 @@ window.pnAdd=async function(type,ds){
   S.privateEditing=null;
   updateFormulaBar(type,ds,newIdx,'');
   renderProgress();
+  setSyncing();
+  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+  setSynced();
+}
+window.pnPrepareAdd=function(type,ds){
+  if(S.privateEditing)S.privatePendingAdd={type:type,ds:ds};
 }
 window.pnDelete=async function(type,ds,idx){
   if(!currentUser)return;
@@ -3763,21 +3868,48 @@ window.pnDelete=async function(type,ds,idx){
 }
 window.pnDragStart=function(e,type,ds,idx){
   pnDragSrc={type:type,ds:ds,idx:idx};
+  pnDragPreview={type:type,ds:ds,index:idx};
+  var dragEl=e.currentTarget;
+  var dragCell=dragEl.closest('[data-pn-cell]');
+  pnDragLayout=dragCell?[...dragCell.querySelectorAll('.pn-chip[draggable="true"]')].map(function(el){var r=el.getBoundingClientRect();return{center:r.top+r.height/2};}):null;
   e.dataTransfer.effectAllowed='copyMove';
   e.dataTransfer.setData('text/plain',type+'|'+ds+'|'+idx);
+  var ghost=dragEl.cloneNode(true);
+  ghost.classList.add('pn-drag-ghost');
+  ghost.style.cssText+=`;position:fixed;left:-9999px;top:-9999px;width:${dragEl.getBoundingClientRect().width}px;z-index:9999;`;
+  document.body.appendChild(ghost);
+  e.dataTransfer.setDragImage(ghost,Math.min(24,dragEl.getBoundingClientRect().width/2),dragEl.getBoundingClientRect().height/2);
+  requestAnimationFrame(function(){dragEl.classList.add('pn-dragging');});
+  setTimeout(function(){ghost.remove();},0);
 }
-window.pnDrop=async function(e,toType,toDs){
+window.pnDragEnd=function(){pnClearDragPreview();pnDragSrc=null;}
+window.pnDrop=async function(e,toType,toDs,insertAt){
   e.preventDefault();e.stopPropagation();
   var raw=e.dataTransfer.getData('text/plain');
   var from=null;
   if(raw){var p=raw.split('|');if(p.length===3)from={type:p[0],ds:p[1],idx:parseInt(p[2])};}
   if(!from)from=pnDragSrc;
-  if(!from||!currentUser)return;
-  if(from.type===toType&&from.ds===toDs){pnDragSrc=null;return;}
+  if(!from||!currentUser){pnClearDragPreview();return;}
   var pn=S.privateNotes||{work:{},personal:{}};
   var fromItems=(pn[from.type]&&pn[from.type][from.ds])?[...pn[from.type][from.ds]]:[];
   var item=fromItems[from.idx];
-  if(!item){pnDragSrc=null;return;}
+  if(!item){pnClearDragPreview();pnDragSrc=null;return;}
+  if(from.type===toType&&from.ds===toDs){
+    var reordered=[...fromItems];
+    reordered.splice(from.idx,1);
+    var preview=pnDragPreview&&pnDragPreview.type===toType&&pnDragPreview.ds===toDs?pnDragPreview.index:null;
+    var target=Number.isInteger(preview)?preview:(Number.isInteger(insertAt)?insertAt:reordered.length);
+    if(preview===null&&from.idx<target)target--;
+    target=Math.max(0,Math.min(target,reordered.length));
+    reordered.splice(target,0,item);
+    S.privateNotes=Object.assign({},pn);
+    S.privateNotes[toType]=Object.assign({},pn[toType]||{});
+    S.privateNotes[toType][toDs]=reordered;
+    await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+    pnClearDragPreview();pnDragSrc=null;
+    renderProgress();
+    return;
+  }
   var toItems=(pn[toType]&&pn[toType][toDs])?[...pn[toType][toDs]]:[];
   toItems.push(Object.assign({},item));
   var newPn=Object.assign({},pn);
@@ -3798,7 +3930,7 @@ window.pnDrop=async function(e,toType,toDs){
   }
   S.privateNotes=newPn;
   await setDoc(doc(db,'privateNotes',currentUser.uid),newPn);
-  pnDragSrc=null;
+  pnClearDragPreview();pnDragSrc=null;
   renderProgress();
 }
 // Keep the several date-column tables (工地/會議記事, 每日施工日誌, 私人記事)
@@ -5507,8 +5639,12 @@ window.pnSaveBox=async function(el,type,ds,idx){
 // Box (in-place chip) blur — identity is baked into the call at render time.
 window.pnBoxBlur=function(el,type,ds,idx){
   var pending=S.privatePendingSelection;
+  var pendingAdd=S.privatePendingAdd;
   S.privatePendingSelection=null;
+  S.privatePendingAdd=null;
+  if(pendingAdd)S.privateAddingFromBlur=true;
   pnSaveBox(el,type,ds,idx).then(function(){
+    if(pendingAdd){S.privateAddingFromBlur=false;pnAdd(pendingAdd.type,pendingAdd.ds);return;}
     if(pending)pnSelect(pending.type,pending.ds,pending.idx);
   });
 }
