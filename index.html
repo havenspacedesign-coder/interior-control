@@ -3398,7 +3398,7 @@ function renderPrivateTodoSection(){
         h+='</div>';
       }
     });
-    h+='<button style="font-size:12px;padding:6px 8px;border:1px dashed var(--border);background:none;cursor:pointer;color:var(--text3);width:100%;text-align:left;margin-top:2px;border-radius:5px;font-family:inherit;min-height:30px" onmousedown="pnPrepareAdd(\''+type+'\',\''+ds+'\')" onclick="pnAdd(\''+type+'\',\''+ds+'\')">＋ 新增</button>';
+    h+='<button type="button" class="pn-add" style="font-size:12px;padding:6px 8px;border:1px dashed var(--border);background:none;cursor:pointer;color:var(--text3);width:100%;text-align:left;margin-top:2px;border-radius:5px;font-family:inherit;min-height:30px" onmousedown="pnPrepareAdd(\''+type+'\',\''+ds+'\')" onclick="event.stopPropagation();pnAdd(\''+type+'\',\''+ds+'\')">＋ 新增</button>';
     h+='</td>';
     return h;
   }
@@ -3845,9 +3845,19 @@ window.pnAdd=async function(type,ds){
   S.privateEditing=null;
   updateFormulaBar(type,ds,newIdx,'');
   renderProgress();
+  pnShowSelectedChip(type,ds,newIdx);
   setSyncing();
   await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
   setSynced();
+  pnShowSelectedChip(type,ds,newIdx);
+}
+function pnShowSelectedChip(type,ds,idx){
+  var cell=document.querySelector('[data-pn-cell="'+type+'|'+ds+'"]');
+  var chip=cell?.querySelector('.pn-chip[data-pn-index="'+idx+'"]');
+  if(!chip)return;
+  document.querySelectorAll('.pn-chip[draggable="true"].pn-chip-sel').forEach(function(el){el.classList.remove('pn-chip-sel');});
+  chip.classList.add('pn-chip-sel');
+  chip.style.border='2px solid var(--purple)';
 }
 window.pnPrepareAdd=function(type,ds){
   if(S.privateEditing)S.privatePendingAdd={type:type,ds:ds};
