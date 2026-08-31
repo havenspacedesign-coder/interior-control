@@ -3337,7 +3337,12 @@ function renderPrivateTodoSection(){
     var selKey=type+'|'+ds;
     var selIdx=(sel[selKey]!=null)?sel[selKey]:-1;
     var h='<td style="vertical-align:top;padding:4px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'" ondragover="event.preventDefault()" ondrop="pnDrop(event,\''+type+'\',\''+ds+'\')">';
-    items.forEach(function(item,i){
+    items.map(function(item,i){return{item:item,index:i};}).sort(function(a,b){
+      var aEmpty=!String(normalizeLinkedItem(a.item).text||'').trim();
+      var bEmpty=!String(normalizeLinkedItem(b.item).text||'').trim();
+      return Number(aEmpty)-Number(bEmpty);
+    }).forEach(function(entry){
+      var item=entry.item,i=entry.index;
       var color=item.color||'';var linkedItem=normalizeLinkedItem(item);
       var isSel=selIdx===i;
       var isEdit=editing&&editing.type===type&&editing.ds===ds&&editing.idx===i;
