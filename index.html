@@ -2751,6 +2751,7 @@ window.saveDailyLog=async function(uid,ds,text){
 // background-color option, plus @member mention that auto-copies the entry
 // into that member's daily log for the same day ──
 window.mSelect=function(rowId,ds,idx){
+  clearSpreadsheetSelections('meeting');
   meetingSelGen++;
   meetingSelected={};
   meetingSelected[rowId+'|'+ds]=idx;
@@ -2761,13 +2762,15 @@ window.mSelect=function(rowId,ds,idx){
   updateFormulaBar('meeting',ds,idx,linked.text,rowId,linked.link);
   if(activePanel==='progress')renderProgress();
 }
-window.mSelectEmpty=function(rowId,ds){meetingSelGen++;meetingSelected={};meetingSelected[rowId+'|'+ds]=0;meetingEditing=null;updateFormulaBar('meeting',ds,0,'',rowId,null);if(activePanel==='progress')renderProgress();}
+window.mSelectEmpty=function(rowId,ds){clearSpreadsheetSelections('meeting');meetingSelGen++;meetingSelected={};meetingSelected[rowId+'|'+ds]=0;meetingEditing=null;updateFormulaBar('meeting',ds,0,'',rowId,null);if(activePanel==='progress')renderProgress();}
 window.mStartEdit=function(rowId,ds,idx){
+  clearSpreadsheetSelections('meeting');
   meetingSelGen++;meetingSelected={};meetingSelected[rowId+'|'+ds]=idx;meetingEditing={rowId:rowId,ds:ds,idx:idx};meetingEditCanceled=false;
   const item=((S.meetingLogs[rowId+'_'+ds]||{}).items||[])[idx]||{};updateFormulaBar('meeting',ds,idx,item.text||'',rowId,item.link||null);renderProgress();
   setTimeout(function(){const input=document.getElementById('meetbox-'+rowId+'-'+ds+'-'+idx);if(input){input.focus();input.setSelectionRange(input.value.length,input.value.length);}},0);
 }
 window.mStartEditWithChar=function(rowId,ds,idx,text){
+  clearSpreadsheetSelections('meeting');
   meetingSelGen++;meetingSelected={};meetingSelected[rowId+'|'+ds]=idx;meetingEditing={rowId:rowId,ds:ds,idx:idx};meetingEditCanceled=false;updateFormulaBar('meeting',ds,idx,text,rowId,null);renderProgress();
   setTimeout(function(){const input=document.getElementById('meetbox-'+rowId+'-'+ds+'-'+idx);if(input){input.value=text;input.focus();input.setSelectionRange(text.length,text.length);}},0);
 }
@@ -3378,6 +3381,7 @@ function renderPrivateTodoSection(){
           +'</div>';
       }else{
         h+='<div class="pn-chip" style="background:var(--surface);border:'+border+';padding:6px 8px;border-radius:5px;font-size:12px;margin-bottom:4px;cursor:pointer;user-select:none;min-height:30px;line-height:1.4;position:relative;'+textStyle+'"'
+          +' onmousedown="pnPointerSelect(event,\''+type+'\',\''+ds+'\','+i+')"'
           +' onclick="pnSelect(\''+type+'\',\''+ds+'\','+i+')"'
           +' ondblclick="event.stopPropagation();pnStartEdit(\''+type+'\',\''+ds+'\','+i+')"'
           +' draggable="true"'
@@ -3578,6 +3582,12 @@ window.pnSaveBlur=async function(type,ds,idx){
 }
 
 window.pnSelect=function(type,ds,idx){
+  var previousEdit=S.privateEditing;
+  if(previousEdit&&!(previousEdit.type===type&&previousEdit.ds===ds&&previousEdit.idx===idx)){
+    var previousInput=document.getElementById('pnbox-'+previousEdit.type+'-'+previousEdit.ds+'-'+previousEdit.idx);
+    if(previousInput)pnSaveBox(previousInput,previousEdit.type,previousEdit.ds,previousEdit.idx);
+  }
+  clearSpreadsheetSelections('private');
   selGen++;
   S.privateSelected={};
   S.privateSelected[type+'|'+ds]=idx;
@@ -3593,6 +3603,7 @@ window.pnSelect=function(type,ds,idx){
   // type-to-edit keydown listener below).
 }
 window.pnStartEdit=function(type,ds,idx){
+  clearSpreadsheetSelections('private');
   selGen++;
   S.privateSelected={};
   S.privateSelected[type+'|'+ds]=idx;
@@ -3610,16 +3621,35 @@ window.pnStartEdit=function(type,ds,idx){
 // Excel-style "select the cell, then just start typing" — the keystroke
 // replaces whatever was there, rather than appending to it.
 window.pnStartEditWithChar=function(type,ds,idx,ch){
+  clearSpreadsheetSelections('private');
   selGen++;
   S.privateSelected={};
   S.privateSelected[type+'|'+ds]=idx;
   S.privateEditing={type:type,ds:ds,idx:idx};
   updateFormulaBar(type,ds,idx,ch);
   renderProgress();
-  setTimeout(function(){
-    var inp=document.getElementById('pnbox-'+type+'-'+ds+'-'+idx);
-    if(inp){inp.value=ch;pnSyncFormulaText(ch);inp.focus();var l=inp.value.length;inp.setSelectionRange(l,l);}
-  },0);
+  var inp=document.getElementById('pnbox-'+type+'-'+ds+'-'+idx);
+  if(inp){pnImePending={type:type,ds:ds,idx:idx};inp.value=ch;pnSyncFormulaText(ch);inp.focus();var l=inp.value.length;inp.setSelectionRange(l,l);setTimeout(function(){pnImePending=null;},0);}
+}
+var pnImePending=null;
+document.addEventListener('compositionstart',function(e){
+  var inp=e.target,pending=pnImePending;
+  if(!pending||!inp||inp.id!=='pnbox-'+pending.type+'-'+pending.ds+'-'+pending.idx)return;
+  inp.value='';pnSyncFormulaText('');pnImePending=null;
+});
+document.addEventListener('compositionend',function(){pnImePending=null;});
+function clearSpreadsheetSelections(keep){
+  if(keep!=='private'){S.privateSelected={};S.privateEditing=null;}
+  if(keep!=='meeting'){meetingSelected={};meetingEditing=null;}
+  if(keep!=='schedule'){scheduleSelected=null;scheduleEditing=null;}
+}
+window.pnPointerSelect=function(e,type,ds,idx){
+  var editing=S.privateEditing;
+  if(!editing||(editing.type===type&&editing.ds===ds&&editing.idx===idx))return;
+  e.preventDefault();e.stopPropagation();
+  var input=document.getElementById('pnbox-'+editing.type+'-'+editing.ds+'-'+editing.idx);
+  if(input)pnSaveBox(input,editing.type,editing.ds,editing.idx);
+  pnSelect(type,ds,idx);
 }
 var excelTextClipboard='';
 function privateSelectedCell(){var key=null,idx=-1;Object.keys(S.privateSelected||{}).forEach(function(k){if(S.privateSelected[k]>=0){key=k;idx=S.privateSelected[k];}});if(!key)return null;var p=key.split('|');return{type:p[0],ds:p[1],idx:idx};}
@@ -3712,6 +3742,7 @@ window.pnAdd=async function(type,ds){
   await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
   setSynced();
   var newIdx=items.length-1;
+  clearSpreadsheetSelections('private');
   selGen++;
   S.privateSelected={};
   S.privateSelected[type+'|'+ds]=newIdx;
@@ -4245,6 +4276,7 @@ function scheduleCellIsEditing(projId,ds,ei){return !!scheduleEditing&&scheduleE
 window.selectScheduleCell=function(span){
   const next=scheduleCellKey(span.dataset.proj,span.dataset.ds,span.dataset.ei);
   if(scheduleEditing&&!scheduleCellIsEditing(next.projId,next.ds,next.ei))window.saveScheduleCell(document.querySelector('.ev-field[contenteditable="true"]'));
+  clearSpreadsheetSelections('schedule');
   scheduleSelected=next;scheduleEditing=null;
   document.querySelectorAll('.ev-field.excel-selected').forEach(el=>el.classList.remove('excel-selected'));
   span.classList.add('excel-selected');
