@@ -1380,17 +1380,13 @@ function homePack(modules){
 }
 function homeGridMetrics(){const grid=$('home-grid');if(!grid)return{unit:80,gap:8};const width=grid.clientWidth;return{unit:width/HOME_COLS,gap:8};}
 function stableHomeMembers(){const roleOrder={admin:0,staff:1};return activeMembersList().filter(m=>m.role!=='manager').sort((a,b)=>(roleOrder[a.role]??2)-(roleOrder[b.role]??2));}
-function homeStickyModuleRect(module){const count=Math.max(1,stableHomeMembers().length),w=Math.max(3,Math.min(12,Math.round((Number(module.w)||3)/3)*3)),columns=Math.max(1,w/3),rows=Math.ceil(count/columns);return{w,h:rows+1,columns};}
-function homeDisplayModules(){
-  const modules=activeHomeLayout().modules.map(m=>({...m,hidden:false}));
-  const noteModule=modules.find(m=>m.type==='message-board');if(!noteModule)return homePack(modules);
-  const rect=homeStickyModuleRect(noteModule),displayTier=homeSizeTier({...noteModule,...rect});
-  return homeReflow(modules,noteModule.id,{...noteModule,...rect,hidden:false,displayTier});
-}
+function homeStickyColumns(module){return Math.max(1,Math.round((Number(module.w)||3)/3));}
+function homeDisplayModules(){return homePack(activeHomeLayout().modules.map(m=>({...m,hidden:false})));}
 function setHomeGridMetrics(){const wrap=$('home-grid-wrap'),grid=$('home-grid');if(!wrap||!grid)return;const unit=homeGridMetrics().unit;wrap.style.setProperty('--home-unit',unit+'px');homeRenderedModules=homeDisplayModules();const rows=Math.max(18,...homeRenderedModules.map(m=>m.y+m.h));grid.style.height=Math.ceil(rows*unit)+'px';homeRenderedModules.forEach(m=>{const el=grid.querySelector(`[data-home-id="${m.id}"]`);if(el)el.setAttribute('style',homeModuleStyle(m));});}
-function homeModuleStyle(m){const unit=homeGridMetrics().unit,sticky=m.type==='message-board'?`;--sticky-columns:${m.columns||homeStickyModuleRect(m).columns}`:'';return`left:${m.x*unit+4}px;top:${m.y*unit+4}px;width:${m.w*unit-8}px;height:${m.h*unit-8}px${sticky}`;}
+function homeModuleStyle(m){const unit=homeGridMetrics().unit,sticky=m.type==='message-board'?`;--sticky-columns:${homeStickyColumns(m)}`:'';return`left:${m.x*unit+4}px;top:${m.y*unit+4}px;width:${m.w*unit-8}px;height:${m.h*unit-8}px${sticky}`;}
 function renderHome(){
   const el=$('panel-home');if(!el)return;
+  const scrollX=window.scrollX,scrollY=window.scrollY;
   if(homeLayoutMode==='company'&&!isAdmin())homeLayoutMode='personal';
   const layout=activeHomeLayout(),canManageGlobal=isSystemAdmin();
   const visible=homeDisplayModules();homeRenderedModules=visible;
@@ -1404,7 +1400,7 @@ function renderHome(){
       ${visible.length?visible.map(m=>renderHomeModule(m,canManageGlobal)).join(''):`<div class="home-empty">目前尚未建立首頁模塊</div>`}
     </div></div>
   </div>`;
-  requestAnimationFrame(()=>{setHomeGridMetrics();if(homeGridObserver)homeGridObserver.disconnect();homeGridObserver=new ResizeObserver(setHomeGridMetrics);const grid=$('home-grid');if(grid)homeGridObserver.observe(grid);});
+  requestAnimationFrame(()=>{setHomeGridMetrics();if(homeGridObserver)homeGridObserver.disconnect();homeGridObserver=new ResizeObserver(setHomeGridMetrics);const grid=$('home-grid');if(grid)homeGridObserver.observe(grid);window.scrollTo(scrollX,scrollY);});
 }
 function renderHomeModule(m,canManageGlobal){
   const def=homeModuleDefinition(m.type),tier=m.displayTier||homeSizeTier(m);
@@ -1445,11 +1441,11 @@ window.homeResizePointerDown=function(e,id){
 function beginHomePointer(e,id,m,el,resizing){e.preventDefault();homePointerState={id,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,original:{...m},resizing,el};el.classList.add(resizing?'resizing':'dragging');document.addEventListener('pointermove',homeModulePointerMove);document.addEventListener('pointerup',homeModulePointerUp,{once:true});document.addEventListener('pointercancel',homeModulePointerUp,{once:true});}
 function homeModulePointerMove(e){
   const s=homePointerState;if(!s||e.pointerId!==s.pointerId)return;const unit=homeGridMetrics().unit,dx=Math.round((e.clientX-s.startX)/unit),dy=Math.round((e.clientY-s.startY)/unit);
-  if(s.resizing){const def=homeModuleDefinition(s.original.type),min=def.min||{w:1,h:1},max=def.max||{w:HOME_COLS,h:99};let w=Math.max(min.w,Math.min(max.w,HOME_COLS-s.original.x,s.original.w+dx)),h=Math.max(min.h,Math.min(max.h,s.original.h+dy));if(s.original.type==='message-board'){const rect=homeStickyModuleRect({...s.original,w});w=rect.w;h=rect.h;s.el.style.setProperty('--sticky-columns',rect.columns);}s.preview={...s.original,w,h};s.el.style.width=(w*unit-8)+'px';s.el.style.height=(h*unit-8)+'px';}
+  if(s.resizing){const def=homeModuleDefinition(s.original.type),min=def.min||{w:1,h:1},max=def.max||{w:HOME_COLS,h:99};let w=Math.max(min.w,Math.min(max.w,HOME_COLS-s.original.x,s.original.w+dx)),h=Math.max(min.h,Math.min(max.h,s.original.h+dy));if(s.original.type==='message-board')s.el.style.setProperty('--sticky-columns',homeStickyColumns({...s.original,w}));s.preview={...s.original,w,h};s.el.style.width=(w*unit-8)+'px';s.el.style.height=(h*unit-8)+'px';}
   else{const x=Math.max(0,Math.min(HOME_COLS-s.original.w,s.original.x+dx)),y=Math.max(0,s.original.y+dy);s.preview={...s.original,x,y};s.el.style.left=(x*unit+4)+'px';s.el.style.top=(y*unit+4)+'px';}
 }
 function homeModulePointerUp(e){
-  const s=homePointerState;if(!s)return;s.el.classList.remove('dragging','resizing');document.removeEventListener('pointermove',homeModulePointerMove);document.removeEventListener('pointerup',homeModulePointerUp);document.removeEventListener('pointercancel',homeModulePointerUp);if(s.preview){const layout=activeHomeLayout();layout.modules=homeReflow(layout.modules,s.id,s.preview);}homePointerState=null;renderHome();
+  const s=homePointerState;if(!s)return;s.el.classList.remove('dragging','resizing');document.removeEventListener('pointermove',homeModulePointerMove);document.removeEventListener('pointerup',homeModulePointerUp);document.removeEventListener('pointercancel',homeModulePointerUp);if(s.preview){const layout=activeHomeLayout();layout.modules=homeReflow(layout.modules,s.id,s.preview);homePointerState=null;renderHome();return;}homePointerState=null;
 }
 async function loadHomeLayouts(){
   try{
