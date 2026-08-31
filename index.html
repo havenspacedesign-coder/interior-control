@@ -3358,12 +3358,7 @@ function renderPrivateTodoSection(){
     var selKey=type+'|'+ds;
     var selIdx=(sel[selKey]!=null)?sel[selKey]:-1;
     var h='<td style="vertical-align:top;padding:4px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'" ondragover="event.preventDefault()" ondrop="pnDrop(event,\''+type+'\',\''+ds+'\')">';
-    items.map(function(item,i){return{item:item,index:i};}).sort(function(a,b){
-      var aEmpty=!String(normalizeLinkedItem(a.item).text||'').trim();
-      var bEmpty=!String(normalizeLinkedItem(b.item).text||'').trim();
-      return Number(aEmpty)-Number(bEmpty);
-    }).forEach(function(entry){
-      var item=entry.item,i=entry.index;
+    items.forEach(function(item,i){
       var color=item.color||'';var linkedItem=normalizeLinkedItem(item);
       var isSel=selIdx===i;
       var isEdit=editing&&editing.type===type&&editing.ds===ds&&editing.idx===i;
@@ -3560,7 +3555,8 @@ window.pnKeyDown=function(e,type,ds,idx){
     }
   }
   if(e.key==='Escape'&&!e.isComposing&&e.keyCode!==229){pnEditCanceled=true;e.target.blur();return;}
-  if((e.key==='Enter'||e.key==='Tab')&&!e.isComposing&&e.keyCode!==229){e.preventDefault();pnSaveBox(e.target,type,ds,idx).then(function(){pnMove(type,ds,idx,e.key==='Enter'?'down':(e.shiftKey?'left':'right'));});}
+  if(e.key==='Enter'&&!e.isComposing&&e.keyCode!==229){e.preventDefault();e.target.blur();return;}
+  if(e.key==='Tab'&&!e.isComposing&&e.keyCode!==229){e.preventDefault();pnSaveBox(e.target,type,ds,idx).then(function(){pnMove(type,ds,idx,e.shiftKey?'left':'right');});}
 }
 
 window.pnSaveBlur=async function(type,ds,idx){
@@ -3719,13 +3715,9 @@ window.pnAdd=async function(type,ds){
   selGen++;
   S.privateSelected={};
   S.privateSelected[type+'|'+ds]=newIdx;
-  S.privateEditing={type:type,ds:ds,idx:newIdx};
+  S.privateEditing=null;
   updateFormulaBar(type,ds,newIdx,'');
   renderProgress();
-  setTimeout(function(){
-    var inp=document.getElementById('pnbox-'+type+'-'+ds+'-'+newIdx);
-    if(inp)inp.focus();
-  },50);
 }
 window.pnDelete=async function(type,ds,idx){
   if(!currentUser)return;
