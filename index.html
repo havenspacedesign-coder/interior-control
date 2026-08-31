@@ -3680,9 +3680,6 @@ window.pnAdd=async function(type,ds){
   S.privateNotes=Object.assign({},pn);
   S.privateNotes[type]=Object.assign({},pn[type]||{});
   S.privateNotes[type][ds]=items;
-  setSyncing();
-  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
-  setSynced();
   var newIdx=items.length-1;
   selGen++;
   S.privateSelected={};
@@ -3694,6 +3691,9 @@ window.pnAdd=async function(type,ds){
     var inp=document.getElementById('pnbox-'+type+'-'+ds+'-'+newIdx);
     if(inp)inp.focus();
   },50);
+  setSyncing();
+  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+  setSynced();
 }
 window.pnDelete=async function(type,ds,idx){
   if(!currentUser)return;
