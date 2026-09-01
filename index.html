@@ -3830,6 +3830,7 @@ window.pnSetColor=async function(type,ds,idx,color){
   await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
   setSynced();
 }
+function persistLocalPrivateNotes(){if(!IS_LOCAL_PREVIEW)return;try{localStorage.setItem('localPreviewPrivateNotes_'+(currentUser?.uid||'local-test-admin'),JSON.stringify(S.privateNotes||{work:{},personal:{}}));}catch(error){console.warn('本機記事狀態無法保存',error);}}
 window.pnToggleComplete=async function(type,ds,idx){
   if(!currentUser)return;
   var pn=S.privateNotes||{work:{},personal:{}};
@@ -3845,6 +3846,7 @@ window.pnToggleComplete=async function(type,ds,idx){
   S.privateNotes=Object.assign({},pn);
   S.privateNotes[type]=Object.assign({},pn[type]||{});
   S.privateNotes[type][ds]=items;
+  persistLocalPrivateNotes();
   setSyncing();
   await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
   setSynced();
@@ -3886,6 +3888,7 @@ window.pnAdd=async function(type,ds){
   S.privateSelected={};
   S.privateSelected[type+'|'+ds]=newIdx;
   S.privateEditing=null;
+  persistLocalPrivateNotes();
   updateFormulaBar(type,ds,newIdx,'');
   renderProgress();
   pnShowSelectedChip(type,ds,newIdx);
@@ -5693,6 +5696,7 @@ window.pnSaveBox=async function(el,type,ds,idx){
   S.privateNotes[type]=Object.assign({},pn[type]||{});
   S.privateNotes[type][ds]=items;
   S.privateEditing=null;
+  persistLocalPrivateNotes();
   setSyncing();
   await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
   setSynced();
