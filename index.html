@@ -662,7 +662,7 @@ function localWrite(collectionName,id,data,merge=false){
   else if(collectionName==='meetingLogs')S.meetingLogs[id]=merge?{...(S.meetingLogs[id]||{}),...value}:value;
   else if(collectionName==='globalNotes')S.globalNotes[id]=merge?{...(S.globalNotes[id]||{}),...value}:value;
   else if(collectionName==='projectTradeSelections')S.projectTradeSelections[id]=localClone(value.categories||{});
-  else if(collectionName==='privateNotes')S.privateNotes=merge?{...(S.privateNotes||{}),...value}:value;
+  else if(collectionName==='privateNotes'){S.privateNotes=merge?{...(S.privateNotes||{}),...value}:value;try{localStorage.setItem('localPreviewPrivateNotes_'+(currentUser?.uid||'local-test-admin'),JSON.stringify(S.privateNotes));}catch(error){console.warn('本機記事狀態無法保存',error);}}
   else if(collectionName==='userPrefs')userPrefs=merge?{...userPrefs,...value}:value;
   else if(collectionName==='settings'){
     if(id==='designCols')designCols=value.cols||DEFAULT_DESIGN_COLS;
@@ -1064,6 +1064,7 @@ window.enterLocalTestMode=async function(){
   S.meetingLogs['meet1_'+ds]={rowId:'meet1',date:ds,items:[{text:'本機測試會議－確認平面配置',mentions:['local-designer'],color:'',bg:''}]};
   S.dailyLogs={};
   S.dailyLogs['local-designer_'+ds]={uid:'local-designer',date:ds,text:'確認平面配置與工程項目',assigned:[{id:'local-task-1',text:'整理現場照片'}]};
+  try{const savedPrivateNotes=JSON.parse(localStorage.getItem('localPreviewPrivateNotes_'+currentUser.uid)||'null');if(savedPrivateNotes&&typeof savedPrivateNotes==='object')S.privateNotes=savedPrivateNotes;}catch(error){console.warn('本機記事狀態無法讀取',error);}
   S.userTodos=[{id:'local-todo-1',uid:currentUser.uid,projId:'local-demo-project',text:'確認本機下拉選單',done:false}];
   if(!materialGuides.length){try{const saved=localStorage.getItem('materialGuides');materialGuides=saved?JSON.parse(saved):await (await fetch('assets/material-guide-seed.json')).json();activeMaterialGuideId=materialGuides[0]?.id||'';}catch(error){console.error('material guide seed failed',error);}}
   $('login-screen').style.display='none';
