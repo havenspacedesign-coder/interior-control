@@ -218,6 +218,16 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .progress-horizontal-viewport{display:contents}
 .progress-week-content{position:sticky;top:calc(49px + var(--progress-controls-height,0px));z-index:24;background:var(--bg);box-shadow:0 1px 0 var(--border)}
 @media(min-width:769px){#panel-progress .progress-layout>.global-notes-panel{margin-top:101px}}
+.global-notes-panel{box-sizing:border-box;transition:width .2s ease,padding .2s ease}
+.global-notes-heading{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text2);white-space:nowrap}
+.global-notes-heading-text{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.global-notes-toggle{border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text2);font:inherit;font-size:11px;line-height:22px;min-width:24px;padding:0 6px;cursor:pointer;flex:none}
+.global-notes-toggle:hover{border-color:var(--purple);color:var(--pd);background:var(--pl)}
+.global-notes-panel.is-collapsed{width:42px!important;min-height:112px;padding:6px!important;overflow:hidden}
+.global-notes-panel.is-collapsed .global-notes-heading{flex-direction:column-reverse;justify-content:flex-start;gap:7px;margin-bottom:0}
+.global-notes-panel.is-collapsed .global-notes-heading-text{display:block;width:auto;overflow:visible;font-size:0}
+.global-notes-panel.is-collapsed .global-notes-heading-text::after{content:'我的記事本';display:block;font-size:11px;line-height:1.35;letter-spacing:1px;writing-mode:vertical-rl}
+.global-notes-panel.is-collapsed .global-note-body{display:none}
 .wtbl{border-collapse:collapse;font-size:12px;table-layout:fixed}
 .wtbl th{padding:6px 4px;text-align:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);font-weight:500}
 .wtbl th:first-child{position:sticky;left:0;top:0;z-index:15;background:var(--bg)}
@@ -2349,7 +2359,7 @@ function renderProgress(force){
     </div>`:''}
   </div>
   </div>
-  ${calMode==='todo'?renderTodoPanel():calMode==='notes'?renderGlobalNotesPanel(viewMonth):`
+  ${calMode==='todo'?renderTodoPanel():calMode==='notes'?renderGlobalNotesPanel(viewMonth,false):`
   ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
   ${calMode==='month'?renderMobileProgressDateHeader(weekDays)+`<div class="progress-horizontal-viewport hide-hscrollbar" id="progress-horizontal-viewport" style="--progress-timeline-width:${mobileProgressTimelineWidth(weekDays)}px">${renderWeekView(shouldShow)}${renderDailyLogSection(weekDays)}${renderPrivateTodoSection()}</div>`:renderDayView()}
   ${calMode==='month'?'':renderPrivateTodoSection()}
@@ -2394,16 +2404,25 @@ function getGlobalNoteText(viewMonth){
   return S.globalNotes[prefix+months[months.length-1]].text||'';
 }
 let globalNoteBoxHeight=null;
-function renderGlobalNotesPanel(viewMonth){
+function globalNotesCollapseStorageKey(){return currentUser?`notebookCollapsed_${currentUser.uid}`:'';}
+function globalNotesAreCollapsed(){const key=globalNotesCollapseStorageKey();try{return !!key&&localStorage.getItem(key)==='1';}catch(error){return false;}}
+window.toggleGlobalNotesPanel=function(){
+  const key=globalNotesCollapseStorageKey();
+  if(!key)return;
+  try{localStorage.setItem(key,globalNotesAreCollapsed()?'0':'1');}catch(error){console.warn('無法儲存記事本收合偏好',error);}
+  if(activePanel==='progress')renderProgress();
+};
+function renderGlobalNotesPanel(viewMonth,allowCollapse=true){
   if(!currentUser)return'';
   const text=getGlobalNoteText(viewMonth);
   const td=today();
   const curMonth=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0');
   const isFuture=viewMonth>curMonth;
+  const collapsed=allowCollapse&&globalNotesAreCollapsed();
   const heightStyle=globalNoteBoxHeight?`height:${globalNoteBoxHeight}`:'min-height:300px';
-  return`<div class="global-notes-panel" style="width:300px;flex-shrink:0;position:sticky;top:60px;border:1px solid var(--border);border-radius:var(--rl2);background:var(--surface);padding:10px;max-height:calc(100vh - 80px);overflow-y:auto">
-    <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text2)">📝 我的記事本${isFuture?' <span style="font-weight:400;color:var(--text3)">（未來月份，鎖定）</span>':''}</div>
-    <textarea id="global-note-box" placeholder="點此輸入…" ${isFuture?'readonly':`onblur="globalNoteBoxHeight=this.style.height;saveGlobalNote('${viewMonth}',this.value);saveNoteHeight(this.style.height)" onmouseup="globalNoteBoxHeight=this.style.height;saveNoteHeight(this.style.height)"`} style="width:100%;box-sizing:border-box;${heightStyle};border:1px solid var(--border);border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;${isFuture?'background:var(--bg);color:var(--text3);cursor:not-allowed':''}">${escAttr(text)}</textarea>
+  return`<div class="global-notes-panel${collapsed?' is-collapsed':''}" style="width:300px;flex-shrink:0;position:sticky;top:60px;border:1px solid var(--border);border-radius:var(--rl2);background:var(--surface);padding:10px;max-height:calc(100vh - 80px);overflow-y:auto">
+    <div class="global-notes-heading"><span class="global-notes-heading-text">📝 我的記事本${isFuture?' <span style="font-weight:400;color:var(--text3)">（未來月份，鎖定）</span>':''}</span>${allowCollapse?`<button class="global-notes-toggle" type="button" onclick="toggleGlobalNotesPanel()" title="${collapsed?'展開記事本':'收合記事本'}" aria-label="${collapsed?'展開記事本':'收合記事本'}">${collapsed?'›':'‹ 收合'}</button>`:''}</div>
+    <div class="global-note-body"><textarea id="global-note-box" placeholder="點此輸入…" ${isFuture?'readonly':`onblur="globalNoteBoxHeight=this.style.height;saveGlobalNote('${viewMonth}',this.value);saveNoteHeight(this.style.height)" onmouseup="globalNoteBoxHeight=this.style.height;saveNoteHeight(this.style.height)"`} style="width:100%;box-sizing:border-box;${heightStyle};border:1px solid var(--border);border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;${isFuture?'background:var(--bg);color:var(--text3);cursor:not-allowed':''}">${escAttr(text)}</textarea></div>
   </div>`;
 }
 window.saveNoteHeight=async function(height){
@@ -3323,7 +3342,15 @@ window.saveRecurringRule=async function(){
   const list=recurringSchedules().filter(x=>x.id!==id);list.push(rule);S.privateNotes.recurringSchedules=list;await syncRecurringRule(rule,!enabled,recurringSyncThroughDate());await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);openRecurringManager();
 }
 window.toggleRecurringRule=async function(id){const list=recurringSchedules(),r=list.find(x=>x.id===id);if(!r)return;r.enabled=!r.enabled;if(r.enabled)r.enabledFrom=fmtDay(today());S.privateNotes.recurringSchedules=list;await syncRecurringRule(r,!r.enabled,recurringSyncThroughDate());await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);openRecurringManager();}
-window.deleteRecurringRule=async function(id){const r=recurringSchedules().find(x=>x.id===id);if(!r||!confirm('刪除排程設定？過去與已完成項目會保留。'))return;await syncRecurringRule(r,true);S.privateNotes.recurringSchedules=recurringSchedules().filter(x=>x.id!==id);await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);openRecurringManager();}
+window.deleteRecurringRule=async function(id){
+  const r=recurringSchedules().find(x=>x.id===id);
+  if(!r||!confirm('刪除排程設定？過去與已完成項目會保留。'))return;
+  // 先從規則清單移除，再一次儲存清除後的未來項目，避免監聽更新時把啟用中的規則重建回來。
+  S.privateNotes=Object.assign({},S.privateNotes,{recurringSchedules:recurringSchedules().filter(x=>x.id!==id)});
+  await syncRecurringRule(r,true,undefined,true);
+  await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+  openRecurringManager();
+}
 
 function renderPrivateTodoSection(){
   if(calMode!=='month')return'';
