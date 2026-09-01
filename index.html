@@ -3841,7 +3841,7 @@ window.pnToggleComplete=async function(type,ds,idx){
     completed:nowDone,
     color:nowDone?'#E24B4A':(items[idx].color==='#E24B4A'?'':items[idx].color),
     completedBy:nowDone?currentUser.uid:null,
-    completedAt:nowDone?serverTimestamp():null
+    completedAt:nowDone?new Date().toISOString():null
   });
   S.privateNotes=Object.assign({},pn);
   S.privateNotes[type]=Object.assign({},pn[type]||{});
