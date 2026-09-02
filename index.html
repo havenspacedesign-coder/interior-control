@@ -4820,6 +4820,23 @@ function renderBible(){
       ${activeBibleStage?renderBibleDetail(activeBibleStage):`<div class="empty">請新增工程階段後選取</div>`}
     </div>
   </div>`;
+  restoreBibleScrollPosition();
+}
+let pendingBibleScrollPosition=null;
+function rememberBibleScrollPosition(){
+  const wrap=$('panel-bible')?.querySelector('.bible-wrap');
+  if(!wrap)return;
+  pendingBibleScrollPosition={stages:wrap.querySelector('.bible-stages')?.scrollTop||0,detail:wrap.querySelector('.bible-detail')?.scrollTop||0};
+}
+function restoreBibleScrollPosition(){
+  if(!pendingBibleScrollPosition)return;
+  const position=pendingBibleScrollPosition;
+  pendingBibleScrollPosition=null;
+  const wrap=$('panel-bible')?.querySelector('.bible-wrap');
+  if(!wrap)return;
+  const stages=wrap.querySelector('.bible-stages'),detail=wrap.querySelector('.bible-detail');
+  if(stages)stages.scrollTop=position.stages;
+  if(detail)detail.scrollTop=position.detail;
 }
 function renderBibleDetail(stage){
   if(bibleView==='worksite')return renderBibleWorksite(stage);
@@ -4923,6 +4940,7 @@ function renderBibleItemNode(stage,phase,path,rawItem){
 window.toggleBibleSubItems=function(stage,phase,pathStr){
   const key=stage+'|'+phase+'|'+pathStr;
   expandedBibleItems[key]=!expandedBibleItems[key];
+  rememberBibleScrollPosition();
   renderBible();
 }
 window.startEditBibleNode=function(stage,phase,pathStr,el){
@@ -4950,6 +4968,7 @@ window.addBibleItem=async function(stage,phase){
   const text=inp.value.trim();if(!text)return;
   const data=S.bible[stage]||{before:[],during:[],after:[]};
   const updated={...data,[phase]:[...(data[phase]||[]),text]};
+  rememberBibleScrollPosition();
   setSyncing();await setDoc(doc(db,'bible',stage),updated);inp.value='';setSynced();
 }
 window.addBibleChildAtPath=async function(stage,phase,pathStr){
@@ -4963,6 +4982,7 @@ window.addBibleChildAtPath=async function(stage,phase,pathStr){
   const updated={...data,[phase]:newArr};
   S.bible=Object.assign({},S.bible,{[stage]:updated});
   expandedBibleItems[stage+'|'+phase+'|'+pathStr]=false;
+  rememberBibleScrollPosition();
   renderBible();
   setSyncing();await setDoc(doc(db,'bible',stage),updated);setSynced();
 }
