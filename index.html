@@ -4037,15 +4037,15 @@ window.pnAdd=async function(type,ds){
   selGen++;
   S.privateSelected={};
   S.privateSelected[type+'|'+ds]=newIdx;
-  S.privateEditing=null;
+  S.privateEditing={type:type,ds:ds,idx:newIdx};
   persistLocalPrivateNotes();
   updateFormulaBar(type,ds,newIdx,'');
   renderProgress();
-  pnShowSelectedChip(type,ds,newIdx);
+  var newInput=document.getElementById('pnbox-'+type+'-'+ds+'-'+newIdx);
+  if(newInput){newInput.focus({preventScroll:true});newInput.setSelectionRange(0,0);}
   setSyncing();
   await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
   setSynced();
-  pnShowSelectedChip(type,ds,newIdx);
 }
 function pnShowSelectedChip(type,ds,idx){
   var cell=document.querySelector('[data-pn-cell="'+type+'|'+ds+'"]');
