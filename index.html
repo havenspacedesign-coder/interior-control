@@ -3257,6 +3257,18 @@ function renderTodoPanel(){
   </div>`;
 }
 let selectedTodoId=null;
+let todoTextTapState={key:'',time:0};
+window.handleTodoTextTap=function(key,el,event){
+  event.stopPropagation();
+  const now=Date.now();
+  if(todoTextTapState.key===key&&now-todoTextTapState.time<550){
+    todoTextTapState={key:'',time:0};
+    startEditTodoItem(key,el);
+    return;
+  }
+  todoTextTapState={key:key,time:now};
+  selectTodoItem(key);
+};
 window.selectTodoItem=function(id){
   selectedTodoId=(selectedTodoId===id)?null:id;
   // Direct style toggle instead of a full renderProgress() — a full
@@ -3276,10 +3288,9 @@ function renderTodoItem(t){
     :`toggleManualTodo('${t.id}',${!t.completed})`;
   const key=t.source==='manual'?('m:'+t.id):('n:'+t.type+':'+t.ds+':'+t.idx);
   const isSel=selectedTodoId===key;
-  const dblclick=`event.stopPropagation();startEditTodoItem('${key}',this)`;
   return`<div class="todo-item-row" data-todo-key="${key}" onclick="event.stopPropagation();selectTodoItem('${key}')" style="display:flex;align-items:flex-start;gap:5px;font-size:11px;padding:4px 4px;border-bottom:1px solid var(--border);${isSel?'background:var(--pl);border-radius:4px':''}">
     <span onclick="event.stopPropagation();${toggleOnclick}" style="cursor:pointer;flex-shrink:0">${t.completed?'✅':'⬜'}</span>
-    <span ondblclick="${dblclick}" style="flex:1;word-break:break-word;${doneStyle}">${escAttr(t.text)}</span>
+    <span onclick="handleTodoTextTap('${key}',this,event)" style="flex:1;word-break:break-word;${doneStyle};touch-action:manipulation;user-select:none">${escAttr(t.text)}</span>
   </div>`;
 }
 window.startEditTodoItem=function(key,el){
