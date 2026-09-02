@@ -3322,7 +3322,7 @@ function renderTodoColumn(p){
   const all=[...noteTodos,...manualTodos].sort((a,b)=>(a.completed?1:0)-(b.completed?1:0));
   return`<div style="min-width:210px;flex-shrink:0;border:1px solid var(--border);border-radius:var(--r);padding:8px">
     <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--purple)">${p.name}</div>
-    <input type="text" placeholder="+ 新增待辦…" onkeydown="if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){addManualTodo('${p.id}',this.value);this.value='';}" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 6px;border:1px dashed var(--border);border-radius:4px;margin-bottom:5px;font-family:inherit">
+    <input type="text" placeholder="+ 新增待辦…" inputmode="text" enterkeyhint="done" onkeydown="if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){addManualTodo('${p.id}',this.value);this.value='';}" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 6px;border:1px dashed var(--border);border-radius:4px;margin-bottom:5px;font-family:inherit">
     ${all.length?all.map(t=>renderTodoItem(t)).join(''):'<div style="font-size:11px;color:var(--text3)">尚無待辦事項</div>'}
   </div>`;
 }
@@ -4318,7 +4318,7 @@ document.addEventListener('pointerdown',function(e){
   const scroller=getHorizontalPointerScroller(e.target);
   if(!scroller||scroller.scrollWidth<=scroller.clientWidth+1)return;
   if(e.target.closest('button,a,[contenteditable="true"]'))return;
-  if(e.pointerType==='mouse'&&e.target.closest('input,textarea,select,[draggable="true"],.ev-chip,.pn-chip,.meet-chip'))return;
+  if(e.target.closest('input,textarea,select,[contenteditable="true"],[draggable="true"],.ev-chip,.pn-chip,.meet-chip'))return;
   stopHorizontalInertia();
   horizontalPointerDrag={pointerId:e.pointerId,scroller:scroller,startX:e.clientX,startY:e.clientY,lastX:e.clientX,lastTime:e.timeStamp,velocity:0,dragged:false};
 },true);
