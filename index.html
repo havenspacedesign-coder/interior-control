@@ -4821,15 +4821,15 @@ function renderBible(){
   restoreBibleScrollPosition();
 }
 let pendingBibleScrollPosition=null;
-function rememberBibleScrollPosition(){
+function rememberBibleScrollPosition(renderCount=1){
   const wrap=$('panel-bible')?.querySelector('.bible-wrap');
   if(!wrap)return;
-  pendingBibleScrollPosition={stages:wrap.querySelector('.bible-stages')?.scrollTop||0,detail:wrap.querySelector('.bible-detail')?.scrollTop||0};
+  pendingBibleScrollPosition={stages:wrap.querySelector('.bible-stages')?.scrollTop||0,detail:wrap.querySelector('.bible-detail')?.scrollTop||0,remaining:renderCount};
 }
 function restoreBibleScrollPosition(){
   if(!pendingBibleScrollPosition)return;
   const position=pendingBibleScrollPosition;
-  pendingBibleScrollPosition=null;
+  if(--position.remaining<=0)pendingBibleScrollPosition=null;
   const wrap=$('panel-bible')?.querySelector('.bible-wrap');
   if(!wrap)return;
   const stages=wrap.querySelector('.bible-stages'),detail=wrap.querySelector('.bible-detail');
@@ -4980,7 +4980,7 @@ window.addBibleChildAtPath=async function(stage,phase,pathStr){
   const updated={...data,[phase]:newArr};
   S.bible=Object.assign({},S.bible,{[stage]:updated});
   expandedBibleItems[stage+'|'+phase+'|'+pathStr]=false;
-  rememberBibleScrollPosition();
+  rememberBibleScrollPosition(2);
   renderBible();
   setSyncing();await setDoc(doc(db,'bible',stage),updated);setSynced();
 }
