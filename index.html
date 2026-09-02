@@ -4794,8 +4794,6 @@ function renderBible(){
       <div style="font-size:15px;font-weight:600">施工寶典</div>
       <div style="font-size:12px;color:var(--text2);margin-top:2px">新增階段後可在工程進度選取，自動帶入待辦清單</div>
       ${isAdmin()&&dragModeOn?`<button class="btn btn-p btn-sm" style="margin-top:8px" onclick="showAddStage()">＋ 新增階段</button>`:''}
-      ${isAdmin()&&dragModeOn&&Object.keys(WORD_BIBLE_IMPORT).some(s=>!stages.includes(s))?`<button class="btn btn-sm" style="margin-top:8px;margin-left:6px" onclick="confirmImportWordBible()">匯入 Word 施工寶典</button>`:''}
-      ${isAdmin()&&dragModeOn?`<button class="btn btn-sm" style="margin-top:8px;margin-left:6px" onclick="confirmSortStagesByNumber()">校正階段順序</button>`:''}
     </div>
     <div class="flex">
       <div class="seg">
