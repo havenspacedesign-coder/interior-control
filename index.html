@@ -1025,7 +1025,17 @@ window.signInWithGoogle=async function(){
   googleSignInInProgress=true;
   try{
     if(isIOSDevice||isStandaloneMode)await signInWithRedirect(auth,provider);
-    else await signInWithPopup(auth,provider);
+    else{
+      try{await signInWithPopup(auth,provider);}
+      catch(e){
+        // 內嵌瀏覽器可能會自動關閉 Google 彈出式視窗；改以整頁導向登入。
+        if(['auth/popup-closed-by-user','auth/popup-blocked','auth/cancelled-popup-request'].includes(e?.code)){
+          await signInWithRedirect(auth,provider);
+          return;
+        }
+        throw e;
+      }
+    }
   }catch(e){
     googleSignInInProgress=false;
     alert('登入失敗：'+e.message);
