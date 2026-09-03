@@ -883,6 +883,15 @@ function getBibleStages(){
 function displayStageName(stage){
   return String(stage||'').replace(/^.*?、\s*/,'').trim();
 }
+// 排程可能仍保存已刪除或改名前的階段鍵值。只要其顯示名稱可唯一對應
+// 到現有施工寶典，就在畫面上自動接回該階段，避免失去 checklist 連結。
+function resolveBibleStage(stage,label){
+  if(stage&&S.bible[stage])return stage;
+  const name=displayStageName(label||stage);
+  if(!name)return '';
+  const matches=getBibleStages().filter(candidate=>S.bible[candidate]&&displayStageName(candidate)===name);
+  return matches.length===1?matches[0]:'';
+}
 function getBiblePhaseItems(stage,phase){const b=S.bible[stage];return(b&&b[phase])?b[phase]:[];}
 // A bible item used to always be a plain string. It can now be an object
 // {text, subs:[...]} so it can carry indented sub-items. This normalizes
@@ -2632,12 +2641,13 @@ function renderWeekView(shouldShow){
     const isOpen=openPicker&&openPicker.projId===p.id&&openPicker.ds===ds;
     return`<td class="ev-cell ${isT?'tc':''}" style="min-height:88px" onclick="handleCellBg(event,'${p.id}','${ds}')" ondragover="event.preventDefault()" ondrop="evDrop(event,'${p.id}','${ds}')">
       ${allEvs.map((ev,ei)=>{
-        const pn=pendingCount(p.id,ev.stage);
+        const resolvedStage=resolveBibleStage(ev.stage,ev.label);
+        const pn=pendingCount(p.id,resolvedStage);
         const isSel=selectedTag&&selectedTag.projId===p.id&&selectedTag.ds===ds&&selectedTag.ei===ei;
         return`<div class="ev-row">
           <span class="ev-chip${isSel?' sel':''}" style="background:${sc(pi)};color:${tc(pi)}"
             draggable="true" ondragstart="evDragStart(event,'${p.id}','${ds}',${ei})"
-            onclick="event.stopPropagation();handleChipClick(event,'${p.id}','${ds}',${ei},'${ev.stage||''}')">${displayStageName(ev.label||ev.stage||'?')}${pendBadge(pn)}</span>
+            onclick="event.stopPropagation();handleChipClick(event,'${p.id}','${ds}',${ei},'${resolvedStage}')">${displayStageName(ev.label||ev.stage||'?')}${pendBadge(pn)}</span>
           <span class="ev-field excel-cell ${scheduleCellIsSelected(p.id,ds,ei)?'excel-selected':''} ${scheduleCellIsEditing(p.id,ds,ei)?'excel-editing':''}" data-proj="${p.id}" data-ds="${ds}" data-ei="${ei}" data-field="note" contenteditable="${scheduleCellIsEditing(p.id,ds,ei)?'true':'false'}"
             onclick="event.stopPropagation();selectScheduleCell(this)" ondblclick="event.stopPropagation();startFieldEdit(this)" onblur="saveScheduleCell(this)" onkeydown="scheduleCellKeyDown(event,this)">${escAttr(ev.note||'')}</span>
           ${!isDone?`<button class="ev-del" onclick="event.stopPropagation();removeEv('${p.id}','${ds}',${ei})">×</button>`:''}
@@ -4726,11 +4736,11 @@ function renderDayView(){
     if(!evs.length)return;hasAny=true;
     html+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:14px 16px;margin-bottom:10px">
       <div style="font-size:13px;font-weight:500;margin-bottom:8px;color:${tc(pi)}">${p.name}</div>
-      ${evs.map(ev=>{const pn=pendingCount(p.id,ev.stage);
+      ${evs.map(ev=>{const resolvedStage=resolveBibleStage(ev.stage,ev.label),pn=pendingCount(p.id,resolvedStage);
         return`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
           ${ev.time?`<span style="font-size:11px;color:var(--text2)">${ev.time}</span>`:''}
           <span style="background:${sc(pi)};color:${tc(pi)};padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer"
-            onclick="openCheckMo('${p.id}','${ev.stage}','${ev.label||ev.stage}','${p.name}')">${ev.label||ev.stage}</span>
+            onclick="openCheckMo('${p.id}','${resolvedStage}','${ev.label||ev.stage}','${p.name}')">${ev.label||ev.stage}</span>
           ${ev.note?`<span style="font-size:11px;color:var(--text2)">${ev.note}</span>`:''}
           ${pendBadge(pn)}
         </div>`;}).join('')}
@@ -5199,9 +5209,11 @@ window.addStage=async function(){
   }catch(err){alert('新增階段失敗：'+err.message);setSynced();}
 }
 window.confirmDeleteStage=function(stage){
+  const relinkTarget=findStageRelinkTarget(stage);
   $('mo-content').innerHTML=`
     <div class="mo-title">確定要刪除整個階段嗎？</div>
     <div class="mo-sub">「${stage}」底下所有項目也會一併刪除</div>
+    ${relinkTarget?`<div class="mo-sub" style="margin-top:8px;color:var(--purple)">工程進度中原本連結「${displayStageName(stage)}」的項目，會改連結到「${displayStageName(relinkTarget)}」。</div>`:''}
     <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-danger" id="mo-confirm-btn" onclick="closeMo();deleteStage('${stage}')">刪除</button></div>`;
   $('modal').style.display='flex';
   setTimeout(()=>{const b=$('mo-confirm-btn');if(b)b.focus();},0);
@@ -5209,6 +5221,7 @@ window.confirmDeleteStage=function(stage){
 window.deleteStage=async function(stage){
   if(!isAdmin())return;
   const order=getBibleStages().filter(s=>s!==stage);
+  const relinkTarget=findStageRelinkTarget(stage,order);
   setSyncing();
   try{
     await deleteDoc(doc(db,'bible',stage));
@@ -5216,8 +5229,22 @@ window.deleteStage=async function(stage){
     const snap=await getDocs(collection(db,'checks'));
     const batch=writeBatch(db);
     snap.docs.filter(d=>d.id.endsWith('_'+stage)).forEach(d=>batch.delete(doc(db,'checks',d.id)));
-    await batch.commit();activeBibleStage=null;setSynced();
+    await batch.commit();
+    if(relinkTarget){
+      const sourceLabel=displayStageName(stage),targetLabel=displayStageName(relinkTarget);
+      for(const p of S.projects){
+        const schedule=p.schedule||[];
+        if(!schedule.some(e=>e.stage===stage))continue;
+        const updatedSchedule=schedule.map(e=>e.stage!==stage?e:{...e,stage:relinkTarget,label:displayStageName(e.label||e.stage)===sourceLabel?targetLabel:e.label});
+        await updateDoc(doc(db,'projects',p.id),{schedule:updatedSchedule});
+      }
+    }
+    activeBibleStage=null;setSynced();
   }catch(err){alert('刪除階段失敗：'+err.message);setSynced();}
+}
+function findStageRelinkTarget(stage,stages=getBibleStages()){
+  const matches=stages.filter(candidate=>candidate!==stage&&displayStageName(candidate)===displayStageName(stage));
+  return matches.length===1?matches[0]:null;
 }
 
 // ── Vendor information ──
