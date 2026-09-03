@@ -2135,6 +2135,13 @@ window.saveSiteNote=async function(projId,val){
 }
 
 // ── Design ──
+// 施工階段欄位要能完整容納「年／月／日／＋」同一行。
+const DESIGN_STAGE_MIN_WIDTH=180;
+function designColumnMinWidth(key){
+  if(!String(key).startsWith('c'))return 60;
+  const column=getDesignCols()[Number(String(key).slice(1))];
+  return column?.kind==='text'&&/^(?:[1-9]|1\d|20)$/.test(String(column.name))?DESIGN_STAGE_MIN_WIDTH:60;
+}
 let designRowDragInProgress=false,designRowDragSrc=null,pendingDesignRender=false;
 function sortDesignProjs(projs){
   if(!designProjectOrder.length)return projs;
@@ -2154,7 +2161,7 @@ function renderDesign(){
   const allProjs=sortDesignProjs(S.projects.filter(p=>['contact','design','cv'].includes(p.status)));
   const isOpen=designBlueColsGlobalOpen;
   const editing=designEditMode;
-  function colW(key,fallback){return designColWidths[key]||fallback;}
+  function colW(key,fallback){return Math.max(designColumnMinWidth(key),Number(designColWidths[key])||fallback);}
   const visibleCols=[...(blueCols.length&&isOpen?blueCols:[]),...redCols];
   const designTableWidth=(editing?22:0)+colW('name',150)+colW('budget',90)+(blueCols.length?22:0)+visibleCols.reduce((sum,c)=>sum+colW('c'+cols.indexOf(c),150),0);
   const handle=(key)=>editing?`<span class="col-resize" onmousedown="startColResize(event,'${key}')"></span>`:'';
@@ -2255,37 +2262,19 @@ function renderDesignCell(p,col){
   const dy=dp[colKey+'__date_y']!==undefined?dp[colKey+'__date_y']:(dparts[0]||'');
   const dm=dp[colKey+'__date_m']!==undefined?dp[colKey+'__date_m']:(dparts[1]?parseInt(dparts[1],10):'');
   const dd=dp[colKey+'__date_d']!==undefined?dp[colKey+'__date_d']:(dparts[2]?parseInt(dparts[2],10):'');
-  const dateRow=`<div style="display:flex;align-items:center;gap:2px;font-size:10px;color:var(--text2);padding:3px 4px 0">
-    <input id="ddy-${p.id}-${colKey}" type="number" value="${dy}" onchange="saveDesignDate('${p.id}','${colKey}')" style="width:40px;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">年
-    <input id="ddm-${p.id}-${colKey}" type="number" min="1" max="12" value="${dm}" onchange="saveDesignDate('${p.id}','${colKey}')" style="width:28px;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">月
-    <input id="ddd-${p.id}-${colKey}" type="number" min="1" max="31" value="${dd}" onchange="saveDesignDate('${p.id}','${colKey}')" style="width:28px;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">日
+  const dateRow=`<div style="display:flex;align-items:center;flex-wrap:nowrap;white-space:nowrap;gap:2px;font-size:10px;color:var(--text2);padding:3px 4px 0;min-width:172px;box-sizing:border-box;overflow:hidden">
+    <input id="ddy-${p.id}-${colKey}" type="number" value="${dy}" onchange="saveDesignDate('${p.id}','${colKey}')" style="width:40px;flex:0 0 40px;box-sizing:border-box;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">年
+    <input id="ddm-${p.id}-${colKey}" type="number" min="1" max="12" value="${dm}" onchange="saveDesignDate('${p.id}','${colKey}')" style="width:28px;flex:0 0 28px;box-sizing:border-box;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">月
+    <input id="ddd-${p.id}-${colKey}" type="number" min="1" max="31" value="${dd}" onchange="saveDesignDate('${p.id}','${colKey}')" style="width:28px;flex:0 0 28px;box-sizing:border-box;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">日
+    <button type="button" onclick="addDesignStageLink('${p.id}','${colKey}')" title="新增同日施工寶典" aria-label="新增同日施工寶典" style="width:18px;height:18px;flex:0 0 18px;padding:0;border:1px solid rgba(120,120,120,.18);border-radius:4px;background:transparent;color:var(--text3);opacity:.62;font:inherit;font-size:13px;line-height:1;cursor:pointer">＋</button>
   </div>`;
-  // text column — supports #stage to link a 施工寶典 stage's checklist
-  if(val.startsWith('#')){
-    const stage=val.slice(1);
-    if(getBibleStages().includes(stage)){
-      const key=`${p.id}_${stage}`;const stored=S.checks[key]||[];
-      const allItems=projectBibleItems(p,stage);
-      const remaining=allItems.length-allItems.filter((t,i)=>stored[i]?.done||stored[i]?.skip).length;
-      return`<td>
-        ${dateRow}
-        <div style="padding:3px 4px 4px;position:relative;min-height:38px">
-          <span onclick="openCheckMo('${p.id}','${stage}','${stage}','${p.name}')" style="cursor:pointer;background:var(--pl);color:var(--pd);padding:3px 7px;border-radius:5px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:7px;max-width:100%;line-height:1.35">
-            <span style="min-width:0;overflow-wrap:break-word;word-break:normal">#${displayStageName(stage)}${pendBadge(remaining)}</span>
-            <span onclick="event.stopPropagation();confirmClearDesignStage('${p.id}','${colKey}','${escAttr(displayStageName(stage))}')" title="刪除標記" style="cursor:pointer;color:var(--text3);font-size:14px;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">×</span>
-          </span>
-        </div>
-      </td>`;
-    }
-  }
-  return`<td class="${!val.trim()?'empty-cell':''}">
-    ${dateRow}
-    <input type="text" class="design-cell-input" id="dcell-${p.id}-${colKey}" value="${escAttr(val)}" placeholder="" autocomplete="off"
-      oninput="dcHashCheck(this,'${p.id}','${colKey}')"
-      onblur="saveDesignField('${p.id}','${colKey}',this.value)"
-      onkeydown="if(event.key==='Enter')this.blur()">
-    <div class="pn-mention-menu" id="dc-hash-${p.id}-${colKey}" style="display:none"></div>
-  </td>`;
+  const savedLinks=Array.isArray(dp[colKey+'__stageLinks'])?dp[colKey+'__stageLinks']:(val?[val]:['']);
+  const links=savedLinks.length?savedLinks:[''];
+  const linkMarkup=links.map((link,index)=>{
+    if(link.startsWith('#')&&getBibleStages().includes(link.slice(1))){const stage=link.slice(1),stored=S.checks[`${p.id}_${stage}`]||[],allItems=projectBibleItems(p,stage),remaining=allItems.length-allItems.filter((t,i)=>stored[i]?.done||stored[i]?.skip).length;return`<div style="padding:3px 4px 0;position:relative;min-height:28px"><span onclick="openCheckMo('${p.id}','${stage}','${stage}','${p.name}')" style="cursor:pointer;background:var(--pl);color:var(--pd);padding:3px 7px;border-radius:5px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:7px;max-width:100%;line-height:1.35"><span style="min-width:0;overflow-wrap:break-word;word-break:normal">#${displayStageName(stage)}${pendBadge(remaining)}</span><span onclick="event.stopPropagation();removeDesignStageLink('${p.id}','${colKey}',${index})" title="刪除標記" style="cursor:pointer;color:var(--text3);font-size:14px;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">×</span></span></div>`;}
+    return`<div style="padding:3px 4px 0"><input type="text" class="design-cell-input" id="dcell-${p.id}-${colKey}-${index}" value="${escAttr(link)}" autocomplete="off" oninput="dcHashCheckLink(this,'${p.id}','${colKey}',${index})" onblur="saveDesignStageLink('${p.id}','${colKey}',${index},this.value)" onkeydown="if(event.key==='Enter')this.blur()"><div class="pn-mention-menu" id="dc-hash-link-${p.id}-${colKey}-${index}" style="display:none"></div></div>`;
+  }).join('');
+  return`<td class="${links.some(Boolean)?'':'empty-cell'}">${dateRow}${linkMarkup}</td>`;
 }
 window.saveDesignDate=async function(projId,colName){
   const yEl=$(`ddy-${projId}-${colName}`),mEl=$(`ddm-${projId}-${colName}`),dEl=$(`ddd-${projId}-${colName}`);
@@ -2322,6 +2311,11 @@ window.saveDesignField=async function(projId,col,val){
   await updateDoc(doc(db,'projects',projId),{designProgress:dp});
   setSynced();
 }
+function designStageLinks(proj,col){const dp=proj?.designProgress||{},legacy=dp[col]||'',stored=dp[col+'__stageLinks'];return Array.isArray(stored)?[...stored]:(legacy?[legacy]:['']);}
+window.addDesignStageLink=async function(projId,col){const proj=S.projects.find(p=>p.id===projId);if(!proj)return;const links=designStageLinks(proj,col);links.push('');await saveDesignStageLinks(projId,col,links);};
+window.saveDesignStageLink=async function(projId,col,index,value){const proj=S.projects.find(p=>p.id===projId);if(!proj)return;const links=designStageLinks(proj,col);links[index]=(value||'').trim();await saveDesignStageLinks(projId,col,links);};
+window.removeDesignStageLink=async function(projId,col,index){const proj=S.projects.find(p=>p.id===projId),links=designStageLinks(proj,col);if(!proj||!confirm('確定刪除此施工寶典連結？'))return;links.splice(index,1);await saveDesignStageLinks(projId,col,links.length?links:['']);};
+async function saveDesignStageLinks(projId,col,links){const proj=S.projects.find(p=>p.id===projId);if(!proj)return;const next=links.map(v=>String(v||'').trim()),dp={...(proj.designProgress||{}),[col]:next[0]||'',[col+'__stageLinks']:next};proj.designProgress=dp;if(localTestMode){setSynced();renderDesign();return;}setSyncing();await updateDoc(doc(db,'projects',projId),{designProgress:dp});setSynced();}
 function refreshDesignColSettingsIfOpen(){
   if($('modal').style.display==='flex'&&$('mo-content').querySelector('.mo-title')?.textContent==='欄位設定')openDesignColSettings();
 }
@@ -2434,6 +2428,8 @@ window.dcPickStage=function(projId,colName,stage){
   saveDesignField(projId,colName,'#'+stage);
   setTimeout(function(){if(activePanel==='design')renderDesign();},0);
 }
+window.dcHashCheckLink=function(el,projId,colName,index){const val=el.value||'',pos=el.selectionStart||0,textBefore=val.substring(0,pos),hIdx=textBefore.lastIndexOf('#'),menuEl=document.getElementById(`dc-hash-link-${projId}-${colName}-${index}`);if(!menuEl)return;if(hIdx>=0&&textBefore.indexOf(' ',hIdx)<0){const q=textBefore.substring(hIdx+1).toLowerCase(),matches=getDesignBibleStages().filter(s=>s.toLowerCase().includes(q));if(matches.length){const rect=el.getBoundingClientRect();menuEl.style.cssText=`display:block;position:fixed;top:${rect.bottom+4}px;left:${rect.left}px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:140px;max-height:200px;overflow-y:auto`;menuEl.innerHTML=matches.map(s=>`<div onmousedown="event.preventDefault();dcPickStageLink('${projId}','${colName}',${index},'${s}')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)">#${displayStageName(s)}</div>`).join('');return;}}menuEl.style.display='none';};
+window.dcPickStageLink=function(projId,colName,index,stage){const menuEl=document.getElementById(`dc-hash-link-${projId}-${colName}-${index}`);if(menuEl)menuEl.style.display='none';const inputEl=document.getElementById(`dcell-${projId}-${colName}-${index}`);if(inputEl)inputEl.onblur=null;saveDesignStageLink(projId,colName,index,'#'+stage);};
 window.toggleDesignEditMode=function(){designEditMode=!designEditMode;renderDesign();}
 let resizing=null;
 window.startColResize=function(e,key){
@@ -2444,7 +2440,7 @@ window.startColResize=function(e,key){
   resizing={key,startX,startW,th};
   document.onmousemove=function(me){
     if(!resizing)return;
-    const newW=Math.max(60,resizing.startW+(me.clientX-resizing.startX));
+    const newW=Math.max(designColumnMinWidth(resizing.key),resizing.startW+(me.clientX-resizing.startX));
     if(resizing.th)resizing.th.style.width=newW+'px';
   };
   document.onmouseup=async function(){
