@@ -5563,7 +5563,7 @@ window.showEditProject=function(projId){
 }
 let projectFormDraft=null;
 window.captureProjectFormDraft=function(){
-  const ids=['np-referrer','np-name','np-site-tag','np-owner','np-phone','np-address','np-panorama-url','np-type-kind','np-type-building','np-designer','np-budget','np-area','np-price','np-contract-amount','np-process','np-status'];
+  const ids=['np-referrer','np-name','np-site-tag','np-owner','np-phone','np-type-kind','np-type-building','np-address','np-panorama-url','np-designer','np-budget','np-area','np-price','np-render-url','np-contract-amount','np-process','np-status'];
   const values={};ids.forEach(id=>{const el=$(id);if(el)values[id]=el.value;});
   values.budgetIncludeFurniture=!!$('np-budget-furniture')?.checked;values.budgetIncludeAC=!!$('np-budget-ac')?.checked;
   values.contractStart=ymdValue('np-cs');values.contractEnd=ymdValue('np-ce');projectFormDraft=values;return values;
@@ -5586,9 +5586,9 @@ function showProjectForm(projId,draft=null){
     <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:65vh;overflow-y:auto">
       <div class="project-form-pair"><input id="np-name" type="text" placeholder="案件名稱*" value="${escAttr(p?.name||'')}"><input id="np-site-tag" type="text" maxlength="12" placeholder="工地標記（例如：平等街）" value="${escAttr(p?.siteTag||'')}"></div>
       <div class="project-form-pair"><input id="np-owner" type="text" placeholder="業主姓名" value="${escAttr(p?.owner||'')}"><input id="np-phone" type="text" placeholder="電話" value="${escAttr(p?.phone||'')}"></div>
+      <div class="project-type-pair"><select id="np-type-kind" onchange="updateProjectTypeRequired()"><option value=""></option>${['預售屋','新成屋','中古屋'].map(v=>`<option value="${v}" ${typeParts.includes(v)?'selected':''}>${v}</option>`).join('')}</select><select id="np-type-building" onchange="updateProjectTypeRequired()"><option value=""></option>${['公寓','電梯大樓','透天別墅'].map(v=>`<option value="${v}" ${typeParts.includes(v)?'selected':''}>${v}</option>`).join('')}</select></div>
       <input id="np-address" type="text" placeholder="案件地址" value="${escAttr(p?.address||'')}">
       <input id="np-panorama-url" type="text" inputmode="url" placeholder="Google 相簿 3D 環景網址（https://…）" value="${escAttr(p?.panoramaUrl||'')}">
-      <div class="project-type-pair"><select id="np-type-kind" onchange="updateProjectTypeRequired()"><option value=""></option>${['預售屋','新成屋','中古屋'].map(v=>`<option value="${v}" ${typeParts.includes(v)?'selected':''}>${v}</option>`).join('')}</select><select id="np-type-building" onchange="updateProjectTypeRequired()"><option value=""></option>${['公寓','電梯大樓','透天別墅'].map(v=>`<option value="${v}" ${typeParts.includes(v)?'selected':''}>${v}</option>`).join('')}</select></div>
       <input id="np-designer" type="text" placeholder="設計師" value="${escAttr(p?.designer||'')}">
       <div class="project-budget-row">
         <label class="project-budget-field"><input id="np-budget" type="text" placeholder="預算" value="${escAttr(p?.budget||'')}"><span class="project-budget-unit">萬</span></label>
@@ -5603,6 +5603,7 @@ function showProjectForm(projId,draft=null){
         <input class="project-number-input" id="np-price" type="number" placeholder="單坪價格" oninput="updateNPAmount()" value="${escAttr(p?.pricePerPing||'')}" style="flex:1">
       </div>
       <div style="font-size:12px;color:var(--text2)">設計合約金額（自動計算）：<span id="np-design-amount" style="font-weight:600;color:var(--text)">${p?((parseFloat(p.area)||0)*(parseFloat(p.pricePerPing)||0)).toLocaleString():'0'}</span></div>
+      <input id="np-render-url" type="text" inputmode="url" placeholder="3D 渲染圖網址（https://…）" value="${escAttr(p?.renderUrl||'')}">
       <input id="np-contract-amount" type="text" placeholder="工程合約金額" value="${escAttr(p?.contractAmount||'')}">
       <div class="project-date-pair">${ymdInputs('np-cs','合約起始日')}${ymdInputs('np-ce','完工日')}</div>
       <textarea id="np-process" placeholder="廠商施工流程…" rows="10" oninput="autoGrow(this)" style="font-family:inherit;padding:8px;border:1px solid var(--border);border-radius:var(--r);overflow-y:auto;resize:none;min-height:190px;max-height:340px">${escAttr(p?.process||'')}</textarea>
@@ -5625,7 +5626,9 @@ window.saveProjectForm=async function(projId){
   if(!projId&&(!$('np-type-kind').value||!$('np-type-building').value))return alert('請選擇房屋狀態與建築類型');
   const contractStart=ymdValue('np-cs');
   const contractEnd=ymdValue('np-ce');
-  const panoramaUrl=$('np-panorama-url').value.trim();if(panoramaUrl&&!/^https:\/\//i.test(panoramaUrl))return alert('3D 環景網址請使用 https:// 開頭。');
+  const panoramaUrl=$('np-panorama-url').value.trim(),renderUrl=$('np-render-url').value.trim();
+  if(panoramaUrl&&!/^https:\/\//i.test(panoramaUrl))return alert('3D 現場環景網址請使用 https:// 開頭。');
+  if(renderUrl&&!/^https:\/\//i.test(renderUrl))return alert('3D 渲染圖網址請使用 https:// 開頭。');
   const data={
     name,
     siteTag:$('np-site-tag').value.trim(),
@@ -5633,6 +5636,7 @@ window.saveProjectForm=async function(projId){
     owner:$('np-owner').value.trim(),
     phone:$('np-phone').value.trim(),
     panoramaUrl,
+    renderUrl,
     address:$('np-address').value.trim(),
     type:[$('np-type-kind').value,$('np-type-building').value].filter(Boolean).join('／'),
     designer:$('np-designer').value.trim(),
@@ -5841,7 +5845,7 @@ window.showProjectDetail=function(projId){
     </div>`;
   }
   $('mo-content').classList.add('project-detail-modal');
-  $('mo-content').innerHTML=`<div class="mo-title" style="display:flex;align-items:center;gap:12px"><span>${p.name}</span>${p.panoramaUrl?`<a class="project-panorama-link" href="${escAttr(p.panoramaUrl)}" target="_blank" rel="noopener noreferrer">◉ 3D環景</a>`:''}</div>
+  $('mo-content').innerHTML=`<div class="mo-title" style="display:flex;align-items:center;gap:12px"><span>${p.name}</span>${p.panoramaUrl?`<a class="project-panorama-link" href="${escAttr(p.panoramaUrl)}" target="_blank" rel="noopener noreferrer">◉ 3D現場環景</a>`:''}${p.renderUrl?`<a class="project-panorama-link" href="${escAttr(p.renderUrl)}" target="_blank" rel="noopener noreferrer">◉ 3D渲染圖</a>`:''}</div>
     <div class="project-detail-grid has-design-progress">
       <div class="project-detail-main">
       ${row('業主姓名',p.owner)}
