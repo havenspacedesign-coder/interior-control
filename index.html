@@ -366,6 +366,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .ws-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .ws-tab{padding:4px 12px;font-size:12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:none;font-family:inherit;color:var(--text2)}
 .ws-tab.active{background:var(--pl);color:var(--pd);border-color:var(--pl)}
+.ws-tab.needs-trade-setup{border-color:#f2caca;background:#fff8f8;color:#a34141;font-weight:600}.ws-tab.needs-trade-setup.active{border-color:#e8aaaa;background:#fff1f1;color:#8d3030}
 .ws-cl-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)}
 .ws-cl-item:last-child{border-bottom:none}
 .ws-cl-item input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--purple);flex-shrink:0}
@@ -5317,7 +5318,7 @@ function renderSiteTradeVendors(){
   if(!projects.length)return`<div class="empty">案件總覽目前沒有設定為「施工中」的工地。</div>`;
   if(!activeVendorProjectId||!projects.some(p=>p.id===activeVendorProjectId))activeVendorProjectId=projects[0].id;
   const project=projects.find(p=>p.id===activeVendorProjectId);
-  return`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px"><div class="ws-tabs" style="margin:0">${projects.map(p=>`<button class="ws-tab ${p.id===activeVendorProjectId?'active':''}" onclick="setActiveVendorProject('${p.id}')">${escAttr(p.name)}</button>`).join('')}</div><div style="display:flex;gap:6px">${vendorProjectEditMode?`<button class="btn btn-sm" onclick="cancelVendorProjectEdit()">取消</button><button class="btn btn-sm btn-p" onclick="saveVendorProjectTrades()">儲存</button>`:`<button class="btn btn-sm" onclick="startVendorProjectEdit()">✎ 編輯</button>`}</div></div><section class="site-vendor-project"><div class="site-vendor-project-hdr">${escAttr(project.name)}</div>${S.tradeCategories.map(c=>renderProjectTradeCategory(project,c)).join('')||'<div class="empty">請先建立施工工程項目</div>'}</section>`;
+  return`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px"><div class="ws-tabs" style="margin:0">${projects.map(p=>`<button class="ws-tab ${projectTradeNeedsSetup(p.id)?'needs-trade-setup':''} ${p.id===activeVendorProjectId?'active':''}" onclick="setActiveVendorProject('${p.id}')">${escAttr(p.name)}</button>`).join('')}</div><div style="display:flex;gap:6px">${vendorProjectEditMode?`<button class="btn btn-sm" onclick="cancelVendorProjectEdit()">取消</button><button class="btn btn-sm btn-p" onclick="saveVendorProjectTrades()">儲存</button>`:`<button class="btn btn-sm" onclick="startVendorProjectEdit()">✎ 編輯</button>`}</div></div><section class="site-vendor-project"><div class="site-vendor-project-hdr">${escAttr(project.name)}</div>${S.tradeCategories.map(c=>renderProjectTradeCategory(project,c)).join('')||'<div class="empty">請先建立施工工程項目</div>'}</section>`;
 }
 function renderProjectTradeCategory(project,category){
   const vendors=S.tradeVendors.filter(v=>v.categoryId===category.id),sel=projectTradeSelection(project.id,category.id),ids=sel.vendorIds||[],notes=sel.notes||{};
