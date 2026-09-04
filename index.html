@@ -1543,7 +1543,7 @@ let homeEditMode=false;
 let homePointerState=null;
 let homeGridObserver=null;
 let homeRenderedModules=[];
-let todayJoke=null,jokeVotes=[],customJokes=[],jokeDailyUnsub=null,jokeDocUnsub=null,jokeVotesUnsub=null,jokeCustomUnsub=null,jokeLoading=false;
+let todayJoke=null,jokeVotes=[],customJokes=[],builtinJokes=[],jokeLibraryPromise=null,jokeDailyUnsub=null,jokeDocUnsub=null,jokeVotesUnsub=null,jokeCustomUnsub=null,jokeLoading=false;
 let todayQuiz=null,quizAnswers=[],quizMonthAnswers=[],quizUserAnswers=[],quizSelected='',quizDailyUnsub=null,quizDocUnsub=null,quizAnswersUnsub=null,quizMonthUnsub=null,quizUserUnsub=null,quizLoading=false,localQuizRotation={order:[],cursor:0,lastQuizId:'',round:0};
 let todayWaste=null,wasteQuotes=[],wasteReactions=[],wasteFavorite=false,wasteLoading=false,wasteDailyUnsub=null,wasteQuotesUnsub=null,wasteReactionsUnsub=null,wasteFavoriteUnsub=null,localWasteRotation={round:0,usedIds:[],remainingIds:[],lastQuoteId:''};
 let todayNews=null,todayNewsLoading=false,todayNewsSlide=0;
@@ -1825,21 +1825,20 @@ function renderDailyJokeModule(tier){
   return`<div class="daily-joke"><div class="daily-joke-title">${escAttr(todayJoke.title||'今日笑話')}</div><div class="daily-joke-content">${escAttr(todayJoke.content||'')}</div><div class="daily-joke-reactions">${jokeReactionOptions().map(r=>`<button class="joke-reaction ${mine?.reaction===r.id?'active':''}" onclick="event.stopPropagation();voteDailyJoke('${r.id}')"><span>${r.emoji}</span><span class="joke-reaction-label">${r.label}</span><span class="joke-vote-count" onclick="event.stopPropagation();showJokeVoters('${r.id}')">${jokeVoteCount(r.id)}</span></button>`).join('')}${isSystemAdmin()?`<span class="daily-joke-admin"><button class="btn" onclick="event.stopPropagation();replaceTodayJoke()">換一則</button><button class="btn" onclick="event.stopPropagation();showCustomJokeLibrary()">笑話庫</button></span>`:''}</div></div>`;
 }
 function pickDifferentJoke(pool){const alternatives=pool.filter(item=>item.content!==todayJoke?.content),choices=alternatives.length?alternatives:pool;return choices[Math.floor(Math.random()*choices.length)];}
-function localJokePick(){const pool=customJokes.length?customJokes:LOCAL_JOKE_FALLBACKS,pick=pickDifferentJoke(pool);return{title:pick.title||'今日笑話',content:pick.content,source:customJokes.length?'custom':'local-fallback',sourceRef:pick.id||''};}
+function loadBuiltinJokes(){if(jokeLibraryPromise)return jokeLibraryPromise;jokeLibraryPromise=fetch('assets/daily-jokes.json',{cache:'no-store'}).then(response=>{if(!response.ok)throw new Error(`daily jokes ${response.status}`);return response.json();}).then(data=>{const rows=Array.isArray(data?.jokes)?data.jokes:[];builtinJokes=rows.filter(item=>String(item?.text||'').trim()).map(item=>({id:`builtin-${String(item.id||'').trim()}`,title:String(item.category||'每日笑話').trim()||'每日笑話',content:String(item.text).trim(),source:'builtin-library',sourceRef:String(item.id||'').trim()}));return builtinJokes;}).catch(error=>{console.warn('built-in joke library unavailable',error);builtinJokes=[];return builtinJokes;});return jokeLibraryPromise;}
+function dailyJokePool(){return[...builtinJokes,...customJokes].filter(item=>String(item?.content||'').trim());}
+async function localJokePick(){await loadBuiltinJokes();const pool=dailyJokePool().length?dailyJokePool():LOCAL_JOKE_FALLBACKS,pick=pickDifferentJoke(pool);return{title:pick.title||'今日笑話',content:pick.content,source:pick.source||'local-fallback',sourceRef:pick.sourceRef||pick.id||''};}
 async function fetchTianJoke(){
   const response=await fetch('/api/joke',{headers:{accept:'application/json'}});if(!response.ok)throw new Error(`joke api ${response.status}`);
   const data=await response.json();if(!data?.content)throw new Error(data?.message||'joke api empty');return{title:data.title||'今日笑話',content:data.content,source:'tianapi',sourceRef:data.sourceRef||''};
 }
-async function chooseNewJoke(){
-  if(localTestMode)return localJokePick();
-  try{return await fetchTianJoke();}catch(error){console.warn('TianAPI unavailable, using shared joke library',error);if(customJokes.length){const pick=pickDifferentJoke(customJokes);return{title:pick.title||'今日笑話',content:pick.content,source:'custom',sourceRef:pick.id};}return{...pickDifferentJoke(LOCAL_JOKE_FALLBACKS),source:'fallback',sourceRef:''};}
-}
+async function chooseNewJoke(){return localJokePick();}
 function makeJokeRecord(joke,reason){const day=jokeDayKey(),id=`joke-${day}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;return{id,day,title:joke.title||'今日笑話',content:joke.content,source:joke.source||'fallback',sourceRef:joke.sourceRef||'',reason,createdBy:currentUser?.uid||'',createdByName:currentUser?.displayName||currentUser?.email||'',createdAt:serverTimestamp()};}
 async function ensureTodayJoke(){
   if(jokeLoading||todayJoke)return;jokeLoading=true;if(activePanel==='home')renderHome();
   try{
     const day=jokeDayKey();
-    if(localTestMode){const record=makeJokeRecord(localJokePick(),'daily');record.createdAt=new Date().toISOString();todayJoke=record;jokeVotes=[];return;}
+    if(localTestMode){const record=makeJokeRecord(await localJokePick(),'daily');record.createdAt=new Date().toISOString();todayJoke=record;jokeVotes=[];return;}
     const dailyRef=doc(db,'dailyJokes',day),existing=await getDoc(dailyRef);if(existing.exists())return;
     const chosen=await chooseNewJoke(),record=makeJokeRecord(chosen,'daily'),jokeRef=doc(db,'jokes',record.id);
     await fbRunTransaction(db,async tx=>{const latest=await tx.get(dailyRef);if(latest.exists())return;tx.set(jokeRef,record);tx.set(dailyRef,{day,currentJokeId:record.id,updatedAt:serverTimestamp(),reason:'daily'});});

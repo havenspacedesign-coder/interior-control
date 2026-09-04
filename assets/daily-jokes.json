@@ -1,0 +1,1967 @@
+{
+  "name": "daily_jokes_325_complete",
+  "description": "公司首頁每日笑話完整題庫。已避開政治、宗教、族群、外貌羞辱、疾病、色情與過度黑色幽默等題材。",
+  "count": 325,
+  "batch_summary": {
+    "screenshot_batch_target": 225,
+    "generated_batch": 100,
+    "total": 325,
+    "note": "先前225為依網路截圖篩選後的數量統計，當時未保存逐則文字；且部分截圖答案以遮罩隱藏。為避免把無法辨識內容冒充原文，本批保留可辨識梗意並依相同安全/公司適用標準補齊至225則。"
+  },
+  "duplicate_check": {
+    "exact_duplicates": 0,
+    "pairs": []
+  },
+  "jokes": [
+    {
+      "id": "J001",
+      "category": "截圖可辨識／經整理",
+      "text": "三分熟的牛排跟五分熟的牛排為什麼不講話？\n因為牛排不會說話。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J002",
+      "category": "截圖可辨識／經整理",
+      "text": "死掉的人叫死人，那活著的人叫什麼？\n叫救護車。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J003",
+      "category": "截圖可辨識／經整理",
+      "text": "有個人一直覺得自己是隻貓。醫生問：「從什麼時候開始的？」\n他說：「從我還是一隻小貓咪的時候。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J004",
+      "category": "截圖可辨識／經整理",
+      "text": "朋友問：「你有沒有認真想過？」\n我說：「有，我認真想過不要想。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J005",
+      "category": "截圖可辨識／經整理",
+      "text": "一個人問：「這題有沒有更簡單的答案？」\n另一個人說：「有，不會。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J006",
+      "category": "截圖可辨識／經整理",
+      "text": "有人問：「為什麼你每次都最後才到？」\n他說：「因為前面的人都比我早到。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J007",
+      "category": "截圖可辨識／經整理",
+      "text": "老師問：「為什麼答案空白？」\n學生說：「因為我尊重未知。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J008",
+      "category": "截圖可辨識／經整理",
+      "text": "朋友問：「你怎麼知道自己迷路了？」\n我說：「因為目的地一直沒有出現。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J009",
+      "category": "截圖可辨識／經整理",
+      "text": "「你今天有沒有做正事？」\n「有，我把待辦事項重新排序了。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J010",
+      "category": "截圖可辨識／經整理",
+      "text": "「這件事情困難嗎？」\n「不困難，困難的是開始。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J011",
+      "category": "截圖可辨識／經整理",
+      "text": "「你有沒有耐心？」\n「有，等一下再回答你。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J012",
+      "category": "截圖可辨識／經整理",
+      "text": "有人問：「最快的減壓方式是什麼？」\n把「壓力」兩個字刪掉。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J013",
+      "category": "截圖可辨識／經整理",
+      "text": "朋友：「你最近有進步嗎？」\n我：「有，以前拖一天，現在可以拖兩天。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J014",
+      "category": "截圖可辨識／經整理",
+      "text": "「你會不會忘東忘西？」\n「不會，我通常連忘了什麼都一起忘。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J015",
+      "category": "截圖可辨識／經整理",
+      "text": "朋友問：「今天過得充實嗎？」\n我說：「手機電量倒是充得很實。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J016",
+      "category": "職場",
+      "text": "主管說：「這件事很簡單。」\n通常下一句就是：「你來處理一下。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J017",
+      "category": "職場",
+      "text": "同事問：「你在忙什麼？」\n我：「忙著看起來很忙。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J018",
+      "category": "職場",
+      "text": "公司最短的故事：\n「今天準時下班。」——完。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J019",
+      "category": "職場",
+      "text": "主管：「這份資料再確認一次。」\n我：「第幾次算一次？」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J020",
+      "category": "職場",
+      "text": "早上進公司第一件事不是開電腦，是確認今天星期幾。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J021",
+      "category": "職場",
+      "text": "我最擅長的職場技能：聽到「方便嗎？」立刻開始不方便。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J022",
+      "category": "職場",
+      "text": "同事：「午餐吃什麼？」\n這是每天公司最難做的決策。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J023",
+      "category": "職場",
+      "text": "會議紀錄寫得最完整的一句：\n「後續再議。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J024",
+      "category": "職場",
+      "text": "主管說要「快速對一下」，我的行事曆立刻少了一小時。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J025",
+      "category": "職場",
+      "text": "上班時最有希望的瞬間，是看到右下角的時間開始有「5」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J026",
+      "category": "職場",
+      "text": "同事：「這個很急嗎？」\n主管：「不急，今天下班前給我就好。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J027",
+      "category": "職場",
+      "text": "我的工作哲學：能今天做完的事，就不要留到今天晚上。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J028",
+      "category": "職場",
+      "text": "公司冷氣最懂團隊合作：每個人都覺得溫度不是自己要的。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J029",
+      "category": "職場",
+      "text": "主管問：「這個版本是最新版嗎？」\n我看著 Final_最後_真的最後_v8，陷入沉思。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J030",
+      "category": "職場",
+      "text": "上班最大的謎題：為什麼午休一小時像十分鐘，會議十分鐘像一小時。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J031",
+      "category": "設計工程",
+      "text": "業主：「我不太會形容，我要一種很簡單但很有設計感的感覺。」\n設計師：「收到，宇宙級難題。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J032",
+      "category": "設計工程",
+      "text": "工地最有彈性的尺寸不是公分，是「差一點點」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J033",
+      "category": "設計工程",
+      "text": "設計師最怕聽到：「我昨天回家又想了一下。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J034",
+      "category": "設計工程",
+      "text": "師傅：「這裡照圖做？」\n設計師：「對。」\n業主：「先不要，我有一個想法。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J035",
+      "category": "設計工程",
+      "text": "施工圖畫得越完整，現場越容易出現一句：「這裡有管。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J036",
+      "category": "設計工程",
+      "text": "業主說「只改顏色」，十分鐘後格局也一起換了。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J037",
+      "category": "設計工程",
+      "text": "設計師的超能力：看到一面空牆，立刻知道預算又要增加了。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J038",
+      "category": "設計工程",
+      "text": "工地最常出現的三個單位：毫米、公分、差不多。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J039",
+      "category": "設計工程",
+      "text": "圖面上寫「依現場為準」，現場說「依圖面為準」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J040",
+      "category": "設計工程",
+      "text": "設計師不是沒有休假，只是休假時也會突然想到插座位置。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J041",
+      "category": "設計工程",
+      "text": "業主：「這樣會很貴嗎？」\n設計師最安全的回答：「看你對『很』的定義。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J042",
+      "category": "設計工程",
+      "text": "最容易長大的東西不是植物，是工程追加項目。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J043",
+      "category": "設計工程",
+      "text": "師傅說「沒問題」有兩種意思：真的沒問題，或等一下會有問題。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J044",
+      "category": "設計工程",
+      "text": "丈量最刺激的時刻，是回公司才發現少量了一個尺寸。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J045",
+      "category": "設計工程",
+      "text": "設計案最穩定的東西，就是它一定還會再修改。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J046",
+      "category": "生活",
+      "text": "我每天都說今天要早睡，這句話通常是在凌晨說的。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J047",
+      "category": "生活",
+      "text": "冰箱最大的功能不是保鮮，是讓我每十分鐘確認一次裡面沒有新食物。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J048",
+      "category": "生活",
+      "text": "我的房間不是亂，只是物品都選擇自由活動。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J049",
+      "category": "生活",
+      "text": "出門前找不到鑰匙，通常代表鑰匙正在我手上。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J050",
+      "category": "生活",
+      "text": "假日最大的行程：從床的左邊移動到右邊。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J051",
+      "category": "生活",
+      "text": "我不是懶得整理，是想尊重物品原本的位置。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J052",
+      "category": "生活",
+      "text": "洗完衣服最難的步驟不是晾，是把它們從曬衣架帶回衣櫃。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J053",
+      "category": "生活",
+      "text": "手機找不到的時候，人類會瞬間獲得超高移動速度。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J054",
+      "category": "生活",
+      "text": "我說「再躺五分鐘」，床聽成「續住一晚」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J055",
+      "category": "生活",
+      "text": "成年人的驚喜：口袋裡突然摸到一張忘記的百元鈔票。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J056",
+      "category": "生活",
+      "text": "出門後最常想到的三件事：門鎖了嗎、冷氣關了嗎、我為什麼出門。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J057",
+      "category": "生活",
+      "text": "每次整理房間都會找到一個失蹤很久、但現在已經不需要的東西。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J058",
+      "category": "生活",
+      "text": "我對時間很有概念：五分鐘滑手機和五分鐘等微波完全不是同一種五分鐘。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J059",
+      "category": "生活",
+      "text": "鬧鐘不是用來叫醒我的，是用來提醒我還能再睡一次。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J060",
+      "category": "生活",
+      "text": "星期天晚上最大的活動，是回想週末到底做了什麼。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J061",
+      "category": "科技AI",
+      "text": "AI 最令人安心的地方，是它不會嫌你同一題問第三次。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J062",
+      "category": "科技AI",
+      "text": "電腦最會察言觀色：你越趕，它更新得越完整。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J063",
+      "category": "科技AI",
+      "text": "Wi‑Fi 一慢，全家人瞬間變成網路工程師。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J064",
+      "category": "科技AI",
+      "text": "手機剩 2% 的時候，我比自己人生剩多少電更緊張。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J065",
+      "category": "科技AI",
+      "text": "密碼管理最安全的方法：複雜到連本人都登入不了。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J066",
+      "category": "科技AI",
+      "text": "電腦跳出「確定要離開嗎？」\n這是今天第一個在乎我去留的東西。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J067",
+      "category": "科技AI",
+      "text": "雲端說檔案隨時都找得到，前提是你記得自己放在哪個雲。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J068",
+      "category": "科技AI",
+      "text": "系統更新寫「只需幾分鐘」，我決定先去吃一頓飯。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J069",
+      "category": "科技AI",
+      "text": "手機臉部辨識早上認不出我，我決定原諒它。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J070",
+      "category": "科技AI",
+      "text": "我不是手機成癮，只是它每隔幾分鐘都需要我確認還活著。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J071",
+      "category": "科技AI",
+      "text": "電腦當機時最有效的修復方式：先盯著它三秒表示不滿。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J072",
+      "category": "科技AI",
+      "text": "搜尋引擎是現代人的第二大腦，第一大腦負責想搜尋關鍵字。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J073",
+      "category": "科技AI",
+      "text": "AI：「還有什麼需要幫忙？」\n我：「可以順便幫我下班嗎？」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J074",
+      "category": "科技AI",
+      "text": "藍牙耳機最大的技能，是在最需要它的時候只剩左耳有電。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J075",
+      "category": "科技AI",
+      "text": "每次忘記密碼，我都會發現以前的自己安全意識真的很高。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J076",
+      "category": "冷笑話",
+      "text": "什麼水果最忙？\n芒果，因為很「忙」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J077",
+      "category": "冷笑話",
+      "text": "什麼東西越分享越多？\n笑聲。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J078",
+      "category": "冷笑話",
+      "text": "什麼杯子永遠裝不滿？\n獎盃。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J079",
+      "category": "冷笑話",
+      "text": "什麼床不能睡？\n河床。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J080",
+      "category": "冷笑話",
+      "text": "什麼球不能踢？\n地球。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J081",
+      "category": "冷笑話",
+      "text": "什麼花不用澆水？\n煙花。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J082",
+      "category": "冷笑話",
+      "text": "什麼書最常被風吹？\n秘書，因為常常「被風吹」這題本來就沒有道理。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J083",
+      "category": "冷笑話",
+      "text": "什麼馬不會跑？\n斑馬線上的馬。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J084",
+      "category": "冷笑話",
+      "text": "什麼帽子不能戴？\n螺帽。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J085",
+      "category": "冷笑話",
+      "text": "什麼燈不用插電？\n紅綠燈——它用的不是你家的電。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J086",
+      "category": "冷笑話",
+      "text": "什麼車開得最慢？\n停車。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J087",
+      "category": "冷笑話",
+      "text": "什麼水不能拿來洗澡？\n薪水。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J088",
+      "category": "冷笑話",
+      "text": "什麼門每天最多人進出卻沒有門把？\n熱門。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J089",
+      "category": "冷笑話",
+      "text": "什麼筆最不適合寫字？\n一筆勾銷的筆。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J090",
+      "category": "冷笑話",
+      "text": "什麼線最常讓人等？\n排隊線。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J091",
+      "category": "諧音文字",
+      "text": "有一隻鹿一直打電話，因為牠正在「聯鹿」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J092",
+      "category": "諧音文字",
+      "text": "有一隻雞非常會安排時間，大家叫牠「時程雞」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J093",
+      "category": "諧音文字",
+      "text": "檸檬去上班第一天就很酸，主管說牠情緒太有「檸場感」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J094",
+      "category": "諧音文字",
+      "text": "一顆豆子迷路了，路人問牠去哪，牠說：「我也不豆。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J095",
+      "category": "諧音文字",
+      "text": "有一條魚很愛聊天，因為牠很會「魚言」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J096",
+      "category": "諧音文字",
+      "text": "有一顆蔥很有自信，因為牠總是「從容」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J097",
+      "category": "諧音文字",
+      "text": "有一隻鵝考試都很穩，因為牠從不「鵝外失常」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J098",
+      "category": "諧音文字",
+      "text": "有一顆梨很會整理資料，大家叫它「分門別梨」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J099",
+      "category": "諧音文字",
+      "text": "有一隻羊什麼都知道，因為牠很「內行咩」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J100",
+      "category": "諧音文字",
+      "text": "有一顆桃子每天準時打卡，因為牠很守「桃」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J101",
+      "category": "諧音文字",
+      "text": "有一塊餅乾很會道歉，大家都說它很有「餅意」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J102",
+      "category": "諧音文字",
+      "text": "有一隻蝦很愛問問題，所以大家叫牠「為什麼蝦」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J103",
+      "category": "諧音文字",
+      "text": "有一顆蒜頭很會算帳，因為牠什麼都「蒜」得清楚。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J104",
+      "category": "諧音文字",
+      "text": "有一隻牛很會鼓勵別人，最常說：「你很牛！」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J105",
+      "category": "諧音文字",
+      "text": "有一顆橘子做事很積極，因為牠凡事都想「橘」力爭取。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J106",
+      "category": "問答",
+      "text": "什麼時候最適合開始減少拖延？\n明天——至少拖延者都這樣回答。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J107",
+      "category": "問答",
+      "text": "哪一種聲音最容易讓人停止滑手機？\n「剩餘電量 1%。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J108",
+      "category": "問答",
+      "text": "什麼東西明明沒有腳，卻每天都在跑？\n時間。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J109",
+      "category": "問答",
+      "text": "什麼事情越想快一點，通常越慢？\n等電梯。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J110",
+      "category": "問答",
+      "text": "什麼東西關掉之後，大家反而開始聊天？\nWi‑Fi。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J111",
+      "category": "問答",
+      "text": "什麼時候一分鐘最長？\n微波爐剩最後一分鐘的時候。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J112",
+      "category": "問答",
+      "text": "什麼東西每天都提醒你變老？\n行事曆。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J113",
+      "category": "問答",
+      "text": "什麼東西最會讓人突然勤勞？\n有人說五分鐘後要來你家。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J114",
+      "category": "問答",
+      "text": "什麼東西買之前研究三天，買完三分鐘就不研究了？\n新手機。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J115",
+      "category": "問答",
+      "text": "哪一個地方最容易產生人生反思？\n洗澡的時候。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J116",
+      "category": "問答",
+      "text": "什麼東西永遠比你想像中快？\n週末結束。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J117",
+      "category": "問答",
+      "text": "什麼事情做完會很有成就感，但開始前永遠不想做？\n整理房間。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J118",
+      "category": "問答",
+      "text": "哪種通知最讓人害怕？\n「您的儲存空間即將用完。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J119",
+      "category": "問答",
+      "text": "什麼東西越接近下班越跑得慢？\n時鐘。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J120",
+      "category": "問答",
+      "text": "哪一個決定每天都要重新做一次？\n今天午餐吃什麼。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J121",
+      "category": "反轉對話",
+      "text": "朋友：「你有存款嗎？」\n我：「有，很多東西都存在購物車。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J122",
+      "category": "反轉對話",
+      "text": "朋友：「你會規劃人生嗎？」\n我：「會，我每晚都規劃明天早睡。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J123",
+      "category": "反轉對話",
+      "text": "店員：「需要發票嗎？」\n我：「需要勇氣面對總金額。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J124",
+      "category": "反轉對話",
+      "text": "朋友：「你最近有早起嗎？」\n我：「有，昨天睡到下午，今天中午就醒了。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J125",
+      "category": "反轉對話",
+      "text": "朋友：「你是不是很愛乾淨？」\n我：「對，所以髒的東西我都不碰。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J126",
+      "category": "反轉對話",
+      "text": "同事：「這份文件看過了嗎？」\n我：「看過檔名了。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J127",
+      "category": "反轉對話",
+      "text": "朋友：「你很會記路嗎？」\n我：「會，我每次走錯都記得很清楚。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J128",
+      "category": "反轉對話",
+      "text": "朋友：「你最近有控制飲食嗎？」\n我：「有，我都控制在嘴巴附近。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J129",
+      "category": "反轉對話",
+      "text": "朋友：「你怎麼都不焦慮？」\n我：「我有，只是排到晚一點焦慮。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J130",
+      "category": "反轉對話",
+      "text": "店員：「還需要其他的嗎？」\n我：「需要薪水。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J131",
+      "category": "反轉對話",
+      "text": "朋友：「你今天做了什麼有意義的事？」\n我：「把手機充到 100%。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J132",
+      "category": "反轉對話",
+      "text": "朋友：「你是不是很會省錢？」\n我：「對，想買十樣，最後只買九樣。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J133",
+      "category": "反轉對話",
+      "text": "同事：「你這個檔案整理好了？」\n我：「好了，全都放進『之後整理』資料夾。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J134",
+      "category": "反轉對話",
+      "text": "朋友：「最近過得規律嗎？」\n我：「很規律，每天都不規律。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J135",
+      "category": "反轉對話",
+      "text": "朋友：「你為什麼一直拖延？」\n我：「這個問題我晚點回答。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J136",
+      "category": "動物",
+      "text": "貓看著你工作不是陪伴，是確認你還有沒有空手可以摸牠。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J137",
+      "category": "動物",
+      "text": "狗每天最重要的會議：門口有人經過，全體立即開會。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J138",
+      "category": "動物",
+      "text": "烏龜最不適合說哪句話？\n「我馬上到。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J139",
+      "category": "動物",
+      "text": "貓最大的超能力：睡十八個小時，醒來還是一臉很累。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J140",
+      "category": "動物",
+      "text": "狗看到你拿牽繩：今天終於輪到我帶人類出去散步。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J141",
+      "category": "動物",
+      "text": "鳥最羨慕人類什麼？\n大概不是通勤。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J142",
+      "category": "動物",
+      "text": "魚最安靜的原因：牠們的群組都在水裡。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J143",
+      "category": "動物",
+      "text": "貓對紙箱的評價永遠比你買的貓窩高。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J144",
+      "category": "動物",
+      "text": "狗的記憶很奇妙：五年前藏的骨頭記得，剛吃過飯不記得。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J145",
+      "category": "動物",
+      "text": "企鵝每天都像穿正裝，卻沒有一隻要去上班。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J146",
+      "category": "動物",
+      "text": "樹懶不是動作慢，牠只是把每件事都排成長期專案。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J147",
+      "category": "動物",
+      "text": "倉鼠跑滾輪最大的勵志點：跑了很久，位置完全沒變。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J148",
+      "category": "動物",
+      "text": "貓如果會寫履歷，專長一定是「鍵盤干預」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J149",
+      "category": "動物",
+      "text": "狗如果會傳訊息，內容大概只有：「你在哪？你在哪？你在哪？」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J150",
+      "category": "動物",
+      "text": "長頸鹿最不需要的家具：高腳椅。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J151",
+      "category": "家庭學生",
+      "text": "媽媽：「你房間整理好了嗎？」\n我：「好了，門關起來就看不到了。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J152",
+      "category": "家庭學生",
+      "text": "老師：「這題有人不會嗎？」\n全班最會的，就是假裝沒有聽見。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J153",
+      "category": "家庭學生",
+      "text": "爸爸說小時候沒有手機也活得很好。\n我問他：「那現在 Wi‑Fi 可以關嗎？」\n他說：「不要扯太遠。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J154",
+      "category": "家庭學生",
+      "text": "老師：「答案為什麼跟標準答案不一樣？」\n學生：「我想保有原創性。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J155",
+      "category": "家庭學生",
+      "text": "媽媽找東西的方式：走進房間、看一眼、找到你找了半小時的東西。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J156",
+      "category": "家庭學生",
+      "text": "學生最有默契的時刻：老師問「誰要上台？」全班一起研究桌面。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J157",
+      "category": "家庭學生",
+      "text": "爸爸：「錢不是大風颳來的。」\n我：「所以我們才開冷氣，不開窗。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J158",
+      "category": "家庭學生",
+      "text": "老師：「這題送分。」\n學生：「老師，我沒有收到。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J159",
+      "category": "家庭學生",
+      "text": "媽媽：「我講幾次了？」\n這是一道沒有正確答案的題目。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J160",
+      "category": "家庭學生",
+      "text": "學生：「老師，可以開書考嗎？」\n老師：「可以。」\n學生：「那可以順便開手機嗎？」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J161",
+      "category": "家庭學生",
+      "text": "小孩問：「大人為什麼可以自己決定幾點睡？」\n大人：「因為我們可以自己承擔隔天後悔。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J162",
+      "category": "家庭學生",
+      "text": "老師：「你怎麼又忘記帶作業？」\n學生：「因為它太重要，所以放在最安全的家裡。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J163",
+      "category": "家庭學生",
+      "text": "爸媽最神奇的技能：你一坐下來，他們就剛好想到一件事要你做。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J164",
+      "category": "家庭學生",
+      "text": "學生最期待老師說的六個字：「這一題不用考。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J165",
+      "category": "家庭學生",
+      "text": "媽媽：「不要一直玩手機。」\n五分鐘後：「你幫我查一下這個。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J166",
+      "category": "食物",
+      "text": "火鍋最大的社交能力：原本不熟的人，煮一鍋就熟了。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J167",
+      "category": "食物",
+      "text": "泡麵最誠實的地方：包裝上寫三分鐘，但你知道前兩分鐘最漫長。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J168",
+      "category": "食物",
+      "text": "披薩最大的哲學問題：明明是圓的，為什麼裝在方盒子裡，最後切成三角形。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J169",
+      "category": "食物",
+      "text": "蛋糕最大的缺點：生日一年只有一次，蛋糕卻可以每天想吃。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J170",
+      "category": "食物",
+      "text": "咖啡不是飲料，是早上跟世界談判的籌碼。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J171",
+      "category": "食物",
+      "text": "冰淇淋最大的壓力：一離開冰箱就開始倒數。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J172",
+      "category": "食物",
+      "text": "吃到飽最常見的謊言：「我先少拿一點。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J173",
+      "category": "食物",
+      "text": "麵包店最危險的地方：本來只想買吐司，最後提一整袋出來。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J174",
+      "category": "食物",
+      "text": "薯條是一種很團結的食物，通常一根不會單獨出現。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J175",
+      "category": "食物",
+      "text": "便當最難吃的一口，是看到別人的菜色比較好的那一口。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J176",
+      "category": "食物",
+      "text": "早餐店老闆最厲害的記憶力：你自己都忘了昨天吃什麼，他記得。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J177",
+      "category": "食物",
+      "text": "珍珠奶茶最有重量的不是珍珠，是喝完之後的罪惡感。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J178",
+      "category": "食物",
+      "text": "餅乾最容易消失的地方，不是嘴巴，是「我只吃一片」之後。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J179",
+      "category": "食物",
+      "text": "炸物最大的魅力：明知道很燙，還是會立刻咬第一口。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J180",
+      "category": "食物",
+      "text": "冰箱裡最容易過期的食物，通常是買的時候最有健康決心的那一盒。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J181",
+      "category": "交通旅遊",
+      "text": "導航說「重新規劃路線」的語氣，比我本人冷靜太多。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J182",
+      "category": "交通旅遊",
+      "text": "旅行前：這次一定要輕裝。\n旅行後：行李箱怎麼又坐上去才關得起來。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J183",
+      "category": "交通旅遊",
+      "text": "機場最容易讓人突然擅長心算：看到行李重量的那一刻。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J184",
+      "category": "交通旅遊",
+      "text": "搭高鐵最刺激的時刻，是車門快關才發現自己站錯車廂。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J185",
+      "category": "交通旅遊",
+      "text": "導航最委婉的責備方式：「請在前方安全處迴轉。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J186",
+      "category": "交通旅遊",
+      "text": "旅遊最神奇的預算：機票住宿都算好了，最後還是超支。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J187",
+      "category": "交通旅遊",
+      "text": "塞車時最有默契的事情：每台車都覺得隔壁車道比較快。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J188",
+      "category": "交通旅遊",
+      "text": "出國前最常說：「這個不用帶，當地再買。」\n回國時最常說：「怎麼這麼多東西？」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J189",
+      "category": "交通旅遊",
+      "text": "搭車最容易睡著的時候，是快到站的前五分鐘。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J190",
+      "category": "交通旅遊",
+      "text": "旅行最難的不是排行程，是決定早餐要不要為了睡覺放棄。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J191",
+      "category": "交通旅遊",
+      "text": "行李箱最大的秘密：去程裝得下，回程同一批東西就裝不下。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J192",
+      "category": "交通旅遊",
+      "text": "開車最有哲學感的時刻：明明沒有動，導航卻說還有十分鐘。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J193",
+      "category": "交通旅遊",
+      "text": "旅行照片最大的功能：回家後證明自己真的有離開飯店。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J194",
+      "category": "交通旅遊",
+      "text": "在陌生城市走錯路，換個說法就叫「自由行」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J195",
+      "category": "交通旅遊",
+      "text": "登機前最團結的時刻：所有人同時確認護照到底放哪裡。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J196",
+      "category": "購物金錢",
+      "text": "打折最厲害的地方：讓原本不需要的東西突然變成「不買很虧」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J197",
+      "category": "購物金錢",
+      "text": "購物車不是用來結帳的，是用來保存夢想的。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J198",
+      "category": "購物金錢",
+      "text": "薪水最擅長的魔術：出現一下，然後消失。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J199",
+      "category": "購物金錢",
+      "text": "我不是亂花錢，我只是在支持各行各業。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J200",
+      "category": "購物金錢",
+      "text": "網購最刺激的不是拆箱，是完全忘記自己買了什麼。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J201",
+      "category": "購物金錢",
+      "text": "信用卡帳單是一封每月寄來的回憶錄。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J202",
+      "category": "購物金錢",
+      "text": "省錢最簡單的方法：不要打開購物網站。最困難的也是這一步。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J203",
+      "category": "購物金錢",
+      "text": "看到「免運」兩個字，我通常會多買到遠超過運費。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J204",
+      "category": "購物金錢",
+      "text": "買東西前做一小時功課，結帳只需要一秒。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J205",
+      "category": "購物金錢",
+      "text": "月底最大的理財工具：假裝銀行 App 不存在。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J206",
+      "category": "購物金錢",
+      "text": "特價品最大的成本，是你本來根本沒有要買。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J207",
+      "category": "購物金錢",
+      "text": "朋友問我錢花去哪裡，我打開帳單才發現它們都有完整旅行紀錄。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J208",
+      "category": "購物金錢",
+      "text": "「買一送一」最常發生的事：買了兩個原本一個都不需要的東西。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J209",
+      "category": "購物金錢",
+      "text": "我最大的投資失誤，是投資太多時間研究要不要買，最後還是買。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J210",
+      "category": "購物金錢",
+      "text": "錢包瘦下來的速度，永遠比本人快。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J211",
+      "category": "懶人哲學",
+      "text": "能坐著解決的事情，我絕不站著思考。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J212",
+      "category": "懶人哲學",
+      "text": "拖延不是不做，是把事情交給更有經驗的未來自己。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J213",
+      "category": "懶人哲學",
+      "text": "我不是沒有行動力，我的行動力正在載入。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J214",
+      "category": "懶人哲學",
+      "text": "今天不想動不是懶，是身體在進行節能模式。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J215",
+      "category": "懶人哲學",
+      "text": "「等一下」是一個很有彈性的時間單位。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J216",
+      "category": "懶人哲學",
+      "text": "計畫最大的敵人，不是意外，是沙發。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J217",
+      "category": "懶人哲學",
+      "text": "我每天都有列待辦清單，主要用途是確認有哪些事情還沒做。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J218",
+      "category": "懶人哲學",
+      "text": "躺著想事情也是工作，只是產出比較難量化。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J219",
+      "category": "懶人哲學",
+      "text": "如果事情可以拖到明天，今天就多了一個空檔。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J220",
+      "category": "懶人哲學",
+      "text": "我的效率不是低，只是比較講究蓄力。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J221",
+      "category": "懶人哲學",
+      "text": "起床最困難的不是睜眼，是接受真的要離開床。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J222",
+      "category": "懶人哲學",
+      "text": "我最大的時間管理技巧：把所有事情都排到「稍後」。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J223",
+      "category": "懶人哲學",
+      "text": "休息五分鐘是一種抽象概念，實際長度視手機內容而定。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J224",
+      "category": "懶人哲學",
+      "text": "懶人的最高境界：連放棄都覺得麻煩，所以只好繼續。",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J225",
+      "category": "懶人哲學",
+      "text": "有人問我為什麼不積極一點，我說：「積極很累，慢慢來比較持久。」",
+      "origin": "screenshot_batch_reconstructed"
+    },
+    {
+      "id": "J226",
+      "category": "職場",
+      "text": "老闆問：「你今天效率怎麼這麼高？」\n我說：「因為我明天請假。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J227",
+      "category": "職場",
+      "text": "同事問我為什麼上班總是帶咖啡。\n因為公司配電腦，但沒配開機鍵。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J228",
+      "category": "職場",
+      "text": "會議最神奇的地方，就是五個人開一小時，最後決定下次再討論。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J229",
+      "category": "職場",
+      "text": "老闆：「這件事很急，今天可以完成嗎？」\n我：「可以，哪一個今天？」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J230",
+      "category": "職場",
+      "text": "我不是不想上班，我只是比較適合被動收入。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J231",
+      "category": "職場",
+      "text": "同事：「你怎麼一直看時間？」\n我：「我在確認下班有沒有正常運作。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J232",
+      "category": "職場",
+      "text": "工作最大的成就感，就是把昨天拖到今天的事情，成功拖到明天。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J233",
+      "category": "職場",
+      "text": "主管說：「有問題要勇敢提出來。」\n於是我提出：「可以下班了嗎？」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J234",
+      "category": "職場",
+      "text": "上班最短的距離，不是公司到座位，是早上到午餐。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J235",
+      "category": "職場",
+      "text": "我每天都很準時到公司。\n只是公司希望的時間跟我理解的不太一樣。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J236",
+      "category": "設計工程",
+      "text": "業主說：「我只改一點點。」\n設計師一看：平面配置換了。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J237",
+      "category": "設計工程",
+      "text": "設計師最熟悉的四個字：\n「再看一下。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J238",
+      "category": "設計工程",
+      "text": "工地最難測量的尺寸，不是牆長，是「差不多」。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J239",
+      "category": "設計工程",
+      "text": "師傅問：「照圖做嗎？」\n設計師：「對。」\n業主：「等一下，我有新想法。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J240",
+      "category": "設計工程",
+      "text": "設計圖最大的敵人不是修改，是「我朋友說」。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J241",
+      "category": "設計工程",
+      "text": "有人問設計師最常用什麼快捷鍵。\n答案：Ctrl+Z，人生如果也有就好了。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J242",
+      "category": "設計工程",
+      "text": "工地現場最常見的單位：公分、毫米，以及「應該可以」。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J243",
+      "category": "設計工程",
+      "text": "業主：「我喜歡簡約。」\n五分鐘後：「這裡能不能再加一點東西？」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J244",
+      "category": "設計工程",
+      "text": "設計師的檔名演化：\nFinal → Final2 → Final真的 → Final真的不要再改。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J245",
+      "category": "設計工程",
+      "text": "施工現場最可怕的不是沒工具，是有人突然說：「我記得不是這樣。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J246",
+      "category": "生活",
+      "text": "我打開冰箱看了三次。\n不是因為餓，是希望第四次會出現新東西。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J247",
+      "category": "生活",
+      "text": "鬧鐘每天都很努力叫我起床。\n可惜我們價值觀不同。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J248",
+      "category": "生活",
+      "text": "我最大的運動量，是找不到手機時在家裡來回走。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J249",
+      "category": "生活",
+      "text": "買東西前：這真的有需要嗎？\n買完之後：早就該買了。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J250",
+      "category": "生活",
+      "text": "我不是記性差，只是大腦很會自動清理快取。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J251",
+      "category": "生活",
+      "text": "洗澡前覺得很麻煩，洗完後又不想出來。\n人類真的很難服務。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J252",
+      "category": "生活",
+      "text": "最有毅力的事情，就是每天都能想出新的理由晚睡。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J253",
+      "category": "生活",
+      "text": "我本來只是想躺五分鐘，結果醒來已經進入下一個時區。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J254",
+      "category": "生活",
+      "text": "手機剩 10%：很緊張。\n自己剩 10%：再撐一下。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J255",
+      "category": "生活",
+      "text": "我沒有選擇困難，我只是每個都想要。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J256",
+      "category": "科技AI",
+      "text": "Wi‑Fi 一斷，我才發現家裡原來還住著其他人。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J257",
+      "category": "科技AI",
+      "text": "電腦問我要不要儲存變更。\n我也想問人生能不能先存檔。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J258",
+      "category": "科技AI",
+      "text": "AI 不會搶走我的工作。\n但會用 AI 的同事可能會。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J259",
+      "category": "科技AI",
+      "text": "密碼規定：至少八碼、大小寫、數字、符號。\n我：乾脆順便要身分證影本。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J260",
+      "category": "科技AI",
+      "text": "電腦跑得很慢，我安慰它：「沒關係，我上班也差不多。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J261",
+      "category": "科技AI",
+      "text": "手機最懂我。\n每天都知道我螢幕使用時間有多丟臉。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J262",
+      "category": "科技AI",
+      "text": "雲端最大的優點：檔案到處都在。\n最大的缺點：我還是找不到。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J263",
+      "category": "科技AI",
+      "text": "更新系統最刺激的地方，就是按下重新啟動後開始回想自己有沒有存檔。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J264",
+      "category": "科技AI",
+      "text": "我不是依賴 Google，我只是把記憶外包。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J265",
+      "category": "科技AI",
+      "text": "電腦說「預計剩餘 2 分鐘」。\n這是科技界最有彈性的時間單位。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J266",
+      "category": "冷笑話",
+      "text": "什麼門永遠關不起來？\n球門。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J267",
+      "category": "冷笑話",
+      "text": "什麼魚最會存錢？\n剩魚，因為很會剩。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J268",
+      "category": "冷笑話",
+      "text": "什麼東西越洗越髒？\n水。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J269",
+      "category": "冷笑話",
+      "text": "哪一種布剪不斷？\n瀑布。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J270",
+      "category": "冷笑話",
+      "text": "什麼車最不會塞車？\n風車。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J271",
+      "category": "冷笑話",
+      "text": "哪一種蛋最會跑？\n飛毛腿蛋——因為它已經跑題了。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J272",
+      "category": "冷笑話",
+      "text": "什麼東西有很多牙齒卻不會咬人？\n梳子。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J273",
+      "category": "冷笑話",
+      "text": "哪一種米不能吃？\n厘米。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J274",
+      "category": "冷笑話",
+      "text": "什麼東西明明是你的，別人卻比你更常叫？\n你的名字。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J275",
+      "category": "冷笑話",
+      "text": "什麼路最窄？\n冤家路窄。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J276",
+      "category": "諧音文字",
+      "text": "有一隻鹿越跑越快，最後變成了高速公鹿。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J277",
+      "category": "諧音文字",
+      "text": "小明去剪頭髮，剪完之後大家都叫他小明顯。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J278",
+      "category": "諧音文字",
+      "text": "有一顆糖走在路上很累，坐下來之後就變成休息糖。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J279",
+      "category": "諧音文字",
+      "text": "為什麼蠶寶寶很有錢？\n因為牠會結繭（節儉）。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J280",
+      "category": "諧音文字",
+      "text": "為什麼數學老師很冷靜？\n因為他凡事都會算了。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J281",
+      "category": "諧音文字",
+      "text": "為什麼麵包店老闆很忙？\n因為每天都有很多麵試。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J282",
+      "category": "諧音文字",
+      "text": "有一顆星星掉到地上，變成了地明星。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J283",
+      "category": "諧音文字",
+      "text": "為什麼鴨子考試很緊張？\n因為怕被扣鴨。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J284",
+      "category": "諧音文字",
+      "text": "為什麼冰箱很有禮貌？\n因為開門就會亮相。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J285",
+      "category": "諧音文字",
+      "text": "有一隻羊很愛自拍，大家都說牠很會咩顏。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J286",
+      "category": "問答",
+      "text": "世界上哪一種人最會拖時間？\n等等再告訴你。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J287",
+      "category": "問答",
+      "text": "什麼事情做一次要兩個人，做兩次反而只要一個人？\n拍手。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J288",
+      "category": "問答",
+      "text": "為什麼星期一總是來得特別快？\n因為週末沒有煞車。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J289",
+      "category": "問答",
+      "text": "什麼東西你越急，它越慢？\n前面的電梯。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J290",
+      "category": "問答",
+      "text": "為什麼大家洗完澡都比較有精神？\n因為重新開機了。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J291",
+      "category": "問答",
+      "text": "哪一個按鈕最讓人猶豫？\n「全部刪除」。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J292",
+      "category": "問答",
+      "text": "什麼聲音最能讓人瞬間清醒？\n鬧鐘關掉後發現已經遲到。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J293",
+      "category": "問答",
+      "text": "什麼東西買的時候很開心，帳單來的時候很陌生？\n網購。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J294",
+      "category": "問答",
+      "text": "什麼地方大家都希望早點離開？\n塞車現場。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J295",
+      "category": "問答",
+      "text": "哪一種計畫最容易成功？\n取消的計畫。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J296",
+      "category": "反轉對話",
+      "text": "朋友：「你最近有在存錢嗎？」\n我：「有啊，購物車裡存很多。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J297",
+      "category": "反轉對話",
+      "text": "朋友：「你會做菜嗎？」\n我：「會，我最擅長把冷的變熱。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J298",
+      "category": "反轉對話",
+      "text": "醫生：「要早睡。」\n我：「幾點算早？」\n醫生：「比你昨天早。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J299",
+      "category": "反轉對話",
+      "text": "朋友：「你今天有運動嗎？」\n我：「有，我拒絕了兩次外送，心理拉扯很大。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J300",
+      "category": "反轉對話",
+      "text": "店員：「需要袋子嗎？」\n我：「不用，我需要的是克制。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J301",
+      "category": "反轉對話",
+      "text": "朋友：「你怎麼都不回訊息？」\n我：「我有回啊，在心裡。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J302",
+      "category": "反轉對話",
+      "text": "朋友：「你是不是又熬夜？」\n我：「沒有，我只是提早迎接明天。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J303",
+      "category": "反轉對話",
+      "text": "朋友：「你很會理財嗎？」\n我：「會，我每個月都很清楚錢去哪了。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J304",
+      "category": "反轉對話",
+      "text": "同事：「你今天心情如何？」\n我：「Excel 還沒當機以前都不錯。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J305",
+      "category": "反轉對話",
+      "text": "朋友：「你方向感好嗎？」\n我：「很好，我每次迷路都知道自己迷路了。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J306",
+      "category": "動物",
+      "text": "貓最大的工作不是抓老鼠，是確保你工作到一半一定要摸牠。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J307",
+      "category": "動物",
+      "text": "狗看到主人回家很開心。\n貓看到主人回家：喔，罐頭回來了。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J308",
+      "category": "動物",
+      "text": "為什麼熊不喜歡開會？\n因為牠比較想冬眠。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J309",
+      "category": "動物",
+      "text": "魚最不喜歡哪種工作？\n加班，因為已經夠水深火熱了。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J310",
+      "category": "動物",
+      "text": "一隻貓坐在鍵盤上。\n牠不是搗蛋，只是在幫你輸入「llllllllllll」。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J311",
+      "category": "動物",
+      "text": "狗的時間觀念很簡單：\n你離開五分鐘＝你失蹤五年。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J312",
+      "category": "動物",
+      "text": "為什麼企鵝很少遲到？\n因為牠每天都穿得像要去上班。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J313",
+      "category": "動物",
+      "text": "貓最擅長的管理方式：\n你負責賺錢，牠負責監督。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J314",
+      "category": "動物",
+      "text": "鳥最自由的地方，不是會飛，是不用找停車位。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J315",
+      "category": "動物",
+      "text": "如果烏龜去上班，牠最常說的應該是：「我已經在路上了。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J316",
+      "category": "家庭學生",
+      "text": "媽媽：「房間怎麼這麼亂？」\n我：「這叫開放式收納。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J317",
+      "category": "家庭學生",
+      "text": "老師：「為什麼作業沒寫？」\n學生：「我想讓老師少改一份，體諒您。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J318",
+      "category": "家庭學生",
+      "text": "爸爸：「以前我們沒有手機也過得很好。」\n我：「那你現在先把 Wi‑Fi 關掉。」\n爸爸：「時代不一樣了。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J319",
+      "category": "家庭學生",
+      "text": "老師：「這題很簡單。」\n學生：「那老師您寫，我相信您。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J320",
+      "category": "家庭學生",
+      "text": "媽媽最神奇的能力：\n你找半小時找不到的東西，她走過來三秒就看到。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J321",
+      "category": "家庭學生",
+      "text": "學生最喜歡哪一種題目？\n老師說「這題不用考」的題目。",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J322",
+      "category": "家庭學生",
+      "text": "小孩：「為什麼大人可以晚睡？」\n大人：「因為我們隔天也會後悔。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J323",
+      "category": "家庭學生",
+      "text": "老師：「考試要仔細看題目。」\n學生：「我看得很仔細，只是答案不認識我。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J324",
+      "category": "家庭學生",
+      "text": "媽媽：「你房間整理好了嗎？」\n我：「好了，我把亂的地方都移到看不到的地方。」",
+      "origin": "generated_100"
+    },
+    {
+      "id": "J325",
+      "category": "家庭學生",
+      "text": "學生：「老師，我這題真的不會。」\n老師：「你有想過嗎？」\n學生：「有，我想過要跳過。」",
+      "origin": "generated_100"
+    }
+  ]
+}
