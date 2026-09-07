@@ -66,13 +66,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .home-nav-tab{font-size:15px;font-weight:700;color:var(--pd);padding:7px 16px;margin-right:8px;border:1px solid #d9d5f5;background:var(--pl)}
 .home-nav-tab:hover,.home-nav-tab.active{background:var(--purple);color:#fff}
 .home-brand-slot{display:flex;align-items:center;justify-content:center;min-width:118px;height:32px;padding:0 12px;border:1px dashed #c9c4bc;border-radius:var(--r);color:var(--text3);font-size:11px;background:#fbfaf8}
-.home-shell{max-width:1480px;margin:0 auto}
+.home-shell{max-width:1920px;margin:0 auto}
 .home-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
 .home-heading{display:flex;align-items:center;gap:12px}.home-heading h1{font-size:21px}.home-heading p{font-size:12px;color:var(--text2);margin-top:3px}
 .home-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .home-view-switch{display:flex;padding:3px;background:#eeece8;border-radius:8px}.home-view-switch button{border:0;background:transparent;padding:6px 10px;border-radius:6px;color:var(--text2);font:inherit;font-size:12px;cursor:pointer}.home-view-switch button.active{background:#fff;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .home-grid-wrap{position:relative;min-height:600px;border-radius:12px;padding:8px;overflow:hidden}
-.home-grid-wrap.editing{background-color:#f9f8fc;background-image:linear-gradient(to right,rgba(92,83,174,.10) 1px,transparent 1px),linear-gradient(to bottom,rgba(92,83,174,.10) 1px,transparent 1px);background-size:calc((100% - 16px)/16) var(--home-unit,90px)}
+.home-grid-wrap.editing{background-color:#f9f8fc;background-image:linear-gradient(to right,rgba(92,83,174,.10) 1px,transparent 1px),linear-gradient(to bottom,rgba(92,83,174,.10) 1px,transparent 1px);background-size:calc((100% - 16px)/20) var(--home-unit,90px)}
 .home-grid{position:relative;min-height:580px}
 .home-module{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(30,27,24,.05);transition:left .16s ease,top .16s ease,width .16s ease,height .16s ease;user-select:none}
 .home-grid-wrap.editing .home-module{cursor:grab;border-color:#c9c4ed;box-shadow:0 3px 12px rgba(60,52,137,.10)}.home-grid-wrap.editing .home-module.dragging{cursor:grabbing;transition:none;z-index:10;opacity:.88}.home-grid-wrap.editing .home-module.resizing{transition:none;z-index:10}
@@ -1557,7 +1557,7 @@ const MEETING_COLOR_ROWS=[
 ];
 const MEETING_STANDARD_COLORS=['#000000','#ffffff','#4a86e8','#e24b4a','#ef9f27','#f1c232','#1d9e75','#00a2ae'];
 const HOME_INITIAL_MODULE_TYPES=HOME_MODULE_LIBRARY.map(x=>x.type);
-const HOME_COLS=16;
+const HOME_COLS=20;
 let companyHomeLayout={version:1,modules:[]};
 let personalHomeLayout=null;
 let homeLayoutMode='personal';
