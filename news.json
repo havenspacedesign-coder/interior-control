@@ -1,126 +1,126 @@
 {
-  "date": "2026-08-28",
-  "updatedAt": "2026-08-28T07:32:57.008Z",
+  "date": "2026-09-07",
+  "updatedAt": "2026-09-07T08:50:32.293Z",
   "news": [
     {
-      "id": "55948063c4c14deb",
+      "id": "12cdf4f499559e1f",
       "source": "遠見",
       "category": "國際",
-      "title": "尼泊爾西藏土石流362死、近千人失蹤！兩國當局警告：邊境2座堰塞湖恐潰決",
-      "url": "https://www.gvm.com.tw/article/132676",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260828/239903.jpg",
-      "publishedAt": "2026-08-28T03:19:00.000Z",
-      "fetchedAt": "2026-08-28T07:32:57.008Z"
+      "title": "紐時踢爆烏克蘭軍購黑幕！涉弊包商照得標，一年就損失12億美元",
+      "url": "https://www.gvm.com.tw/article/132886",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260907/240519.jpg",
+      "publishedAt": "2026-09-07T07:50:00.000Z",
+      "fetchedAt": "2026-09-07T08:50:32.293Z"
     },
     {
-      "id": "1183e92f1f9d3698",
+      "id": "877481617e60a6f3",
       "source": "遠見",
       "category": "AI／科技",
-      "title": "「算力即國力」定律即將被改寫！台積電1奈米之後，下個科技戰場是什麼？",
-      "url": "https://www.gvm.com.tw/article/132670",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260828/239894.jpg",
-      "publishedAt": "2026-08-28T02:06:00.000Z",
-      "fetchedAt": "2026-08-28T07:32:57.008Z"
+      "title": "不翻履歷，不看KPI：李開復用「老闆AI」實踐微軟創辦人每晚都在做的「這件事」",
+      "url": "https://www.gvm.com.tw/article/132764",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260901/240203.jpg",
+      "publishedAt": "2026-09-07T05:30:00.000Z",
+      "fetchedAt": "2026-09-07T08:50:32.293Z"
     },
     {
-      "id": "562c18b0329a6188",
+      "id": "11df2196335508d4",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "巴菲特加碼Google母公司！96歲生日前竟「住套房」？",
-      "url": "https://www.gvm.com.tw/article/132683",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20220619/107262.jpg",
-      "publishedAt": "2026-08-28T07:24:00.000Z",
-      "fetchedAt": "2026-08-28T07:32:57.008Z"
+      "title": "台股漲775點創收盤歷史次高！半導體股走強",
+      "url": "https://www.gvm.com.tw/article/132887",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20251211/221055.jpg",
+      "publishedAt": "2026-09-07T08:10:00.000Z",
+      "fetchedAt": "2026-09-07T08:50:32.293Z"
     },
     {
-      "id": "e9f31ff7617ebab9",
+      "id": "9142f7ed94f92af6",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "2026《遠見》運動城市調查出爐！​城市運動力2.0，比排名更比「轉化率」",
-      "url": "https://www.gvm.com.tw/article/132494",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260821/239173.jpg",
-      "publishedAt": "2026-08-28T04:00:00.000Z",
-      "fetchedAt": "2026-08-28T07:32:57.008Z"
+      "title": "台大資工系錄取分數驟降，系上教授完整分析箇中原因",
+      "url": "https://www.gvm.com.tw/article/132888",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20250619/206799.jpg",
+      "publishedAt": "2026-09-07T08:35:00.000Z",
+      "fetchedAt": "2026-09-07T08:50:32.293Z"
     },
     {
-      "id": "cb45e834c680db0d",
+      "id": "06242544544c29c5",
       "source": "壹蘋",
       "category": "國際",
-      "title": "挪威國王哈拉爾五世駕崩！享壽89歲",
-      "url": "https://news.nextapple.com/international/20260828/8635ED1B7A137EC1A871748D333871CA",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-08/8635ED1B7A137EC1A871748D333871CA/14bc925a9f20cd9e61e86d1a4ba669e3_1280.webp",
-      "publishedAt": "2026-08-28T07:18:51.000Z",
-      "fetchedAt": "2026-08-28T07:32:57.008Z"
+      "title": "尼泊爾洪災至少1380人罹難　超過5500人仍失蹤",
+      "url": "https://news.nextapple.com/international/20260907/68EF9B9B3D0B78FD72B1EBE5E58DF2FA",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/68EF9B9B3D0B78FD72B1EBE5E58DF2FA/ed3191cfad3abe9cfcf43254f68b6ea5_1280.webp",
+      "publishedAt": "2026-09-07T08:38:36.000Z",
+      "fetchedAt": "2026-09-07T08:50:32.293Z"
     },
     {
-      "id": "803e8548031e7f1c",
+      "id": "62532bd4ef930353",
       "source": "壹蘋",
       "category": "生活",
-      "title": "醫示警「未來5年不要生病」 台灣醫療加速崩壞「看不到谷底」",
-      "url": "https://news.nextapple.com/life/20260828/265F42BA1329C90D142DC76F186DD8CB",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-08/265F42BA1329C90D142DC76F186DD8CB/5d798952ad5eecef0b19f5364aa768e2_1280.webp",
-      "publishedAt": "2026-08-28T07:28:38.000Z",
-      "fetchedAt": "2026-08-28T07:32:57.008Z"
+      "title": "台鐵準點率破97%仍挨批　消基會：旅客感受與數字落差大",
+      "url": "https://news.nextapple.com/life/20260907/43044B26FC7C82E4FE7EF0FD75D039EA",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/43044B26FC7C82E4FE7EF0FD75D039EA/ecea5f93df4164ed09be2844a3edddc4_1280.webp",
+      "publishedAt": "2026-09-07T08:46:03.000Z",
+      "fetchedAt": "2026-09-07T08:50:32.293Z"
     },
     {
-      "id": "51fe24eb9281b9d0",
+      "id": "e26607e44625ceb5",
       "source": "壹蘋",
       "category": "社會",
-      "title": "欣興電子傳出遭搜索　2副總級別主管被帶回",
-      "url": "https://news.nextapple.com/local/20260828/FFD0BB64A4080E86051E3519C6BE5B7C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-08/FFD0BB64A4080E86051E3519C6BE5B7C/82625daa08d1d9ad8f59d5ba52e7d528_1280.webp",
-      "publishedAt": "2026-08-28T07:24:45.000Z",
-      "fetchedAt": "2026-08-28T07:32:57.008Z"
+      "title": "詐團徵「副總助理」月薪6萬！還有車馬費...11人淪車手被逮",
+      "url": "https://news.nextapple.com/local/20260907/C83A1D9815A72B39B78602827726B8A8",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/C83A1D9815A72B39B78602827726B8A8/05d6352507a08738ca696179450e71f4_1280.webp",
+      "publishedAt": "2026-09-07T08:19:35.000Z",
+      "fetchedAt": "2026-09-07T08:50:32.293Z"
     },
     {
-      "id": "492dfb05119024d3",
+      "id": "917fab69fbdf92ae",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "洪榮宏親回婚變「沒有很大問題」　認了都有碰面",
-      "url": "https://news.nextapple.com/entertainment/20260828/C94FC7BAECAEE2D23D7DB945B054B5BB",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-08/C94FC7BAECAEE2D23D7DB945B054B5BB/b0313a9cdd620a4e2b3e0524e70047fd_1280.webp",
-      "publishedAt": "2026-08-28T07:08:41.000Z",
-      "fetchedAt": "2026-08-28T07:32:57.008Z"
+      "title": "《呼叫》解禁全卡司！韋禮安祭絕版歌單吸年輕粉「請給叔叔一個機會」",
+      "url": "https://news.nextapple.com/entertainment/20260907/0BA5842D08BCD165D1D2F05D11F362FC",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/0BA5842D08BCD165D1D2F05D11F362FC/6c85c61f09e90e2210ef658237830aed_1280.webp",
+      "publishedAt": "2026-09-07T08:40:40.000Z",
+      "fetchedAt": "2026-09-07T08:50:32.293Z"
     },
     {
-      "id": "d9de797778376979",
+      "id": "16b6010ce1ba372c",
       "source": "壹蘋",
-      "category": "AI科技／3C",
-      "title": "REDMI Note 17系列登台！9210mAh大電量　百瓦快充一次補滿",
-      "url": "https://news.nextapple.com/aitech/20260828/65E1042E6E0F34B674DE928EF89DFB15",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-08/65E1042E6E0F34B674DE928EF89DFB15/d7eaaf6f6c47537c7895c114ec374528_1280.webp",
-      "publishedAt": "2026-08-28T07:29:58.000Z",
-      "fetchedAt": "2026-08-28T07:32:57.008Z"
+      "category": "推薦／熱門",
+      "title": "龐祥麟逝世！周遊、李朝永夫妻難過發聲　近年斷聯感到惋惜",
+      "url": "https://news.nextapple.com/entertainment/20260907/92B701868D448877E476F84764169271",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/92B701868D448877E476F84764169271/6d00656f399589348f4c1f2216a4d74e_1280.webp",
+      "publishedAt": "2026-09-07T08:19:14.000Z",
+      "fetchedAt": "2026-09-07T08:50:32.293Z"
     },
     {
-      "id": "41dace0f02f90a56",
+      "id": "e6015bc09da051f1",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "台積電年薪達400萬　他嘆「不是人人領得起」：當股東很棒",
-      "url": "https://news.nextapple.com/finance/20260828/446342BB2A7BA3A1976CBEC7F08C3B49",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-08/446342BB2A7BA3A1976CBEC7F08C3B49/470e76ded950d8771f7714a902d6ade7_1280.webp",
-      "publishedAt": "2026-08-28T07:22:01.000Z",
-      "fetchedAt": "2026-08-28T07:32:57.008Z"
+      "title": "台股漲逾700點攻上4萬7　台積電漲50元收2460元",
+      "url": "https://news.nextapple.com/finance/20260907/E51AFC39173AAD88EF890678C52B8F6F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/E51AFC39173AAD88EF890678C52B8F6F/84ba21ae66af947b5d19a29a70aa705d_1280.webp",
+      "publishedAt": "2026-09-07T05:42:30.000Z",
+      "fetchedAt": "2026-09-07T08:50:32.293Z"
     },
     {
-      "id": "dd1639c4e2745f96",
+      "id": "711965d22bc900b1",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "景甜富豪男友曝「揉奶被推開」有原因　調情先磨指甲1小時",
-      "url": "https://news.nextapple.com/entertainment/20260828/3B4C63DBF92A7E47517B7831269E47F7",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-08/3B4C63DBF92A7E47517B7831269E47F7/8f6745f35f2ff1a92e5694b2a752e999_1280.webp",
-      "publishedAt": "2026-08-28T07:02:01.000Z",
-      "fetchedAt": "2026-08-28T07:32:57.008Z"
+      "title": "《飛龍在天》龐祥麟享壽80歲　告別式時間、地點曝光",
+      "url": "https://news.nextapple.com/entertainment/20260907/5020759F97B03A8FC9C6E8FB551475DE",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/5020759F97B03A8FC9C6E8FB551475DE/d44ed65b0cd3aeb88feddecc92d09955_1280.webp",
+      "publishedAt": "2026-09-07T08:18:39.000Z",
+      "fetchedAt": "2026-09-07T08:50:32.293Z"
     },
     {
-      "id": "7249fb84dbd595e8",
+      "id": "da4b6734e79d293c",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "川普再出手「禁留學生做1事」　名校慌了：招不到人",
-      "url": "https://news.nextapple.com/international/20260828/DAA67C71D32D14A41206229463020750",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-08/DAA67C71D32D14A41206229463020750/8937212ede2cf6c04da9fe7b50caac1d_1280.webp",
-      "publishedAt": "2026-08-28T06:58:08.000Z",
-      "fetchedAt": "2026-08-28T07:32:57.008Z"
+      "title": "傑尼斯性醜聞3年未止息　前經紀人坦承侵犯8少年",
+      "url": "https://news.nextapple.com/entertainment/20260907/319494D24ACE9439CB4E91E5E56BCBF2",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/319494D24ACE9439CB4E91E5E56BCBF2/b54d3432cdc5de007aa6680fc066f651_1280.webp",
+      "publishedAt": "2026-09-07T08:05:10.000Z",
+      "fetchedAt": "2026-09-07T08:50:32.293Z"
     }
   ]
 }
