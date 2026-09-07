@@ -6098,6 +6098,15 @@ window.saveDateColor=async function(ds,color,note,dayType){
   await setDoc(doc(db,'settings','dateColors'),{colors});
   closeMo();setSynced();
 }
+/* The photo is a direct link; the remaining newspaper surface still opens the full briefing. */
+renderTodayNewsModule=function(tier,m){
+  if(todayNewsLoading&&!todayNews)return'<div class="today-news-loading">有隅特報載入中…</div>';
+  const items=Array.isArray(todayNews?.news)?todayNews.news:[];
+  if(!items.length)return'<div class="today-news-empty">有隅特報準備中</div>';
+  const[id]=havenTemplate(),compact=(m?.w||3)<=3||(m?.h||3)<=3,lead=items[0],rest=items.slice(1,compact?3:6),date=new Intl.DateTimeFormat('zh-TW',{month:'2-digit',day:'2-digit',weekday:'short'}).format(new Date());
+  const feature=`<div class="haven-feature"><a class="haven-photo" href="${escAttr(safeNewsUrl(lead.url))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" aria-label="開啟：${escAttr(lead.title)}"><img src="${escAttr(safeNewsUrl(lead.imageUrl))}" alt="${escAttr(lead.title)}" style="display:block;width:100%;height:100%;object-fit:cover"></a><div class="haven-feature-copy"><div class="haven-kicker">TOP STORY · ${escAttr(lead.category||'設計觀點')}</div><div class="haven-headline">${escAttr(lead.title)}</div><div class="haven-deck">${escAttr(lead.source||'有隅特報')} · 點擊閱讀完整 12 則新聞</div></div></div>`,briefs=`<div class="haven-side">${rest.map((x,i)=>havenStory(x,i+1,id==='gallery')).join('')}</div>`;
+  return`<div class="haven-paper haven-${id}" data-compact="${compact}" role="button" tabindex="0" onclick="if(!homeEditMode)showHavenNews()"><div class="haven-mast"><span>HAVEN DAILY</span><span class="haven-mast-title">有隅特報</span><span class="haven-mast-meta">${date} · ${escAttr(todayNewsUpdateLabel(todayNews.updatedAt))} · VOL.${String((new Date().getDate()%99)+1).padStart(3,'0')}<br>DESIGN A BETTER HOME</span></div><div class="haven-layout">${feature}${briefs}</div></div>`;
+};
 </script>
 <script>
 if ('serviceWorker' in navigator) {
