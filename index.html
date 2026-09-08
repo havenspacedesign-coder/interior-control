@@ -5045,7 +5045,7 @@ window.setActiveStage=function(s){
   });
 }
 window.setActiveWs=function(id){activeBibleWs=id;renderBible();}
-window.toggleDragMode=function(){dragModeOn=!dragModeOn;renderBible();}
+window.toggleDragMode=function(){rememberBibleScrollPosition();dragModeOn=!dragModeOn;renderBible();}
 window.bsDragStart=function(e,s){if(!isSystemAdmin()||!dragModeOn)return;dragSrc=s;stageDragInProgress=true;setTimeout(()=>document.querySelector(`[data-stage="${s}"]`)?.classList.add('dragging'),0);}
 function bibleStageAutoScroll(event){const list=event.currentTarget.closest('.bible-stages');if(!list)return;const rect=list.getBoundingClientRect(),edge=46;if(event.clientY<rect.top+edge)list.scrollTop-=Math.ceil((rect.top+edge-event.clientY)/6);else if(event.clientY>rect.bottom-edge)list.scrollTop+=Math.ceil((event.clientY-(rect.bottom-edge))/6);}
 window.bsDragOver=function(e,s){if(!isSystemAdmin()||!dragModeOn)return;e.preventDefault();bibleStageAutoScroll(e);document.querySelectorAll('.bst-item').forEach(el=>el.classList.remove('drag-over'));if(s!==dragSrc)document.querySelector(`[data-stage="${s}"]`)?.classList.add('drag-over');}
