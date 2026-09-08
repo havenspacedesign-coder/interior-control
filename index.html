@@ -363,6 +363,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .bib-item-del:hover{color:var(--red)}
 .bib-item-add{color:var(--text3);cursor:pointer;font-size:15px;padding:0 4px;border:none;background:none}
 .bib-item-add:hover{color:var(--purple)}
+.bib-drag-group{position:relative}.bib-drag-group.dragging{opacity:.48}.bib-drag-group.drag-over-before:before,.bib-drag-group.drag-over-after:after{content:'';position:absolute;left:0;right:0;height:2px;border-radius:2px;background:var(--purple);box-shadow:0 0 0 2px rgba(92,83,174,.12);z-index:6}.bib-drag-group.drag-over-before:before{top:-2px}.bib-drag-group.drag-over-after:after{bottom:-2px}.bib-drag-handle{display:inline-flex;align-items:center;justify-content:center;width:18px;min-width:18px;height:22px;margin-left:-3px;padding:0;border:0;border-radius:4px;background:transparent;color:var(--text3);font:inherit;font-size:16px;line-height:1;cursor:grab;touch-action:none}.bib-drag-handle:hover{background:var(--pl);color:var(--pd)}.bib-drag-handle:active{cursor:grabbing}.drag-mode .bib-item-row{border-radius:4px}.drag-mode .bib-item-row:hover{background:rgba(92,83,174,.035)}
 .bib-add-row{display:flex;gap:8px;margin-top:8px}
 .bib-add-row input{flex:1}
 .ws-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
@@ -793,7 +794,7 @@ const MEETING_ROWS=[
   {id:'meet4',name:'其他'}
 ];
 let activePanel='home',calMode='month',monthOffset=0,selectedTag=null;
-let activeBibleStage=null,activeBibleWs=null,bibleView='edit',dragSrc=null,dragModeOn=false;
+let activeBibleStage=null,activeBibleWs=null,bibleView='edit',dragSrc=null,dragModeOn=false,bibleItemDrag=null;
 let stageDragInProgress=false,pendingBibleRender=false;
 let expandedBibleItems={};
 let openPicker=null;
@@ -4840,7 +4841,7 @@ function renderDayView(){
     </div>`;
   });
   if(!hasAny)html+=`<div class="empty">今日無工地排程</div>`;
-  return html;
+  return html+'</div>';
 }
 
 let openCheckMoArgs=null;
@@ -4950,9 +4951,9 @@ function renderBible(){
   <div class="bible-wrap">
     <div class="bible-stages ${dragModeOn?'drag-mode':''}">
       ${stages.length===0?`<div style="padding:14px;font-size:12px;color:var(--text3);text-align:center">尚無階段</div>`:''}
-      ${stages.map((s,i)=>`<div class="bst-item ${s===activeBibleStage?'active':''} ${dragModeOn?'drag-enabled':''}" data-stage="${s}"
-        ${dragModeOn?`draggable="true" ondragstart="bsDragStart(event,'${s}')" ondragover="bsDragOver(event,'${s}')" ondrop="bsDrop(event,'${s}')" ondragend="bsDragEnd()"`:''} 
-        onclick="setActiveStage('${s}')">        <span class="drag-handle">⠿</span>
+      ${stages.map((s,i)=>`<div class="bst-item ${s===activeBibleStage?'active':''} ${isSystemAdmin()&&dragModeOn?'drag-enabled':''}" data-stage="${s}"
+        ${isSystemAdmin()&&dragModeOn?`draggable="true" ondragstart="bsDragStart(event,'${s}')" ondragover="bsDragOver(event,'${s}')" ondrop="bsDrop(event,'${s}')" ondragend="bsDragEnd()"`:''}
+        onclick="setActiveStage('${s}')">        ${isSystemAdmin()&&dragModeOn?'<span class="drag-handle">⠿</span>':''}
         <span class="bst-name">${i+1}. ${displayStageName(s)}</span>
         <span class="bst-cnt">${getAllBibleItems(s).length}</span>
       </div>`).join('')}
@@ -5036,15 +5037,17 @@ window.setActiveStage=function(s){
 }
 window.setActiveWs=function(id){activeBibleWs=id;renderBible();}
 window.toggleDragMode=function(){dragModeOn=!dragModeOn;renderBible();}
-window.bsDragStart=function(e,s){if(!dragModeOn)return;dragSrc=s;stageDragInProgress=true;setTimeout(()=>document.querySelector(`[data-stage="${s}"]`)?.classList.add('dragging'),0);}
-window.bsDragOver=function(e,s){if(!dragModeOn)return;e.preventDefault();document.querySelectorAll('.bst-item').forEach(el=>el.classList.remove('drag-over'));if(s!==dragSrc)document.querySelector(`[data-stage="${s}"]`)?.classList.add('drag-over');}
+window.bsDragStart=function(e,s){if(!isSystemAdmin()||!dragModeOn)return;dragSrc=s;stageDragInProgress=true;setTimeout(()=>document.querySelector(`[data-stage="${s}"]`)?.classList.add('dragging'),0);}
+function bibleStageAutoScroll(event){const list=event.currentTarget.closest('.bible-stages');if(!list)return;const rect=list.getBoundingClientRect(),edge=46;if(event.clientY<rect.top+edge)list.scrollTop-=Math.ceil((rect.top+edge-event.clientY)/6);else if(event.clientY>rect.bottom-edge)list.scrollTop+=Math.ceil((event.clientY-(rect.bottom-edge))/6);}
+window.bsDragOver=function(e,s){if(!isSystemAdmin()||!dragModeOn)return;e.preventDefault();bibleStageAutoScroll(e);document.querySelectorAll('.bst-item').forEach(el=>el.classList.remove('drag-over'));if(s!==dragSrc)document.querySelector(`[data-stage="${s}"]`)?.classList.add('drag-over');}
 window.bsDrop=async function(e,toS){
-  if(!dragModeOn)return;e.preventDefault();
+  if(!isSystemAdmin()||!dragModeOn)return;e.preventDefault();
   stageDragInProgress=false;
   if(!dragSrc||dragSrc===toS)return;
   const order=[...getBibleStages()];const fi=order.indexOf(dragSrc);const ti=order.indexOf(toS);
   if(fi<0||ti<0)return;order.splice(fi,1);order.splice(ti,0,dragSrc);
   S.bibleOrder=order;
+  rememberBibleScrollPosition(2);
   renderBible();
   setSyncing();
   try{await setDoc(doc(db,'bible','orderConfig'),{order});setSynced();}
@@ -5062,10 +5065,14 @@ function renderBibleItemNode(stage,phase,path,rawItem){
   const item=normalizeBibleItem(rawItem);
   const pathStr=path.join(',');
   const depth=path.length-1;
+  const parentPath=path.slice(0,-1).join(',');
   const addOpen=!!expandedBibleItems[stage+'|'+phase+'|'+pathStr];
-  let html=`
+  const canSort=isSystemAdmin()&&dragModeOn;
+  let html=`<div class="bib-drag-group" data-bib-path="${pathStr}" data-bib-parent="${parentPath}" data-bib-depth="${depth}"
+    ${canSort?`ondragover="bibleItemDragOver(event,'${stage}','${phase}','${pathStr}','${parentPath}')" ondrop="bibleItemDrop(event,'${stage}','${phase}','${pathStr}','${parentPath}')"`:''}>
   <div class="bib-item-row" style="padding-left:${depth*26}px">
     ${depth===0?`<span class="bib-item-num">${path[0]+1}</span>`:'<span style="color:var(--text3);flex-shrink:0">└</span>'}
+    ${canSort?`<button type="button" class="bib-drag-handle" draggable="true" aria-label="拖曳排序" title="按住拖曳排序" ondragstart="bibleItemDragStart(event,'${stage}','${phase}','${pathStr}','${parentPath}')" ondragend="bibleItemDragEnd()">⠿</button>`:''}
     ${isAdmin()&&dragModeOn?`<button class="bib-item-add" title="新增子項目" onclick="toggleBibleSubItems('${stage}','${phase}','${pathStr}')">＋</button>`:''}
     <span class="bib-item-text" style="flex:1" ondblclick="startEditBibleNode('${stage}','${phase}','${pathStr}',this)">${item.text}</span>
     ${isAdmin()&&dragModeOn?`<button class="bib-item-del" onclick="confirmDelBibleNode('${stage}','${phase}','${pathStr}','${escAttr(item.text).replace(/'/g,"\\'")}')">×</button>`:''}
@@ -5078,6 +5085,53 @@ function renderBibleItemNode(stage,phase,path,rawItem){
   }
   return html;
 }
+function bibleSiblingArray(arr,parentPath){
+  let current=arr;
+  parentPath.forEach(index=>{current=normalizeBibleItem(current[index]).subs;});
+  return current;
+}
+function reorderBibleSiblings(arr,parentPath,fromIndex,targetIndex,placeBefore){
+  if(!parentPath.length){
+    const next=[...arr], [moved]=next.splice(fromIndex,1);
+    let insertAt=targetIndex+(placeBefore?0:1);if(fromIndex<insertAt)insertAt--;
+    next.splice(insertAt,0,moved);return next;
+  }
+  const [head,...tail]=parentPath,copy=[...arr],item=normalizeBibleItem(copy[head]);
+  copy[head]={text:item.text,subs:reorderBibleSiblings(item.subs,tail,fromIndex,targetIndex,placeBefore)};
+  return copy;
+}
+function clearBibleItemDropClasses(){document.querySelectorAll('.bib-drag-group').forEach(el=>el.classList.remove('drag-over-before','drag-over-after'));}
+function clearBibleItemDragClasses(){document.querySelectorAll('.bib-drag-group').forEach(el=>el.classList.remove('dragging','drag-over-before','drag-over-after'));}
+function bibleItemAutoScroll(event){const detail=event.currentTarget.closest('.bible-detail');if(!detail)return;const rect=detail.getBoundingClientRect(),edge=54;if(event.clientY<rect.top+edge)detail.scrollTop-=Math.ceil((rect.top+edge-event.clientY)/6);else if(event.clientY>rect.bottom-edge)detail.scrollTop+=Math.ceil((event.clientY-(rect.bottom-edge))/6);}
+window.bibleItemDragStart=function(event,stage,phase,pathStr,parentPath){
+  if(!isSystemAdmin()||!dragModeOn)return;
+  bibleItemDrag={stage,phase,path:pathStr,parent:parentPath,startY:event.clientY};
+  event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',pathStr);
+  requestAnimationFrame(()=>document.querySelector(`.bib-drag-group[data-bib-path="${CSS.escape(pathStr)}"]`)?.classList.add('dragging'));
+}
+window.bibleItemDragOver=function(event,stage,phase,pathStr,parentPath){
+  const source=bibleItemDrag;
+  if(!source||source.stage!==stage||source.phase!==phase||source.parent!==parentPath||source.path===pathStr)return;
+  if(Math.abs(event.clientY-source.startY)<28)return;
+  event.preventDefault();event.stopPropagation();event.dataTransfer.dropEffect='move';bibleItemAutoScroll(event);
+  clearBibleItemDropClasses();
+  const target=event.currentTarget,rect=target.getBoundingClientRect();target.classList.add(event.clientY<rect.top+rect.height/2?'drag-over-before':'drag-over-after');
+}
+window.bibleItemDrop=async function(event,stage,phase,pathStr,parentPath){
+  if(!isSystemAdmin()||!dragModeOn)return;
+  const source=bibleItemDrag;
+  clearBibleItemDropClasses();
+  if(!source||source.stage!==stage||source.phase!==phase||source.parent!==parentPath||source.path===pathStr)return;
+  if(Math.abs(event.clientY-source.startY)<28)return;
+  event.preventDefault();event.stopPropagation();
+  const target=event.currentTarget,rect=target.getBoundingClientRect(),placeBefore=event.clientY<rect.top+rect.height/2;
+  const parent=parentPath?parentPath.split(',').map(Number):[],from=Number(source.path.split(',').pop()),to=Number(pathStr.split(',').pop()),arr=(S.bible[stage]||{before:[],during:[],after:[]})[phase]||[];
+  const siblings=bibleSiblingArray(arr,parent);if(!Number.isInteger(from)||!Number.isInteger(to)||from<0||to<0||from>=siblings.length||to>=siblings.length)return;
+  const updated={...(S.bible[stage]||{before:[],during:[],after:[]}),[phase]:reorderBibleSiblings(arr,parent,from,to,placeBefore)};
+  bibleItemDrag=null;rememberBibleScrollPosition(2);S.bible=Object.assign({},S.bible,{[stage]:updated});renderBible();setSyncing();
+  try{await setDoc(doc(db,'bible',stage),updated);setSynced();}catch(err){alert('排序存檔失敗：'+err.message);setSynced();}
+}
+window.bibleItemDragEnd=function(){clearBibleItemDragClasses();bibleItemDrag=null;}
 window.toggleBibleSubItems=function(stage,phase,pathStr){
   const key=stage+'|'+phase+'|'+pathStr;
   expandedBibleItems[key]=!expandedBibleItems[key];
