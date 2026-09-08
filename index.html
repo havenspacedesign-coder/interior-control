@@ -427,10 +427,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .project-photo-name{position:absolute;left:0;right:0;bottom:0;padding:4px 6px;background:rgba(0,0,0,.58);color:#fff;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .project-photo-empty{padding:12px;border:1px dashed var(--border);border-radius:var(--r);color:var(--text3);font-size:12px;text-align:center}
 .project-share-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;background:var(--surface);position:sticky;bottom:0;z-index:2;padding:5px 0}.project-share-actions{display:flex;flex-wrap:wrap;gap:7px}.project-detail-actions{display:flex;gap:7px;flex:0 0 auto}.project-photo-help{margin:0;padding-left:0}.project-photo-help .help-pop{width:270px}.project-photo-help ul{margin:0;padding-left:18px}
-.project-detail-modal>.project-photo-panel{flex:0 0 210px;min-height:210px;max-height:210px;overflow-y:auto;margin-top:10px}
-.project-detail-modal>.project-photo-panel .project-photo-grid{grid-template-columns:repeat(auto-fill,86px);grid-auto-rows:86px;overflow-y:auto;max-height:88px}
-.project-detail-modal>.project-photo-panel .project-photo-card{aspect-ratio:1}
-@media(max-width:760px){.wctrl{display:flex;flex-wrap:wrap;justify-content:center}.wctrl>.nav-row{margin-left:auto}.mo-box.project-detail-modal{max-width:560px;overflow-y:auto}.project-detail-grid,.project-detail-grid.has-design-progress{grid-template-columns:1fr;max-height:none}.project-detail-main,.project-detail-design,.project-detail-trades{overflow:visible}.project-detail-design,.project-detail-trades{border-left:0;border-top:1px solid var(--border);padding:14px 0 0}.project-share-row{align-items:flex-start;flex-direction:column}.project-detail-actions{align-self:flex-end}}
+.project-detail-mobile-photo{display:none}
+.project-detail-desktop-photo{flex:0 0 210px;min-height:210px;max-height:210px;overflow-y:auto;margin-top:10px}
+.project-detail-desktop-photo .project-photo-grid{grid-template-columns:repeat(auto-fill,86px);grid-auto-rows:86px;overflow-y:auto;max-height:88px}
+.project-detail-desktop-photo .project-photo-card{aspect-ratio:1}
+.todo-mobile-projects{display:none}
+@media(max-width:760px){.wctrl{display:flex;flex-wrap:wrap;justify-content:center}.wctrl>.nav-row{margin-left:auto}.mo-box.project-detail-modal{max-width:560px;height:calc(100vh - 20px);max-height:calc(100vh - 20px);overflow-y:auto;display:block}.project-detail-grid,.project-detail-grid.has-design-progress{display:flex;flex-direction:column;gap:0;max-height:none}.project-detail-main,.project-detail-design,.project-detail-trades{overflow:visible}.project-detail-design,.project-detail-trades{border-left:0;border-top:1px solid var(--border);padding:14px 0 0}.project-detail-desktop-photo{display:none}.project-detail-mobile-photo{display:block}.project-detail-mobile-photo .project-photo-panel{margin-top:14px}.project-share-row{align-items:flex-start;flex-direction:column}.project-detail-actions{align-self:flex-end}.todo-desktop-projects{display:none!important}.todo-mobile-projects{display:block}.todo-project-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}.todo-project-tab{min-height:48px;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);font:inherit;font-size:12px;font-weight:600;text-align:left;word-break:break-word;cursor:pointer}.todo-project-tab.on{background:var(--pl);border-color:var(--purple);color:var(--purple)}.todo-mobile-current .todo-project-card{min-width:0!important;width:100%;box-sizing:border-box}}
 
 /* Mobile navigation and progress board: desktop layout remains unchanged. */
 .topnav-menu{display:contents}.mobile-nav-brand,.mobile-menu-toggle,.mobile-progress-notes-tab{display:none}
@@ -3347,19 +3349,31 @@ function renderTodoPanel(){
   if(!currentUser)return'';
   const projIds=userPrefs.todoProjects||[];
   const projs=projIds.map(id=>S.projects.find(p=>p.id===id)).filter(p=>p&&p.status!=='done');
+  if(!projs.some(p=>p.id===activeTodoProjectId))activeTodoProjectId=projs[0]?.id||'';
+  const activeProject=projs.find(p=>p.id===activeTodoProjectId)||null;
   return`<div style="border:1px solid var(--border);border-radius:var(--rl2);padding:10px;margin-bottom:12px;background:var(--surface)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       <span style="font-size:13px;font-weight:600">📋 各工地待辦事項 <span style="font-weight:400;color:var(--text3);font-size:11px">（只有自己看得到・點選新增的待辦後按 Delete 鍵可刪除）</span></span>
       <button class="btn btn-sm" onclick="openTodoProjectPicker()">⚙ 選擇工地</button>
     </div>
     ${projs.length===0?`<div style="font-size:12px;color:var(--text3)">尚未選擇要顯示的工地，點右上角「⚙ 選擇工地」設定</div>`:
-    `<div class="horizontal-card-list" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px">
+    `<div class="todo-desktop-projects horizontal-card-list" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px">
       ${projs.map(p=>renderTodoColumn(p)).join('')}
+    </div>
+    <div class="todo-mobile-projects">
+      <div class="todo-project-tabs">${projs.map(p=>`<button type="button" class="todo-project-tab ${p.id===activeTodoProjectId?'on':''}" onclick="selectTodoProject('${p.id}')">${escAttr(p.name)}</button>`).join('')}</div>
+      <div class="todo-mobile-current">${activeProject?renderTodoColumn(activeProject):''}</div>
     </div>`}
   </div>`;
 }
 let selectedTodoId=null;
+let activeTodoProjectId='';
 let todoTextTapState={key:'',time:0};
+window.selectTodoProject=function(projectId){
+  activeTodoProjectId=projectId;
+  selectedTodoId=null;
+  renderProgress();
+};
 window.handleTodoTextTap=function(key,el,event){
   event.stopPropagation();
   const now=Date.now();
@@ -3449,7 +3463,7 @@ function renderTodoColumn(p){
   const noteTodos=getNoteTodosForProject(p.name);
   const manualTodos=(S.userTodos||[]).filter(t=>t.uid===currentUser.uid&&t.projId===p.id).map(t=>({source:'manual',id:t.id,text:t.text,completed:!!t.done}));
   const all=[...noteTodos,...manualTodos].sort((a,b)=>(a.completed?1:0)-(b.completed?1:0));
-  return`<div style="min-width:210px;flex-shrink:0;border:1px solid var(--border);border-radius:var(--r);padding:8px">
+  return`<div class="todo-project-card" style="min-width:210px;flex-shrink:0;border:1px solid var(--border);border-radius:var(--r);padding:8px">
     <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--purple)">${p.name}</div>
     <input type="text" placeholder="+ 新增待辦…" inputmode="text" enterkeyhint="done" onkeydown="if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){addManualTodo('${p.id}',this.value);this.value='';}" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 6px;border:1px dashed var(--border);border-radius:4px;margin-bottom:5px;font-family:inherit">
     ${all.length?all.map(t=>renderTodoItem(t)).join(''):'<div style="font-size:11px;color:var(--text3)">尚無待辦事項</div>'}
@@ -5879,11 +5893,11 @@ window.showProjectDetail=function(projId){
   const tradeSummary=projectTradeSummary(p.id);
   const designProgressMarkup=renderProjectDesignReadOnly(p);
   const photos=projectPhotos(p);
-  const photoPanel=`<section class="project-photo-panel">
-      <div class="project-photo-head"><span>📷 案件照片 <span class="help-wrap project-photo-help"><button class="help-btn" type="button" aria-label="案件照片操作說明" onclick="toggleHelpPop(event,'project-photo-help')">?</button><span class="help-pop" id="project-photo-help" onclick="event.stopPropagation()"><ul><li>勾選一張照片後，才能使用單張複製。</li><li>一次僅能選取一張照片。</li><li>分享照片（合成）會將全部照片排成一張。</li></ul></span></span>（${photos.length}）</span></div>
+  const photoPanel=function(placement){const helpId=`project-photo-help-${placement}`;return`<section class="project-photo-panel">
+      <div class="project-photo-head"><span>📷 案件照片 <span class="help-wrap project-photo-help"><button class="help-btn" type="button" aria-label="案件照片操作說明" onclick="toggleHelpPop(event,'${helpId}')">?</button><span class="help-pop" id="${helpId}" onclick="event.stopPropagation()"><ul><li>勾選一張照片後，才能使用單張複製。</li><li>一次僅能選取一張照片。</li><li>分享照片（合成）會將全部照片排成一張。</li></ul></span></span>（${photos.length}）</span></div>
       ${photos.length?`<div class="project-photo-grid">${photos.map(photo=>`<div class="project-photo-card"><input class="project-photo-select" type="checkbox" aria-label="選取 ${escAttr(photo.name||'案件照片')}" ${selectedProjectDetailPhotoId===photo.id?'checked':''} ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoId!==photo.id?'disabled':''} onchange="setProjectDetailPhoto('${p.id}','${photo.id}',this.checked)"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
       <div class="project-share-row"><div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotoCollage('${p.id}')">分享照片（合成）</button><button class="btn btn-sm" onclick="copySelectedProjectPhoto('${p.id}')" ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoBlob?'':'disabled'}>單張複製</button></div><div class="project-detail-actions">${canEditProjects()?`<button class="btn" onclick="showEditProject('${p.id}')">編輯</button>`:''}<button class="btn" onclick="closeMo()">關閉</button></div></div>
-    </section>`;
+    </section>`;};
   function row(label,val){
     return`<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
       <div style="width:110px;flex-shrink:0;color:var(--text2)">${label}</div>
@@ -5911,6 +5925,7 @@ window.showProjectDetail=function(projId){
       ${row('狀態',`<span class="badge" style="background:${si.bg};color:${si.color}">${si.l}</span>`)}
       ${p.completionTypes&&p.completionTypes.length?row('完工類型',p.completionTypes.join('、')):''}
       ${row('廠商施工流程',p.process)}
+      <div class="project-detail-mobile-photo">${photoPanel('mobile')}</div>
       </div>
       <section class="project-detail-design">
         <div class="project-detail-trades-title">設計進度（唯讀）</div>
@@ -5921,7 +5936,7 @@ window.showProjectDetail=function(projId){
         <div class="project-detail-trades-list">${tradeSummary||'<span class="project-detail-empty">尚未設定工班</span>'}</div>
       </aside>
     </div>
-    ${photoPanel}`;
+    <div class="project-detail-desktop-photo">${photoPanel('desktop')}</div>`;
   $('modal').style.display='flex';
 }
 window.setCalMode=function(m){calMode=m==='week'?'month':m;lastHScrollLeft=0;renderProgress();}
