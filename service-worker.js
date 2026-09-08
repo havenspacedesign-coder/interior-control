@@ -1,4 +1,4 @@
-const CACHE_NAME = 'interior-control-shell-v1';
+const CACHE_NAME = 'interior-control-shell-v2';
 const APP_SHELL = [
   './',
   './index.html',
@@ -55,8 +55,17 @@ self.addEventListener('fetch', function (event) {
   });
 
   if (isAppShellAsset) {
-    event.respondWith(caches.match(request, { ignoreSearch: true }).then(function (cached) {
-      return cached || fetch(request);
-    }));
+    event.respondWith(
+      fetch(request).then(function (response) {
+        if (response.ok) {
+          caches.open(CACHE_NAME).then(function (cache) {
+            cache.put(request, response.clone());
+          });
+        }
+        return response;
+      }).catch(function () {
+        return caches.match(request, { ignoreSearch: true });
+      })
+    );
   }
 });
