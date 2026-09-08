@@ -4879,7 +4879,7 @@ window.openCheckMo=function(projId,stage,label,projName){
   $('modal').style.display='flex';
   openCheckMoArgs={projId,stage,label,projName};
 }
-window.closeMo=function(){$('modal').style.display='none';delete $('mo-content').dataset.lockBackdrop;openCheckMoArgs=null;$('mo-content').style.maxWidth='';$('mo-content').classList.remove('project-detail-modal','module-manager-modal','company-duty-settings','sticky-wall-modal','estimate-check-modal','recurring-manager-modal','announcement-modal');}
+window.closeMo=function(){$('modal').style.display='none';delete $('mo-content').dataset.lockBackdrop;openCheckMoArgs=null;$('mo-content').style.maxWidth='';$('mo-content').classList.remove('project-detail-modal','module-manager-modal','company-duty-settings','sticky-wall-modal','estimate-check-modal','recurring-manager-modal','announcement-modal');if(bibleDeleteModalScrollPosition)restoreBibleDeleteModalScrollPosition();}
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'&&$('modal').style.display==='flex'&&!$('mo-content').dataset.lockBackdrop){
     e.preventDefault();
@@ -4964,7 +4964,7 @@ function renderBible(){
   </div>`;
   restoreBibleScrollPosition();
 }
-let pendingBibleScrollPosition=null;
+let pendingBibleScrollPosition=null,bibleDeleteModalScrollPosition=null;
 function rememberBibleScrollPosition(renderCount=1){
   const wrap=$('panel-bible')?.querySelector('.bible-wrap');
   if(!wrap)return;
@@ -4979,6 +4979,15 @@ function restoreBibleScrollPosition(){
   const stages=wrap.querySelector('.bible-stages'),detail=wrap.querySelector('.bible-detail');
   if(stages)stages.scrollTop=position.stages;
   if(detail)detail.scrollTop=position.detail;
+}
+function rememberBibleDeleteModalScrollPosition(){
+  const wrap=$('panel-bible')?.querySelector('.bible-wrap');if(!wrap)return;
+  bibleDeleteModalScrollPosition={stages:wrap.querySelector('.bible-stages')?.scrollTop||0,detail:wrap.querySelector('.bible-detail')?.scrollTop||0,pageX:window.scrollX,pageY:window.scrollY};
+}
+function restoreBibleDeleteModalScrollPosition(){
+  const position=bibleDeleteModalScrollPosition;if(!position)return;
+  const apply=()=>{const wrap=$('panel-bible')?.querySelector('.bible-wrap');if(!wrap)return;const stages=wrap.querySelector('.bible-stages'),detail=wrap.querySelector('.bible-detail');if(stages)stages.scrollTop=position.stages;if(detail)detail.scrollTop=position.detail;window.scrollTo(position.pageX,position.pageY);};
+  requestAnimationFrame(apply);setTimeout(apply,0);bibleDeleteModalScrollPosition=null;
 }
 function renderBibleDetail(stage){
   if(bibleView==='worksite')return renderBibleWorksite(stage);
@@ -5183,13 +5192,15 @@ window.addBibleChildAtPath=async function(stage,phase,pathStr){
   setSyncing();await setDoc(doc(db,'bible',stage),updated);setSynced();
 }
 window.confirmDelBibleNode=function(stage,phase,pathStr,text){
+  rememberBibleDeleteModalScrollPosition();
   $('mo-content').innerHTML=`
     <div class="mo-title">確定要刪除這一項嗎？</div>
     <div class="mo-sub">「${text}」（連同底下的子項目一併刪除）</div>
-    <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-danger" id="mo-confirm-btn" onclick="closeMo();delBibleNodeAtPath('${stage}','${phase}','${pathStr}')">刪除</button></div>`;
+    <div class="mo-footer"><button class="btn" onclick="closeBibleDeleteConfirm()">取消</button><button class="btn btn-danger" id="mo-confirm-btn" onclick="closeBibleDeleteConfirm();delBibleNodeAtPath('${stage}','${phase}','${pathStr}')">刪除</button></div>`;
   $('modal').style.display='flex';
   setTimeout(()=>{const b=$('mo-confirm-btn');if(b)b.focus();},0);
 }
+window.closeBibleDeleteConfirm=function(){closeMo();restoreBibleDeleteModalScrollPosition();}
 window.delBibleNodeAtPath=async function(stage,phase,pathStr){
   if(!isAdmin())return;
   const path=pathStr.split(',').map(Number);
@@ -5198,7 +5209,8 @@ window.delBibleNodeAtPath=async function(stage,phase,pathStr){
   const absIdx=flatIndexAtPath(data,phase,path);
   const removedCount=1+flatPhaseCount(normalizeBibleItem(getNodeAtPath(arr,path)).subs);
   const newArr=removeAtPath(arr,path);
-  setSyncing();await setDoc(doc(db,'bible',stage),{...data,[phase]:newArr});
+  // 刪除同步會重繪清單，保留當前閱讀位置至同步完成。
+  rememberBibleScrollPosition(2);setSyncing();await setDoc(doc(db,'bible',stage),{...data,[phase]:newArr});
   const snap=await getDocs(collection(db,'checks'));
   const batch=writeBatch(db);
   snap.docs.filter(d=>d.id.endsWith('_'+stage)).forEach(d=>{
