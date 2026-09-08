@@ -1536,7 +1536,7 @@ function renderActive(){
   else if(activePanel==='overview')renderOverview();
   else if(activePanel==='design')renderDesign();
   else if(activePanel==='progress')renderProgress();
-  else if(activePanel==='bible')renderBible();
+  else if(activePanel==='bible'){rememberBibleScrollPosition();renderBible();}
   else if(activePanel==='vendors')renderVendors();
   else if(activePanel==='b1f')renderB1F();
   else if(activePanel==='members')renderMembers();
@@ -4904,7 +4904,7 @@ window.setCheckStatus=async function(projId,stage,idx,status){
     openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName);
   }
   if(activePanel==='progress')renderProgress();
-  else if(activePanel==='bible')renderBible();
+  else if(activePanel==='bible'){rememberBibleScrollPosition(2);renderBible();}
   setSyncing();
   try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}
 }
