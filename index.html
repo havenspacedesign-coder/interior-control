@@ -5146,14 +5146,15 @@ window.startEditBibleNode=function(stage,phase,pathStr,el){
 }
 window.saveBibleNodeText=async function(stage,phase,pathStr,text){
   text=(text||'').trim();
-  if(!text)return renderBible();
+  if(!text){rememberBibleScrollPosition();return renderBible();}
   const path=pathStr.split(',').map(Number);
   const data=S.bible[stage]||{before:[],during:[],after:[]};
   const arr=data[phase]||[];
   const cur=normalizeBibleItem(getNodeAtPath(arr,path));
   const newArr=replaceAtPath(arr,path,cur.subs.length?{text,subs:cur.subs}:text);
   const updated={...data,[phase]:newArr};
-  S.bible=Object.assign({},S.bible,{[stage]:updated});
+  // 保留目前閱讀位置，並涵蓋存檔後同步觸發的第二次重新渲染。
+  rememberBibleScrollPosition(2);S.bible=Object.assign({},S.bible,{[stage]:updated});
   renderBible();
   setSyncing();await setDoc(doc(db,'bible',stage),updated);setSynced();
 }
