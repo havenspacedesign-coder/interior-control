@@ -214,6 +214,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .design-tbl td input{border:none;padding:6px 8px;font-size:12px;width:100%;background:transparent;font-family:inherit}
 .design-tbl td input:focus{outline:none;background:var(--pl)}
 .design-tbl td.empty-cell{background:#fff8f8}
+.design-tbl .design-freeze{position:sticky!important;z-index:4;background:var(--surface);box-shadow:1px 0 0 var(--border)}
+.design-tbl thead .design-freeze{z-index:6;background:var(--bg)}
+.design-tbl td.design-freeze.empty-cell{background:#fff8f8}
+.design-missing-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--rl);color:var(--rd);font-size:10px;font-weight:600;line-height:1;vertical-align:middle}
 
 /* Week view */
 .wctrl{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-rows:45px auto;align-items:end;margin-bottom:1rem;gap:8px}
@@ -422,6 +426,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .project-design-readonly-label{color:var(--text2);word-break:break-word}
 .project-design-readonly-value{min-width:0;white-space:pre-wrap;word-break:break-word;font-size:11px}
 .project-design-readonly-date{color:var(--text3);font-size:11px}
+.design-member-picker-row{display:grid;grid-template-columns:16px minmax(0,1fr);align-items:center;gap:8px;padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);white-space:nowrap}.design-member-picker-row input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--purple)}.design-member-picker-row span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .project-detail-empty{font-size:12px;color:var(--text3)}
 .project-photo-panel{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
 .project-photo-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:13px;font-weight:600}
@@ -2076,7 +2081,7 @@ function renderOverview(){
     </div>
     ${shown.length===0?`<div class="empty">尚無案件</div>`:`
     <div style="overflow-x:auto"><table>
-      <thead><tr>${isAdmin()&&overviewEditMode?'<th style="width:34px"></th>':''}<th>案件名稱</th><th>狀態</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>完工日</th>${canEditProjects()&&overviewEditMode?'<th>操作</th>':''}</tr></thead>
+      <thead><tr>${isAdmin()&&overviewEditMode?'<th style="width:34px"></th>':''}<th>案件名稱</th><th>狀態</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>合約完工日</th>${canEditProjects()&&overviewEditMode?'<th>操作</th>':''}</tr></thead>
       <tbody>${shown.map(p=>{
         const si=statusInfo(p.status);
         return`<tr ${isAdmin()&&overviewEditMode?`draggable="true" ondragstart="overviewRowDragStart(event,'${p.id}')" ondragover="overviewRowDragOver(event)" ondrop="overviewRowDrop(event,'${p.id}')"`:''}>${isAdmin()&&overviewEditMode?'<td style="text-align:center;cursor:grab;color:var(--text3)">⠿</td>':''}
@@ -2116,7 +2121,7 @@ function renderSiteReport(projId){
     <div class="card-hdr"><span class="card-title">${p.name} — 工地總報告表</span></div>
     <div style="font-size:13px;line-height:2;color:var(--text2)">
       業主姓名：${p.owner||'—'}　類型：${p.type||'—'}　設計師：${p.designer||'—'}<br>
-      預算：${p.budget||'—'}　完工日：${p.contractEnd||p.finish||'—'}　初驗日：${p.initialInspectionDate||'—'}<br>
+      預算：${p.budget||'—'}　合約完工日：${p.contractEnd||p.finish||'—'}　初驗日：${p.initialInspectionDate||'—'}<br>
       完工類型：${p.completionTypes&&p.completionTypes.length?p.completionTypes.join('、'):'—'}
     </div>
   </div>
@@ -2267,15 +2272,20 @@ function renderDesign(){
   const cols=getDesignCols();
   const blueCols=cols.filter(c=>c.collapsible);
   const redCols=cols.filter(c=>!c.collapsible);
+  const noteCol=redCols.find(c=>c.kind==='note'||c.name==='備註')||null;
+  const otherRedCols=redCols.filter(c=>c!==noteCol);
   const allProjs=sortDesignProjs(S.projects.filter(p=>['contact','design','cv'].includes(p.status)));
   const isOpen=designBlueColsGlobalOpen;
   const editing=designEditMode;
   function colW(key,fallback){return Math.max(designColumnMinWidth(key),Number(designColWidths[key])||fallback);}
-  const visibleCols=[...(blueCols.length&&isOpen?blueCols:[]),...redCols];
+  const visibleCols=[noteCol,...(blueCols.length&&isOpen?blueCols:[]),...otherRedCols].filter(Boolean);
   const designTableWidth=(editing?22:0)+colW('name',150)+colW('budget',90)+(blueCols.length?22:0)+visibleCols.reduce((sum,c)=>sum+colW('c'+cols.indexOf(c),150),0);
   const handle=(key)=>editing?`<span class="col-resize" onmousedown="startColResize(event,'${key}')"></span>`:'';
+  const dragW=editing?22:0,nameW=colW('name',150),budgetW=colW('budget',90),toggleW=blueCols.length?38:0,noteW=noteCol?colW('c'+cols.indexOf(noteCol),150):0;
+  const freeze=(left,width,extra='')=>`class="design-freeze" style="width:${width}px;left:${left}px;${extra}"`;
+  const missingBlueCount=p=>blueCols.filter(c=>{const value=(p.designProgress||{})[c.key||c.name];return Array.isArray(value)?value.length===0:!String(value||'').trim();}).length;
   el.innerHTML=`
-  <div class="flex-sb" style="margin-bottom:1rem">
+  <div class="flex-sb" style="margin-bottom:1rem;position:relative">
     <span style="font-size:14px;font-weight:500">設計進度 <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px">可打 # 連結施工寶典階段</span></span>
     ${isAdmin()?`<button class="btn btn-sm ${editing?'btn-p':''}" onclick="toggleDesignEditMode()">${editing?'✓ 編輯中':'✎ 編輯'}</button>`:''}
   </div>
@@ -2283,31 +2293,33 @@ function renderDesign(){
   <div id="design-scroll-wrap" style="overflow-x:auto;max-width:100%">
   <table class="design-tbl" id="design-table" style="width:${designTableWidth}px;min-width:${designTableWidth}px">
     <thead><tr>
-      ${editing?`<th style="width:22px"></th>`:''}
-      <th style="width:${colW('name',150)}px;text-align:left;position:relative">案件名稱${handle('name')}</th>
-      <th style="width:${colW('budget',90)}px;position:relative">預算${handle('budget')}</th>
-      ${blueCols.length?`<th style="width:22px;cursor:pointer;color:var(--purple)" onclick="toggleDesignBlueCols()" title="顯示/隱藏會議人員等欄位">${isOpen?'▼':'▶'}</th>`:''}
+      ${editing?`<th ${freeze(0,22)}></th>`:''}
+      <th ${freeze(dragW,nameW,'text-align:left;position:relative')}>案件名稱${handle('name')}</th>
+      <th ${freeze(dragW+nameW,budgetW,'position:relative')}>預算${handle('budget')}</th>
+      ${blueCols.length?`<th ${freeze(dragW+nameW+budgetW,toggleW,'cursor:pointer;color:var(--purple)')} onclick="toggleDesignBlueCols()" title="顯示/隱藏會議人員等欄位">${isOpen?'▼':'▶'}</th>`:''}
+      ${noteCol?`<th ${freeze(dragW+nameW+budgetW+toggleW,noteW,'position:relative')}>${isAdmin()?`<input class="col-name-edit" value="${noteCol.name}" onblur="saveColName(${cols.indexOf(noteCol)},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${noteCol.name}</span>`}${handle('c'+cols.indexOf(noteCol))}</th>`:''}
       ${blueCols.length&&isOpen?blueCols.map(c=>{const ci=cols.indexOf(c);return`<th style="width:${colW('c'+ci,150)}px;position:relative">
         ${isAdmin()?`<input class="col-name-edit" value="${c.name}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c.name}</span>`}${handle('c'+ci)}
       </th>`;}).join(''):''}
-      ${redCols.map(c=>{const ci=cols.indexOf(c);return`<th style="width:${colW('c'+ci,150)}px;position:relative">
+      ${otherRedCols.map(c=>{const ci=cols.indexOf(c);return`<th style="width:${colW('c'+ci,150)}px;position:relative">
         ${isAdmin()?`<input class="col-name-edit" value="${c.name}" onblur="saveColName(${ci},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${c.name}</span>`}${handle('c'+ci)}
       </th>`;}).join('')}
     </tr></thead>
     <tbody>
     ${allProjs.map(p=>{
       return`<tr data-proj="${p.id}"${editing?` draggable="true" ondragstart="designRowDragStart(event,'${p.id}')" ondragover="designRowDragOver(event,'${p.id}')" ondrop="designRowDrop(event,'${p.id}')" ondragend="designRowDragEnd()"`:''}>
-        ${editing?`<td style="text-align:center;cursor:grab;color:var(--text3)">⠿</td>`:''}
-        <td style="text-align:left;white-space:nowrap">
+        ${editing?`<td ${freeze(0,22,'text-align:center;cursor:grab;color:var(--text3)')}>⠿</td>`:''}
+        <td ${freeze(dragW,nameW,'text-align:left;white-space:nowrap')}>
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
             <span class="design-project-link" onclick="event.stopPropagation();showProjectDetail('${p.id}')" title="點擊查看案件詳細資料">${p.name}</span>
             <span class="badge" style="font-size:11px;background:${statusInfo(p.status).bg};color:${statusInfo(p.status).color};margin-left:auto;text-align:right">${statusInfo(p.status).l}</span>
           </div>
         </td>
-        <td style="padding:6px 8px;font-size:12px">${escAttr(p.budget||'')}${p.budget?'萬':''}</td>
-        ${blueCols.length?`<td></td>`:''}
+        <td ${freeze(dragW+nameW,budgetW,'padding:6px 8px;font-size:12px')}>${escAttr(p.budget||'')}${p.budget?'萬':''}</td>
+        ${blueCols.length?`<td ${freeze(dragW+nameW+budgetW,toggleW,'text-align:center')}>${missingBlueCount(p)?`<span class="design-missing-badge">${missingBlueCount(p)}</span>`:''}</td>`:''}
+        ${noteCol?renderDesignCell(p,noteCol).replace('class="','class="design-freeze ').replace('">','" style="width:'+noteW+'px;left:'+(dragW+nameW+budgetW+toggleW)+'px">') : ''}
         ${blueCols.length&&isOpen?blueCols.map(c=>renderDesignCell(p,c)).join(''):''}
-        ${redCols.map(c=>renderDesignCell(p,c)).join('')}
+        ${otherRedCols.map(c=>renderDesignCell(p,c)).join('')}
       </tr>`;
     }).join('')}
     </tbody>
@@ -2459,7 +2471,7 @@ window.dcOpenPicker=function(e,projId,colName){
   const menuEl=document.getElementById('dc-mention-'+projId+'-'+colName);
   if(!menuEl)return;
   const rect=e.currentTarget.getBoundingClientRect();
-  menuEl.style.cssText='display:block;position:fixed;top:0;left:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:9999;min-width:160px;max-height:220px;overflow-y:auto;padding:4px 0';
+  menuEl.style.cssText='display:block;position:fixed;top:0;left:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:9999;min-width:180px;max-height:220px;overflow-y:auto;padding:4px 0';
   dcRenderMemberPicker(projId,colName);
   const gap=4,edge=8;
   const menuRect=menuEl.getBoundingClientRect();
@@ -2478,7 +2490,7 @@ function dcRenderMemberPicker(projId,colName){
   const selected=Array.isArray(raw)?raw:(raw?[raw]:[]);
   menuEl.innerHTML=markableMembersList().map(function(m){
     const checked=selected.includes(m.uid);
-    return'<label style="display:flex;align-items:center;gap:7px;padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)"><input type="checkbox" '+(checked?'checked':'')+' onchange="dcToggleMember(\''+projId+'\',\''+colName+'\',\''+m.uid+'\',this.checked)">'+memberDisplayName(m)+'</label>';
+    return'<label class="design-member-picker-row"><input type="checkbox" '+(checked?'checked':'')+' onchange="dcToggleMember(\''+projId+'\',\''+colName+'\',\''+m.uid+'\',this.checked)"><span>'+memberDisplayName(m)+'</span></label>';
   }).join('');
 }
 window.dcToggleMember=async function(projId,colName,uid,checked){
@@ -4961,14 +4973,14 @@ function renderBible(){
   const progProjs=S.projects.filter(p=>p.status==='prog');
   if(!activeBibleWs&&progProjs.length)activeBibleWs=progProjs[0]?.id||null;
   el.innerHTML=`
-  <div class="flex-sb" style="margin-bottom:1rem">
+  <div class="flex-sb" style="margin-bottom:1rem;position:relative">
     <div>
       <div style="font-size:15px;font-weight:600">施工寶典</div>
       <div style="font-size:12px;color:var(--text2);margin-top:2px">新增階段後可在工程進度選取，自動帶入待辦清單</div>
       ${isAdmin()&&dragModeOn?`<button class="btn btn-p btn-sm" style="margin-top:8px" onclick="showAddStage()">＋ 新增階段</button>`:''}
     </div>
     <div class="flex">
-      <div class="seg">
+      <div class="seg" style="position:absolute;left:50%;transform:translateX(-50%);top:50%;margin-top:-15px">
         <button class="${bibleView==='edit'?'on':''}" onclick="setBibleView('edit')">編輯清單</button>
         <button class="${bibleView==='worksite'?'on':''}" onclick="setBibleView('worksite')">工地勾選</button>
       </div>
@@ -5761,7 +5773,7 @@ function showProjectForm(projId,draft=null){
       <div style="font-size:12px;color:var(--text2)">設計合約金額（自動計算）：<span id="np-design-amount" style="font-weight:600;color:var(--text)">${p?((parseFloat(p.area)||0)*(parseFloat(p.pricePerPing)||0)).toLocaleString():'0'}</span></div>
       <input id="np-render-url" type="text" inputmode="url" placeholder="3D 渲染圖網址（https://…）" value="${escAttr(p?.renderUrl||'')}">
       <input id="np-contract-amount" type="text" placeholder="工程合約金額" value="${escAttr(p?.contractAmount||'')}">
-      <div class="project-date-pair">${ymdInputs('np-cs','合約起始日')}${ymdInputs('np-ce','完工日')}</div>
+      <div class="project-date-pair">${ymdInputs('np-cs','合約起始日')}${ymdInputs('np-ce','合約完工日')}</div>
       <textarea id="np-process" placeholder="廠商施工流程…" rows="10" oninput="autoGrow(this)" style="font-family:inherit;padding:8px;border:1px solid var(--border);border-radius:var(--r);overflow-y:auto;resize:none;min-height:190px;max-height:340px">${escAttr(p?.process||'')}</textarea>
       ${photoEditor}
       <select id="np-status">
@@ -6016,7 +6028,7 @@ window.showProjectDetail=function(projId){
       ${row('設計合約金額',designAmount?designAmount.toLocaleString():'')}
       ${row('工程合約金額',p.contractAmount&&!isNaN(parseFloat(p.contractAmount))?parseFloat(p.contractAmount).toLocaleString():p.contractAmount)}
       ${row('合約起始日',p.contractStart)}
-      ${row('完工日',p.contractEnd||p.finish)}
+      ${row('合約完工日',p.contractEnd||p.finish)}
       ${row('初驗日',p.initialInspectionDate)}
       ${row('狀態',`<span class="badge" style="background:${si.bg};color:${si.color}">${si.l}</span>`)}
       ${p.completionTypes&&p.completionTypes.length?row('完工類型',p.completionTypes.join('、')):''}
