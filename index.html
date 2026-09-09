@@ -412,13 +412,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .estimate-check-list{flex:1;min-height:0;overflow-y:auto;padding:0 20px 20px}
 .mo-box.project-detail-modal{max-width:1000px;height:calc(100vh - 2rem);max-height:calc(100vh - 2rem);overflow:hidden;display:flex;flex-direction:column}
 .project-detail-grid{display:grid;grid-template-columns:370px minmax(0,1fr);gap:20px;margin-top:8px;flex:1;min-height:0}
-.project-detail-grid.has-design-progress{grid-template-columns:370px minmax(250px,1fr) minmax(180px,.7fr)}
+.project-detail-grid.has-design-progress{grid-template-columns:370px 310px minmax(0,1fr);margin-right:-40px}
 .project-detail-main,.project-detail-design,.project-detail-trades{min-width:0;min-height:0;overflow-y:auto;padding-right:4px}
 .project-detail-design,.project-detail-trades{border-left:1px solid var(--border);padding-left:20px}
 .project-detail-trades-title{font-size:13px;font-weight:600;margin-bottom:8px}
 .project-detail-trades-list{font-size:12px;line-height:1.7;word-break:break-word}
 .project-design-readonly{display:flex;flex-direction:column}
-.project-design-readonly-row{display:grid;grid-template-columns:100px minmax(0,1fr);gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;line-height:1.45}
+.project-design-readonly-row{display:grid;grid-template-columns:60px minmax(0,1fr);gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;line-height:1.45}
 .project-design-readonly-label{color:var(--text2);word-break:break-word}
 .project-design-readonly-value{min-width:0;white-space:pre-wrap;word-break:break-word}
 .project-design-readonly-date{color:var(--text3);font-size:11px}
@@ -441,6 +441,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .project-detail-desktop-photo .project-photo-card{aspect-ratio:1}
 .todo-mobile-projects{display:none}
 @media(max-width:760px){.wctrl{display:flex;flex-wrap:wrap;justify-content:center}.wctrl>.nav-row{margin-left:auto}.mo-box.project-detail-modal{max-width:560px;height:calc(100vh - 20px);max-height:calc(100vh - 20px);overflow-y:auto;display:block}.project-detail-grid,.project-detail-grid.has-design-progress{display:flex;flex-direction:column;gap:0;max-height:none}.project-detail-main,.project-detail-design,.project-detail-trades{overflow:visible}.project-detail-design,.project-detail-trades{border-left:0;border-top:1px solid var(--border);padding:14px 0 0}.project-detail-desktop-photo{display:none}.project-detail-mobile-photo{display:block}.project-detail-mobile-photo .project-photo-panel{margin-top:14px}.project-share-row{align-items:flex-start;flex-direction:column}.project-detail-actions{align-self:flex-end}.todo-desktop-projects{display:none!important}.todo-mobile-projects{display:block}.todo-project-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}.todo-project-tab{min-height:48px;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);font:inherit;font-size:12px;font-weight:600;text-align:left;word-break:break-word;cursor:pointer}.todo-project-tab.on{background:var(--pl);border-color:var(--purple);color:var(--purple)}.todo-mobile-current .todo-project-card{min-width:0!important;width:100%;box-sizing:border-box}}
+
+@media(max-width:760px){.project-detail-grid.has-design-progress{margin-right:0}}
 
 /* Mobile navigation and progress board: desktop layout remains unchanged. */
 .topnav-menu{display:contents}.mobile-nav-brand,.mobile-menu-toggle,.mobile-progress-notes-tab{display:none}
