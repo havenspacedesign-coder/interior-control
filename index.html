@@ -4499,6 +4499,7 @@ function runHorizontalInertia(scroller,velocity){
 function getHorizontalPointerScroller(target){
   if(!target||!target.closest)return null;
   if(isNativeMobileProgressScroller(target))return null;
+  if(target.closest('.daily-log-table'))return null;
   return target.closest('.hscroll-sync,.horizontal-card-list');
 }
 document.addEventListener('pointerdown',function(e){
