@@ -2674,7 +2674,6 @@ function renderProgress(force){
   </div>`:''}`;
   restoreHScroll(preservedHScrollLeft);
   requestAnimationFrame(function(){restoreHScroll(preservedHScrollLeft);syncProgressMeetingStickyOffset();});
-  requestAnimationFrame(alignProgressBottomScrollbar);
   requestAnimationFrame(watchNoteBoxResize);
 }
 let noteResizeObserver=null;
@@ -4439,6 +4438,9 @@ function captureProgressHScroll(){
   return lastHScrollLeft;
 }
 function restoreHScroll(left){
+  // Size the fixed scrollbar before restoring scrollLeft. Its newly created
+  // auto width can equal the entire timeline, which clamps scrollLeft to zero.
+  alignProgressBottomScrollbar();
   const target=Number.isFinite(left)?Math.max(0,left):lastHScrollLeft;
   lastHScrollLeft=target;
   const mobileViewport=document.getElementById('progress-horizontal-viewport');
