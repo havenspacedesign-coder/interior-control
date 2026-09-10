@@ -217,6 +217,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .design-tbl .design-freeze{position:sticky!important;z-index:4;background:var(--surface);box-shadow:1px 0 0 var(--border)}
 .design-tbl thead .design-freeze{z-index:6;background:var(--bg)}
 .design-tbl td.design-freeze.empty-cell{background:#fff8f8}
+@media(max-width:768px){
+  .design-tbl .design-freeze:not(.design-freeze-name){position:relative!important;left:auto!important;z-index:auto;box-shadow:none}
+  .design-tbl .design-freeze-name{left:0!important}
+}
 .design-missing-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--rl);color:var(--rd);font-size:10px;font-weight:600;line-height:1;vertical-align:middle}
 
 /* Week view */
@@ -2282,7 +2286,7 @@ function renderDesign(){
   const designTableWidth=(editing?22:0)+colW('name',150)+colW('budget',90)+(blueCols.length?22:0)+visibleCols.reduce((sum,c)=>sum+colW('c'+cols.indexOf(c),150),0);
   const handle=(key)=>editing?`<span class="col-resize" onmousedown="startColResize(event,'${key}')"></span>`:'';
   const dragW=editing?22:0,nameW=colW('name',150),budgetW=colW('budget',90),toggleW=blueCols.length?38:0,noteW=noteCol?colW('c'+cols.indexOf(noteCol),150):0;
-  const freeze=(left,width,extra='')=>`class="design-freeze" style="width:${width}px;left:${left}px;${extra}"`;
+  const freeze=(left,width,extra='',name=false)=>`class="design-freeze${name?' design-freeze-name':''}" style="width:${width}px;left:${left}px;${extra}"`;
   const missingBlueCount=p=>blueCols.filter(c=>{const value=(p.designProgress||{})[c.key||c.name];return Array.isArray(value)?value.length===0:!String(value||'').trim();}).length;
   el.innerHTML=`
   <div class="flex-sb" style="margin-bottom:1rem;position:relative">
@@ -2294,7 +2298,7 @@ function renderDesign(){
   <table class="design-tbl" id="design-table" style="width:${designTableWidth}px;min-width:${designTableWidth}px">
     <thead><tr>
       ${editing?`<th ${freeze(0,22)}></th>`:''}
-      <th ${freeze(dragW,nameW,'text-align:left;position:relative')}>案件名稱${handle('name')}</th>
+      <th ${freeze(dragW,nameW,'text-align:left;position:relative',true)}>案件名稱${handle('name')}</th>
       <th ${freeze(dragW+nameW,budgetW,'position:relative')}>預算${handle('budget')}</th>
       ${blueCols.length?`<th ${freeze(dragW+nameW+budgetW,toggleW,'cursor:pointer;color:var(--purple)')} onclick="toggleDesignBlueCols()" title="顯示/隱藏會議人員等欄位">${isOpen?'▼':'▶'}</th>`:''}
       ${noteCol?`<th ${freeze(dragW+nameW+budgetW+toggleW,noteW,'position:relative')}>${isAdmin()?`<input class="col-name-edit" value="${noteCol.name}" onblur="saveColName(${cols.indexOf(noteCol)},this.value)" onkeydown="if(event.key==='Enter')this.blur()">`:`<span>${noteCol.name}</span>`}${handle('c'+cols.indexOf(noteCol))}</th>`:''}
@@ -2309,7 +2313,7 @@ function renderDesign(){
     ${allProjs.map(p=>{
       return`<tr data-proj="${p.id}"${editing?` draggable="true" ondragstart="designRowDragStart(event,'${p.id}')" ondragover="designRowDragOver(event,'${p.id}')" ondrop="designRowDrop(event,'${p.id}')" ondragend="designRowDragEnd()"`:''}>
         ${editing?`<td ${freeze(0,22,'text-align:center;cursor:grab;color:var(--text3)')}>⠿</td>`:''}
-        <td ${freeze(dragW,nameW,'text-align:left;white-space:nowrap')}>
+        <td ${freeze(dragW,nameW,'text-align:left;white-space:nowrap',true)}>
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
             <span class="design-project-link" onclick="event.stopPropagation();showProjectDetail('${p.id}')" title="點擊查看案件詳細資料">${p.name}</span>
             <span class="badge" style="font-size:11px;background:${statusInfo(p.status).bg};color:${statusInfo(p.status).color};margin-left:auto;text-align:right">${statusInfo(p.status).l}</span>
