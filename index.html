@@ -2626,6 +2626,7 @@ function renderProgress(force){
     return;
   }
   pendingProgressRender=false;
+  const preservedHScrollLeft=captureProgressHScroll();
   const el=$('panel-progress');
   const weekDays=getWeekDates();
   function shouldShow(p){
@@ -2671,7 +2672,8 @@ function renderProgress(force){
   ${calMode==='month'?`<div class="hscroll-sync" id="progress-bottom-hscroll" style="position:fixed;bottom:0;height:14px;overflow-x:auto;overflow-y:hidden;background:var(--surface);border-top:1px solid var(--border);z-index:40">
     <div style="width:${200+weekDays.length*180}px;height:1px"></div>
   </div>`:''}`;
-  requestAnimationFrame(function(){restoreHScroll();syncProgressMeetingStickyOffset();});
+  restoreHScroll(preservedHScrollLeft);
+  requestAnimationFrame(function(){restoreHScroll(preservedHScrollLeft);syncProgressMeetingStickyOffset();});
   requestAnimationFrame(alignProgressBottomScrollbar);
   requestAnimationFrame(watchNoteBoxResize);
 }
@@ -4429,16 +4431,26 @@ document.addEventListener('scroll',function(e){
   if(Math.abs(el.scrollLeft-lastHScrollLeft)<.5)return;
   syncHScrollPosition(el,el.scrollLeft);
 },true);
-function restoreHScroll(){
+function captureProgressHScroll(){
+  const mobileViewport=document.getElementById('progress-horizontal-viewport');
+  if(mobileViewport&&matchMedia('(max-width: 768px)').matches)return mobileViewport.scrollLeft;
+  const contentScrollers=Array.from(document.querySelectorAll('#panel-progress .hscroll-sync:not(#progress-bottom-hscroll)'));
+  if(contentScrollers.length)return Math.max(lastHScrollLeft,...contentScrollers.map(function(el){return el.scrollLeft;}));
+  return lastHScrollLeft;
+}
+function restoreHScroll(left){
+  const target=Number.isFinite(left)?Math.max(0,left):lastHScrollLeft;
+  lastHScrollLeft=target;
   const mobileViewport=document.getElementById('progress-horizontal-viewport');
   if(mobileViewport&&matchMedia('(max-width: 768px)').matches){
-    mobileViewport.scrollLeft=lastHScrollLeft;
-    updateMobileProgressDateHeader(lastHScrollLeft);
+    mobileViewport.scrollLeft=target;
+    updateMobileProgressDateHeader(target);
     return;
   }
-  if(!lastHScrollLeft)return;
-  document.querySelectorAll('.hscroll-sync').forEach(function(el){el.scrollLeft=lastHScrollLeft;});
-  updateMobileProgressDateHeader(lastHScrollLeft);
+  hscrollSyncing=true;
+  document.querySelectorAll('.hscroll-sync').forEach(function(el){el.scrollLeft=target;});
+  hscrollSyncing=false;
+  updateMobileProgressDateHeader(target);
 }
 function updateMobileProgressDateHeader(left){
   mobileDateHeaderLeft=left;
