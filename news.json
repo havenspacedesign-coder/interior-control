@@ -1,26 +1,26 @@
 {
-  "date": "2026-09-09",
-  "updatedAt": "2026-09-09T00:03:33.895Z",
+  "date": "2026-09-10",
+  "updatedAt": "2026-09-10T00:04:40.115Z",
   "news": [
     {
-      "id": "7d1f080c2e8bf00d",
+      "id": "c5e08935d90043ea",
       "source": "遠見",
       "category": "國際",
-      "title": "蘋果發表會9/10登場！摺疊iPhone上看8萬、多款新品規格價格全解析",
-      "url": "https://www.gvm.com.tw/article/132895",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260324/227839.jpg",
-      "publishedAt": "2026-09-07T10:38:00.000Z",
-      "fetchedAt": "2026-09-09T00:03:33.895Z"
+      "title": "蘋果特納斯新帥上任大挑戰！AI落後Google、OpenAI，能追上嗎？",
+      "url": "https://www.gvm.com.tw/article/132943",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260422/229682.jpg",
+      "publishedAt": "2026-09-09T10:58:00.000Z",
+      "fetchedAt": "2026-09-10T00:04:40.115Z"
     },
     {
-      "id": "1944dc4b42186589",
+      "id": "e1dfffa464131106",
       "source": "遠見",
       "category": "AI／科技",
-      "title": "黃仁勳又看準開放模型？輝達收購Hugging Face解析",
-      "url": "https://www.gvm.com.tw/article/132897",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260908/240546.jpg",
-      "publishedAt": "2026-09-08T02:32:00.000Z",
-      "fetchedAt": "2026-09-09T00:03:33.895Z"
+      "title": "LINE「幫忙投票」是盜帳號陷阱！8月被盜通報數增加97% ，記事本不再支援2類貼文",
+      "url": "https://www.gvm.com.tw/article/132936",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260729/237422.jpg",
+      "publishedAt": "2026-09-09T08:10:00.000Z",
+      "fetchedAt": "2026-09-10T00:04:40.115Z"
     },
     {
       "id": "982c428e8c2ad7c1",
@@ -30,97 +30,97 @@
       "url": "https://www.gvm.com.tw/article/132901",
       "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260908/240570.jpg",
       "publishedAt": "2026-09-08T04:09:00.000Z",
-      "fetchedAt": "2026-09-09T00:03:33.895Z"
+      "fetchedAt": "2026-09-10T00:04:40.115Z"
     },
     {
-      "id": "e6a75c47420ec4bc",
+      "id": "ed61228a8f5b670b",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "把世界變成教室！屏科大休運系以實戰與海外歷練，培養運動產業即戰力",
-      "url": "https://www.gvm.com.tw/article/132792",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260902/240269.jpg",
-      "publishedAt": "2026-09-08T16:00:00.000Z",
-      "fetchedAt": "2026-09-09T00:03:33.895Z"
+      "title": "台中男撞倒護理師折返輾斃！稱「自覺被針對」，檢方依殺人收押",
+      "url": "https://www.gvm.com.tw/article/132941",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260909/240661.jpg",
+      "publishedAt": "2026-09-09T10:40:00.000Z",
+      "fetchedAt": "2026-09-10T00:04:40.115Z"
     },
     {
-      "id": "abb9cb0dc5f146c9",
+      "id": "bfe7220e07f17d73",
       "source": "壹蘋",
       "category": "國際",
-      "title": "壹蘋派生活美語　踏入百變布丁的世界",
-      "url": "https://news.nextapple.com/international/20260909/773774606DA464148DC0234F0BAF94A5",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/773774606DA464148DC0234F0BAF94A5/0e7059526ecf985fbec1fc9353681541_1280.webp",
-      "publishedAt": "2026-09-09T00:00:00.000Z",
-      "fetchedAt": "2026-09-09T00:03:33.895Z"
+      "title": "壹蘋派生活美語　身體不舒服，醫生救救我",
+      "url": "https://news.nextapple.com/international/20260910/A10F9C1F59994820FA040AE730F4B11E",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/A10F9C1F59994820FA040AE730F4B11E/b9e23519bf5ab0d6a6bc3353704195b4_1280.webp",
+      "publishedAt": "2026-09-10T00:00:00.000Z",
+      "fetchedAt": "2026-09-10T00:04:40.115Z"
     },
     {
-      "id": "d294f2a3cd9c3b2a",
+      "id": "1f99d2fefd63b147",
       "source": "壹蘋",
       "category": "生活",
-      "title": "金門海漂豬驗出「非洲豬瘟」　今年4例陽性創近年新高",
-      "url": "https://news.nextapple.com/life/20260909/23946FB25F4C9EAE539AD8EDF97346BE",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/23946FB25F4C9EAE539AD8EDF97346BE/c784295d2d196d2840a43b8c84d7226c_1280.webp",
-      "publishedAt": "2026-09-08T23:03:34.000Z",
-      "fetchedAt": "2026-09-09T00:03:33.895Z"
+      "title": "今晚鬼門關十大禁忌　不可說再見、家中磁鐵要收好",
+      "url": "https://news.nextapple.com/life/20260910/D7962104BF0CE2307AD84377D91C6A2F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/D7962104BF0CE2307AD84377D91C6A2F/ff55ba0900b01d24622107d54292adf7_1280.webp",
+      "publishedAt": "2026-09-10T00:00:00.000Z",
+      "fetchedAt": "2026-09-10T00:04:40.115Z"
     },
     {
-      "id": "0e60b40739017ae4",
+      "id": "3dd55550d4fb0b75",
       "source": "壹蘋",
       "category": "社會",
-      "title": "撞飛護理師折返輾壓爆頭亡　冷血賓士男殺人罪收押",
-      "url": "https://news.nextapple.com/local/20260909/CA2B1B0E69F91E7B48528CF456852E85",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/CA2B1B0E69F91E7B48528CF456852E85/a90d637061aae7561b5d4e5a397614f8_1280.webp",
-      "publishedAt": "2026-09-08T16:47:14.000Z",
-      "fetchedAt": "2026-09-09T00:03:33.895Z"
+      "title": "兆基遭掏空14億　「2天短命董座」李文詳100萬交保",
+      "url": "https://news.nextapple.com/local/20260910/01CBF67B4CA507887C808063C97ADD59",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/01CBF67B4CA507887C808063C97ADD59/38c2d6e6676897dff823a0601e706a4c_1280.webp",
+      "publishedAt": "2026-09-09T22:47:05.000Z",
+      "fetchedAt": "2026-09-10T00:04:40.115Z"
     },
     {
-      "id": "3f0c5941d7fdfc1a",
+      "id": "8406871754cc6bed",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "苦日子熬到頭！9月「3生肖」大翻身　貴人財富全入袋",
-      "url": "https://news.nextapple.com/entertainment/20260909/E535EB870B6ECA6883532438789BA7AF",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/E535EB870B6ECA6883532438789BA7AF/59a0ade0bd8da1e87d936d7e414aded9_1280.webp",
-      "publishedAt": "2026-09-08T16:04:00.000Z",
-      "fetchedAt": "2026-09-09T00:03:33.895Z"
+      "title": "劉亦菲慘遭炎上！　曬合照竟裁掉越南女星被罵到刪文",
+      "url": "https://news.nextapple.com/entertainment/20260910/133ACC5CB60012823897CFC000B89BF3",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/133ACC5CB60012823897CFC000B89BF3/50c76697ebf7d12a66e5bb6ce7905744_1280.webp",
+      "publishedAt": "2026-09-09T16:09:35.000Z",
+      "fetchedAt": "2026-09-10T00:04:40.115Z"
     },
     {
-      "id": "287ca3084b673027",
+      "id": "07fd3e20ca409e3c",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "電子書全站73折倒數2天！滿額再抽彩色閱讀器",
-      "url": "https://news.nextapple.com/aitech/20260908/C62757064761A434676FF2BB9B18A8D2",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/C62757064761A434676FF2BB9B18A8D2/4918e24fcc595e28c68ad9edfbd0df3c_1280.webp",
-      "publishedAt": "2026-09-08T11:06:31.000Z",
-      "fetchedAt": "2026-09-09T00:03:33.895Z"
+      "title": "舊iPhone貶值！換購價最高少2千　這2款逆勢增值",
+      "url": "https://news.nextapple.com/aitech/20260910/E9C44C4168CD83081D809D825196C45A",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/E9C44C4168CD83081D809D825196C45A/af671d91584208b2f1d46b0767d725f2_1280.webp",
+      "publishedAt": "2026-09-10T00:01:36.000Z",
+      "fetchedAt": "2026-09-10T00:04:40.115Z"
     },
     {
-      "id": "deb571675c8ab307",
+      "id": "79213f9a7a8463a9",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "中東戰火再起！道瓊慘摔628點　台積電ADR逆勢飆2.35%",
-      "url": "https://news.nextapple.com/finance/20260909/313AC103EC96D914E7D132CFB333BC5A",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/313AC103EC96D914E7D132CFB333BC5A/d7e7d6bb900e357fc7364d92b54b7b91_1280.webp",
-      "publishedAt": "2026-09-08T22:52:48.000Z",
-      "fetchedAt": "2026-09-09T00:03:33.895Z"
+      "title": "新iPhone不香了？蘋果走跌拖累美股　台積電ADR收黑",
+      "url": "https://news.nextapple.com/finance/20260910/5E28A0B6AC3259BD48E2FC0546323238",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/5E28A0B6AC3259BD48E2FC0546323238/48ee6e580a4bf055aca5f64ca1d2b83f_1280.webp",
+      "publishedAt": "2026-09-09T23:14:17.000Z",
+      "fetchedAt": "2026-09-10T00:04:40.115Z"
     },
     {
-      "id": "034b555a58911bb4",
+      "id": "de46fd2c3a9ea7dc",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "吉力吉撈怒推戴培峰！遭驅逐還沒完　最重下場曝光了",
-      "url": "https://news.nextapple.com/sports/20260909/70A58A7EB696B1CB9CCF5A69B9037C4C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/70A58A7EB696B1CB9CCF5A69B9037C4C/28b7171c3903f2b40f3fa4c7f43a5c4b_1280.webp",
-      "publishedAt": "2026-09-08T23:08:00.000Z",
-      "fetchedAt": "2026-09-09T00:03:33.895Z"
+      "title": "李灝宇「選球眼」大開！又寫台灣人在大聯盟新紀錄",
+      "url": "https://news.nextapple.com/sports/20260910/B09E2798D7EF29942CE950D185AAC2B4",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/B09E2798D7EF29942CE950D185AAC2B4/148e8f55194006186346dfbe9035d6db_1280.webp",
+      "publishedAt": "2026-09-09T23:34:29.000Z",
+      "fetchedAt": "2026-09-10T00:04:40.115Z"
     },
     {
-      "id": "f023894f173d2455",
+      "id": "d917442fb967bcbb",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "影片｜和吉力吉撈衝突之後！戴培峰最介意一件事：看到對面一直在笑",
-      "url": "https://news.nextapple.com/sports/20260909/ACF2F3A7F680D1B48EC780E4E42894E3",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/ACF2F3A7F680D1B48EC780E4E42894E3/049e0dc690235a271a703db9772bcab3_1280.webp",
-      "publishedAt": "2026-09-08T23:08:00.000Z",
-      "fetchedAt": "2026-09-09T00:03:33.895Z"
+      "title": "破天荒！蘋果舊iPhone不降反漲　4款新價格曝光",
+      "url": "https://news.nextapple.com/aitech/20260910/7676112D02F47F377C8A088B7963FDE0",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/7676112D02F47F377C8A088B7963FDE0/1233e2a14b3a30ec3aa3c8a81205771d_1280.webp",
+      "publishedAt": "2026-09-09T23:32:00.000Z",
+      "fetchedAt": "2026-09-10T00:04:40.115Z"
     }
   ]
 }
