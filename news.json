@@ -1,126 +1,126 @@
 {
-  "date": "2026-09-11",
-  "updatedAt": "2026-09-11T00:00:12.332Z",
+  "date": "2026-09-12",
+  "updatedAt": "2026-09-12T00:08:40.605Z",
   "news": [
     {
-      "id": "4041825f27a1f7f1",
+      "id": "99816be22b04e04e",
       "source": "遠見",
       "category": "國際",
-      "title": "川普又點名台灣晶片「應課重稅」！行政院回應了",
-      "url": "https://www.gvm.com.tw/article/132960",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260910/240732.jpg",
-      "publishedAt": "2026-09-10T08:44:00.000Z",
-      "fetchedAt": "2026-09-11T00:00:12.332Z"
+      "title": "爸媽豪砸17萬送小六生去升學營隊！專家曝家長真實心態",
+      "url": "https://www.gvm.com.tw/article/132992",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20230303/134221.jpg",
+      "publishedAt": "2026-09-11T09:10:00.000Z",
+      "fetchedAt": "2026-09-12T00:08:40.605Z"
     },
     {
-      "id": "a6215871fe3e70eb",
+      "id": "d8f5a992c0fb6101",
       "source": "遠見",
       "category": "AI／科技",
-      "title": "AI將於2030年前害死人類？Anthropic科學家辭職抗議，「末日論」再起",
-      "url": "https://www.gvm.com.tw/article/132964",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260225/226086.jpg",
-      "publishedAt": "2026-09-10T10:24:00.000Z",
-      "fetchedAt": "2026-09-11T00:00:12.332Z"
+      "title": "黃仁勳曝AI下個商機「在這」！再駁循環交易：我投資的通常不會糟",
+      "url": "https://www.gvm.com.tw/article/132991",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260602/233002.jpg",
+      "publishedAt": "2026-09-11T08:35:00.000Z",
+      "fetchedAt": "2026-09-12T00:08:40.605Z"
     },
     {
-      "id": "fa605a17a3b2a7fe",
+      "id": "af6d105c33f1f48b",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "上市公司女董事首次超過20%！「全男董事會」暴跌至7%，女性掌舵面對風險更敢衝？",
-      "url": "https://www.gvm.com.tw/article/132951",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260909/240656.jpg",
-      "publishedAt": "2026-09-10T03:55:00.000Z",
-      "fetchedAt": "2026-09-11T00:00:12.332Z"
+      "title": "【百年世家】從白宮到哈里發塔都有它，科勒憑什麼低調稱霸衛浴？",
+      "url": "https://www.gvm.com.tw/article/132993",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260911/240854.jpg",
+      "publishedAt": "2026-09-11T10:16:00.000Z",
+      "fetchedAt": "2026-09-12T00:08:40.605Z"
     },
     {
-      "id": "9de5203d7a0e94e2",
+      "id": "8aa3dd4479442e7f",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "國旅推薦》2025各縣市最夯景區榜單，這些新寵景點為何崛起？",
-      "url": "https://www.gvm.com.tw/article/132963",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260910/240769.jpg",
-      "publishedAt": "2026-09-10T09:45:00.000Z",
-      "fetchedAt": "2026-09-11T00:00:12.332Z"
+      "title": "長時間久坐損害血管功能！新研究證實：運動也無法抵銷傷害",
+      "url": "https://www.gvm.com.tw/article/132972",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20240508/170035.jpg",
+      "publishedAt": "2026-09-11T23:00:00.000Z",
+      "fetchedAt": "2026-09-12T00:08:40.605Z"
     },
     {
-      "id": "ba1c90666fdb5b7a",
+      "id": "a7e3e226f7e0be5b",
       "source": "壹蘋",
       "category": "國際",
-      "title": "壹蘋派生活美語　身體不舒服，醫生救救我",
-      "url": "https://news.nextapple.com/international/20260911/4621BF3D8C7FC645F3130AB736FC200C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/4621BF3D8C7FC645F3130AB736FC200C/fc64f5071baead6e8894bac40f09fe04_1280.webp",
-      "publishedAt": "2026-09-11T00:00:00.000Z",
-      "fetchedAt": "2026-09-11T00:00:12.332Z"
+      "title": "北韓又射了！南韓軍：不明物體飛向日本海",
+      "url": "https://news.nextapple.com/international/20260912/9900C08FB1089782FE565D1A673FC9D8",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/9900C08FB1089782FE565D1A673FC9D8/0e74578aa5e4645c9c4632ab074e8df8_1280.webp",
+      "publishedAt": "2026-09-11T23:11:10.000Z",
+      "fetchedAt": "2026-09-12T00:08:40.605Z"
     },
     {
-      "id": "946b68b9dab10964",
+      "id": "9edbff0aaf558710",
       "source": "壹蘋",
       "category": "生活",
-      "title": "今2區降雨　周末熱帶擾動醞釀！下周又一波變天",
-      "url": "https://news.nextapple.com/life/20260911/0A4801BFAA6D9867AD54D8849C1A1C37",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/0A4801BFAA6D9867AD54D8849C1A1C37/825c17457452090ac5c1c206fc658d4a_1280.webp",
-      "publishedAt": "2026-09-10T22:42:48.000Z",
-      "fetchedAt": "2026-09-11T00:00:12.332Z"
+      "title": "吳德榮：下週可能有「強聖嬰年強颱」　位置曝光！",
+      "url": "https://news.nextapple.com/life/20260912/6465F8278934C819394E2A925F7CFA51",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/6465F8278934C819394E2A925F7CFA51/a516aeeef9e8f799261bca69f209c491_1280.webp",
+      "publishedAt": "2026-09-11T22:51:45.000Z",
+      "fetchedAt": "2026-09-12T00:08:40.605Z"
     },
     {
-      "id": "4ce90865fb3e3489",
+      "id": "6badc9cf272af394",
       "source": "壹蘋",
       "category": "社會",
-      "title": "停車場一聲槍響！花蓮36歲警停車場疑自戕　送醫不治",
-      "url": "https://news.nextapple.com/local/20260911/28AE540D7F8E1D42B50FACA454D19DDE",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/28AE540D7F8E1D42B50FACA454D19DDE/56770a27e0e7338c1f93046cabadd7fd_1280.webp",
-      "publishedAt": "2026-09-10T16:09:56.000Z",
-      "fetchedAt": "2026-09-11T00:00:12.332Z"
+      "title": "郭再欽涉詐貸案限制出境　撤科技監控惹議　台南地院：無差別待遇",
+      "url": "https://news.nextapple.com/local/20260912/94DA020D20D14E3A4F3BFC3F96BA693F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/94DA020D20D14E3A4F3BFC3F96BA693F/2e90fa4e43ea5ff71005752170c29c68_1280.webp",
+      "publishedAt": "2026-09-11T16:01:00.000Z",
+      "fetchedAt": "2026-09-12T00:08:40.605Z"
     },
     {
-      "id": "f1985f7cd2f46746",
+      "id": "76b7c81d68d8e043",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "蕭伊開撕Joeman首度露面吐心聲　「那些罵我傷害我的聲音都會在意」",
-      "url": "https://news.nextapple.com/entertainment/20260911/A7F09028541915A646BA11C40DA0EB44",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/A7F09028541915A646BA11C40DA0EB44/4c8987e31f4d61461549270602a8f18b_1280.webp",
-      "publishedAt": "2026-09-10T23:46:49.000Z",
-      "fetchedAt": "2026-09-11T00:00:12.332Z"
+      "title": "周玉琴被資遣！閨蜜鄒倩琳心疼曝她   「當年抬轎子被挖角來的」",
+      "url": "https://news.nextapple.com/entertainment/20260912/1E81624AD41EF6473E5295EE07B813F9",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/1E81624AD41EF6473E5295EE07B813F9/c00ec5a2b4b9fbdee9e23565959e26b5_1280.webp",
+      "publishedAt": "2026-09-11T22:48:00.000Z",
+      "fetchedAt": "2026-09-12T00:08:40.605Z"
     },
     {
-      "id": "cd32fcc125b85666",
+      "id": "cfadf12c68c413c5",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "iPhone 18 Pro、Duo漲價仍看旺！達人揭摺疊機最大優勢",
-      "url": "https://news.nextapple.com/aitech/20260910/FE1B6FBED2BC47C9B588A9972AF363FB",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/FE1B6FBED2BC47C9B588A9972AF363FB/50d547b5dfaeeadf416a8219c312c621_1280.webp",
-      "publishedAt": "2026-09-10T13:19:49.000Z",
-      "fetchedAt": "2026-09-11T00:00:12.332Z"
+      "title": "LINE原創主題圖示回來了！新功能預設開啟　4步驟自由切換",
+      "url": "https://news.nextapple.com/aitech/20260911/788E460D6844AEF8FCD22A2F622A25F3",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/788E460D6844AEF8FCD22A2F622A25F3/7306c5f1774a80cefeadbeca6c9f4c56_1280.webp",
+      "publishedAt": "2026-09-11T11:12:34.000Z",
+      "fetchedAt": "2026-09-12T00:08:40.605Z"
     },
     {
-      "id": "afa9f430adabdc89",
+      "id": "3855ddead749d0f2",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "油價狂飆拖累美股！台指期夜盤跳水797點　台積電ADR再收黑",
-      "url": "https://news.nextapple.com/finance/20260911/3D55C6C89A719911F50F18F9128F536C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/3D55C6C89A719911F50F18F9128F536C/89477a65da3e7dc9a74e70b1048c4975_1280.webp",
-      "publishedAt": "2026-09-10T23:09:12.000Z",
-      "fetchedAt": "2026-09-11T00:00:12.332Z"
+      "title": "升息成定局！美股道瓊強彈509點　台積電ADR勁揚",
+      "url": "https://news.nextapple.com/finance/20260912/AA9E586EA4E472CD72E8A3F189DC9A31",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/AA9E586EA4E472CD72E8A3F189DC9A31/ee83eda768855797ffe969a60ff96694_1280.webp",
+      "publishedAt": "2026-09-11T23:44:53.000Z",
+      "fetchedAt": "2026-09-12T00:08:40.605Z"
     },
     {
-      "id": "16b65cd9dd8ed4d5",
+      "id": "228467ae6a97e611",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "中天主播周玉琴突遭資遣！嘆「令人背脊發涼的刀」　同事抱著她哭",
-      "url": "https://news.nextapple.com/entertainment/20260911/4CD851A61DF83E47C7F29866985DA5AC",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/4CD851A61DF83E47C7F29866985DA5AC/ba0527f9ae4b7bdb53f3c2146373602e_1280.webp",
-      "publishedAt": "2026-09-10T23:18:01.000Z",
-      "fetchedAt": "2026-09-11T00:00:12.332Z"
+      "title": "蔣友柏「坐多大椅已命定」　她曝蔣萬安最該聽揭其盲點",
+      "url": "https://news.nextapple.com/politics/20260912/C19F3002BF3AD483ACED44F9AC778F07",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/C19F3002BF3AD483ACED44F9AC778F07/baed052a678d8c60f1702567533a9314_1280.webp",
+      "publishedAt": "2026-09-11T23:43:48.000Z",
+      "fetchedAt": "2026-09-12T00:08:40.605Z"
     },
     {
-      "id": "c21a954673c38f04",
+      "id": "34f09f6dc62f7944",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "影片｜亞運韻律體操創意開箱　25萬人看爆！網：我的媽呀好多仙女！",
-      "url": "https://news.nextapple.com/sports/20260911/D9532615BDF95C90D8927857A2F9DF1D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/D9532615BDF95C90D8927857A2F9DF1D/bbd0e36d35d90a1c2191d7a25ee2055e_1280.webp",
-      "publishedAt": "2026-09-10T23:14:00.000Z",
-      "fetchedAt": "2026-09-11T00:00:12.332Z"
+      "title": "蕭美琴密訪義大利演說！突遇台下騷動　喊1句道出台灣人心聲",
+      "url": "https://news.nextapple.com/international/20260912/BF14B34E7F438F4AE017A15D3DA773A6",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/BF14B34E7F438F4AE017A15D3DA773A6/02a364074a5f3f7783f0b3d824646c03_1280.webp",
+      "publishedAt": "2026-09-11T22:50:46.000Z",
+      "fetchedAt": "2026-09-12T00:08:40.605Z"
     }
   ]
 }
