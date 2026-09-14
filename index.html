@@ -373,7 +373,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .bib-item-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
 .bib-item-row:last-child{border-bottom:none}
 .bib-item-num{font-size:11px;color:var(--text3);min-width:22px}
-.bib-item-text{flex:1;font-size:13px}
+.bib-item-text{flex:1;min-width:0;font-size:13px}
 .bib-item-del{color:var(--text3);cursor:pointer;font-size:15px;padding:0 4px;border:none;background:none}
 .bib-item-del:hover{color:var(--red)}
 .bib-item-add{color:var(--text3);cursor:pointer;font-size:15px;padding:0 4px;border:none;background:none}
@@ -5218,7 +5218,7 @@ window.toggleBibleSubItems=function(stage,phase,pathStr){
 window.startEditBibleNode=function(stage,phase,pathStr,el){
   if(!isAdmin()||!dragModeOn)return;
   const current=el.textContent;
-  el.innerHTML=`<input type="text" value="${escAttr(current)}" style="font-size:13px;padding:2px 6px;border:1px solid var(--purple);border-radius:3px;font-family:inherit;width:240px" onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){this.blur();}if(event.key==='Escape'){this.blur();}" onblur="saveBibleNodeText('${stage}','${phase}','${pathStr}',this.value)">`;
+  el.innerHTML=`<input type="text" value="${escAttr(current)}" style="display:block;box-sizing:border-box;font-size:13px;padding:2px 6px;border:1px solid var(--purple);border-radius:3px;font-family:inherit;width:100%" onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){this.blur();}if(event.key==='Escape'){this.blur();}" onblur="saveBibleNodeText('${stage}','${phase}','${pathStr}',this.value)">`;
   const inp=el.querySelector('input');inp.focus();inp.select();
 }
 window.saveBibleNodeText=async function(stage,phase,pathStr,text){
