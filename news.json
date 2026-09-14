@@ -1,16 +1,16 @@
 {
-  "date": "2026-09-13",
-  "updatedAt": "2026-09-12T23:55:30.991Z",
+  "date": "2026-09-14",
+  "updatedAt": "2026-09-14T00:04:19.340Z",
   "news": [
     {
-      "id": "e7da7eecc477f1b7",
+      "id": "7aeb152f601f34fe",
       "source": "遠見",
       "category": "國際",
-      "title": "前美國情報界高層首度揭密：中國如何靠山寨、竊取技術改寫全球地緣政治",
-      "url": "https://www.gvm.com.tw/article/133003",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260912/240875.jpg",
-      "publishedAt": "2026-09-12T07:07:00.000Z",
-      "fetchedAt": "2026-09-12T23:55:30.991Z"
+      "title": "極端封閉的環境更考驗人性！南極研究站測試：其實同一屋簷下，感情不會更好",
+      "url": "https://www.gvm.com.tw/article/132976",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20210722/81077_05.jpg",
+      "publishedAt": "2026-09-13T03:00:00.000Z",
+      "fetchedAt": "2026-09-14T00:04:19.340Z"
     },
     {
       "id": "1187bfa315ca6686",
@@ -20,107 +20,107 @@
       "url": "https://www.gvm.com.tw/article/132973",
       "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260911/240782.jpg",
       "publishedAt": "2026-09-12T01:00:00.000Z",
-      "fetchedAt": "2026-09-12T23:55:30.991Z"
+      "fetchedAt": "2026-09-14T00:04:19.340Z"
     },
     {
-      "id": "93c6d28ee863aec8",
+      "id": "77f387ec2c8e611f",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "專訪／3COINS 台灣首店開幕！揭台灣大為何布局實體零售背後盤算",
-      "url": "https://www.gvm.com.tw/article/132971",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260910/240737.jpg",
-      "publishedAt": "2026-09-12T03:00:00.000Z",
-      "fetchedAt": "2026-09-12T23:55:30.991Z"
+      "title": "定期定額也有缺點？上班族沒空看盤怎麼辦？投資專家破解新手最常見迷思",
+      "url": "https://www.gvm.com.tw/article/133015",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260913/240898.jpg",
+      "publishedAt": "2026-09-13T07:48:00.000Z",
+      "fetchedAt": "2026-09-14T00:04:19.340Z"
     },
     {
-      "id": "4d2f0f3c576d5cdd",
+      "id": "c2aff171bb57f580",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "比健忘更早出現？情緒波動大常發脾氣，醫提醒10大失智警訊",
-      "url": "https://www.gvm.com.tw/article/132975",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20231201/157003.jpg",
-      "publishedAt": "2026-09-12T23:00:00.000Z",
-      "fetchedAt": "2026-09-12T23:55:30.991Z"
+      "title": "微創眼底手術非得擠大醫院？南部視網膜權威吳宗典：掌握「人、時、地、物」四大關鍵，爭取最佳治療時機",
+      "url": "https://www.gvm.com.tw/article/132719",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260831/240043.jpg",
+      "publishedAt": "2026-09-13T16:00:00.000Z",
+      "fetchedAt": "2026-09-14T00:04:19.340Z"
     },
     {
-      "id": "a1bc5a7789fd0f28",
+      "id": "2ba78a59ecd25926",
       "source": "壹蘋",
       "category": "國際",
-      "title": "中國抗議踢鐵板！蕭美琴赴義演說　義外長冷回：與北京「沒有任何聯繫」",
-      "url": "https://news.nextapple.com/international/20260913/E9CFE6E9F223B7FBB9338A2859B522C5",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/E9CFE6E9F223B7FBB9338A2859B522C5/02a364074a5f3f7783f0b3d824646c03_1280.webp",
-      "publishedAt": "2026-09-12T23:11:00.000Z",
-      "fetchedAt": "2026-09-12T23:55:30.991Z"
+      "title": "壹蘋派生活美語　壓力大？一起尖叫吧～～",
+      "url": "https://news.nextapple.com/international/20260914/6523897EBA043EE91F9331B29BCEAF87",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/6523897EBA043EE91F9331B29BCEAF87/4136a1dc061a49305151223493359fe7_1280.webp",
+      "publishedAt": "2026-09-14T00:00:00.000Z",
+      "fetchedAt": "2026-09-14T00:04:19.340Z"
     },
     {
-      "id": "91bb1e32d5698ad0",
+      "id": "0c341900df474c2f",
       "source": "壹蘋",
       "category": "生活",
-      "title": "東北季風明增強　大雨區曝光！聖嬰年強颱「杜鵑」這天恐生成",
-      "url": "https://news.nextapple.com/life/20260913/AACDC1665DABC2380CBBFBDBCE2B6948",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/AACDC1665DABC2380CBBFBDBCE2B6948/4a7b8d8f2cabcdae9807acdea30f16ea_1280.webp",
-      "publishedAt": "2026-09-12T22:41:34.000Z",
-      "fetchedAt": "2026-09-12T23:55:30.991Z"
+      "title": "學生腹痛住院　疑中山女高「炸甜不辣」害的！竟沒調查繼續賣",
+      "url": "https://news.nextapple.com/life/20260914/843B92EFCF6A38276260DEC9E3D98371",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/843B92EFCF6A38276260DEC9E3D98371/f7b1d2fea3d6949c90f11a7dc72e5dca_1280.webp",
+      "publishedAt": "2026-09-14T00:04:16.000Z",
+      "fetchedAt": "2026-09-14T00:04:19.340Z"
     },
     {
-      "id": "f571b1143378260d",
+      "id": "c59569b5fb89c82f",
       "source": "壹蘋",
       "category": "社會",
-      "title": "助高金素梅大帳房張俊傑逃亡　刺青男遭羈押禁見！",
-      "url": "https://news.nextapple.com/local/20260913/8C8CB075FCE5A660A8F3389479BD0A5F",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/8C8CB075FCE5A660A8F3389479BD0A5F/dd89a21efd50d15fe37b6b8502613e01_1280.webp",
-      "publishedAt": "2026-09-12T22:58:36.000Z",
-      "fetchedAt": "2026-09-12T23:55:30.991Z"
+      "title": "捷運公館站13歲少女墜樓亡　倒臥商圈人行道嚇壞路人",
+      "url": "https://news.nextapple.com/local/20260914/5137CF589113F3D993672F0858E32568",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/5137CF589113F3D993672F0858E32568/4db765487fd90a7d8e91627e199079a2_1280.webp",
+      "publishedAt": "2026-09-13T23:51:25.000Z",
+      "fetchedAt": "2026-09-14T00:04:19.340Z"
     },
     {
-      "id": "d36767d28debb717",
+      "id": "d320b59b9cac7534",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "愷樂一家5口現身月中！醫師尪隔窗望雙胞胎　她喊：先生花的錢",
-      "url": "https://news.nextapple.com/entertainment/20260913/43E9BBFB72BC54B3D746CAC9AFE283A0",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/43E9BBFB72BC54B3D746CAC9AFE283A0/03631b6dbaa76efee7b407f0f6ec2641_1280.webp",
-      "publishedAt": "2026-09-12T23:39:17.000Z",
-      "fetchedAt": "2026-09-12T23:55:30.991Z"
+      "title": "曾智希全身劇痛暴瘦不到45公斤　病因揭曉！感謝「無照醫師」",
+      "url": "https://news.nextapple.com/entertainment/20260914/C1AB274CF265B4E5690D7608A7AA50A5",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/C1AB274CF265B4E5690D7608A7AA50A5/57f410b312036bec9dac28fd6f582d5e_1280.webp",
+      "publishedAt": "2026-09-13T23:49:49.000Z",
+      "fetchedAt": "2026-09-14T00:04:19.340Z"
     },
     {
-      "id": "c9fe1a529c6cd48d",
+      "id": "d8a0731c89d957b4",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "vivo X500 Pro Max四色全亮相！9月21日發表　主打2億畫素望遠",
-      "url": "https://news.nextapple.com/aitech/20260912/7345A15E606DEF0411ED456C2C557F1B",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/7345A15E606DEF0411ED456C2C557F1B/31d033971b8115ab2e87836e68b99782_1280.webp",
-      "publishedAt": "2026-09-12T10:31:46.000Z",
-      "fetchedAt": "2026-09-12T23:55:30.991Z"
+      "title": "「蘋果前CEO」跳槽三星？親自開箱摺疊機　大讚：未來到了",
+      "url": "https://news.nextapple.com/aitech/20260913/B066D5FDD64CABDBDB8EFBFD180AE4A6",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/B066D5FDD64CABDBDB8EFBFD180AE4A6/8251eb3c4052dbe7789bd264b0b41b91_1280.webp",
+      "publishedAt": "2026-09-13T01:44:25.000Z",
+      "fetchedAt": "2026-09-14T00:04:19.340Z"
     },
     {
-      "id": "92b5c24d81f40bef",
+      "id": "de0142aa93c7dc1c",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "汽油下週一漲0.7元！95無鉛每公升32.7元",
-      "url": "https://news.nextapple.com/finance/20260912/34E2F5B58F9B940648C53433610CCED2",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/34E2F5B58F9B940648C53433610CCED2/921a0cfb33af43a8696b8d7a9aa99a22_1280.webp",
-      "publishedAt": "2026-09-12T09:31:17.000Z",
-      "fetchedAt": "2026-09-12T23:55:30.991Z"
+      "title": "台股量縮高檔震盪！法人：中長期多頭格局未破　本週FOMC成關鍵",
+      "url": "https://news.nextapple.com/finance/20260914/0DAD3978C38F05D1B9D7D50CADF1969E",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/0DAD3978C38F05D1B9D7D50CADF1969E/4083bed26c0cda2bceeed404c6918cae_1280.webp",
+      "publishedAt": "2026-09-13T17:31:44.000Z",
+      "fetchedAt": "2026-09-14T00:04:19.340Z"
     },
     {
-      "id": "39f0be22b3e6ff4d",
+      "id": "ec60f305d6dbb0d1",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "16長者成焦屍！智利無照安養院惡火　「連罰7年」仍照開",
-      "url": "https://news.nextapple.com/international/20260913/8E7CDB246DA1D6945473D5663D2A131A",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/8E7CDB246DA1D6945473D5663D2A131A/9272754ac673e274a7900943a9e3e248_1280.webp",
-      "publishedAt": "2026-09-12T22:52:13.000Z",
-      "fetchedAt": "2026-09-12T23:55:30.991Z"
+      "title": "遭秦慧珠稱「心機男突襲」　沈伯洋現身留言！1句偷臭蔣萬安",
+      "url": "https://news.nextapple.com/politics/20260914/74FB37E81CDBEA3C299CA8DAF6D8DD7B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/74FB37E81CDBEA3C299CA8DAF6D8DD7B/f64fe811dfff596f825766d266e8351e_1280.webp",
+      "publishedAt": "2026-09-13T23:34:04.000Z",
+      "fetchedAt": "2026-09-14T00:04:19.340Z"
     },
     {
-      "id": "d2b7afeaa62fd1ab",
+      "id": "d37eab750b07961d",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "電影寒冬冷到胡歌！他坦承劇本沒得選　回不了本「機會越來越少」",
-      "url": "https://news.nextapple.com/entertainment/20260913/6758BDA00F120D2D4607BA0ECE93C962",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/6758BDA00F120D2D4607BA0ECE93C962/606a92ca048ed08127fc34b0288d9bdd_1280.webp",
-      "publishedAt": "2026-09-12T22:33:00.000Z",
-      "fetchedAt": "2026-09-12T23:55:30.991Z"
+      "title": "台海若爆衝突「別以為俄羅斯與台灣無關」　北約秘書長最新示警",
+      "url": "https://news.nextapple.com/international/20260914/795E81FEADBD5D087C49B3C76FAD66CD",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/795E81FEADBD5D087C49B3C76FAD66CD/e1858858d84e7a107c5ca0574561123f_1280.webp",
+      "publishedAt": "2026-09-13T23:14:25.000Z",
+      "fetchedAt": "2026-09-14T00:04:19.340Z"
     }
   ]
 }
