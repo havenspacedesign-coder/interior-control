@@ -5073,7 +5073,7 @@ function renderBibleDetail(stage){
     </span>
   </div>
   ${phases.map(ph=>`<div class="phase-section">
-    <div class="phase-title ${isSystemAdmin()?'phase-title-editable':''}" style="color:${ph.color}" ${isSystemAdmin()?`ondblclick="startEditBiblePhaseTitle('${stage}','${ph.id}',this)" title="管理員可雙擊修改此階段名稱"`:''}>
+    <div class="phase-title ${isSystemAdmin()&&dragModeOn?'phase-title-editable':''}" style="color:${ph.color}" ${isSystemAdmin()&&dragModeOn?`ondblclick="startEditBiblePhaseTitle('${stage}','${ph.id}',this)" title="編輯中可雙擊修改此階段名稱"`:''}>
       <span class="phase-dot" style="background:${ph.dot}"></span>
       ${escAttr(ph.label)}（${getBiblePhaseItems(stage,ph.id).length} 項）
     </div>
@@ -5380,7 +5380,7 @@ window.startEditBibleStageTitle=function(stage,el){
   const inp=el.querySelector('input');inp.focus();inp.select();
 }
 window.startEditBiblePhaseTitle=function(stage,phase,el){
-  if(!isSystemAdmin())return;
+  if(!isSystemAdmin()||!dragModeOn)return;
   const current=biblePhaseLabel(stage,phase);
   el.innerHTML=`<input type="text" value="${escAttr(current)}" aria-label="${escAttr(DEFAULT_BIBLE_PHASE_LABELS[phase])}名稱" style="font-size:11px;font-weight:600;padding:2px 6px;border:1px solid var(--purple);border-radius:3px;font-family:inherit;width:180px" onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){this.blur();}if(event.key==='Escape'){this.dataset.cancel='true';this.blur();}" onblur="saveBiblePhaseTitle('${stage}','${phase}',this.value,this.dataset.cancel==='true')">`;
   const inp=el.querySelector('input');inp.focus();inp.select();
