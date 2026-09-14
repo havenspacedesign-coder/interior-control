@@ -961,6 +961,11 @@ function resolveBibleStage(stage,label){
   const matches=getBibleStages().filter(candidate=>S.bible[candidate]&&displayStageName(candidate)===name);
   return matches.length===1?matches[0]:'';
 }
+const DEFAULT_BIBLE_PHASE_LABELS={before:'工程前',during:'工程中',after:'工程後'};
+function biblePhaseLabel(stage,phase){
+  const label=S.bible[stage]?.phaseLabels?.[phase];
+  return String(label||'').trim()||DEFAULT_BIBLE_PHASE_LABELS[phase]||'';
+}
 function getBiblePhaseItems(stage,phase){const b=S.bible[stage];return(b&&b[phase])?b[phase]:[];}
 // A bible item used to always be a plain string. It can now be an object
 // {text, subs:[...]} so it can carry indented sub-items. This normalizes
@@ -4916,7 +4921,11 @@ window.openCheckMo=function(projId,stage,label,projName){
   const totalAmount=merged.reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
   const bData=projectBibleData(proj,stage);
   const beforeLen=flattenPhaseItems(bData.before).length,duringLen=flattenPhaseItems(bData.during).length;
-  const PHASES=[{label:'工程前',color:'var(--pl)',from:0,to:beforeLen},{label:'工程中',color:'var(--tl)',from:beforeLen,to:beforeLen+duringLen},{label:'工程後',color:'var(--gl)',from:beforeLen+duringLen,to:merged.length}];
+  const PHASES=[
+    {label:biblePhaseLabel(stage,'before'),color:'var(--pl)',from:0,to:beforeLen},
+    {label:biblePhaseLabel(stage,'during'),color:'var(--tl)',from:beforeLen,to:beforeLen+duringLen},
+    {label:biblePhaseLabel(stage,'after'),color:'var(--gl)',from:beforeLen+duringLen,to:merged.length}
+  ];
   let itemsHtml='';
   PHASES.forEach(ph=>{
     if(ph.to<=ph.from)return;
@@ -5051,9 +5060,9 @@ function restoreBibleDeleteModalScrollPosition(){
 function renderBibleDetail(stage){
   if(bibleView==='worksite')return renderBibleWorksite(stage);
   const phases=[
-    {id:'before',label:'工程前',color:'#BA7517',dot:'var(--amber)'},
-    {id:'during',label:'工程中',color:'#534AB7',dot:'var(--purple)'},
-    {id:'after',label:'工程後',color:'#1D9E75',dot:'var(--teal)'},
+    {id:'before',label:biblePhaseLabel(stage,'before'),color:'#BA7517',dot:'var(--amber)'},
+    {id:'during',label:biblePhaseLabel(stage,'during'),color:'#534AB7',dot:'var(--purple)'},
+    {id:'after',label:biblePhaseLabel(stage,'after'),color:'#1D9E75',dot:'var(--teal)'},
   ];
   return`
   <div class="flex-sb" style="margin-bottom:14px">
@@ -5064,9 +5073,9 @@ function renderBibleDetail(stage){
     </span>
   </div>
   ${phases.map(ph=>`<div class="phase-section">
-    <div class="phase-title" style="color:${ph.color}">
+    <div class="phase-title ${isSystemAdmin()?'phase-title-editable':''}" style="color:${ph.color}" ${isSystemAdmin()?`ondblclick="startEditBiblePhaseTitle('${stage}','${ph.id}',this)" title="管理員可雙擊修改此階段名稱"`:''}>
       <span class="phase-dot" style="background:${ph.dot}"></span>
-      ${ph.label}（${getBiblePhaseItems(stage,ph.id).length} 項）
+      ${escAttr(ph.label)}（${getBiblePhaseItems(stage,ph.id).length} 項）
     </div>
     ${getBiblePhaseItems(stage,ph.id).map((rawItem,i)=>renderBibleItemNode(stage,ph.id,[i],rawItem)).join('')}
     ${isAdmin()&&dragModeOn?`<div class="bib-add-row">
@@ -5369,6 +5378,23 @@ window.startEditBibleStageTitle=function(stage,el){
   const current=el.textContent;
   el.innerHTML=`<input type="text" value="${escAttr(current)}" style="font-size:14px;font-weight:500;padding:2px 6px;border:1px solid var(--purple);border-radius:3px;font-family:inherit;width:320px" onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){this.blur();}if(event.key==='Escape'){this.blur();}" onblur="saveBibleStageTitle('${stage}',this.value)">`;
   const inp=el.querySelector('input');inp.focus();inp.select();
+}
+window.startEditBiblePhaseTitle=function(stage,phase,el){
+  if(!isSystemAdmin())return;
+  const current=biblePhaseLabel(stage,phase);
+  el.innerHTML=`<input type="text" value="${escAttr(current)}" aria-label="${escAttr(DEFAULT_BIBLE_PHASE_LABELS[phase])}名稱" style="font-size:11px;font-weight:600;padding:2px 6px;border:1px solid var(--purple);border-radius:3px;font-family:inherit;width:180px" onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){this.blur();}if(event.key==='Escape'){this.dataset.cancel='true';this.blur();}" onblur="saveBiblePhaseTitle('${stage}','${phase}',this.value,this.dataset.cancel==='true')">`;
+  const inp=el.querySelector('input');inp.focus();inp.select();
+}
+window.saveBiblePhaseTitle=async function(stage,phase,newName,canceled=false){
+  newName=(newName||'').trim();
+  if(canceled||!newName||newName===biblePhaseLabel(stage,phase)){renderBible();return;}
+  const data=S.bible[stage]||{before:[],during:[],after:[]};
+  const updated={...data,phaseLabels:{...(data.phaseLabels||{}),[phase]:newName}};
+  S.bible=Object.assign({},S.bible,{[stage]:updated});
+  renderBible();
+  setSyncing();
+  try{await setDoc(doc(db,'bible',stage),updated);setSynced();}
+  catch(err){alert('階段名稱儲存失敗：'+err.message);setSynced();}
 }
 window.saveBibleStageTitle=async function(oldName,newName){
   newName=(newName||'').trim();
