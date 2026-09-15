@@ -3577,9 +3577,8 @@ function recurringMatches(rule,ds){
   if(rule.frequency==='custom')return Math.floor((d-start)/86400000)%Math.max(1,Number(rule.intervalDays)||1)===0;
   return false;
 }
-async function syncRecurringRule(rule,removeOnly,throughDate,deferSave){
-  if(!currentUser)return;
-  const td=today(),todayDs=fmtDay(td),pn=S.privateNotes||{work:{},personal:{}};
+function applyRecurringRule(pn,rule,removeOnly,throughDate){
+  const todayDs=fmtDay(today());
   const next=Object.assign({},pn,{work:Object.assign({},pn.work||{}),personal:Object.assign({},pn.personal||{})});
   let changed=false;
   // 啟用中的排程不重建已存在的項目：使用者可自行修改、刪除、拖拉與排序。
@@ -3607,6 +3606,11 @@ async function syncRecurringRule(rule,removeOnly,throughDate,deferSave){
       next[type][ds]=arr;changed=true;
     }
   }
+  return {notes:next,changed};
+}
+async function syncRecurringRule(rule,removeOnly,throughDate,deferSave){
+  if(!currentUser)return;
+  const {notes:next,changed}=applyRecurringRule(S.privateNotes||{work:{},personal:{}},rule,removeOnly,throughDate);
   if(changed){S.privateNotes=next;if(!deferSave)await setDoc(doc(db,'privateNotes',currentUser.uid),next);}
   return changed;
 }
@@ -3615,9 +3619,34 @@ function syncAllRecurringSchedules(throughDate){
   const yearlyThrough=recurringSyncThroughDate();
   if(!throughDate||throughDate<yearlyThrough)throughDate=yearlyThrough;
   const run=async function(){
-    let changed=false;
-    for(const rule of recurringSchedules())changed=(await syncRecurringRule(rule,!rule.enabled,throughDate,true))||changed;
-    if(changed)await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
+    if(!currentUser)return;
+    const ref=doc(db,'privateNotes',currentUser.uid);
+    // Compute from the transaction snapshot on every retry, never from a stale tab.
+    const applyAll=pn=>{
+      let notes=pn,changed=false;
+      for(const rule of (Array.isArray(pn.recurringSchedules)?pn.recurringSchedules:[])){
+        const result=applyRecurringRule(notes,rule,!rule.enabled,throughDate);
+        notes=result.notes;changed=result.changed||changed;
+      }
+      return {notes,changed};
+    };
+    if(localTestMode){
+      const result=applyAll(S.privateNotes||{work:{},personal:{}});
+      if(result.changed){S.privateNotes=result.notes;await setDoc(ref,result.notes);}
+      return;
+    }
+    try{
+      await fbRunTransaction(db,async tx=>{
+        const snap=await tx.get(ref);
+        if(!snap.exists())return;
+        const result=applyAll(snap.data());
+        if(result.changed)tx.set(ref,result.notes);
+      });
+      // The snapshot listener updates S; a transaction callback must not mutate it.
+    }catch(error){
+      console.error('私人記事自動排程同步失敗',error);
+      setOffline();
+    }
   };
   recurringSyncQueue=recurringSyncQueue.then(run,run);
   return recurringSyncQueue;
