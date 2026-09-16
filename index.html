@@ -217,9 +217,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
 .design-tbl .design-freeze{position:sticky!important;z-index:4;background:var(--surface);box-shadow:1px 0 0 var(--border)}
 .design-tbl thead .design-freeze{z-index:6;background:var(--bg)}
 .design-tbl td.design-freeze.empty-cell{background:#fff8f8}
+#design-bottom-hscroll{position:fixed;bottom:0;height:14px;overflow-x:auto;overflow-y:hidden;background:var(--surface);border-top:1px solid var(--border);z-index:40}
 @media(max-width:768px){
   .design-tbl .design-freeze:not(.design-freeze-name){position:relative!important;left:auto!important;z-index:auto;box-shadow:none}
   .design-tbl .design-freeze-name{left:0!important}
+  #design-bottom-hscroll{display:none!important}
 }
 .design-missing-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--rl);color:var(--rd);font-size:10px;font-weight:600;line-height:1;vertical-align:middle}
 
@@ -2286,7 +2288,7 @@ function designColumnMinWidth(key){
   const column=getDesignCols()[Number(String(key).slice(1))];
   return column?.kind==='text'&&/^(?:[1-9]|1\d|20)$/.test(String(column.name))?DESIGN_STAGE_MIN_WIDTH:60;
 }
-let designRowDragInProgress=false,designRowDragSrc=null,pendingDesignRender=false;
+let designRowDragInProgress=false,designRowDragSrc=null,pendingDesignRender=false,designLastHScrollLeft=0;
 function sortDesignProjs(projs){
   if(!designProjectOrder.length)return projs;
   const order=designProjectOrder;
@@ -2299,6 +2301,8 @@ function sortDesignProjs(projs){
 function renderDesign(){
   if(designRowDragInProgress){pendingDesignRender=true;return;}
   const el=$('panel-design');
+  const previousDesignScroll=$('design-scroll-wrap')?.scrollLeft;
+  if(Number.isFinite(previousDesignScroll))designLastHScrollLeft=previousDesignScroll;
   const cols=getDesignCols();
   const blueCols=cols.filter(c=>c.collapsible);
   const redCols=cols.filter(c=>!c.collapsible);
@@ -2320,7 +2324,7 @@ function renderDesign(){
     ${isAdmin()?`<button class="btn btn-sm ${editing?'btn-p':''}" onclick="toggleDesignEditMode()">${editing?'✓ 編輯中':'✎ 編輯'}</button>`:''}
   </div>
   ${allProjs.length===0?`<div class="empty">尚無案件</div>`:`
-  <div id="design-scroll-wrap" style="overflow-x:auto;max-width:100%">
+  <div id="design-scroll-wrap" class="hide-hscrollbar" style="overflow-x:auto;max-width:100%">
   <table class="design-tbl" id="design-table" style="width:${designTableWidth}px;min-width:${designTableWidth}px">
     <thead><tr>
       ${editing?`<th ${freeze(0,22)}></th>`:''}
@@ -2354,7 +2358,8 @@ function renderDesign(){
     }).join('')}
     </tbody>
   </table>
-  </div>`}`;
+  </div><div id="design-bottom-hscroll"><div style="width:${designTableWidth}px;height:1px"></div></div>`}`;
+  requestAnimationFrame(function(){restoreDesignHScroll(designLastHScrollLeft);});
 }
 // Shift + mouse wheel scrolls the design table horizontally from anywhere
 // on the design-progress screen, not only while hovering over the table.
@@ -4431,6 +4436,37 @@ function alignProgressBottomScrollbar(){
   bar.style.left=Math.max(0,rect.left)+'px';
   bar.style.right=Math.max(0,window.innerWidth-rect.right)+'px';
 }
+var designHScrollSyncing=false;
+function alignDesignBottomScrollbar(){
+  const bar=document.getElementById('design-bottom-hscroll');
+  const wrap=document.getElementById('design-scroll-wrap');
+  if(!bar||!wrap)return;
+  const rect=wrap.getBoundingClientRect();
+  bar.style.left=Math.max(0,rect.left)+'px';
+  bar.style.right=Math.max(0,window.innerWidth-rect.right)+'px';
+  bar.style.display=wrap.scrollWidth>wrap.clientWidth+1?'block':'none';
+}
+function syncDesignHScroll(source){
+  if(designHScrollSyncing||!source)return;
+  const wrap=document.getElementById('design-scroll-wrap');
+  const bar=document.getElementById('design-bottom-hscroll');
+  const other=source===wrap?bar:wrap;
+  designLastHScrollLeft=source.scrollLeft;
+  if(!other)return;
+  designHScrollSyncing=true;
+  other.scrollLeft=designLastHScrollLeft;
+  designHScrollSyncing=false;
+}
+function restoreDesignHScroll(left){
+  alignDesignBottomScrollbar();
+  const target=Number.isFinite(left)?Math.max(0,left):0;
+  const wrap=document.getElementById('design-scroll-wrap');
+  const bar=document.getElementById('design-bottom-hscroll');
+  designHScrollSyncing=true;
+  if(wrap)wrap.scrollLeft=target;
+  if(bar)bar.scrollLeft=target;
+  designHScrollSyncing=false;
+}
 function syncProgressMeetingStickyOffset(){
   const controls=document.querySelector('#panel-progress .progress-sticky-board');
   const meeting=document.querySelector('#panel-progress .progress-week-content');
@@ -4442,7 +4478,7 @@ window.confirmClearDesignStage=function(projId,col,label){
   $('mo-content').innerHTML=`<div class="mo-title">確認刪除</div><div class="mo-sub">確定要刪除「${escAttr(label)}」標記嗎？</div><div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-danger" id="mo-confirm-btn" onclick="closeMo();saveDesignField('${projId}','${col}','')">刪除</button></div>`;
   $('modal').style.display='flex';setTimeout(()=>$('mo-confirm-btn')?.focus(),50);
 }
-window.addEventListener('resize',alignProgressBottomScrollbar);
+window.addEventListener('resize',function(){alignProgressBottomScrollbar();alignDesignBottomScrollbar();});
 function syncHScrollPosition(source,left){
   const max=Math.max(0,source.scrollWidth-source.clientWidth);
   const next=Math.max(0,Math.min(max,left));
@@ -4474,6 +4510,10 @@ function setHorizontalScrollPosition(scroller,left){
 }
 document.addEventListener('scroll',function(e){
   const el=e.target;
+  if(el.id==='design-scroll-wrap'||el.id==='design-bottom-hscroll'){
+    syncDesignHScroll(el);
+    return;
+  }
   if(el.classList&&el.classList.contains('progress-horizontal-viewport')){
     lastHScrollLeft=el.scrollLeft;
     updateMobileProgressDateHeader(el.scrollLeft);
