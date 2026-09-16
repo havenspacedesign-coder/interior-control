@@ -2646,12 +2646,11 @@ function renderMobileProgressDateHeader(days){
 function renderProgress(force){
   var af=document.activeElement;
   var menuOpen=false;
+  var typingInProgress=!!(af&&af.matches&&af.matches('input,textarea,[contenteditable="true"]')&&af.closest&&af.closest('#panel-progress'));
   document.querySelectorAll('.pn-mention-menu').forEach(function(el){if(el.style.display==='block')menuOpen=true;});
-  if(!force&&(af&&(af.classList&&af.classList.contains('pn-box-input')||af.id==='pn-formula-input'))||menuOpen){
-    // User is actively typing in a private note, or has a tag-picker menu
-    // open — skip this re-render so background updates (other data
-    // changing) don't wipe out what they're doing. We'll catch up once
-    // they're done (see pnBoxBlur / mScheduleCloseMention).
+  if(!force&&(typingInProgress||menuOpen)){
+    // 使用者正在進度頁任何文字欄位輸入時，背景同步或前一欄位的延遲儲存
+    // 都不能重畫整個頁面，否則剛取得焦點的欄位會被替換而無法立即貼上。
     pendingProgressRender=true;
     return;
   }
