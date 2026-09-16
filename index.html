@@ -4675,7 +4675,9 @@ document.addEventListener('click',function(e){
   if(!e.target.closest('.pn-mention-menu')){
     document.querySelectorAll('.pn-mention-menu').forEach(function(el){el.style.display='none';});
   }
-  if(e.target.closest('.pn-chip')||e.target.closest('.meet-chip')||e.target.closest('.formula-bar'))return;
+  // 每日施工日誌的文字欄位第一次取得焦點時，不能因清除其他選取狀態
+  // 而重畫整個月視圖，否則瀏覽器會立刻失焦、必須再點一次才能輸入。
+  if(e.target.closest('.pn-chip')||e.target.closest('.meet-chip')||e.target.closest('.formula-bar')||e.target.closest('.log-textarea'))return;
   var changed=false;
   if(S.privateSelected&&Object.keys(S.privateSelected).some(function(k){return S.privateSelected[k]>=0;})){
     S.privateSelected={};changed=true;
