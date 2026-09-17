@@ -1,126 +1,126 @@
 {
-  "date": "2026-09-16",
-  "updatedAt": "2026-09-16T00:08:55.801Z",
+  "date": "2026-09-17",
+  "updatedAt": "2026-09-17T00:19:11.318Z",
   "news": [
     {
-      "id": "08b31cbf85dd8b7f",
+      "id": "ed29761f9ca32e23",
       "source": "遠見",
       "category": "國際",
-      "title": "台灣是全球化受益者之一，也可能在封閉經濟浪潮中承受更大壓力？",
-      "url": "https://www.gvm.com.tw/article/132883",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260907/240516.jpg",
-      "publishedAt": "2026-09-15T09:23:00.000Z",
-      "fetchedAt": "2026-09-16T00:08:55.801Z"
+      "title": "川習會24日登場！美議員籲川普表明「不容武力改變台灣現狀」",
+      "url": "https://www.gvm.com.tw/article/133076",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260518/231451.jpg",
+      "publishedAt": "2026-09-16T08:19:00.000Z",
+      "fetchedAt": "2026-09-17T00:19:11.318Z"
     },
     {
-      "id": "8b44384f1c4baf7b",
+      "id": "cdef0818cf3db2b7",
       "source": "遠見",
       "category": "AI／科技",
-      "title": "台積電米玉傑：AI就像「三歲超人」，職場稀缺的是這3種能力",
-      "url": "https://www.gvm.com.tw/article/133063",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260915/241023.jpg",
-      "publishedAt": "2026-09-15T09:58:00.000Z",
-      "fetchedAt": "2026-09-16T00:08:55.801Z"
+      "title": "矽光子下一站：自駕車眼睛、生醫感測晶片與無人機羅盤？",
+      "url": "https://www.gvm.com.tw/article/133082",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260312/226942.jpg",
+      "publishedAt": "2026-09-16T10:09:00.000Z",
+      "fetchedAt": "2026-09-17T00:19:11.318Z"
     },
     {
-      "id": "0e5eb890f6f73021",
+      "id": "74f96aac8855233c",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "HBR管理年會》當AI時代來臨，下一個20年企業管理勢將面臨變革",
-      "url": "https://www.gvm.com.tw/article/133065",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260915/241044.jpg",
-      "publishedAt": "2026-09-15T10:50:00.000Z",
-      "fetchedAt": "2026-09-16T00:08:55.801Z"
+      "title": "國銀獲利衝新高！KPMG：高資產規模跨過2兆、虛擬資產揭開新戰局",
+      "url": "https://www.gvm.com.tw/article/133083",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260626/234765.jpg",
+      "publishedAt": "2026-09-16T10:33:00.000Z",
+      "fetchedAt": "2026-09-17T00:19:11.318Z"
     },
     {
-      "id": "527ca43bbce09934",
+      "id": "7c89b6e775819a84",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "加拿大醫師公開「醫助死亡」現場：45歲哈佛科學研究員生命的最後一天",
-      "url": "https://www.gvm.com.tw/article/132978",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260911/240785.jpg",
-      "publishedAt": "2026-09-15T09:52:00.000Z",
-      "fetchedAt": "2026-09-16T00:08:55.801Z"
+      "title": "女主外，男主內：台灣夫妻檔把「豪宅AI」做進泰國富豪的曼谷一號",
+      "url": "https://www.gvm.com.tw/article/133081",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260916/241150.jpg",
+      "publishedAt": "2026-09-16T09:52:00.000Z",
+      "fetchedAt": "2026-09-17T00:19:11.318Z"
     },
     {
-      "id": "0ccd56cccb6f4224",
+      "id": "14f8bd8dcf4a772e",
       "source": "壹蘋",
       "category": "國際",
-      "title": "壹蘋派生活美語　薩摩耶：冰雪中溫暖的微笑天使",
-      "url": "https://news.nextapple.com/international/20260916/D34E7773F18874FBE3015B99CEFB0B88",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/D34E7773F18874FBE3015B99CEFB0B88/f082daab56a1d60d3b8f6606320d1270_1280.webp",
-      "publishedAt": "2026-09-16T00:00:00.000Z",
-      "fetchedAt": "2026-09-16T00:08:55.801Z"
+      "title": "壹蘋派生活美語　天才神秘會社 I：謎屋的考驗",
+      "url": "https://news.nextapple.com/international/20260917/1CC14EB59EE4932D92119F0445DE529D",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/1CC14EB59EE4932D92119F0445DE529D/621467e9d50df2da234bf5635ef8105d_1280.webp",
+      "publishedAt": "2026-09-17T00:00:00.000Z",
+      "fetchedAt": "2026-09-17T00:19:11.318Z"
     },
     {
-      "id": "3f2209036b00b3d3",
+      "id": "9ab531f6c8a3f6c0",
       "source": "壹蘋",
       "category": "生活",
-      "title": "陳建州心肌梗塞｜年輕人也會猝死　醫師：一冒險行為如闖紅燈",
-      "url": "https://news.nextapple.com/life/20260916/6A383F2147DDC333C7DE09950BD8158C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/6A383F2147DDC333C7DE09950BD8158C/3ec40baab2daa5fa8ce62fbf339f81a5_1280.webp",
-      "publishedAt": "2026-09-15T23:07:22.000Z",
-      "fetchedAt": "2026-09-16T00:08:55.801Z"
+      "title": "陳建州心肌梗塞｜人好好的怎突然倒下？　醫師曝殘酷真相！別再講幹話",
+      "url": "https://news.nextapple.com/life/20260917/00757AF022612777568AEAEF535E8E69",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/00757AF022612777568AEAEF535E8E69/1d3e01ba7ea5ec6bcdf65f1111b35cc7_1280.webp",
+      "publishedAt": "2026-09-17T00:01:00.000Z",
+      "fetchedAt": "2026-09-17T00:19:11.318Z"
     },
     {
-      "id": "5a7b7bb8c6efa74e",
+      "id": "cc98a6b38779cd40",
       "source": "壹蘋",
       "category": "社會",
-      "title": "深夜闖停車場破窗「被警鈴聲嚇跑」　46歲賊5小時落網",
-      "url": "https://news.nextapple.com/local/20260916/A8E4A57BAED8AFA06A79BE03917204BE",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/A8E4A57BAED8AFA06A79BE03917204BE/0c85303d916065a9b8daafd59823e7d2_1280.webp",
-      "publishedAt": "2026-09-15T16:01:00.000Z",
-      "fetchedAt": "2026-09-16T00:08:55.801Z"
+      "title": "Threads驚傳「9/17下午2點中正紀念堂無差別攻擊」　網友急報警",
+      "url": "https://news.nextapple.com/local/20260917/0C15FE6223E1EBFDE0D56B47F9596EAE",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/0C15FE6223E1EBFDE0D56B47F9596EAE/11d8fa3aff880031f25842d24bbb4022_1280.webp",
+      "publishedAt": "2026-09-17T00:09:23.000Z",
+      "fetchedAt": "2026-09-17T00:19:11.318Z"
     },
     {
-      "id": "a8d463271fbd451c",
+      "id": "0403c8e58cf88179",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "這個月撐住就是你的　3星座迎來財運大豐收",
-      "url": "https://news.nextapple.com/entertainment/20260916/7000C671C12368DC73577B3B8F94DDB6",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/7000C671C12368DC73577B3B8F94DDB6/a42df3886a32394508f28ce22516b041_1280.webp",
-      "publishedAt": "2026-09-15T16:04:00.000Z",
-      "fetchedAt": "2026-09-16T00:08:55.801Z"
+      "title": "電影男星轉行拚律師！首戰國考成績出爐",
+      "url": "https://news.nextapple.com/entertainment/20260917/773E1366A4A987B99DF1489919F544CA",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/773E1366A4A987B99DF1489919F544CA/8b4c27e83a392710b4b38315ac5fdba8_1280.webp",
+      "publishedAt": "2026-09-17T00:01:44.000Z",
+      "fetchedAt": "2026-09-17T00:19:11.318Z"
     },
     {
-      "id": "eda6abfd47e16a7a",
+      "id": "e5266451d7a8dce4",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "iPhone 18 Pro、Duo選哪個？　台韓2達人都選它",
-      "url": "https://news.nextapple.com/aitech/20260916/AD5716C004C35A5C7E3E8C1F671F7AFE",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/AD5716C004C35A5C7E3E8C1F671F7AFE/39b3a9df0511b0b0e762cd65813134ad_1280.webp",
-      "publishedAt": "2026-09-15T23:47:15.000Z",
-      "fetchedAt": "2026-09-16T00:08:55.801Z"
+      "title": "LG家電租賃成長800%　冷氣成今年最大動能",
+      "url": "https://news.nextapple.com/aitech/20260916/8A9ED1A27AD57CD3BCFACEF7B6D7255B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/8A9ED1A27AD57CD3BCFACEF7B6D7255B/975381edd6bcfcf2bfc4f56833ecbd4e_1280.webp",
+      "publishedAt": "2026-09-16T10:26:10.000Z",
+      "fetchedAt": "2026-09-17T00:19:11.318Z"
     },
     {
-      "id": "d6fcc4dac5254262",
+      "id": "7e8e0fe813ccf819",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "台積電好會生！每46名新生兒就有1個是「台積寶寶」",
-      "url": "https://news.nextapple.com/finance/20260916/EA0B487F5BD92E59A1DB1253E1C57A24",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/EA0B487F5BD92E59A1DB1253E1C57A24/699f327e1c8748cfe0228e7187112bd8_1280.webp",
-      "publishedAt": "2026-09-15T23:18:15.000Z",
-      "fetchedAt": "2026-09-16T00:08:55.801Z"
+      "title": "3年來首次！聯準會升息1碼「年底恐再升」　道瓊大跌631點",
+      "url": "https://news.nextapple.com/finance/20260917/7BE5ED73CF8B191B80B9B5E852870B6A",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/7BE5ED73CF8B191B80B9B5E852870B6A/d4131dc3903d52b13e683c5c111d4a82_1280.webp",
+      "publishedAt": "2026-09-16T22:38:15.000Z",
+      "fetchedAt": "2026-09-17T00:19:11.318Z"
     },
     {
-      "id": "097c5e4deac113be",
+      "id": "3b8037a5f9108d48",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "超狂亞運選手村曝光！4000人住豪華郵輪　韓國選手卻開罵",
-      "url": "https://news.nextapple.com/sports/20260916/D69DB45BCF1A41DF5BC6C0E5AAE4B3D9",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/D69DB45BCF1A41DF5BC6C0E5AAE4B3D9/9f5ce825090ff332a47163d30fe9bf21_1280.webp",
-      "publishedAt": "2026-09-15T23:53:00.000Z",
-      "fetchedAt": "2026-09-16T00:08:55.801Z"
+      "title": "立委遭「抹黑」當街刷牙　幽默自嘲被讚情商高",
+      "url": "https://news.nextapple.com/politics/20260917/620C0451E2579936D547872840F30701",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/620C0451E2579936D547872840F30701/c335d360c61285d094dbb4c7ecb414aa_1280.webp",
+      "publishedAt": "2026-09-16T23:40:06.000Z",
+      "fetchedAt": "2026-09-17T00:19:11.318Z"
     },
     {
-      "id": "516964315af9a629",
+      "id": "3b5febf1d228b614",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "不妙！王彥程亞運前最後一次先發被打爆　韓媒發現「身體有異狀」",
-      "url": "https://news.nextapple.com/sports/20260916/9A38F294FAEEB5A6CF56EFEE97858E24",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/9A38F294FAEEB5A6CF56EFEE97858E24/aab9f5caae1e2ab642f495a535f392ea_1280.webp",
-      "publishedAt": "2026-09-15T23:53:00.000Z",
-      "fetchedAt": "2026-09-16T00:08:55.801Z"
+      "title": "完蛋！AI真的失控了？AI教父急喊：快比照「這武器」管制",
+      "url": "https://news.nextapple.com/international/20260917/03EF8C1953B58CC57FA6CB1553598DDF",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/03EF8C1953B58CC57FA6CB1553598DDF/5272509f74b22e1d661987874ef058bf_1280.webp",
+      "publishedAt": "2026-09-16T23:39:35.000Z",
+      "fetchedAt": "2026-09-17T00:19:11.318Z"
     }
   ]
 }
