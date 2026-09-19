@@ -1,126 +1,126 @@
 {
-  "date": "2026-09-18",
-  "updatedAt": "2026-09-18T00:05:18.850Z",
+  "date": "2026-09-19",
+  "updatedAt": "2026-09-19T00:10:08.524Z",
   "news": [
     {
-      "id": "fb158fe10621aa76",
+      "id": "68a77557515d7e22",
       "source": "遠見",
       "category": "國際",
-      "title": "美台密推的「地獄景象」是什麼？《經濟學人》：台灣無人載具產能不足成隱憂",
-      "url": "https://www.gvm.com.tw/article/133101",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20220825/114209.jpg",
-      "publishedAt": "2026-09-17T08:17:00.000Z",
-      "fetchedAt": "2026-09-18T00:05:18.850Z"
+      "title": "日本央行升息影響？政策利率升至1.25%創31年新高，在日買房有衝擊？",
+      "url": "https://www.gvm.com.tw/article/133116",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260604/233427.jpg",
+      "publishedAt": "2026-09-18T03:56:00.000Z",
+      "fetchedAt": "2026-09-19T00:10:08.524Z"
     },
     {
-      "id": "909f16eb8cd33076",
+      "id": "d4f0e648f96dc8d1",
       "source": "遠見",
       "category": "AI／科技",
-      "title": "華邦電豪砸現金354億收購英飛凌NOR Flash業務！可望穩居全球龍頭",
-      "url": "https://www.gvm.com.tw/article/133087",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20181003/46225_04.jpg",
-      "publishedAt": "2026-09-17T04:14:00.000Z",
-      "fetchedAt": "2026-09-18T00:05:18.850Z"
+      "title": "iPhone 18 Pro開賣！三大電信誰還有零元機方案？",
+      "url": "https://www.gvm.com.tw/article/133131",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260918/241340.jpg",
+      "publishedAt": "2026-09-18T08:42:00.000Z",
+      "fetchedAt": "2026-09-19T00:10:08.524Z"
     },
     {
-      "id": "91485bec0dd5c2c2",
+      "id": "979d1388cb5651aa",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "新光三越入主北車只是第一步！力拚重返店王寶座，吳昕陽拋「樞紐經濟」是什麼？",
-      "url": "https://www.gvm.com.tw/article/133100",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260917/241211.jpg",
-      "publishedAt": "2026-09-17T07:55:00.000Z",
-      "fetchedAt": "2026-09-18T00:05:18.850Z"
+      "title": "台股大漲892點重返47000點大關！專家：後續觀察3指標",
+      "url": "https://www.gvm.com.tw/article/133125",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20250414/201146.jpg",
+      "publishedAt": "2026-09-18T07:56:00.000Z",
+      "fetchedAt": "2026-09-19T00:10:08.524Z"
     },
     {
-      "id": "c86565974abc0e4d",
+      "id": "ef8bda9447cdf1f8",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "生病、失能、傳承的人生課題，老後生活誰來接住？ 中國信託銀行為不同家庭型態提出安心解方",
-      "url": "https://www.gvm.com.tw/article/132692",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260910/240692.jpg",
-      "publishedAt": "2026-09-17T16:00:00.000Z",
-      "fetchedAt": "2026-09-18T00:05:18.850Z"
+      "title": "82歲走路快到同事跟不上！張淑芬分享凍齡又快樂的3個功課",
+      "url": "https://www.gvm.com.tw/article/133072",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20221215/126496.jpg",
+      "publishedAt": "2026-09-18T23:00:00.000Z",
+      "fetchedAt": "2026-09-19T00:10:08.524Z"
     },
     {
-      "id": "6d3ef81110d70931",
+      "id": "46d954e2f3055f49",
       "source": "壹蘋",
       "category": "國際",
-      "title": "壹蘋派生活美語　天才神秘會社 I：謎屋的考驗",
-      "url": "https://news.nextapple.com/international/20260918/EB6D4E2B247E0FF2F0705B4AD2197CD3",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/EB6D4E2B247E0FF2F0705B4AD2197CD3/24a4e37dd4ee62e22cc3886b7d746c32_1280.webp",
-      "publishedAt": "2026-09-18T00:00:00.000Z",
-      "fetchedAt": "2026-09-18T00:05:18.850Z"
+      "title": "格陵蘭跪了！川普取得「永久控制權」：美國敵人再也進不去",
+      "url": "https://news.nextapple.com/international/20260919/6C0F386332CC3D62F89F4A5EB8920A79",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/6C0F386332CC3D62F89F4A5EB8920A79/e76015493c95a902fb094091034fb223_1280.webp",
+      "publishedAt": "2026-09-18T23:52:17.000Z",
+      "fetchedAt": "2026-09-19T00:10:08.524Z"
     },
     {
-      "id": "0787bcf491c991e6",
+      "id": "f82b2f9603428e87",
       "source": "壹蘋",
       "category": "生活",
-      "title": "台北這區「老房不老派」被讚超美！網：房價就排除很多人",
-      "url": "https://news.nextapple.com/life/20260918/2A7A09C4789893B77763ACB902D5ADD4",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/2A7A09C4789893B77763ACB902D5ADD4/59c6045d24ed76607c33003f3bd460c8_1280.webp",
-      "publishedAt": "2026-09-17T22:59:00.000Z",
-      "fetchedAt": "2026-09-18T00:05:18.850Z"
+      "title": "12星座最強運勢｜水瓶創新獲讚　魔羯筋骨痠痛　獅子投資一頭熱",
+      "url": "https://news.nextapple.com/life/20260919/0B2362ECEBF34F80FD50E730BAD41BBA",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/0B2362ECEBF34F80FD50E730BAD41BBA/90f239d419628a994e89ee8b9c804470_1280.webp",
+      "publishedAt": "2026-09-18T22:56:00.000Z",
+      "fetchedAt": "2026-09-19T00:10:08.524Z"
     },
     {
-      "id": "6ecdd8e29d14f3b7",
+      "id": "dd372251966cae85",
       "source": "壹蘋",
       "category": "社會",
-      "title": "超商視障女咆哮遭網暴　友揭真相「等超過30分！」店長道歉了",
-      "url": "https://news.nextapple.com/local/20260918/5135A17CCBD8346AC5A862D37EBEB5B2",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/5135A17CCBD8346AC5A862D37EBEB5B2/edad2d6feb6866e20e06da72c3f0052f_1280.webp",
-      "publishedAt": "2026-09-17T23:48:01.000Z",
-      "fetchedAt": "2026-09-18T00:05:18.850Z"
+      "title": "砸車窗毀車門連續竊盜！　67歲賊失風竟狠踹見義勇為騎士頭臉強盜機車",
+      "url": "https://news.nextapple.com/local/20260919/891723B12B5715FEFD494C8957A8D983",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/891723B12B5715FEFD494C8957A8D983/d5af0966d627581ca425a2d042a9ed99_1280.webp",
+      "publishedAt": "2026-09-18T16:01:00.000Z",
+      "fetchedAt": "2026-09-19T00:10:08.524Z"
     },
     {
-      "id": "c767fd03e0898afd",
+      "id": "d07fc05522e64f6e",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "中秋烤肉感情也升溫　3星座月圓夜秒變發電機",
-      "url": "https://news.nextapple.com/entertainment/20260918/B48C9571FB80F5AA1EAC2527AAEB621D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/B48C9571FB80F5AA1EAC2527AAEB621D/e280ea5033d43b8082f0f9b7df3cbb96_1280.webp",
-      "publishedAt": "2026-09-17T16:04:00.000Z",
-      "fetchedAt": "2026-09-18T00:05:18.850Z"
+      "title": "小S開箱女兒自創品牌新品！戴上巨星款帽子又說像卡車司機",
+      "url": "https://news.nextapple.com/entertainment/20260919/F8A2A57EA29E082A567EE6C97E3DED00",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/F8A2A57EA29E082A567EE6C97E3DED00/05f30de0f5bd8190ca19e32ed4d99d6e_1280.webp",
+      "publishedAt": "2026-09-18T16:03:00.000Z",
+      "fetchedAt": "2026-09-19T00:10:08.524Z"
     },
     {
-      "id": "1a49f78130f0a719",
+      "id": "ca9e16e3871b1caa",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "Sony首度聯名Hello Kitty　手機耳機限量登場",
-      "url": "https://news.nextapple.com/aitech/20260917/4AF0C0CB1A095E623F64D284D846F7D4",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/4AF0C0CB1A095E623F64D284D846F7D4/5403f518d35c1a041bd9ce7a9f04be56_1280.webp",
-      "publishedAt": "2026-09-17T10:32:58.000Z",
-      "fetchedAt": "2026-09-18T00:05:18.850Z"
+      "title": "5G應用進駐馬祖　三大電信秀AI文化智慧醫療與教育",
+      "url": "https://news.nextapple.com/aitech/20260918/E6B248613BD88ACA588D96DD100F8955",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/E6B248613BD88ACA588D96DD100F8955/1f441e4df77a5961c461ac4b7434fa3b_1280.webp",
+      "publishedAt": "2026-09-18T10:53:17.000Z",
+      "fetchedAt": "2026-09-19T00:10:08.524Z"
     },
     {
-      "id": "b80ac32c91000efd",
+      "id": "1bd5a798d378f2c2",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "美股大反攻「6周單日最佳」　台積電ADR飆3%！台指期夜盤噴701點",
-      "url": "https://news.nextapple.com/finance/20260918/852FA6DBB18CF7E814A1D9B71973F134",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/852FA6DBB18CF7E814A1D9B71973F134/7383cdb0cf38d7586138c07d4c383b06_1280.webp",
-      "publishedAt": "2026-09-17T23:15:54.000Z",
-      "fetchedAt": "2026-09-18T00:05:18.850Z"
+      "title": "美股震盪！費半收盤強彈近3%　台積電ADR沾光",
+      "url": "https://news.nextapple.com/finance/20260919/484723BF847BEB2CAD258AC98074FC67",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/484723BF847BEB2CAD258AC98074FC67/0f59095e886fd1ed5839cb1bfda33e5a_1280.webp",
+      "publishedAt": "2026-09-18T23:18:19.000Z",
+      "fetchedAt": "2026-09-19T00:10:08.524Z"
     },
     {
-      "id": "4eea888fc198e623",
+      "id": "a65965df6b357918",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "點出洋流、韓流2大相似處　黃暐瀚曝他被嚴重小看「不容忽視」",
-      "url": "https://news.nextapple.com/politics/20260918/052DB25808262BECCD0F6D31F595098D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/052DB25808262BECCD0F6D31F595098D/59283dff905aa6a07f31bba8673c4d0c_1280.webp",
-      "publishedAt": "2026-09-17T23:42:53.000Z",
-      "fetchedAt": "2026-09-18T00:05:18.850Z"
+      "title": "影片｜扯！韓國亞運曲棍球賽前竟播「北韓國歌」　球員嚇到做「一動作」",
+      "url": "https://news.nextapple.com/sports/20260919/BC65ABC560CEC56FA812DE1BE07C0910",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/BC65ABC560CEC56FA812DE1BE07C0910/2e2e4844cb4f8b60fa2f94a5bd683817_1280.webp",
+      "publishedAt": "2026-09-18T23:36:31.000Z",
+      "fetchedAt": "2026-09-19T00:10:08.524Z"
     },
     {
-      "id": "e0cf8ece3de334a4",
+      "id": "16372a3933d4cb07",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "被士官長喊小可愛　人妻教練羞回「又濕答答了！」鹹濕對話曝光",
-      "url": "https://news.nextapple.com/local/20260918/A9013CDEF4C3B1202EB0FE9BA5B6A4B0",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/A9013CDEF4C3B1202EB0FE9BA5B6A4B0/67d63d382d0ebf73474c03ee23993ba7_1280.webp",
-      "publishedAt": "2026-09-17T23:40:19.000Z",
-      "fetchedAt": "2026-09-18T00:05:18.850Z"
+      "title": "名古屋亞運今晚開幕！台灣以「T」非「C」進場　掌旗官有驚喜",
+      "url": "https://news.nextapple.com/sports/20260919/C757DDDAC4FBCE388B37E981FB13CC4F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/C757DDDAC4FBCE388B37E981FB13CC4F/f6183b7166780e9d9f9cf575cab54250_1280.webp",
+      "publishedAt": "2026-09-18T23:22:34.000Z",
+      "fetchedAt": "2026-09-19T00:10:08.524Z"
     }
   ]
 }
