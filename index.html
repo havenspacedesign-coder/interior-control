@@ -732,6 +732,13 @@ function restoreLocalPreviewState(){
 }
 function localPath(ref){return String(ref?.path||'').replace(/^\/+|\/+$/g,'');}
 function localParts(ref){const p=localPath(ref).split('/');return{collection:p[0]||'',id:p.slice(1).join('/')};}
+// A stage title is user-visible text, not a Firestore path. Escape only the
+// characters that could turn it into a different document path while keeping
+// existing document IDs unchanged.
+function bibleStorageId(stage){return String(stage).replace(/%/g,'%25').replace(/\//g,'%2F');}
+function bibleStageFromStorageId(id){return String(id).replace(/%2F/g,'/').replace(/%25/g,'%');}
+function bibleStageDoc(stage){return doc(db,'bible',bibleStorageId(stage));}
+function bibleStageData(stage,data){return{...data,stageTitle:stage};}
 function localFindArray(collectionName,id){
   const arr=collectionName==='projects'?S.projects:collectionName==='members'?S.members:collectionName==='homeNotes'?S.homeNotes:collectionName==='recommendations'?S.recommendations:collectionName==='recommendationCategories'?S.recommendationCategories:collectionName==='recommendationRegions'?S.recommendationRegions:collectionName==='growthItems'?S.growthItems:collectionName==='announcements'?S.announcements:collectionName==='userTodos'?S.userTodos:collectionName==='tradeCategories'?S.tradeCategories:collectionName==='tradeVendors'?S.tradeVendors:collectionName==='otherVendorCategories'?S.otherVendorCategories:collectionName==='otherVendors'?S.otherVendors:null;
   if(!arr)return null;
@@ -740,7 +747,7 @@ function localFindArray(collectionName,id){
 function localRead(collectionName,id){
   if(['projects','members','homeNotes','recommendations','recommendationCategories','recommendationRegions','growthItems','announcements','userTodos','tradeCategories','tradeVendors','otherVendorCategories','otherVendors'].includes(collectionName))return localFindArray(collectionName,id);
   if(collectionName==='checks')return{items:S.checks[id]||[]};
-  if(collectionName==='bible')return id==='orderConfig'?{order:S.bibleOrder}:S.bible[id];
+  if(collectionName==='bible')return id==='orderConfig'?{order:S.bibleOrder}:S.bible[bibleStageFromStorageId(id)];
   if(collectionName==='dailyLogs')return S.dailyLogs[id];
   if(collectionName==='meetingLogs')return S.meetingLogs[id];
   if(collectionName==='globalNotes')return S.globalNotes[id];
@@ -767,7 +774,7 @@ function localWrite(collectionName,id,data,merge=false){
   }else if(collectionName==='checks')S.checks[id]=localClone(Array.isArray(value)?value:(value.items||[]));
   else if(collectionName==='bible'){
     if(id==='orderConfig')S.bibleOrder=[...(value.order||[])];
-    else S.bible[id]=merge?{...(S.bible[id]||{}),...value}:value;
+    else{const stage=bibleStageFromStorageId(id);S.bible[stage]=merge?{...(S.bible[stage]||{}),...value}:value;}
   }else if(collectionName==='dailyLogs')S.dailyLogs[id]=merge?{...(S.dailyLogs[id]||{}),...value}:value;
   else if(collectionName==='meetingLogs')S.meetingLogs[id]=merge?{...(S.meetingLogs[id]||{}),...value}:value;
   else if(collectionName==='globalNotes')S.globalNotes[id]=merge?{...(S.globalNotes[id]||{}),...value}:value;
@@ -788,7 +795,7 @@ function localDelete(collectionName,id){
   else if(collectionName==='homeNotes')S.homeNotes=S.homeNotes.filter(x=>String(x.id)!==id&&String(x.uid)!==id);
   else if(collectionName==='userTodos')S.userTodos=S.userTodos.filter(x=>String(x.id)!==id);
   else if(collectionName==='checks')delete S.checks[id];
-  else if(collectionName==='bible'){delete S.bible[id];S.bibleOrder=S.bibleOrder.filter(x=>x!==id);}
+  else if(collectionName==='bible'){const stage=bibleStageFromStorageId(id);delete S.bible[stage];S.bibleOrder=S.bibleOrder.filter(x=>x!==stage);}
   else if(collectionName==='dailyLogs')delete S.dailyLogs[id];
   else if(collectionName==='meetingLogs')delete S.meetingLogs[id];
   else if(collectionName==='globalNotes')delete S.globalNotes[id];
@@ -830,7 +837,7 @@ async function getDocs(ref){
   else if(collectionName==='homeNotes')entries=S.homeNotes.map(x=>[x.id||x.uid,x]);
   else if(collectionName==='userTodos')entries=S.userTodos.map(x=>[x.id,x]);
   else if(collectionName==='checks')entries=Object.entries(S.checks).map(([id,items])=>[id,{items}]);
-  else if(collectionName==='bible')entries=Object.entries(S.bible);
+  else if(collectionName==='bible')entries=Object.entries(S.bible).map(([stage,value])=>[bibleStorageId(stage),value]);
   else if(collectionName==='projectTradeSelections')entries=Object.entries(S.projectTradeSelections).map(([id,categories])=>[id,{categories}]);
   else if(['recommendations','recommendationCategories','recommendationRegions','growthItems','announcements','tradeCategories','tradeVendors','otherVendorCategories','otherVendors'].includes(collectionName))entries=S[collectionName].map(x=>[x.id,x]);
   return{docs:entries.map(([id,value])=>({id,ref:doc(db,collectionName,id),data:()=>localClone(value)}))};
@@ -851,6 +858,7 @@ const MEETING_ROWS=[
   {id:'meet4',name:'其他'}
 ];
 let activePanel='home',calMode='month',monthOffset=0,selectedTag=null;
+const progressMonthScrollPositions={};
 let activeBibleStage=null,activeBibleWs=null,bibleView='edit',dragSrc=null,dragModeOn=false,bibleItemDrag=null;
 let stageDragInProgress=false,pendingBibleRender=false;
 let expandedBibleItems={};
@@ -967,6 +975,10 @@ function getMonthDates(){
   const daysInMonth=new Date(y,m+1,0).getDate();
   return Array.from({length:daysInMonth},(_,i)=>new Date(y,m,i+1));
 }
+function progressMonthKey(offset=monthOffset){const base=today(),target=new Date(base.getFullYear(),base.getMonth()+offset,1);return`${target.getFullYear()}-${String(target.getMonth()+1).padStart(2,'0')}`;}
+function defaultProgressScrollLeft(offset=monthOffset){return offset===0?Math.max(0,(today().getDate()-2)*180):0;}
+function rememberProgressMonthScroll(){if(calMode==='month')progressMonthScrollPositions[progressMonthKey()]=captureProgressHScroll();}
+function progressScrollLeftForMonth(offset=monthOffset){const saved=progressMonthScrollPositions[progressMonthKey(offset)];return Number.isFinite(saved)?saved:defaultProgressScrollLeft(offset);}
 
 function getBibleStages(){
   if(S.bibleOrder&&S.bibleOrder.length)return[...new Set(S.bibleOrder)];
@@ -1325,7 +1337,7 @@ function initListeners(){
   onSnapshot(collection(db,'checks'),snap=>{S.checks={};snap.docs.forEach(d=>{S.checks[d.id]=d.data().items||[]});renderAfterCheckSync();});
   onSnapshot(collection(db,'bible'),snap=>{
     S.bible={};S.bibleOrder=[];
-    snap.docs.forEach(d=>{if(d.id==='orderConfig'){S.bibleOrder=[...new Set(d.data().order||[])];}else{S.bible[d.id]=d.data();}});
+    snap.docs.forEach(d=>{if(d.id==='orderConfig'){S.bibleOrder=[...new Set(d.data().order||[])];}else{const data=d.data(),stage=data.stageTitle||bibleStageFromStorageId(d.id);S.bible[stage]=data;}});
     const allStages=Object.keys(S.bible).filter(k=>k!=='orderConfig');
     allStages.forEach(s=>{if(!S.bibleOrder.includes(s))S.bibleOrder.push(s);});
     renderActive();
@@ -2660,7 +2672,7 @@ function renderProgress(force){
     return;
   }
   pendingProgressRender=false;
-  const preservedHScrollLeft=captureProgressHScroll();
+  const preservedHScrollLeft=calMode==='month'?progressScrollLeftForMonth():captureProgressHScroll();
   const el=$('panel-progress');
   const weekDays=getWeekDates();
   function shouldShow(p){
@@ -4484,6 +4496,7 @@ function syncHScrollPosition(source,left){
   const next=Math.max(0,Math.min(max,left));
   if(Math.abs(source.scrollLeft-next)>.5)source.scrollLeft=next;
   lastHScrollLeft=next;
+  if(calMode==='month')progressMonthScrollPositions[progressMonthKey()]=next;
   updateMobileProgressDateHeader(next);
   hscrollSyncSource=source;
   hscrollSyncTarget=next;
@@ -4504,6 +4517,7 @@ function setHorizontalScrollPosition(scroller,left){
   if(Math.abs(scroller.scrollLeft-next)>.5)scroller.scrollLeft=next;
   if(scroller.classList.contains('hscroll-sync')){
     lastHScrollLeft=next;
+    if(calMode==='month')progressMonthScrollPositions[progressMonthKey()]=next;
     updateMobileProgressDateHeader(next);
   }
   return next;
@@ -4516,6 +4530,7 @@ document.addEventListener('scroll',function(e){
   }
   if(el.classList&&el.classList.contains('progress-horizontal-viewport')){
     lastHScrollLeft=el.scrollLeft;
+    if(calMode==='month')progressMonthScrollPositions[progressMonthKey()]=el.scrollLeft;
     updateMobileProgressDateHeader(el.scrollLeft);
     if(MOBILE_SCROLL_DEBUG){
       clearTimeout(mobileScrollDebugStopTimer);
@@ -4967,11 +4982,13 @@ window.openDatePicker=function(){
 }
 window.jumpToDate=async function(dateStr){
   if(!dateStr)return;
+  rememberProgressMonthScroll();
   const target=new Date(dateStr+'T00:00:00');
-  lastHScrollLeft=0;
   const base=today();
   monthOffset=(target.getFullYear()-base.getFullYear())*12+(target.getMonth()-base.getMonth());
-  lastHScrollLeft=Math.max(0,(monthOffset===0?base.getDate()-2:target.getDate()-3)*180);
+  const targetKey=progressMonthKey();
+  if(!Number.isFinite(progressMonthScrollPositions[targetKey]))progressMonthScrollPositions[targetKey]=Math.max(0,(monthOffset===0?base.getDate()-2:target.getDate()-3)*180);
+  lastHScrollLeft=progressMonthScrollPositions[targetKey];
   await syncAllRecurringSchedules(fmtDay(new Date(target.getFullYear(),target.getMonth()+1,0)));
   renderProgress();
 }
@@ -5304,7 +5321,7 @@ window.bibleItemDrop=async function(event,stage,phase,pathStr,parentPath){
   const siblings=bibleSiblingArray(arr,parent);if(!Number.isInteger(from)||!Number.isInteger(to)||from<0||to<0||from>=siblings.length||to>=siblings.length)return;
   const updated={...(S.bible[stage]||{before:[],during:[],after:[]}),[phase]:reorderBibleSiblings(arr,parent,from,to,placeBefore)};
   bibleItemDrag=null;rememberBibleScrollPosition(2);S.bible=Object.assign({},S.bible,{[stage]:updated});renderBible();setSyncing();
-  try{await setDoc(doc(db,'bible',stage),updated);setSynced();}catch(err){alert('排序存檔失敗：'+err.message);setSynced();}
+  try{await setDoc(bibleStageDoc(stage),bibleStageData(stage,updated));setSynced();}catch(err){alert('排序存檔失敗：'+err.message);setSynced();}
 }
 window.bibleItemDragEnd=function(){clearBibleItemDragClasses();bibleItemDrag=null;}
 window.toggleBibleSubItems=function(stage,phase,pathStr){
@@ -5331,7 +5348,7 @@ window.saveBibleNodeText=async function(stage,phase,pathStr,text){
   // 保留目前閱讀位置，並涵蓋存檔後同步觸發的第二次重新渲染。
   rememberBibleScrollPosition(2);S.bible=Object.assign({},S.bible,{[stage]:updated});
   renderBible();
-  setSyncing();await setDoc(doc(db,'bible',stage),updated);setSynced();
+  setSyncing();await setDoc(bibleStageDoc(stage),bibleStageData(stage,updated));setSynced();
 }
 window.addBibleItem=async function(stage,phase){
   if(!isAdmin())return;
@@ -5340,7 +5357,7 @@ window.addBibleItem=async function(stage,phase){
   const data=S.bible[stage]||{before:[],during:[],after:[]};
   const updated={...data,[phase]:[...(data[phase]||[]),text]};
   rememberBibleScrollPosition();
-  setSyncing();await setDoc(doc(db,'bible',stage),updated);inp.value='';setSynced();
+  setSyncing();await setDoc(bibleStageDoc(stage),bibleStageData(stage,updated));inp.value='';setSynced();
 }
 window.addBibleChildAtPath=async function(stage,phase,pathStr){
   if(!isAdmin())return;
@@ -5355,7 +5372,7 @@ window.addBibleChildAtPath=async function(stage,phase,pathStr){
   expandedBibleItems[stage+'|'+phase+'|'+pathStr]=false;
   rememberBibleScrollPosition(2);
   renderBible();
-  setSyncing();await setDoc(doc(db,'bible',stage),updated);setSynced();
+  setSyncing();await setDoc(bibleStageDoc(stage),bibleStageData(stage,updated));setSynced();
 }
 window.confirmDelBibleNode=function(stage,phase,pathStr,text){
   rememberBibleDeleteModalScrollPosition();
@@ -5376,7 +5393,7 @@ window.delBibleNodeAtPath=async function(stage,phase,pathStr){
   const removedCount=1+flatPhaseCount(normalizeBibleItem(getNodeAtPath(arr,path)).subs);
   const newArr=removeAtPath(arr,path);
   // 刪除同步會重繪清單，保留當前閱讀位置至同步完成。
-  rememberBibleScrollPosition(2);setSyncing();await setDoc(doc(db,'bible',stage),{...data,[phase]:newArr});
+  rememberBibleScrollPosition(2);setSyncing();await setDoc(bibleStageDoc(stage),bibleStageData(stage,{...data,[phase]:newArr}));
   const snap=await getDocs(collection(db,'checks'));
   const batch=writeBatch(db);
   snap.docs.filter(d=>d.id.endsWith('_'+stage)).forEach(d=>{
@@ -5453,7 +5470,7 @@ window.importWordBible=async function(){
   setSyncing();
   try{
     for(const stage of toImport){
-      await setDoc(doc(db,'bible',stage),WORD_BIBLE_IMPORT[stage]);
+      await setDoc(bibleStageDoc(stage),bibleStageData(stage,WORD_BIBLE_IMPORT[stage]));
     }
     const order=[...getBibleStages(),...toImport];
     await setDoc(doc(db,'bible','orderConfig'),{order});
@@ -5468,7 +5485,7 @@ window.toggleStageEstimate=async function(stage){
   S.bible=Object.assign({},S.bible,{[stage]:updated});
   renderBible();
   setSyncing();
-  try{await setDoc(doc(db,'bible',stage),updated);setSynced();}
+  try{await setDoc(bibleStageDoc(stage),bibleStageData(stage,updated));setSynced();}
   catch(err){alert('設定失敗：'+err.message);setSynced();}
 }
 window.startEditBibleStageTitle=function(stage,el){
@@ -5491,7 +5508,7 @@ window.saveBiblePhaseTitle=async function(stage,phase,newName,canceled=false){
   S.bible=Object.assign({},S.bible,{[stage]:updated});
   renderBible();
   setSyncing();
-  try{await setDoc(doc(db,'bible',stage),updated);setSynced();}
+  try{await setDoc(bibleStageDoc(stage),bibleStageData(stage,updated));setSynced();}
   catch(err){alert('階段名稱儲存失敗：'+err.message);setSynced();}
 }
 window.saveBibleStageTitle=async function(oldName,newName){
@@ -5508,8 +5525,8 @@ window.saveBibleStageTitle=async function(oldName,newName){
   renderBible();
   setSyncing();
   try{
-    await setDoc(doc(db,'bible',newName),data);
-    await deleteDoc(doc(db,'bible',oldName));
+    await setDoc(bibleStageDoc(newName),bibleStageData(newName,data));
+    await deleteDoc(bibleStageDoc(oldName));
     await setDoc(doc(db,'bible','orderConfig'),{order});
     // Migrate anything keyed off the old stage name so nothing silently
     // detaches: per-project checklist progress, calendar chips, and the
@@ -5546,7 +5563,7 @@ window.addStage=async function(){
   const order=[...getBibleStages(),name];
   setSyncing();
   try{
-    await setDoc(doc(db,'bible',name),{before:[],during:[],after:[]});
+    await setDoc(bibleStageDoc(name),bibleStageData(name,{before:[],during:[],after:[]}));
     await setDoc(doc(db,'bible','orderConfig'),{order});
     activeBibleStage=name;closeMo();setSynced();
   }catch(err){alert('新增階段失敗：'+err.message);setSynced();}
@@ -5567,7 +5584,7 @@ window.deleteStage=async function(stage){
   const relinkTarget=findStageRelinkTarget(stage,order);
   setSyncing();
   try{
-    await deleteDoc(doc(db,'bible',stage));
+    await deleteDoc(bibleStageDoc(stage));
     await setDoc(doc(db,'bible','orderConfig'),{order});
     const snap=await getDocs(collection(db,'checks'));
     const batch=writeBatch(db);
@@ -6192,9 +6209,9 @@ window.showProjectDetail=function(projId){
 }
 window.setCalMode=function(m){calMode=m==='week'?'month':m;lastHScrollLeft=0;renderProgress();}
 window.changePeriod=async function(d){
+  rememberProgressMonthScroll();
   monthOffset+=d;
-  const base=today();
-  lastHScrollLeft=monthOffset===0?Math.max(0,(base.getDate()-2)*180):0;
+  lastHScrollLeft=progressScrollLeftForMonth();
   const visibleDays=getWeekDates();
   await syncAllRecurringSchedules(fmtDay(visibleDays[visibleDays.length-1]));
   renderProgress();
