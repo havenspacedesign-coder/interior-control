@@ -2329,7 +2329,7 @@ function renderDesign(){
   const handle=(key)=>editing?`<span class="col-resize" onmousedown="startColResize(event,'${key}')"></span>`:'';
   const dragW=editing?22:0,nameW=colW('name',150),budgetW=colW('budget',90),toggleW=blueCols.length?38:0,noteW=noteCol?colW('c'+cols.indexOf(noteCol),150):0;
   const freeze=(left,width,extra='',name=false)=>`class="design-freeze${name?' design-freeze-name':''}" style="width:${width}px;left:${left}px;${extra}"`;
-  const missingBlueCount=p=>blueCols.filter(c=>{const value=(p.designProgress||{})[c.key||c.name];return Array.isArray(value)?value.length===0:!String(value||'').trim();}).length;
+  const missingBlueCount=p=>blueCols.filter(c=>{const key=c.key||c.name,progress=p.designProgress||{},value=progress[key],customTags=progress[key+'__customTags'],hasCustomTags=Array.isArray(customTags)&&customTags.length>0;return Array.isArray(value)?value.length===0&&!hasCustomTags:!String(value||'').trim()&&!hasCustomTags;}).length;
   el.innerHTML=`
   <div class="flex-sb" style="margin-bottom:1rem;position:relative">
     <span style="font-size:14px;font-weight:500">設計進度 <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px">可打 # 連結施工寶典階段</span></span>
