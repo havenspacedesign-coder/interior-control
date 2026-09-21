@@ -1,16 +1,16 @@
 {
-  "date": "2026-09-20",
-  "updatedAt": "2026-09-20T00:04:16.253Z",
+  "date": "2026-09-21",
+  "updatedAt": "2026-09-21T00:07:51.056Z",
   "news": [
     {
-      "id": "b0211f2faf02b4be",
+      "id": "7bae28bb1c9770ac",
       "source": "遠見",
       "category": "國際",
-      "title": "解析》川普宣布取得格陵蘭永久安全控制權：一紙協議如何改寫北極安全與全球供應鏈？",
-      "url": "https://www.gvm.com.tw/article/133138",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260919/241396.jpg",
-      "publishedAt": "2026-09-19T10:48:00.000Z",
-      "fetchedAt": "2026-09-20T00:04:16.253Z"
+      "title": "世界末日躲哪裡可以活比較久？最新研究揭全球最安全國家",
+      "url": "https://www.gvm.com.tw/article/133117",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20230712/144985.jpg",
+      "publishedAt": "2026-09-20T03:00:00.000Z",
+      "fetchedAt": "2026-09-21T00:07:51.056Z"
     },
     {
       "id": "d41abc096f644c99",
@@ -20,17 +20,7 @@
       "url": "https://www.gvm.com.tw/article/133137",
       "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260919/241385.jpg",
       "publishedAt": "2026-09-19T10:21:00.000Z",
-      "fetchedAt": "2026-09-20T00:04:16.253Z"
-    },
-    {
-      "id": "979d1388cb5651aa",
-      "source": "遠見",
-      "category": "金融／產經",
-      "title": "台股大漲892點重返47000點大關！專家：後續觀察3指標",
-      "url": "https://www.gvm.com.tw/article/133125",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20250414/201146.jpg",
-      "publishedAt": "2026-09-18T07:56:00.000Z",
-      "fetchedAt": "2026-09-20T00:04:16.253Z"
+      "fetchedAt": "2026-09-21T00:07:51.056Z"
     },
     {
       "id": "c793dbb3c2be3616",
@@ -40,47 +30,57 @@
       "url": "https://www.gvm.com.tw/article/133115",
       "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260810/238206.jpg",
       "publishedAt": "2026-09-19T23:00:00.000Z",
-      "fetchedAt": "2026-09-20T00:04:16.253Z"
+      "fetchedAt": "2026-09-21T00:07:51.056Z"
     },
     {
-      "id": "ff82383a3bcd2c49",
+      "id": "b0211f2faf02b4be",
+      "source": "遠見",
+      "category": "國際",
+      "title": "解析》川普宣布取得格陵蘭永久安全控制權：一紙協議如何改寫北極安全與全球供應鏈？",
+      "url": "https://www.gvm.com.tw/article/133138",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260919/241396.jpg",
+      "publishedAt": "2026-09-19T10:48:00.000Z",
+      "fetchedAt": "2026-09-21T00:07:51.056Z"
+    },
+    {
+      "id": "b3319797c86eabaf",
       "source": "壹蘋",
       "category": "國際",
-      "title": "台灣珍奶征服美國！全美最大珍奶節登場　1.8萬人朝聖",
-      "url": "https://news.nextapple.com/international/20260920/BBF75E965384B2D62265297B21B7317B",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/BBF75E965384B2D62265297B21B7317B/8cb20ff1cd4c5bc73ddbcca17dce1fe8_1280.webp",
-      "publishedAt": "2026-09-19T23:52:04.000Z",
-      "fetchedAt": "2026-09-20T00:04:16.253Z"
+      "title": "壹蘋派生活美語　豬隊友退散！旅伴挑得好，出國沒煩惱",
+      "url": "https://news.nextapple.com/international/20260921/AB39BCB88AEC1B818E3CC63BBF6E692C",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/AB39BCB88AEC1B818E3CC63BBF6E692C/074fb71f2d69079a449f7b59d647691e_1280.webp",
+      "publishedAt": "2026-09-21T00:00:00.000Z",
+      "fetchedAt": "2026-09-21T00:07:51.056Z"
     },
     {
-      "id": "ce30c306a9ecc102",
+      "id": "cb9e54374caabca3",
       "source": "壹蘋",
       "category": "生活",
-      "title": "變天了！下週轉濕「這幾區迎大雨」　又有熱帶擾動",
-      "url": "https://news.nextapple.com/life/20260920/F7348BFBD2CD828DF592DDF4A947E3D4",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/F7348BFBD2CD828DF592DDF4A947E3D4/e5b79bfde14c504c9b018f050e1947d9_1280.webp",
-      "publishedAt": "2026-09-19T22:53:58.000Z",
-      "fetchedAt": "2026-09-20T00:04:16.253Z"
+      "title": "高中師對海鮮意淫PO上網　學生喊「為什麼這種人是我的老師」　校方回應了",
+      "url": "https://news.nextapple.com/life/20260921/695DAAD79CF4631B3DD38485FB85D9D8",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/695DAAD79CF4631B3DD38485FB85D9D8/eeab51330a5c69d55d3c439a55bad6fd_1280.webp",
+      "publishedAt": "2026-09-21T00:07:21.000Z",
+      "fetchedAt": "2026-09-21T00:07:51.056Z"
     },
     {
-      "id": "9122ae619de3f82d",
+      "id": "84ae2974b65bd602",
       "source": "壹蘋",
       "category": "社會",
-      "title": "人妻偷吃男同事！露骨私訊全被老公抓包　「濕到都流白色液體」",
-      "url": "https://news.nextapple.com/local/20260920/4770A35372744067A980C0333B05E8C2",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/4770A35372744067A980C0333B05E8C2/ba0450d15c02b62368081392c6622760_1280.webp",
-      "publishedAt": "2026-09-20T00:01:00.000Z",
-      "fetchedAt": "2026-09-20T00:04:16.253Z"
+      "title": "燒肉店大火9人傷　常客指問題疑是「醬汁」：好幾次差點燒起來",
+      "url": "https://news.nextapple.com/local/20260921/17BE9AF96245E5C6A1488FB24BAB38F7",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/17BE9AF96245E5C6A1488FB24BAB38F7/648edb85af59c047a59a8512de1fe1e2_1280.webp",
+      "publishedAt": "2026-09-20T23:12:31.000Z",
+      "fetchedAt": "2026-09-21T00:07:51.056Z"
     },
     {
-      "id": "c3ba2b1691a262d9",
+      "id": "3774bc20e13b9f75",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "多米多羅深夜對芝芝鞠躬道歉　認前任借住他家留下貼臉清涼照",
-      "url": "https://news.nextapple.com/entertainment/20260920/ECB204106D1409892BB1009BE9208411",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/ECB204106D1409892BB1009BE9208411/ba69df3302f510afd894f64e2f052e35_1280.webp",
-      "publishedAt": "2026-09-19T18:08:53.000Z",
-      "fetchedAt": "2026-09-20T00:04:16.253Z"
+      "title": "玉女歌手侯湘婷二連霸！超狂職務曝光　網驚：怎還這麼漂亮",
+      "url": "https://news.nextapple.com/entertainment/20260921/F411304014C1A1EB3749F7983A1A7154",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/F411304014C1A1EB3749F7983A1A7154/edded351fb11fb455c3122db388970fa_1280.webp",
+      "publishedAt": "2026-09-20T23:58:00.000Z",
+      "fetchedAt": "2026-09-21T00:07:51.056Z"
     },
     {
       "id": "6a1503e2fd04fc45",
@@ -90,37 +90,37 @@
       "url": "https://news.nextapple.com/aitech/20260919/2BB086007BD20DCFC732F9D37A9EBAA3",
       "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/2BB086007BD20DCFC732F9D37A9EBAA3/999073254a96b488955b315953a8b686_1280.webp",
       "publishedAt": "2026-09-19T08:49:26.000Z",
-      "fetchedAt": "2026-09-20T00:04:16.253Z"
+      "fetchedAt": "2026-09-21T00:07:51.056Z"
     },
     {
-      "id": "feb121faaf52632a",
+      "id": "0b6512b4b71b7031",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "黃仁勳：台灣是全球AI核心　「科技生態系成就輝達」",
-      "url": "https://news.nextapple.com/finance/20260919/C1088B2B00AE4C1E8DA0FEFC8CD77143",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/C1088B2B00AE4C1E8DA0FEFC8CD77143/1095b96a76662ffc3eed467ece84500c_1280.webp",
-      "publishedAt": "2026-09-19T10:42:55.000Z",
-      "fetchedAt": "2026-09-20T00:04:16.253Z"
+      "title": "三重燒肉大火「8顧客1員工」跳樓傷　築間急發重訊",
+      "url": "https://news.nextapple.com/finance/20260921/7BDCDD82C08129787B65F69540ED0790",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/7BDCDD82C08129787B65F69540ED0790/324d0326c97f5cf818eded0710e0df96_1280.webp",
+      "publishedAt": "2026-09-20T22:34:21.000Z",
+      "fetchedAt": "2026-09-21T00:07:51.056Z"
     },
     {
-      "id": "268fc127ed1b05d3",
+      "id": "7e7279b1bfdd3cb7",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "亞運驚見CHANEL名模！180公分女排國手超吸睛　竟還是學霸",
-      "url": "https://news.nextapple.com/sports/20260920/9A26C0C1D38D599E0DF141590FE8876F",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/9A26C0C1D38D599E0DF141590FE8876F/df6ee0f4e95343154bf7a80652a37dd2_1280.webp",
-      "publishedAt": "2026-09-19T22:51:13.000Z",
-      "fetchedAt": "2026-09-20T00:04:16.253Z"
+      "title": "陳佩琪怨台灣人不聲援！她傻眼：容積率灌840％、小草錢去哪？",
+      "url": "https://news.nextapple.com/politics/20260921/74C36936790CA2A814FDB6FDA7E45209",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/74C36936790CA2A814FDB6FDA7E45209/197881b7345d18731d926e4bc87e886f_1280.webp",
+      "publishedAt": "2026-09-20T23:27:50.000Z",
+      "fetchedAt": "2026-09-21T00:07:51.056Z"
     },
     {
-      "id": "47e28cc64ba152fd",
+      "id": "26621bf8aa24d3dd",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "「你記者證失效了！」CNN等3家媒體被擋白宮外　專家怒轟公然違憲",
-      "url": "https://news.nextapple.com/international/20260920/4D1E803758B55650289A5E45EAC6C3F3",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/4D1E803758B55650289A5E45EAC6C3F3/7d6ae45fc8446858c87644f2adf9b1bc_1280.webp",
-      "publishedAt": "2026-09-19T22:50:39.000Z",
-      "fetchedAt": "2026-09-20T00:04:16.253Z"
+      "title": "亞運抗韓出奇兵！台灣推20歲業餘投手扛先發　韓國嚇一跳「猜錯人了」",
+      "url": "https://news.nextapple.com/sports/20260921/68946848A19FF9742C9615D6E45A612D",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/68946848A19FF9742C9615D6E45A612D/f793978fa79ece23a59b6488d36ad9fe_1280.webp",
+      "publishedAt": "2026-09-20T23:00:16.000Z",
+      "fetchedAt": "2026-09-21T00:07:51.056Z"
     }
   ]
 }
