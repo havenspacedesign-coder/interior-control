@@ -2410,10 +2410,12 @@ function renderDesignCell(p,col){
   if(col.kind==='member'){
     const memberIds=Array.isArray(val)?val:(val?[val]:[]);
     const selectedMembers=memberIds.map(uid=>S.members.find(x=>x.uid===uid)).filter(m=>m&&m.role!=='manager');
+    const customTags=Array.isArray(dp[colKey+'__customTags'])?dp[colKey+'__customTags']:[];
     return`<td style="text-align:center">
       <div style="display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;padding:3px">
         ${selectedMembers.map(m=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--pl);color:var(--pd);padding:3px 9px;border-radius:12px;font-size:12px">${memberDisplayName(m)}<span onclick="dcToggleMember('${p.id}','${colKey}','${m.uid}',false)" style="cursor:pointer;font-weight:700">×</span></span>`).join('')}
-        <span class="task-tag-btn" aria-label="標記人員" title="標記人員" onmouseenter="dcOpenPicker(event,'${p.id}','${colKey}')" onmouseleave="dcScheduleClose('${p.id}','${colKey}')" style="width:20px;height:20px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px;font-size:14px;line-height:1;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:50%;padding:0">+</span>
+        ${customTags.map((tag,index)=>`<span style="display:inline-flex;align-items:center;gap:4px;background:#f1efe8;color:var(--text2);padding:3px 9px;border-radius:12px;font-size:12px">${escAttr(tag)}<span onclick="dcRemoveCustomTag('${p.id}','${colKey}',${index})" style="cursor:pointer;font-weight:700">×</span></span>`).join('')}
+        <span class="task-tag-btn" aria-label="標記人員" title="標記人員" onclick="event.stopPropagation();dcOpenPicker(event,'${p.id}','${colKey}')" onmouseenter="dcOpenPicker(event,'${p.id}','${colKey}')" onmouseleave="dcScheduleClose('${p.id}','${colKey}')" style="width:20px;height:20px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px;font-size:14px;line-height:1;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:50%;padding:0">+</span>
       </div>
       <div class="pn-mention-menu" id="dc-mention-${p.id}-${colKey}" style="display:none" onmouseenter="mCancelCloseMention()" onmouseleave="dcScheduleClose('${p.id}','${colKey}')"></div>
     </td>`;
@@ -2538,8 +2540,11 @@ function dcRenderMemberPicker(projId,colName){
   menuEl.innerHTML=markableMembersList().map(function(m){
     const checked=selected.includes(m.uid);
     return'<label class="design-member-picker-row"><input type="checkbox" '+(checked?'checked':'')+' onchange="dcToggleMember(\''+projId+'\',\''+colName+'\',\''+m.uid+'\',this.checked)"><span>'+memberDisplayName(m)+'</span></label>';
-  }).join('');
+  }).join('')+'<button type="button" class="design-member-picker-row" style="width:100%;border:0;border-top:1px solid var(--border);text-align:left;font:inherit;color:var(--purple);cursor:pointer" onmousedown="event.preventDefault();mCancelCloseMention()" onclick="dcShowCustomTagInput(\''+projId+'\',\''+colName+'\')">＋ 自訂標記</button>';
 }
+window.dcShowCustomTagInput=function(projId,colName){const menu=document.getElementById('dc-mention-'+projId+'-'+colName);if(!menu||menu.querySelector('.dc-custom-tag-input'))return;const row=document.createElement('div');row.className='dc-custom-tag-input';row.style.cssText='display:flex;gap:5px;padding:7px;border-top:1px solid var(--border)';row.innerHTML=`<input type="text" placeholder="輸入文字…" style="min-width:0;flex:1;padding:5px;border:1px solid var(--border);border-radius:4px;font:inherit"><button type="button" class="btn btn-sm btn-p">加入</button>`;const input=row.querySelector('input'),save=()=>{const value=input.value.trim();if(value)dcAddCustomTag(projId,colName,value);};row.querySelector('button').onclick=save;input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();save();}if(e.key==='Escape'){row.remove();}};menu.appendChild(row);input.focus();};
+window.dcAddCustomTag=async function(projId,colName,value){const tag=String(value||'').trim(),proj=S.projects.find(p=>p.id===projId);if(!proj||!tag)return;const key=colName+'__customTags',tags=Array.isArray(proj.designProgress?.[key])?[...proj.designProgress[key]]:[];if(tags.includes(tag))return;const dp={...(proj.designProgress||{}),[key]:[...tags,tag]};proj.designProgress=dp;if(localTestMode){setSynced();renderDesign();return;}setSyncing();await updateDoc(doc(db,'projects',projId),{designProgress:dp});setSynced();renderDesign();}
+window.dcRemoveCustomTag=async function(projId,colName,index){const proj=S.projects.find(p=>p.id===projId);if(!proj)return;const key=colName+'__customTags',tags=Array.isArray(proj.designProgress?.[key])?[...proj.designProgress[key]]:[];if(index<0||index>=tags.length)return;tags.splice(index,1);const dp={...(proj.designProgress||{}),[key]:tags};proj.designProgress=dp;if(localTestMode){setSynced();renderDesign();return;}setSyncing();await updateDoc(doc(db,'projects',projId),{designProgress:dp});setSynced();renderDesign();}
 window.dcToggleMember=async function(projId,colName,uid,checked){
   const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
   if(checked&&!markableMembersList().some(m=>m.uid===uid))return;
