@@ -1,126 +1,126 @@
 {
-  "date": "2026-09-21",
-  "updatedAt": "2026-09-21T00:07:51.056Z",
+  "date": "2026-09-22",
+  "updatedAt": "2026-09-22T00:43:11.754Z",
   "news": [
     {
-      "id": "7bae28bb1c9770ac",
+      "id": "aaeca9ef66eac7a2",
       "source": "遠見",
       "category": "國際",
-      "title": "世界末日躲哪裡可以活比較久？最新研究揭全球最安全國家",
-      "url": "https://www.gvm.com.tw/article/133117",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20230712/144985.jpg",
-      "publishedAt": "2026-09-20T03:00:00.000Z",
-      "fetchedAt": "2026-09-21T00:07:51.056Z"
+      "title": "俄羅斯與北約要開戰了？歐洲警戒升高，波羅的海三國卻喊冷靜",
+      "url": "https://www.gvm.com.tw/article/133162",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20230605/142410.jpg",
+      "publishedAt": "2026-09-21T11:02:00.000Z",
+      "fetchedAt": "2026-09-22T00:43:11.754Z"
     },
     {
-      "id": "d41abc096f644c99",
-      "source": "遠見",
-      "category": "AI／科技",
-      "title": "王道50論壇〉施振榮提「新王道思想」3核心，籲重視隱性價值",
-      "url": "https://www.gvm.com.tw/article/133137",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260919/241385.jpg",
-      "publishedAt": "2026-09-19T10:21:00.000Z",
-      "fetchedAt": "2026-09-21T00:07:51.056Z"
-    },
-    {
-      "id": "c793dbb3c2be3616",
+      "id": "077bb0858081c093",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "打mRNA新冠疫苗會罹癌？台大權威闢謠：沒有證據顯示會致癌",
-      "url": "https://www.gvm.com.tw/article/133115",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260810/238206.jpg",
-      "publishedAt": "2026-09-19T23:00:00.000Z",
-      "fetchedAt": "2026-09-21T00:07:51.056Z"
+      "title": "2026亞運棒球》愛知名古屋亞運棒球賽程資訊全攻略！台灣賽程、參賽隊伍、分組名單、球員資訊、轉播單位一次看",
+      "url": "https://www.gvm.com.tw/article/132904",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260907/240521.jpg",
+      "publishedAt": "2026-09-21T14:56:00.000Z",
+      "fetchedAt": "2026-09-22T00:43:11.754Z"
     },
     {
-      "id": "b0211f2faf02b4be",
+      "id": "1803ac5e0d5fa8ad",
       "source": "遠見",
-      "category": "國際",
-      "title": "解析》川普宣布取得格陵蘭永久安全控制權：一紙協議如何改寫北極安全與全球供應鏈？",
-      "url": "https://www.gvm.com.tw/article/133138",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260919/241396.jpg",
-      "publishedAt": "2026-09-19T10:48:00.000Z",
-      "fetchedAt": "2026-09-21T00:07:51.056Z"
+      "category": "金融／產經",
+      "title": "台灣ETF滲透率53%稱霸亞太！但投資人為何「棄被動、轉主動」？",
+      "url": "https://www.gvm.com.tw/article/133163",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260921/241493.jpg",
+      "publishedAt": "2026-09-21T10:39:00.000Z",
+      "fetchedAt": "2026-09-22T00:43:11.754Z"
     },
     {
-      "id": "b3319797c86eabaf",
+      "id": "6875262b736ce6da",
+      "source": "遠見",
+      "category": "好享生活／教育／話題",
+      "title": "亞運台灣首金出爐！「軟網混雙」余凱文、黃詩媛冠軍戰打敗日本摘金",
+      "url": "https://www.gvm.com.tw/article/133161",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260921/241491.jpg",
+      "publishedAt": "2026-09-21T09:52:00.000Z",
+      "fetchedAt": "2026-09-22T00:43:11.754Z"
+    },
+    {
+      "id": "0e270e24ae2327da",
       "source": "壹蘋",
       "category": "國際",
-      "title": "壹蘋派生活美語　豬隊友退散！旅伴挑得好，出國沒煩惱",
-      "url": "https://news.nextapple.com/international/20260921/AB39BCB88AEC1B818E3CC63BBF6E692C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/AB39BCB88AEC1B818E3CC63BBF6E692C/074fb71f2d69079a449f7b59d647691e_1280.webp",
-      "publishedAt": "2026-09-21T00:00:00.000Z",
-      "fetchedAt": "2026-09-21T00:07:51.056Z"
+      "title": "壹蘋派生活美語　可可．香奈兒的絕處「縫」生之路",
+      "url": "https://news.nextapple.com/international/20260922/85EA22ADCA18C67C1C5E1E9376001CB3",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/85EA22ADCA18C67C1C5E1E9376001CB3/29ea75a1a4113d85e4d4e945f27f3e1b_1280.webp",
+      "publishedAt": "2026-09-22T00:00:00.000Z",
+      "fetchedAt": "2026-09-22T00:43:11.754Z"
     },
     {
-      "id": "cb9e54374caabca3",
+      "id": "05a746f9b23ad6b3",
       "source": "壹蘋",
       "category": "生活",
-      "title": "高中師對海鮮意淫PO上網　學生喊「為什麼這種人是我的老師」　校方回應了",
-      "url": "https://news.nextapple.com/life/20260921/695DAAD79CF4631B3DD38485FB85D9D8",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/695DAAD79CF4631B3DD38485FB85D9D8/eeab51330a5c69d55d3c439a55bad6fd_1280.webp",
-      "publishedAt": "2026-09-21T00:07:21.000Z",
-      "fetchedAt": "2026-09-21T00:07:51.056Z"
+      "title": "舒力基颱風中秋前夕生成　研判3條路徑「可能落在台灣」",
+      "url": "https://news.nextapple.com/life/20260922/1DD4FF975D6F03EE4F7153D3F381E301",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/1DD4FF975D6F03EE4F7153D3F381E301/a3694df65f004edb646d69afc0efe028_1280.webp",
+      "publishedAt": "2026-09-22T00:24:00.000Z",
+      "fetchedAt": "2026-09-22T00:43:11.754Z"
     },
     {
-      "id": "84ae2974b65bd602",
+      "id": "db399f8cb8ea77f5",
       "source": "壹蘋",
       "category": "社會",
-      "title": "燒肉店大火9人傷　常客指問題疑是「醬汁」：好幾次差點燒起來",
-      "url": "https://news.nextapple.com/local/20260921/17BE9AF96245E5C6A1488FB24BAB38F7",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/17BE9AF96245E5C6A1488FB24BAB38F7/648edb85af59c047a59a8512de1fe1e2_1280.webp",
-      "publishedAt": "2026-09-20T23:12:31.000Z",
-      "fetchedAt": "2026-09-21T00:07:51.056Z"
+      "title": "人孔蓋害騎士摔車受傷　中華電、中市府互踢皮球！判賠金額曝光",
+      "url": "https://news.nextapple.com/local/20260922/B254541D21340E323B28FE62DE7AEFB4",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/B254541D21340E323B28FE62DE7AEFB4/de66aee2ddfea3474369213a2084caa7_1280.webp",
+      "publishedAt": "2026-09-21T16:01:00.000Z",
+      "fetchedAt": "2026-09-22T00:43:11.754Z"
     },
     {
-      "id": "3774bc20e13b9f75",
+      "id": "b7b2fe945e3080ac",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "玉女歌手侯湘婷二連霸！超狂職務曝光　網驚：怎還這麼漂亮",
-      "url": "https://news.nextapple.com/entertainment/20260921/F411304014C1A1EB3749F7983A1A7154",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/F411304014C1A1EB3749F7983A1A7154/edded351fb11fb455c3122db388970fa_1280.webp",
-      "publishedAt": "2026-09-20T23:58:00.000Z",
-      "fetchedAt": "2026-09-21T00:07:51.056Z"
+      "title": "謝金燕被爆在中國假唱　同場歌手說話了",
+      "url": "https://news.nextapple.com/entertainment/20260922/A5F980C8E7C148A2060BF45B3362C6A1",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/A5F980C8E7C148A2060BF45B3362C6A1/fe2593128e8805ec486dc07ceb3f37c2_1280.webp",
+      "publishedAt": "2026-09-22T00:21:26.000Z",
+      "fetchedAt": "2026-09-22T00:43:11.754Z"
     },
     {
-      "id": "6a1503e2fd04fc45",
+      "id": "e38f485916193089",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "台灣大跨足遊戲開發！《電鋸甜心2》東京電玩展首度亮相",
-      "url": "https://news.nextapple.com/aitech/20260919/2BB086007BD20DCFC732F9D37A9EBAA3",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/2BB086007BD20DCFC732F9D37A9EBAA3/999073254a96b488955b315953a8b686_1280.webp",
-      "publishedAt": "2026-09-19T08:49:26.000Z",
-      "fetchedAt": "2026-09-21T00:07:51.056Z"
+      "title": "vivo X500系列三旗艦齊發　4K 240fps錄影搶攻動態影像",
+      "url": "https://news.nextapple.com/aitech/20260921/64DA1DC7879FDDC9FED5AFEA51059A2D",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/64DA1DC7879FDDC9FED5AFEA51059A2D/2d932d9125df17d47ac8d17e40386c8d_1280.webp",
+      "publishedAt": "2026-09-21T12:56:13.000Z",
+      "fetchedAt": "2026-09-22T00:43:11.754Z"
     },
     {
-      "id": "0b6512b4b71b7031",
+      "id": "dcdb07e6b694c8f3",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "三重燒肉大火「8顧客1員工」跳樓傷　築間急發重訊",
-      "url": "https://news.nextapple.com/finance/20260921/7BDCDD82C08129787B65F69540ED0790",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/7BDCDD82C08129787B65F69540ED0790/324d0326c97f5cf818eded0710e0df96_1280.webp",
-      "publishedAt": "2026-09-20T22:34:21.000Z",
-      "fetchedAt": "2026-09-21T00:07:51.056Z"
+      "title": "美股噴了！油價重挫＋美中貿談釋善意　那指狂漲近600點創新高",
+      "url": "https://news.nextapple.com/finance/20260922/88AB9D571273CBD3ED4FFD636C5B7AFB",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/88AB9D571273CBD3ED4FFD636C5B7AFB/5a65b605b8e586166171065b008a9c0d_1280.webp",
+      "publishedAt": "2026-09-21T22:54:06.000Z",
+      "fetchedAt": "2026-09-22T00:43:11.754Z"
     },
     {
-      "id": "7e7279b1bfdd3cb7",
+      "id": "69768304a7f7109d",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "陳佩琪怨台灣人不聲援！她傻眼：容積率灌840％、小草錢去哪？",
-      "url": "https://news.nextapple.com/politics/20260921/74C36936790CA2A814FDB6FDA7E45209",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/74C36936790CA2A814FDB6FDA7E45209/197881b7345d18731d926e4bc87e886f_1280.webp",
-      "publishedAt": "2026-09-20T23:27:50.000Z",
-      "fetchedAt": "2026-09-21T00:07:51.056Z"
+      "title": "隱藏福利？汐止麵店喊「1句」可插隊點餐　店家證實",
+      "url": "https://news.nextapple.com/life/20260922/21AE15362D6257C3DF2A348129C26F35",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/21AE15362D6257C3DF2A348129C26F35/c9cf2ed5099da98582908f4595e683c5_1280.webp",
+      "publishedAt": "2026-09-22T00:23:00.000Z",
+      "fetchedAt": "2026-09-22T00:43:11.754Z"
     },
     {
-      "id": "26621bf8aa24d3dd",
+      "id": "945cd9526068020f",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "亞運抗韓出奇兵！台灣推20歲業餘投手扛先發　韓國嚇一跳「猜錯人了」",
-      "url": "https://news.nextapple.com/sports/20260921/68946848A19FF9742C9615D6E45A612D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/68946848A19FF9742C9615D6E45A612D/f793978fa79ece23a59b6488d36ad9fe_1280.webp",
-      "publishedAt": "2026-09-20T23:00:16.000Z",
-      "fetchedAt": "2026-09-21T00:07:51.056Z"
+      "title": "曾來台灣打進決賽！19歲泰國羽球美少女爆禁藥　亞運首例遭停賽",
+      "url": "https://news.nextapple.com/sports/20260922/B30E2FD284F7FAE4BC1E22C08169D922",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/B30E2FD284F7FAE4BC1E22C08169D922/4df3cbcfd8cd5075909175f2eb6d41aa_1280.webp",
+      "publishedAt": "2026-09-22T00:12:06.000Z",
+      "fetchedAt": "2026-09-22T00:43:11.754Z"
     }
   ]
 }
