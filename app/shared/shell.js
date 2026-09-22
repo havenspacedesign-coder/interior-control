@@ -1,0 +1,29 @@
+export function mountAppShell(feature = '') {
+  document.body.innerHTML = "<div id=\"login-screen\">\n  <div class=\"login-box\">\n    <div class=\"login-logo\">空間<span>總控</span></div>\n    <div class=\"login-sub\">室內設計案件管理系統</div>\n    <button class=\"google-btn\" onclick=\"signInWithGoogle()\">\n      <svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\"><path fill=\"#4285F4\" d=\"M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z\"/><path fill=\"#34A853\" d=\"M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z\"/><path fill=\"#FBBC05\" d=\"M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z\"/><path fill=\"#EA4335\" d=\"M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z\"/></svg>\n      使用 Google 帳號登入\n    </button>\n    <button class=\"test-btn\" id=\"local-test-btn\" onclick=\"enterLocalTestMode()\">🧪 測試模式免登入</button>\n    <div class=\"test-hint\" id=\"local-test-hint\">僅在本機預覽顯示，不會讀寫正式 Firebase 資料。</div>\n  </div>\n</div>\n\n<div id=\"pending-screen\">\n  <div class=\"pending-box\">\n    <div style=\"font-size:40px;margin-bottom:16px\">⏳</div>\n    <div style=\"font-size:16px;font-weight:600;margin-bottom:8px\">等待主管審核</div>\n    <div style=\"font-size:13px;color:var(--text2);margin-bottom:20px\">帳號已送出申請，請等待主管核准</div>\n    <div id=\"pending-email\" style=\"font-size:12px;color:var(--text3);margin-bottom:20px\"></div>\n    <button class=\"btn\" onclick=\"signOut()\">登出</button>\n  </div>\n</div>\n\n<div id=\"app-screen\">\n<div class=\"app\">\n  <nav class=\"topnav\">\n    <div class=\"mobile-nav-brand\" id=\"mobile-nav-brand\">首頁</div>\n    <button class=\"mobile-menu-toggle\" id=\"mobile-menu-toggle\" type=\"button\" aria-label=\"開啟導覽選單\" aria-expanded=\"false\" onclick=\"toggleMobileNav()\">☰</button>\n    <div class=\"topnav-menu\" id=\"topnav-menu\">\n    <div class=\"nav-tabs\">\n      <button class=\"nav-tab home-nav-tab active\" data-tab=\"home\">首頁</button>\n      <button class=\"nav-tab\" data-tab=\"overview\">案件總覽</button>\n      <button class=\"nav-tab\" data-tab=\"design\">設計進度</button>\n      <button class=\"nav-tab\" data-tab=\"progress\">工程進度&日誌</button>\n      <button class=\"nav-tab\" data-tab=\"bible\">施工寶典</button>\n      <button class=\"nav-tab\" data-tab=\"vendors\">廠商資訊</button>\n      <button class=\"nav-tab admin-only\" data-tab=\"members\">成員管理</button>\n      <button class=\"nav-tab b1f-nav\" data-tab=\"b1f\">🛒 B1F 商城</button>\n    </div>\n    <div class=\"topnav-right\">\n      <div class=\"sync-ind\"><div class=\"sync-dot\" id=\"sdot\"></div><span id=\"slbl\">連線中</span></div>\n      <img class=\"user-avatar\" id=\"user-avatar\" src=\"\" style=\"display:none\">\n      <span class=\"user-name\" id=\"user-name\"></span>\n      <button class=\"btn btn-sm\" onclick=\"signOut()\">登出</button>\n      <button class=\"appearance-gear\" type=\"button\" onclick=\"showAppearanceSettings()\" title=\"外觀設定\" aria-label=\"外觀設定\">⚙</button>\n    </div>\n    </div>\n  </nav>\n  <main class=\"main\">\n    <div id=\"panel-home\" class=\"panel active\"></div>\n    <div id=\"panel-overview\" class=\"panel\"></div>\n    <div id=\"panel-design\" class=\"panel\"></div>\n    <div id=\"panel-progress\" class=\"panel\"></div>\n    <div id=\"panel-bible\" class=\"panel\"></div>\n    <div id=\"panel-vendors\" class=\"panel\"></div>\n    <div id=\"panel-members\" class=\"panel\"></div>\n    <div id=\"panel-b1f\" class=\"panel\"></div>\n  </main>\n</div>\n</div>\n\n<!-- AI Assistant -->\n<button class=\"ai-fab\" id=\"ai-fab\" onclick=\"toggleAI()\" title=\"AI 助理\">🤖</button>\n<div class=\"ai-panel\" id=\"ai-panel\" style=\"display:none\">\n  <div class=\"ai-header\">\n    <span>🤖 AI 助理</span>\n    <button onclick=\"toggleAI()\" style=\"background:none;border:none;color:#fff;cursor:pointer;font-size:16px\">✕</button>\n  </div>\n  <div class=\"ai-messages\" id=\"ai-messages\">\n    <div class=\"ai-msg-ai\">你好！我是空間總控的 AI 助理。你可以問我關於案件、工程進度或施工相關的問題！</div>\n  </div>\n  <div class=\"ai-input-row\">\n    <textarea class=\"ai-input\" id=\"ai-input\" rows=\"2\" placeholder=\"輸入問題…\" onkeydown=\"if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI();}\"></textarea>\n    <button class=\"ai-send\" id=\"ai-send\" onclick=\"sendAI()\">送出</button>\n  </div>\n</div>\n\n<div id=\"modal\" class=\"mo\" style=\"display:none\">\n  <div class=\"mo-box\" role=\"dialog\" aria-modal=\"true\" id=\"mo-content\"></div>\n</div>\n\n<div class=\"pn-mention-menu\" id=\"pn-global-mention\" style=\"display:none;position:fixed;z-index:9999\"></div>\n";
+  if (!feature) return;
+
+  const testPages = {
+    home: 'home.html',
+    overview: 'project-overview.html',
+    design: 'design-progress.html',
+    progress: 'construction-progress.html',
+    bible: 'construction-guide.html',
+    vendors: 'vendors.html',
+    members: 'members.html',
+    b1f: 'b1f.html'
+  };
+  const tab = document.querySelector('.nav-tab[data-tab="' + feature + '"]');
+  document.querySelectorAll('.nav-tab').forEach(node => {
+    node.hidden = false;
+    node.classList.toggle('active', node === tab);
+    node.addEventListener('click', event => {
+      const targetFeature = node.dataset.tab;
+      if (targetFeature === feature || !testPages[targetFeature]) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      window.location.href = './' + testPages[targetFeature];
+    }, true);
+  });
+  document.querySelectorAll('.panel').forEach(node => node.classList.toggle('active', node.id === 'panel-' + feature));
+  if (tab) document.getElementById('mobile-nav-brand').textContent = tab.textContent.trim();
+}

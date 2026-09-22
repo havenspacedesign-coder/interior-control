@@ -1,0 +1,86 @@
+/* Mobile navigation and progress board: desktop layout remains unchanged. */
+.topnav-menu{display:contents}.mobile-nav-brand,.mobile-menu-toggle,.mobile-progress-notes-tab{display:none}
+@media(max-width:768px){
+  body{overflow-x:hidden}
+  .topnav{height:56px;padding:0 12px;justify-content:space-between;gap:8px;overflow:visible}
+  .mobile-nav-brand{display:block;min-width:0;font-size:14px;font-weight:600;color:var(--pd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mobile-menu-toggle{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border:0;border-radius:var(--r);background:var(--pl);color:var(--pd);font:inherit;font-size:22px;cursor:pointer}
+  .topnav-menu{display:none}
+  .topnav.mobile-menu-open .topnav-menu{display:flex;position:absolute;top:56px;left:0;right:0;z-index:55;flex-direction:column;gap:10px;padding:10px 12px 14px;background:var(--surface);border-bottom:1px solid var(--border);box-shadow:0 8px 16px rgba(0,0,0,.10);max-height:calc(100dvh - 56px);overflow-y:auto}
+  .nav-tabs{display:flex;flex:none;flex-direction:column;gap:2px;overflow:visible;width:100%}
+  .nav-tab{width:100%;min-height:44px;padding:10px 12px;text-align:left;font-size:14px}
+  .mobile-progress-notes-tab{display:block}
+  .home-nav-tab{margin:0;border:0;font-size:14px;font-weight:500;background:none;color:var(--text2)}
+  .home-nav-tab:hover,.home-nav-tab.active{background:var(--pl);color:var(--pd)}
+  .topnav-right{width:100%;padding-top:10px;border-top:1px solid var(--border);justify-content:flex-start;gap:10px;flex-wrap:wrap;white-space:normal}
+  .user-name{max-width:calc(100vw - 190px)}
+  .topnav-right .btn{min-height:40px;padding:7px 12px}
+  .main{padding:12px;overflow-x:clip}
+
+  #panel-progress{min-width:0}
+  #panel-progress .progress-layout{flex-direction:column!important;gap:12px!important;align-items:stretch!important}
+  #panel-progress .progress-sticky-board{display:contents;position:static!important;top:auto!important}
+  #panel-progress .progress-week-content{position:static!important;top:auto!important;box-shadow:none}
+  #panel-progress .progress-layout>.global-notes-panel{display:none}
+  #panel-progress .progress-main .global-notes-panel{display:block;width:100%!important;position:static!important;max-height:none!important;min-height:0!important}
+  #panel-progress .progress-main{width:100%;min-width:0}
+  #panel-progress .progress-sticky-board{position:static!important;top:auto!important}
+  #panel-progress .wctrl{display:flex;justify-content:flex-start;gap:10px;margin-bottom:12px}
+  #panel-progress .wctrl>.formula-bar,#panel-progress .wctrl>.seg,#panel-progress .wctrl>.nav-row{transform:none}
+  #panel-progress .seg{width:100%;flex-wrap:wrap;background:transparent;padding:0;gap:6px}
+  #panel-progress .seg button{flex:1 1 calc(50% - 3px);min-height:40px;padding:8px 10px;border:1px solid var(--border);background:var(--surface);font-size:13px}
+  #panel-progress .seg button.on{border-color:var(--purple);background:var(--pl)}
+  #panel-progress .nav-row{width:100%;justify-content:center;gap:8px}
+  #panel-progress .nav-btn{width:40px;height:40px;font-size:20px;flex-shrink:0}
+  #panel-progress .wk-lbl{min-width:0;flex:1;padding:10px 6px;font-size:14px}
+  #panel-progress .formula-bar{width:100%;align-items:center;flex-wrap:nowrap;gap:7px;padding:7px 8px;margin:0}
+  #panel-progress .formula-bar-label{width:auto;min-width:0;white-space:nowrap;flex:none}
+  #panel-progress .wtbl-wrap,#panel-progress .daily-section .hscroll-sync,#panel-progress .private-todo-wrap,#panel-progress .private-section .hscroll-sync{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+  #panel-progress .progress-horizontal-viewport{display:block;max-width:100%;overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:auto}
+  #panel-progress .progress-horizontal-viewport>*{width:var(--progress-timeline-width);min-width:var(--progress-timeline-width)}
+  #panel-progress .progress-horizontal-viewport .wtbl,#panel-progress .progress-horizontal-viewport .daily-log-table,#panel-progress .progress-horizontal-viewport .private-section table{width:var(--progress-timeline-width)!important}
+  #panel-progress .progress-horizontal-viewport .hscroll-sync{max-width:none!important;overflow:visible!important;touch-action:auto}
+  #panel-progress .daily-section,#panel-progress .private-section{overflow:visible!important}
+  #panel-progress .mobile-progress-fixed-header{position:sticky;left:0;z-index:20;width:calc(100vw - 24px);min-width:0;box-sizing:border-box}
+  #panel-progress .daily-log-table td.log-name-cell,#panel-progress .private-section .hscroll-sync td.log-name-cell{position:sticky!important;left:0;z-index:12}
+  #panel-progress #progress-bottom-hscroll{display:none}
+  #panel-progress .mobile-progress-date-sticky{display:block;position:sticky;top:56px;z-index:30;overflow:hidden;margin:0;border:1px solid var(--border);border-bottom:3px solid #1a1a1a;border-radius:var(--rl2) var(--rl2) 0 0;background:var(--surface);box-shadow:0 2px 5px rgba(0,0,0,.06)}
+  #panel-progress .mobile-progress-date-track{display:flex;will-change:transform}
+  #panel-progress .mobile-progress-date-spacer{width:96px;min-width:96px;height:46px;background:var(--bg);border-right:1px solid var(--border)}
+  #panel-progress .mobile-progress-date-cell{width:180px;min-width:180px;height:46px;display:flex;align-items:center;justify-content:center;gap:4px;border-right:1px solid var(--border);background:var(--bg);font-size:13px;font-weight:600;white-space:nowrap}
+  #panel-progress .progress-meeting-table .wtbl>thead{display:none}
+  #panel-progress .wtbl-wrap{max-height:none}
+  #panel-progress .daily-section-hdr{align-items:stretch;flex-wrap:wrap;padding:10px 12px}
+  #panel-progress .daily-section-title{width:100%}
+  #panel-progress .daily-section-hdr>div{width:100%;flex-wrap:wrap;gap:8px!important}
+  #panel-progress #daily-assign-date{width:128px!important;flex:0 1 128px}
+  #panel-progress #daily-assign-text{width:auto!important;min-width:150px;flex:1 1 150px}
+  #panel-progress .daily-section-hdr .btn{min-height:36px}
+  #panel-progress .wtbl col:first-child,#panel-progress .daily-log-table col:first-child{width:96px!important}
+  #panel-progress .site-hd,#panel-progress .daily-log-table td.log-name-cell,#panel-progress .private-todo-table td.ptd-label,#panel-progress .private-todo-table td.log-name-cell{width:96px!important;min-width:96px!important;padding-left:8px!important;padding-right:8px!important;white-space:normal;word-break:break-word}
+  #panel-progress .private-todo-table th:first-child{width:96px!important;min-width:96px!important}
+  #panel-progress .private-section .hscroll-sync col:first-child{width:96px!important}
+  #panel-progress .private-section .hscroll-sync td.log-name-cell,#panel-progress .private-section .hscroll-sync th:first-child{width:96px!important;min-width:96px!important;padding-left:8px!important;padding-right:8px!important;white-space:normal;word-break:break-word}
+  #panel-progress .meeting-toolbar{left:6px;grid-template-columns:1fr auto auto auto;max-width:calc(100vw - 36px)}
+  #panel-progress .meeting-toolbar-title{white-space:normal}
+  #panel-progress .progress-main #global-note-box{min-height:calc(100dvh - 170px)!important}
+  #panel-progress .private-section-hdr{justify-content:space-between!important;flex-wrap:nowrap!important;gap:4px!important;padding:8px 12px!important}
+  #panel-progress .private-section-title{width:auto!important;min-width:0;flex:1!important}
+  #panel-progress .private-section-actions{flex:none;gap:3px!important;white-space:nowrap}
+  #panel-progress .private-section-actions>span{margin-left:0!important}
+  #panel-home .home-grid-wrap{min-height:0;padding:0;overflow:visible}
+  #panel-home .home-grid{display:flex;flex-direction:column;gap:10px;min-width:0!important;min-height:0;height:auto!important}
+  #panel-home .home-module{position:relative!important;left:auto!important;top:auto!important;width:100%!important;height:180px!important;flex:none}
+  #panel-home .home-grid-wrap.editing{background-image:none}
+  #progress-bottom-hscroll{display:none!important}
+  .mo{padding:12px;align-items:flex-start;overflow-y:auto}
+  .mo-box{width:calc(100vw - 24px);max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);margin:auto 0}
+  .mo-box.estimate-check-modal{height:calc(100dvh - 24px)}
+  .estimate-check-head{padding:16px 14px 11px}
+  .estimate-check-list{padding:0 14px 14px}
+  .mo-box.recurring-manager-modal{height:calc(100dvh - 24px)}
+  .rr-manager-row{grid-template-columns:minmax(0,1fr) auto;gap:7px 10px}
+  .rr-manager-info{white-space:normal}
+  .rr-manager-row>.rr-toggle,.rr-manager-actions{justify-self:end}
+  .mo-footer{position:sticky;bottom:-20px;padding:12px 0 0;background:var(--surface)}
+}

@@ -1,0 +1,11 @@
+/* Members */
+.member-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.member-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0}
+.member-info{flex:1;min-width:120px}
+.member-name{font-size:13px;font-weight:500}
+.member-email{font-size:11px;color:var(--text2)}
+.role-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.role-admin{background:var(--pl);color:var(--pd)}
+.role-manager{background:#FCEBEB;color:var(--red)}
+.role-staff{background:var(--gl);color:var(--gd)}
+.role-pending{background:var(--al);color:var(--ad)}
