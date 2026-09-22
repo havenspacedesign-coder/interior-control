@@ -192,7 +192,7 @@ document.addEventListener('drop',function(e){
   e.preventDefault();window.pnDrop(e,pnDragSrc.type,pnDragSrc.ds,0);
 });
 var meetingSelected={};
-var meetingEditing=null,meetingEditCanceled=false,meetingPendingSelection=null;
+var meetingEditing=null,meetingEditCanceled=false,meetingPendingSelection=null,meetingRapidPointer={key:'',time:0};
 var meetingSelGen=0;
 var meetingDragSrc=null;
 var meetingMentionActive=null;
