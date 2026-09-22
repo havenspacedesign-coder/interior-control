@@ -250,7 +250,7 @@ function renderWeekView(shouldShow){
               +'</div>';
           }else{
             h+='<div class="meet-chip '+(emptySelected?'excel-selected':'')+'" style="border:1.5px dashed var(--border);padding:3px 8px;border-radius:5px;font-size:13px;cursor:pointer;user-select:none;min-height:30px;line-height:1.3;color:var(--text3)"'
-              +' onclick="mSelectEmpty(\''+row.id+'\',\''+ds+'\')" ondblclick="event.stopPropagation();mStartEdit(\''+row.id+'\',\''+ds+'\',0)"></div>';
+            +' onmousedown="mPointerSelect(event,\''+row.id+'\',\''+ds+'\',0)" onclick="mSelectEmpty(\''+row.id+'\',\''+ds+'\')" ondblclick="event.stopPropagation();mStartEdit(\''+row.id+'\',\''+ds+'\',0)"></div>';
           }
         }else{
           var item=items[0];
@@ -283,7 +283,7 @@ function renderWeekView(shouldShow){
               +'</div></div>';
           }else{
             h+='<div class="meet-chip '+(isSel?'excel-selected':'')+'" style="border:'+border+';padding:3px 8px;border-radius:5px;font-size:13px;cursor:pointer;user-select:none;min-height:30px;line-height:1.3;position:relative;'+textStyle+'"'
-              +' onclick="mSelect(\''+row.id+'\',\''+ds+'\',0)"'
+            +' onmousedown="mPointerSelect(event,\''+row.id+'\',\''+ds+'\',0)" onclick="mSelect(\''+row.id+'\',\''+ds+'\',0)"'
               +' ondblclick="event.stopPropagation();mStartEdit(\''+row.id+'\',\''+ds+'\',0)"'
               +' draggable="true"'
               +' ondragstart="mDragStart(event,\''+row.id+'\',\''+ds+'\',0)"'

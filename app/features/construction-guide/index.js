@@ -16,8 +16,8 @@ function renderBible(){
     </div>
     <div class="flex">
       <div class="seg" style="position:absolute;left:50%;transform:translateX(-50%);top:50%;margin-top:-15px">
-        <button class="${bibleView==='edit'?'on':''}" onclick="setBibleView('edit')">編輯清單</button>
-        <button class="${bibleView==='worksite'?'on':''}" onclick="setBibleView('worksite')">工地勾選</button>
+        <button class="${bibleView==='edit'?'on':''}" onclick="setBibleView('edit')">標準清單</button>
+        <button class="${bibleView==='worksite'?'on':''}" onclick="setBibleView('worksite')">案件勾選</button>
       </div>
       ${isAdmin()?`
         <button class="btn btn-sm ${dragModeOn?'btn-p':''}" onclick="toggleDragMode()">${dragModeOn?'✓ 編輯中':'✎ 編輯'}</button>`:''}

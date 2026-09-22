@@ -4,6 +4,13 @@
 // background-color option, plus @member mention that auto-copies the entry
 // into that member's daily log for the same day ──
 window.mSelect=function(rowId,ds,idx){
+  const activeEdit=meetingEditing;
+  if(activeEdit&&!(activeEdit.rowId===rowId&&activeEdit.ds===ds&&activeEdit.idx===idx)){
+    meetingPendingSelection={rowId:rowId,ds:ds,idx:idx};
+    return;
+  }
+  const current=meetingSelectedCell();
+  if(!activeEdit&&current&&current.rowId===rowId&&current.ds===ds&&current.idx===idx)return;
   clearSpreadsheetSelections('meeting');
   meetingSelGen++;
   meetingSelected={};
@@ -15,7 +22,25 @@ window.mSelect=function(rowId,ds,idx){
   updateFormulaBar('meeting',ds,idx,linked.text,rowId,linked.link);
   if(activePanel==='progress')renderProgress(true);
 }
-window.mSelectEmpty=function(rowId,ds){clearSpreadsheetSelections('meeting');meetingSelGen++;meetingSelected={};meetingSelected[rowId+'|'+ds]=0;meetingEditing=null;updateFormulaBar('meeting',ds,0,'',rowId,null);if(activePanel==='progress')renderProgress(true);}
+window.mSelectEmpty=function(rowId,ds){mSelect(rowId,ds,0);}
+window.mPointerSelect=function(e,rowId,ds,idx){
+  const activeEdit=meetingEditing;
+  if(activeEdit){
+    if(activeEdit.rowId===rowId&&activeEdit.ds===ds&&activeEdit.idx===idx)return;
+    meetingPendingSelection={rowId:rowId,ds:ds,idx:idx};
+    return;
+  }
+  const current=meetingSelectedCell();
+  if(current&&current.rowId===rowId&&current.ds===ds&&current.idx===idx)return;
+  clearSpreadsheetSelections('meeting');
+  meetingSelGen++;meetingSelected={};meetingSelected[rowId+'|'+ds]=idx;
+  const item=(((S.meetingLogs||{})[rowId+'_'+ds]||{}).items||[])[idx]||{};
+  const linked=normalizeLinkedItem(item);
+  updateFormulaBar('meeting',ds,idx,linked.text,rowId,linked.link);
+  document.querySelectorAll('.meet-chip.meet-chip-sel').forEach(function(el){el.classList.remove('meet-chip-sel');el.style.border='';});
+  e.currentTarget.classList.add('meet-chip-sel');
+  e.currentTarget.style.border='2px solid var(--purple)';
+}
 window.mStartEdit=function(rowId,ds,idx){
   clearSpreadsheetSelections('meeting');
   meetingSelGen++;meetingSelected={};meetingSelected[rowId+'|'+ds]=idx;meetingEditing={rowId:rowId,ds:ds,idx:idx};meetingEditCanceled=false;
@@ -264,7 +289,7 @@ async function mRemoveFromDailyLog(rowId,ds,idx,uid){
 window.mBoxBlur=function(el,rowId,ds,idx){mSaveBox(el,rowId,ds,idx);}
 window.mSaveBox=async function(el,rowId,ds,idx){
   if(!currentUser||!el)return;
-  if(meetingEditCanceled){meetingEditCanceled=false;meetingEditing=null;if(activePanel==='progress')renderProgress();return;}
+  if(meetingEditCanceled){meetingEditCanceled=false;meetingEditing=null;const pending=meetingPendingSelection;meetingPendingSelection=null;if(pending){meetingSelected={};meetingSelected[pending.rowId+'|'+pending.ds]=pending.idx;const nextItem=(((S.meetingLogs||{})[pending.rowId+'_'+pending.ds]||{}).items||[])[pending.idx]||{};const nextLinked=normalizeLinkedItem(nextItem);updateFormulaBar('meeting',pending.ds,pending.idx,nextLinked.text,pending.rowId,nextLinked.link);}if(activePanel==='progress')renderProgress();return;}
   const text=el.value;const link=linkFromInput(el,text);
   const key=rowId+'_'+ds;
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
@@ -279,5 +304,13 @@ window.mSaveBox=async function(el,rowId,ds,idx){
   }
   setSynced();
   meetingEditing=null;
+  const pending=meetingPendingSelection;
+  meetingPendingSelection=null;
+  if(pending){
+    meetingSelected={};meetingSelected[pending.rowId+'|'+pending.ds]=pending.idx;
+    const nextItem=(((S.meetingLogs||{})[pending.rowId+'_'+pending.ds]||{}).items||[])[pending.idx]||{};
+    const nextLinked=normalizeLinkedItem(nextItem);
+    updateFormulaBar('meeting',pending.ds,pending.idx,nextLinked.text,pending.rowId,nextLinked.link);
+  }
   if(activePanel==='progress')renderProgress();
 }
