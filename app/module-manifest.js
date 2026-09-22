@@ -16,7 +16,8 @@ export const B1F_MODULES = [
   'app/features/b1f/index.js',
   'app/features/b1f/local-workflows.js',
   'app/features/b1f/shared-store.js',
-  'app/features/b1f/product-management.js'
+  'app/features/b1f/product-management.js',
+  'app/features/b1f/site-materials.js'
 ];
 
 export const PROGRESS_MODULES = [
