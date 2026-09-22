@@ -233,10 +233,11 @@ function renderWeekView(shouldShow){
         var isT=isSameDay(d,td);
         var key=row.id+'_'+ds;
         var items=(S.meetingLogs[key]&&S.meetingLogs[key].items)||[];
+        var hasVisibleItem=items.length>0&&String(items[0]?.text||'').trim()!=='';
         var selKey=row.id+'|'+ds;
         var selIdx=(meetingSelected[selKey]!=null)?meetingSelected[selKey]:-1;
         var h='<td style="vertical-align:top;height:30px;padding:2px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'" ondragover="mDragOver(event)" ondragleave="mDragLeave(event)" ondrop="mDrop(event,\''+row.id+'\',\''+ds+'\')">';
-        if(items.length===0){
+        if(!hasVisibleItem){
           var emptySelected=selIdx===0;
           var emptyEditing=meetingEditing&&meetingEditing.rowId===row.id&&meetingEditing.ds===ds&&meetingEditing.idx===0;
           if(emptyEditing){
@@ -247,6 +248,7 @@ function renderWeekView(shouldShow){
               +' onkeydown="mEditKeyDown(event,this,\''+row.id+'\',\''+ds+'\',0)"'
               +' onclick="event.stopPropagation()"'
               +'>'
+              +'<span class="meet-tag-btn" title="標記成員" onmouseenter="mOpenMentionPicker(event,\''+row.id+'\',\''+ds+'\',0)" onmouseleave="mScheduleCloseMention(\''+row.id+'\',\''+ds+'\')" onclick="event.stopPropagation()" style="font-size:11px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:50%;width:18px;height:18px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;flex-shrink:0">+</span>'
               +'</div>';
           }else{
             h+='<div class="meet-chip '+(emptySelected?'excel-selected':'')+'" style="border:1.5px dashed var(--border);padding:3px 8px;border-radius:5px;font-size:13px;cursor:pointer;user-select:none;min-height:30px;line-height:1.3;color:var(--text3)"'

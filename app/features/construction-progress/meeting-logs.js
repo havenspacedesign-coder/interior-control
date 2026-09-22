@@ -299,14 +299,20 @@ window.mSaveBox=async function(el,rowId,ds,idx){
   const text=el.value;const link=linkFromInput(el,text);
   const key=rowId+'_'+ds;
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
-  while(items.length<=idx)items.push({text:'',color:'',bg:'',mentions:[]});
-  items[idx]=Object.assign({},items[idx],{text,link});
+  const previousItem=items[idx]||{},previousMentions=previousItem.mentions||[];
+  const isBlank=!text.trim()&&!link;
+  if(isBlank){items.splice(idx,1);}else{
+    while(items.length<=idx)items.push({text:'',color:'',bg:'',mentions:[]});
+    items[idx]=Object.assign({},items[idx],{text,link});
+  }
   setSyncing();
   await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
   // keep already-tagged members' daily logs in sync with the latest text
-  const mentions=items[idx].mentions||[];
-  for(const uid of mentions){
-    await mSyncDailyLog(rowId,ds,idx,uid,items[idx]);
+  if(isBlank){
+    for(const uid of previousMentions)await mRemoveFromDailyLog(rowId,ds,idx,uid);
+  }else{
+    const mentions=items[idx].mentions||[];
+    for(const uid of mentions)await mSyncDailyLog(rowId,ds,idx,uid,items[idx]);
   }
   setSynced();
   meetingEditing=null;
