@@ -17,6 +17,8 @@
 | 成員管理 | `app/features/members/` | `test/members.html` |
 | B1F 商城 | `app/features/b1f/` | `test/b1f.html` |
 
+`feature/b1f-wip` 另載入 `app/features/b1f/site-materials.js`，保存尚未完成的工地用料單、系統五金預估與其他叫料流程；`test/b1f.html` 與正式入口共用這個 B1F 模組，沒有測試版副本。
+
 ## 首頁子模組
 
 - `index.js`：首頁網格、模組管理與主要渲染。

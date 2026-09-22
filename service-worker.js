@@ -50,6 +50,7 @@ const APP_SHELL = [
   './app/features/b1f/local-workflows.js',
   './app/features/b1f/shared-store.js',
   './app/features/b1f/product-management.js',
+  './app/features/b1f/site-materials.js',
   './app/features/b1f/b1f-overrides.css',
   './app/features/b1f/b1f-mobile.css',
   './assets/material-guide-seed.json',

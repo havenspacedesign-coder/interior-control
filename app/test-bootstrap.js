@@ -62,6 +62,7 @@ window.enterLocalTestMode = async function () {
       console.warn('material guide seed failed', error);
     }
   }
+  if (focusedFeature === 'b1f' && typeof ensureB1FSiteMaterialTestData === 'function') ensureB1FSiteMaterialTestData();
   if (focusedFeature === 'b1f' && typeof initB1FSharedStore === 'function') await initB1FSharedStore();
   renderActive();
   saveLocalPreviewState();
