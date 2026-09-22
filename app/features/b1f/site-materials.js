@@ -100,3 +100,73 @@ window.editB1FSystemItems=function(listId){const list=b1fSiteMaterialLists().fin
 window.saveB1FSystemItems=function(listId){const list=b1fSiteMaterialLists().find(row=>row.id===listId);if(!list)return;list.systemItemIds=[...document.querySelectorAll('input[name="b1f-system-item"]:checked')].map(input=>input.value);list.updatedAt=b1fNow();b1fSiteMaterialSave();closeMo();renderB1F();};
 b1fSiteMaterialUsageFooter=function(list){const items=b1fSystemItemsForList(list);return '<tr><td style="padding:10px;background:#fff8f8;color:#7d3030;font-weight:700;border-top:1px solid #efdede">已領數量<br>已退數量<br><span style="color:#8d3030">實際使用</span><br><button class="btn btn-sm btn-p" style="margin-top:7px" onclick="addAllB1FSiteMaterialToCart(\''+list.id+'\')">全部加入購物車</button></td>'+items.map(item=>{const s=b1fSiteMaterialUsageStats(list,item.id),disabled=Number(item.stockQty)<=0?'disabled':'';return '<td style="padding:10px;background:#fff8f8;border-top:1px solid #efdede;vertical-align:top;text-align:center"><div>'+s.issued+'</div><div>'+s.returned+'</div><div style="color:#8d3030;font-weight:700">'+s.used+'</div><div style="display:flex;gap:5px;margin-top:7px"><input id="b1f-site-cart-qty-'+escAttr(list.id)+'-'+escAttr(item.id)+'" class="b1f-row-qty" type="number" min="0" max="'+item.stockQty+'" step="any" value="0" aria-label="'+escAttr(item.name)+' 本次加入購物車數量" '+disabled+'><button class="btn btn-sm btn-p" type="button" '+disabled+' onclick="addB1FSiteMaterialToCart(\''+list.id+'\',\''+item.id+'\')">加入購物車</button></div></td>';}).join('')+'</tr>';};
 window.addAllB1FSiteMaterialToCart=function(listId){const list=b1fSiteMaterialLists().find(row=>row.id===listId),cart=b1fCart();if(!list)return;const inputs=b1fSystemItemsForList(list).map(item=>({item,qty:Number($('b1f-site-cart-qty-'+list.id+'-'+item.id)?.value)||0})).filter(row=>row.qty>0);if(!inputs.length)return alert('請先輸入至少一個要加入購物車的數量。');if(inputs.some(row=>row.qty>row.item.stockQty))return alert('部分數量超過目前 B1F 庫存。');const linked=cart.find(line=>line.siteMaterialListId);if((linked&&linked.siteMaterialListId!==list.id)||(cart.length&&b1fCartProjectId&&b1fCartProjectId!==list.projectId))return alert('購物車已有其他工地用料單的商品，請先完成或清空既有購物車。');for(const {item,qty} of inputs){const line=cart.find(row=>row.itemId===item.id);if(line&&line.siteMaterialListId!==list.id)return alert('購物車已有其他來源的相同商品。');if((line?.qty||0)+qty>item.stockQty)return alert(item.name+' 加入後會超過庫存。');if(line)line.qty+=qty;else cart.push({itemId:item.id,qty,siteMaterialListId:list.id,siteMaterialProjectId:list.projectId});}b1fCartProjectId=list.projectId;b1fSaveCartV5();b1fFlash='已將 '+inputs.length+' 項系統五金加入購物車（'+list.projectName+'）';b1fView='cart';renderB1F();};
+
+// B1F WIP 介面微調：系統五金預設有價商品，表格編輯和其他叫料排序均只影響這張工地用料單。
+let b1fSiteMaterialEditMode=false;
+// B1F 獨立測試頁不會載入工程進度模組，因此補上共用 Modal 的安全關閉入口。
+window.closeMo=window.closeMo||function(){$('modal').style.display='none';$('mo-content').innerHTML='';};
+function b1fDefaultSystemItemIds(){return b1fData().items.filter(item=>Number(item.unitPrice)>0).map(item=>item.id);}
+b1fSystemItemsForList=function(list){const all=b1fData().items;return Array.isArray(list.systemItemIds)?all.filter(item=>list.systemItemIds.includes(item.id)):all.filter(item=>Number(item.unitPrice)>0);};
+
+const b1fCreateSiteMaterialListV2=window.createB1FSiteMaterialList;
+window.createB1FSiteMaterialList=function(){const projectId=$('b1f-site-project')?.value,project=S.projects.find(row=>row.id===projectId);if(!project)return alert('請先選擇施工中案件。');const existing=b1fSiteMaterialLists().find(list=>list.projectId===projectId);if(existing){b1fSiteMaterialListId=existing.id;renderB1F();return;}const list={id:b1fId('site_material'),projectId:project.id,projectName:project.name,rows:[],systemItemIds:b1fDefaultSystemItemIds(),createdAt:b1fNow(),updatedAt:b1fNow()};b1fSiteMaterialLists().push(list);b1fSiteMaterialSave();b1fSiteMaterialListId=list.id;renderB1F();};
+
+const b1fDeleteSiteMaterialRowV2=window.deleteB1FSiteMaterialRow;
+window.deleteB1FSiteMaterialRow=function(listId,rowId){if(!b1fSiteMaterialEditMode)return;b1fDeleteSiteMaterialRowV2(listId,rowId);};
+window.finishB1FSiteMaterialEdit=function(){b1fSiteMaterialEditMode=false;renderB1F();};
+
+b1fSiteMaterialUsageFooter=function(list){const items=b1fSystemItemsForList(list);return '<tr><td style="padding:10px;background:#fff8f8;color:#7d3030;font-weight:700;border-top:1px solid #efdede">已領數量<br>已退數量<br><span style="color:#8d3030">實際使用</span><br><button class="btn btn-sm btn-p" type="button" style="margin-top:7px" onclick="addAllB1FSiteMaterialToCart(\''+list.id+'\')">全部加入購物車</button></td>'+items.map(item=>{const s=b1fSiteMaterialUsageStats(list,item.id),disabled=Number(item.stockQty)<=0?'disabled':'';return '<td style="padding:10px;background:#fff8f8;border-top:1px solid #efdede;vertical-align:top;text-align:center"><div>'+s.issued+'</div><div>'+s.returned+'</div><div style="color:#8d3030;font-weight:700">'+s.used+'</div><div style="margin-top:7px"><input id="b1f-site-cart-qty-'+escAttr(list.id)+'-'+escAttr(item.id)+'" class="b1f-row-qty" type="number" min="0" max="'+item.stockQty+'" step="any" value="0" aria-label="'+escAttr(item.name)+' 本次加入購物車數量" '+disabled+'></div></td>';}).join('')+'</tr>';};
+
+const b1fSiteMaterialDetailMarkupV6=b1fSiteMaterialDetailMarkup;
+b1fSiteMaterialDetailMarkup=function(list){const editControl=b1fSiteMaterialEditMode?'<button class="btn btn-sm" type="button" style="margin:8px 0 0 6px" onclick="finishB1FSiteMaterialEdit()">完成編輯</button>':'';const html=b1fSiteMaterialDetailMarkupV6(list).replace('編輯系統五金項目</button>','編輯系統五金項目</button>'+editControl);setTimeout(()=>{filterB1FSiteMaterialColumns(list);document.querySelectorAll('#panel-b1f button[aria-label="刪除此圖紙頁數或項目"]').forEach(button=>{button.style.display=b1fSiteMaterialEditMode?'':'none';});const otherSection=[...document.querySelectorAll('#panel-b1f h3')].find(heading=>heading.textContent.trim()==='其他叫料')?.closest('section');const vendorHeader=otherSection?.querySelector('thead th:first-child');if(vendorHeader&&!vendorHeader.querySelector('.b1f-vendor-sort'))vendorHeader.insertAdjacentHTML('beforeend',' <button class="btn btn-sm b1f-vendor-sort" type="button" onclick="sortB1FOtherOrdersByVendor(\''+list.id+'\')">排序</button>');},0);return html;};
+
+window.editB1FSystemItems=function(listId){const list=b1fSiteMaterialLists().find(row=>row.id===listId);if(!list)return;b1fSiteMaterialEditMode=true;const chosen=new Set(Array.isArray(list.systemItemIds)?list.systemItemIds:b1fDefaultSystemItemIds());$('mo-content').innerHTML='<div class="mo-title">編輯系統五金項目</div><div class="mo-sub">預設只勾選有金額的商品；取消勾選即代表此工地不需要該項目，不會刪除 B1F 商品。</div><div class="b1f-form">'+b1fData().items.map(item=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="b1f-system-item" value="'+escAttr(item.id)+'" '+(chosen.has(item.id)?'checked':'')+'>'+escAttr(item.name)+'</label><button class="btn btn-sm btn-danger" type="button" onclick="removeB1FSystemItemFromEditor(this)">刪除</button></div>').join('')+'<div class="mo-footer"><button class="btn" type="button" onclick="closeB1FSystemItemsEditor()">取消</button><button class="btn btn-p" type="button" onclick="saveB1FSystemItems(\''+list.id+'\')">儲存</button></div></div>';$('modal').style.display='flex';document.onkeydown=function(event){if(event.key==='Escape'&&$('modal')?.style.display==='flex')closeB1FSystemItemsEditor();};};
+window.removeB1FSystemItemFromEditor=function(button){const checkbox=button.closest('div')?.querySelector('input[name="b1f-system-item"]');if(!checkbox)return;checkbox.checked=false;button.closest('div').style.opacity='.55';};
+window.closeB1FSystemItemsEditor=function(){document.onkeydown=null;closeMo();renderB1F();};
+window.saveB1FSystemItems=function(listId){const list=b1fSiteMaterialLists().find(row=>row.id===listId);if(!list)return;list.systemItemIds=[...document.querySelectorAll('input[name="b1f-system-item"]:checked')].map(input=>input.value);list.updatedAt=b1fNow();b1fSiteMaterialSave();document.onkeydown=null;closeMo();renderB1F();};
+
+window.sortB1FOtherOrdersByVendor=function(listId){const list=b1fSiteMaterialLists().find(row=>row.id===listId);if(!list)return;const collator=new Intl.Collator('zh-Hant-u-co-stroke',{numeric:true,sensitivity:'base'});list.otherOrders=b1fOtherOrders(list).map((row,index)=>({row,index})).sort((a,b)=>collator.compare(String(a.row.vendor||''),String(b.row.vendor||''))||a.index-b.index).map(entry=>entry.row);list.updatedAt=b1fNow();b1fSiteMaterialSave();renderB1F();};
+
+// 用料單兩張表格固定在可視範圍內；欄位會依目前系統五金勾選數平均分配，不產生橫向捲軸。
+function fitB1FSiteMaterialTables(){
+  const panel=$('panel-b1f');
+  const systemTable=panel?.querySelector('section table');
+  if(systemTable){
+    const wrapper=systemTable.parentElement;
+    wrapper.style.overflow='hidden';
+    systemTable.style.width='100%';
+    systemTable.style.minWidth='0';
+    systemTable.style.tableLayout='fixed';
+    systemTable.querySelectorAll('th,td').forEach(cell=>{cell.style.minWidth='0';});
+    const columnCount=systemTable.querySelector('thead tr')?.children.length||0;
+    let group=systemTable.querySelector('colgroup');
+    if(!group){group=document.createElement('colgroup');systemTable.prepend(group);}
+    group.innerHTML=Array.from({length:columnCount},(_,index)=>'<col style="width:'+(index===0?'90px':'auto')+'">').join('');
+    systemTable.querySelectorAll('tbody td:first-child .b1f-input').forEach(input=>{input.style.width='100%';input.style.minWidth='0';});
+  }
+  const otherHeading=[...panel?.querySelectorAll('h3')||[]].find(heading=>heading.textContent.trim()==='其他叫料');
+  const otherTable=otherHeading?.closest('section')?.querySelector('table');
+  if(!otherTable)return;
+  const wrapper=otherTable.parentElement;
+  wrapper.style.overflow='hidden';
+  otherTable.style.width='100%';
+  otherTable.style.minWidth='0';
+  otherTable.style.tableLayout='fixed';
+  otherTable.querySelectorAll('th,td').forEach(cell=>{cell.style.minWidth='0';overflow='hidden';});
+  const widths=['90px','13%','50px','15%','10%','6%','6%','8%','205px'];
+  let group=otherTable.querySelector('colgroup');
+  if(!group){group=document.createElement('colgroup');otherTable.prepend(group);}
+  group.innerHTML=widths.map(width=>'<col style="width:'+width+'">').join('');
+  otherTable.querySelectorAll('tbody td').forEach((cell,index)=>{
+    const column=index%9;
+    const input=cell.querySelector('input,select');
+    if(!input)return;
+    input.style.minWidth='0';
+    input.style.maxWidth='100%';
+    if(column===2)input.style.width='50px';
+    else input.style.width='100%';
+  });
+  otherTable.querySelectorAll('tbody td:last-child > div').forEach(actions=>{actions.style.flexWrap='nowrap';actions.style.whiteSpace='nowrap';actions.style.justifyContent='flex-start';});
+}
+const b1fSiteMaterialDetailMarkupV7=b1fSiteMaterialDetailMarkup;
+b1fSiteMaterialDetailMarkup=function(list){const html=b1fSiteMaterialDetailMarkupV7(list);setTimeout(fitB1FSiteMaterialTables,0);return html;};
