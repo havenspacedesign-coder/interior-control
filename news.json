@@ -1,126 +1,126 @@
 {
-  "date": "2026-09-23",
-  "updatedAt": "2026-09-23T00:19:03.275Z",
+  "date": "2026-09-24",
+  "updatedAt": "2026-09-24T00:24:13.859Z",
   "news": [
     {
-      "id": "2e604c70def9cd69",
+      "id": "0f89a42246b20fbe",
       "source": "遠見",
       "category": "國際",
-      "title": "川習二會談台灣？AI、稀土等五大議題曝光，黃仁勳、馬斯克將赴國宴",
-      "url": "https://www.gvm.com.tw/article/133186",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260518/231451.jpg",
-      "publishedAt": "2026-09-22T11:03:00.000Z",
-      "fetchedAt": "2026-09-23T00:19:03.275Z"
+      "title": "習近平啟程訪美！蔡奇、王毅隨行，川普將親赴安德魯基地迎接",
+      "url": "https://www.gvm.com.tw/article/133242",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260914/240925.jpg",
+      "publishedAt": "2026-09-23T10:58:00.000Z",
+      "fetchedAt": "2026-09-24T00:24:13.859Z"
     },
     {
-      "id": "077bb0858081c093",
+      "id": "c3c99b2a628277ff",
       "source": "遠見",
-      "category": "好享生活／教育／話題",
-      "title": "2026亞運棒球》愛知名古屋亞運棒球賽程資訊全攻略！台灣賽程、參賽隊伍、分組名單、球員資訊、轉播單位一次看",
-      "url": "https://www.gvm.com.tw/article/132904",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260907/240521.jpg",
-      "publishedAt": "2026-09-22T15:05:00.000Z",
-      "fetchedAt": "2026-09-23T00:19:03.275Z"
+      "category": "AI／科技",
+      "title": "宏碁陳俊聖看壞記憶體，前韓駐台代表為何表達類似擔憂？",
+      "url": "https://www.gvm.com.tw/article/133238",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260923/241731.jpg",
+      "publishedAt": "2026-09-23T10:45:00.000Z",
+      "fetchedAt": "2026-09-24T00:24:13.859Z"
     },
     {
-      "id": "21c29c87af290c77",
+      "id": "d1726b7ece9574dc",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "TRF為何害慘許多人？槓桿一旦失控，資產也可能變成負數",
-      "url": "https://www.gvm.com.tw/article/133064",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260915/241025.jpg",
-      "publishedAt": "2026-09-22T10:10:00.000Z",
-      "fetchedAt": "2026-09-23T00:19:03.275Z"
+      "title": "同樣是老屋，為何價值天差地遠？胡偉良：別看現在值多少錢，要看「這件事」",
+      "url": "https://www.gvm.com.tw/article/133244",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260923/241734.jpg",
+      "publishedAt": "2026-09-23T11:52:00.000Z",
+      "fetchedAt": "2026-09-24T00:24:13.859Z"
     },
     {
-      "id": "9ff8449dfb037954",
+      "id": "d59bbd3d5fd9b293",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "奉俊昊應金馬之邀將首度來台！金馬電影大師課首波夢幻講師名單大公開",
-      "url": "https://www.gvm.com.tw/article/133187",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260922/241567.jpg",
-      "publishedAt": "2026-09-22T11:53:00.000Z",
-      "fetchedAt": "2026-09-23T00:19:03.275Z"
+      "title": "好的教養不是什麼都要管！心理學教授：5大支柱培養孩子的「韌性」",
+      "url": "https://www.gvm.com.tw/article/133245",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260923/241737.jpg",
+      "publishedAt": "2026-09-23T12:21:00.000Z",
+      "fetchedAt": "2026-09-24T00:24:13.859Z"
     },
     {
-      "id": "3454eef2fbd1db14",
+      "id": "b6fdb35f649586b3",
       "source": "壹蘋",
       "category": "國際",
-      "title": "壹蘋派生活美語　可可．香奈兒的絕處「縫」生之路",
-      "url": "https://news.nextapple.com/international/20260923/899B610FB13B34A84AA6BA4798ED42AD",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/899B610FB13B34A84AA6BA4798ED42AD/e717c22a54309ef07696c0268a8e56f9_1280.webp",
-      "publishedAt": "2026-09-23T00:00:00.000Z",
-      "fetchedAt": "2026-09-23T00:19:03.275Z"
+      "title": "壹蘋派生活美語　快！垃圾車來了：臺灣獨特的倒垃圾文化",
+      "url": "https://news.nextapple.com/international/20260924/F30C32ED6D200F7D8947880C79F0C040",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/F30C32ED6D200F7D8947880C79F0C040/95047a3fd7fe6f2eb81df9bb528fa7da_1280.webp",
+      "publishedAt": "2026-09-24T00:00:00.000Z",
+      "fetchedAt": "2026-09-24T00:24:13.859Z"
     },
     {
-      "id": "db9e6b32ce0674ab",
+      "id": "0a8781d850c1aac8",
       "source": "壹蘋",
       "category": "生活",
-      "title": "準舒力基2路徑曝光！專家：「直球對決台灣」可能性擴大",
-      "url": "https://news.nextapple.com/life/20260923/C4F06FB232F52051FB74DC174DC2D307",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/C4F06FB232F52051FB74DC174DC2D307/4048803b616fc6af37f4205f622882da_1280.webp",
-      "publishedAt": "2026-09-22T23:37:06.000Z",
-      "fetchedAt": "2026-09-23T00:19:03.275Z"
+      "title": "中秋節想旺運！12項風水禁忌公開　財位「這樣做」更能求好運",
+      "url": "https://news.nextapple.com/life/20260924/8BC31F4744E6986FBDA3B2173414FC60",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/8BC31F4744E6986FBDA3B2173414FC60/bf1186e391c4a70b061ffc8245bcc728_1280.webp",
+      "publishedAt": "2026-09-24T00:01:00.000Z",
+      "fetchedAt": "2026-09-24T00:24:13.859Z"
     },
     {
-      "id": "a1caae4821af1915",
+      "id": "e55cf338e04775d9",
       "source": "壹蘋",
       "category": "社會",
-      "title": "北市府前女社工督導「侵吞5老人存款」　1年撈1200萬遭移送！",
-      "url": "https://news.nextapple.com/local/20260923/52BDE4EA7293135A9B7EE3495BB08F9C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/52BDE4EA7293135A9B7EE3495BB08F9C/8a8f3ce031c0679942ae48647069db27_1280.webp",
-      "publishedAt": "2026-09-22T16:05:00.000Z",
-      "fetchedAt": "2026-09-23T00:19:03.275Z"
+      "title": "狼家教對14歲少女揉胸摸大腿　胞姊竟上門「情勒」家屬求寬容",
+      "url": "https://news.nextapple.com/local/20260924/EFD06F6BE464B40CDD294A6FBAC71298",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/EFD06F6BE464B40CDD294A6FBAC71298/9f02220af9d53eff266396cd87cd1ab7_1280.webp",
+      "publishedAt": "2026-09-23T23:52:00.000Z",
+      "fetchedAt": "2026-09-24T00:24:13.859Z"
     },
     {
-      "id": "c40ebb72933ec54c",
+      "id": "17d80549760d3907",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "秋分一到錢財跟著動　3生肖掌握賺錢契機",
-      "url": "https://news.nextapple.com/entertainment/20260923/28FA423D09A8D1ABB5682DE9D7D371CA",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/28FA423D09A8D1ABB5682DE9D7D371CA/f873af35239fa78fbd2884f54ddc7880_1280.webp",
-      "publishedAt": "2026-09-22T16:04:00.000Z",
-      "fetchedAt": "2026-09-23T00:19:03.275Z"
+      "title": "威尼斯直擊｜蝙蝠俠不揮拳改拿麥克風！羅伯派汀森《實境誘捕》再伸張「私刑正義」",
+      "url": "https://news.nextapple.com/entertainment/20260924/E102116712DF9908B05FE59283EBF02F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/E102116712DF9908B05FE59283EBF02F/c7db98613272bcb13af3430759dbd978_1280.webp",
+      "publishedAt": "2026-09-23T22:45:00.000Z",
+      "fetchedAt": "2026-09-24T00:24:13.859Z"
     },
     {
-      "id": "31040da1c624692f",
+      "id": "307e47ca3fdceeea",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "Apple新Mac正式開賣　M6 Mac mini 2萬9900元起",
-      "url": "https://news.nextapple.com/aitech/20260922/D85D23F8E650F707C535A66DAB959BEC",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/D85D23F8E650F707C535A66DAB959BEC/725546174f0f2d9824baf4c39b4627cb_1280.webp",
-      "publishedAt": "2026-09-22T14:31:23.000Z",
-      "fetchedAt": "2026-09-23T00:19:03.275Z"
+      "title": "蘋果首款摺疊iPhone Duo爆難產！「良率僅6成」首賣恐一機難求",
+      "url": "https://news.nextapple.com/aitech/20260924/CFB791E291F3FE3864FB703372D316F5",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/CFB791E291F3FE3864FB703372D316F5/608bc18b25a2c98d9fab10e2c4c41766_1280.webp",
+      "publishedAt": "2026-09-24T00:23:00.000Z",
+      "fetchedAt": "2026-09-24T00:24:13.859Z"
     },
     {
-      "id": "e4451a991c54987b",
+      "id": "faa9a6c8648f0a3a",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "川普宣示「無限制發展AI」　美股那指創新高！台積電ADR走強",
-      "url": "https://news.nextapple.com/finance/20260923/B2B193AF7FE462257E2E493A0D842F02",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/B2B193AF7FE462257E2E493A0D842F02/13c5d9c910310b884c86fb062334a44b_1280.webp",
-      "publishedAt": "2026-09-22T23:25:00.000Z",
-      "fetchedAt": "2026-09-23T00:19:03.275Z"
+      "title": "台股創新高！鄭麗文酸「只是表面 台灣快爛掉」　謝金河反擊",
+      "url": "https://news.nextapple.com/finance/20260924/FBD52E23C98C9813280E468C326B8DF5",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/FBD52E23C98C9813280E468C326B8DF5/4fa539392d9c02bb0555b187199ff6e7_1280.webp",
+      "publishedAt": "2026-09-24T00:16:53.000Z",
+      "fetchedAt": "2026-09-24T00:24:13.859Z"
     },
     {
-      "id": "e6abd18bb79c13df",
+      "id": "1045ede469d92006",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "不是NET！沈伯洋花襯衫僅此1件　高雄老店：有洋流專屬優惠",
-      "url": "https://news.nextapple.com/politics/20260923/DE84E0BE1A9E360DCB3A2E03634CFF12",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/DE84E0BE1A9E360DCB3A2E03634CFF12/9df446d48c8d69bb9e86092ee3c5d0cf_1280.webp",
-      "publishedAt": "2026-09-23T00:00:00.000Z",
-      "fetchedAt": "2026-09-23T00:19:03.275Z"
+      "title": "習近平抵美就收大禮！川普不只高規格接機　美中貿易休兵再延2個月",
+      "url": "https://news.nextapple.com/international/20260924/95F9C3A7C24E315556CC76AD184E848F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/95F9C3A7C24E315556CC76AD184E848F/6aa90b7eabbf8eb7436479a77f558fa8_1280.webp",
+      "publishedAt": "2026-09-23T23:44:50.000Z",
+      "fetchedAt": "2026-09-24T00:24:13.859Z"
     },
     {
-      "id": "91a60c4ebf8ad280",
+      "id": "a18b377c56268f9d",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "名古屋亞運再出包！球場靠「手寫白板」帶路　網：小學生運動會？",
-      "url": "https://news.nextapple.com/sports/20260923/4E3F3C52B4E78056DEAE4C1FAE08D9E4",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/4E3F3C52B4E78056DEAE4C1FAE08D9E4/c1282333aa088df659345c99b549b9b0_1280.webp",
-      "publishedAt": "2026-09-22T23:51:00.000Z",
-      "fetchedAt": "2026-09-23T00:19:03.275Z"
+      "title": "國中生割頸案｜乾哥律師轟「法律人之恥」　受害者律師高EQ回應感動人",
+      "url": "https://news.nextapple.com/local/20260924/784F80D926D568D9E7AB61F9C073ADB1",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/784F80D926D568D9E7AB61F9C073ADB1/0346742d4f69e9eedab95f6a1ab5ed27_1280.webp",
+      "publishedAt": "2026-09-23T23:42:49.000Z",
+      "fetchedAt": "2026-09-24T00:24:13.859Z"
     }
   ]
 }
