@@ -1,16 +1,16 @@
 {
-  "date": "2026-09-25",
-  "updatedAt": "2026-09-25T00:28:06.400Z",
+  "date": "2026-09-26",
+  "updatedAt": "2026-09-26T00:31:31.732Z",
   "news": [
     {
-      "id": "8524fc1ea5e75525",
+      "id": "b0fc7df63afa4fce",
       "source": "遠見",
       "category": "國際",
-      "title": "川習會2.0「閉門會談」！習近平：邀10萬美國青少年來華、大熊貓平平、福雙將落戶亞特蘭大",
-      "url": "https://www.gvm.com.tw/article/133290",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260924/241855.jpg",
-      "publishedAt": "2026-09-24T15:47:00.000Z",
-      "fetchedAt": "2026-09-25T00:28:06.400Z"
+      "title": "川習會成「外交秀」？未見重大突破，台灣、AI分歧未解",
+      "url": "https://www.gvm.com.tw/article/133297",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260925/241875.jpg",
+      "publishedAt": "2026-09-25T15:20:00.000Z",
+      "fetchedAt": "2026-09-26T00:31:31.732Z"
     },
     {
       "id": "2d41a608cad59245",
@@ -20,107 +20,107 @@
       "url": "https://www.gvm.com.tw/article/133276",
       "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260924/241822.jpg",
       "publishedAt": "2026-09-24T06:57:00.000Z",
-      "fetchedAt": "2026-09-25T00:28:06.400Z"
+      "fetchedAt": "2026-09-26T00:31:31.732Z"
     },
     {
-      "id": "dd1f983ca5a83c2e",
+      "id": "458c1db12f9e9c33",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "保險節稅威力大！會計師試算：「這情境」實拿超過遺產總額、達116％",
-      "url": "https://www.gvm.com.tw/article/133289",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260812/238354.jpg",
-      "publishedAt": "2026-09-24T12:52:00.000Z",
-      "fetchedAt": "2026-09-25T00:28:06.400Z"
+      "title": "同薪水、同公司，15年後差距這麼大？他45歲提早奪回「最珍貴資產」",
+      "url": "https://www.gvm.com.tw/article/133293",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260925/241862.jpg",
+      "publishedAt": "2026-09-25T06:30:00.000Z",
+      "fetchedAt": "2026-09-26T00:31:31.732Z"
     },
     {
-      "id": "ac45381fa4285074",
+      "id": "babceee726ef1325",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "中秋節柚子不能和什麼一起吃？營養師傳授6大安全守則：吃這7種藥物別碰文旦",
-      "url": "https://www.gvm.com.tw/article/133217",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20210910/82229_01.jpg",
-      "publishedAt": "2026-09-24T23:00:00.000Z",
-      "fetchedAt": "2026-09-25T00:28:06.400Z"
+      "title": "閱讀能降低失智風險三成！劍橋研究：從小讀到老有助大腦健康、減少認知衰退風險",
+      "url": "https://www.gvm.com.tw/article/133257",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20230209/131701.jpg",
+      "publishedAt": "2026-09-25T23:00:00.000Z",
+      "fetchedAt": "2026-09-26T00:31:31.732Z"
     },
     {
-      "id": "869514024a5fcab2",
+      "id": "3d829e4da01832f2",
       "source": "壹蘋",
       "category": "國際",
-      "title": "習近平抗議聲中出席白宮國宴　黃仁勳、蘇姿丰也到了",
-      "url": "https://news.nextapple.com/international/20260925/4E32724C827A01ABE6929736548F9A01",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/4E32724C827A01ABE6929736548F9A01/acb51672e0a74ae04f10c2ac6cf2fdf7_1280.webp",
-      "publishedAt": "2026-09-25T00:25:10.000Z",
-      "fetchedAt": "2026-09-25T00:28:06.400Z"
+      "title": "習近平要川普「公開反對台獨」　美駐中國大使回應了",
+      "url": "https://news.nextapple.com/international/20260926/E643CB18F484C40A0DF06CA3904A1775",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/E643CB18F484C40A0DF06CA3904A1775/515a61e794eca541a5a48bb3b40ddfb7_1280.webp",
+      "publishedAt": "2026-09-25T23:29:10.000Z",
+      "fetchedAt": "2026-09-26T00:31:31.732Z"
     },
     {
-      "id": "8c17c86813d89c05",
+      "id": "91337e31e5f27191",
       "source": "壹蘋",
       "category": "生活",
-      "title": "舒力基颱風最新動態！秋老虎更兇　熱飆36℃「曬到會痛」",
-      "url": "https://news.nextapple.com/life/20260925/0D8D7E8C0C9F8DA328C2B51EF0BCF1CC",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/0D8D7E8C0C9F8DA328C2B51EF0BCF1CC/d193f3328afbf7521f1535fb87fcd8df_1280.webp",
-      "publishedAt": "2026-09-24T22:43:53.000Z",
-      "fetchedAt": "2026-09-25T00:28:06.400Z"
+      "title": "秋老虎下山！飆36℃重回夏天　連假後期一天比一天熱",
+      "url": "https://news.nextapple.com/life/20260926/F382103C5200202102B201DE1DF15784",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/F382103C5200202102B201DE1DF15784/13d1af48a94f348b24f1c2ae435013f1_1280.webp",
+      "publishedAt": "2026-09-25T22:29:10.000Z",
+      "fetchedAt": "2026-09-26T00:31:31.732Z"
     },
     {
-      "id": "f04d894f5ee81ccf",
+      "id": "4a5c73765cc752c5",
       "source": "壹蘋",
       "category": "社會",
-      "title": "學生喋血案｜國三生「被訓斥2次」怒抓剪刀刺學長頸部　校方證實曾輔導",
-      "url": "https://news.nextapple.com/local/20260925/67D4AA9287FB6BF5B01FE62E30416911",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/67D4AA9287FB6BF5B01FE62E30416911/48dc74399c312da1766b6e4f1b6f55c9_1280.webp",
-      "publishedAt": "2026-09-24T23:20:00.000Z",
-      "fetchedAt": "2026-09-25T00:28:06.400Z"
+      "title": "中壢封街「萬人烤肉」   第24年寫下超狂紀錄",
+      "url": "https://news.nextapple.com/local/20260925/6A97F656376C84FC1A75A759C495E947",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/6A97F656376C84FC1A75A759C495E947/2ca60bd7caec4a0fc9bd35af16762bcc_1280.webp",
+      "publishedAt": "2026-09-25T23:57:04.000Z",
+      "fetchedAt": "2026-09-26T00:31:31.732Z"
     },
     {
-      "id": "8143ee3761fd7062",
+      "id": "8c663f74cbe43670",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "超美！鄭家純挺「雙胞胎巨肚」漂水中　網驚：最美孕婦寫真",
-      "url": "https://news.nextapple.com/entertainment/20260925/B9FEC8063B701830ADAD673151F972E7",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/B9FEC8063B701830ADAD673151F972E7/6aa80440cbed5a1405aa8a5d6c352491_1280.webp",
-      "publishedAt": "2026-09-24T23:56:33.000Z",
-      "fetchedAt": "2026-09-25T00:28:06.400Z"
+      "title": "嚴立婷進實驗室沒戴護目鏡口罩　網批不衛生！她藉「乃哥名言」反擊",
+      "url": "https://news.nextapple.com/entertainment/20260926/F3D82CADCCE6B6AC888FA414FE077FD0",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/F3D82CADCCE6B6AC888FA414FE077FD0/9f11fc8b9b9ba9066bd4e8e56dab7db1_1280.webp",
+      "publishedAt": "2026-09-26T00:16:37.000Z",
+      "fetchedAt": "2026-09-26T00:31:31.732Z"
     },
     {
-      "id": "5f8a6e1cb6639197",
+      "id": "679e273df7b5e20f",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "iPhone 18 Pro解鎖失敗竟重開機！蘋果下週推更新修復",
-      "url": "https://news.nextapple.com/aitech/20260924/9D30766B62FB2845820C90BA23668BA4",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/9D30766B62FB2845820C90BA23668BA4/5fa938e80159a01275b27c22e0a7d0fc_1280.webp",
-      "publishedAt": "2026-09-24T11:19:22.000Z",
-      "fetchedAt": "2026-09-25T00:28:06.400Z"
+      "title": "Google相簿新增遮蔽工具　截圖敏感資訊一筆模糊",
+      "url": "https://news.nextapple.com/aitech/20260925/C58A5BD5BE7B9BD1BB9006E59DC8C126",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/C58A5BD5BE7B9BD1BB9006E59DC8C126/07d400224c86582223abc94e31cbadcd_1280.webp",
+      "publishedAt": "2026-09-25T12:36:36.000Z",
+      "fetchedAt": "2026-09-26T00:31:31.732Z"
     },
     {
-      "id": "53f925c5277b1207",
+      "id": "12a75dd1d3b279a5",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "美股多收黑！半導體逆勢走強　台積電ADR漲1.03%",
-      "url": "https://news.nextapple.com/finance/20260925/A71CCD1C23611561CE98C12A2B1413C5",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/A71CCD1C23611561CE98C12A2B1413C5/1a47e5ee351a298932667f5c0a2e87a6_1280.webp",
-      "publishedAt": "2026-09-24T23:15:49.000Z",
-      "fetchedAt": "2026-09-25T00:28:06.400Z"
+      "title": "荷莫茲海峽有解？美股報喜反彈　道瓊漲478點",
+      "url": "https://news.nextapple.com/finance/20260926/37D3AD6E6F3C216E8930FBA31329F2DE",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/37D3AD6E6F3C216E8930FBA31329F2DE/70736e9e46b1368092cd44b3a03e3e1a_1280.webp",
+      "publishedAt": "2026-09-25T23:57:49.000Z",
+      "fetchedAt": "2026-09-26T00:31:31.732Z"
     },
     {
-      "id": "7acbdc194c8d7cfa",
+      "id": "34a7952bbcb0d82c",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "韓經紀約突喊卡！李雅英5字回應　台灣公司曝未來動向",
-      "url": "https://news.nextapple.com/entertainment/20260925/85CEB5C3A0B96607C307810F30F16B4A",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/85CEB5C3A0B96607C307810F30F16B4A/149d5b6ea1b95f738d77b73e071f149b_1280.webp",
-      "publishedAt": "2026-09-24T23:00:16.000Z",
-      "fetchedAt": "2026-09-25T00:28:06.400Z"
+      "title": "國3服務區婦人陳屍帳篷　目擊者路過2次：想說蒼蠅怎麼這麼多...",
+      "url": "https://news.nextapple.com/local/20260926/5348E86684DC792FC649FBD2C7881960",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/5348E86684DC792FC649FBD2C7881960/f9bda89d16974b9f9bddd622305530c5_1280.webp",
+      "publishedAt": "2026-09-25T23:35:10.000Z",
+      "fetchedAt": "2026-09-26T00:31:31.732Z"
     },
     {
-      "id": "1f6c7e7a369608de",
+      "id": "cbcc0d2eb7939bea",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "習近平急了？川習二會促川普「表態反台獨」　川普回應",
-      "url": "https://news.nextapple.com/international/20260925/2CC442E5D7C748E3EEA44950FFB4DA42",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/2CC442E5D7C748E3EEA44950FFB4DA42/6aab9a47c0aee098953e3345092e846b_1280.webp",
-      "publishedAt": "2026-09-24T22:50:59.000Z",
-      "fetchedAt": "2026-09-25T00:28:06.400Z"
+      "title": "普發現金較勁！傅崐萁喊發2萬　賴政府堅持1萬曝原因",
+      "url": "https://news.nextapple.com/politics/20260926/D6FBA8013C15223C689EDC2C2B33F91B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/D6FBA8013C15223C689EDC2C2B33F91B/feae6ab09495aadd69b847d1599aa8f4_1280.webp",
+      "publishedAt": "2026-09-25T23:27:59.000Z",
+      "fetchedAt": "2026-09-26T00:31:31.732Z"
     }
   ]
 }
