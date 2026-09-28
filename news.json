@@ -1,26 +1,26 @@
 {
-  "date": "2026-09-27",
-  "updatedAt": "2026-09-27T00:26:47.915Z",
+  "date": "2026-09-28",
+  "updatedAt": "2026-09-28T00:33:03.100Z",
   "news": [
     {
-      "id": "b0fc7df63afa4fce",
+      "id": "077bb0858081c093",
       "source": "遠見",
-      "category": "國際",
-      "title": "川習會成「外交秀」？未見重大突破，台灣、AI分歧未解",
-      "url": "https://www.gvm.com.tw/article/133297",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260925/241875.jpg",
-      "publishedAt": "2026-09-25T15:20:00.000Z",
-      "fetchedAt": "2026-09-27T00:26:47.915Z"
+      "category": "好享生活／教育／話題",
+      "title": "2026亞運棒球》愛知名古屋亞運棒球賽程資訊全攻略！台灣最終奪下銅牌，韓國完成亞運5連霸，日本拿下銀牌",
+      "url": "https://www.gvm.com.tw/article/132904",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260907/240521.jpg",
+      "publishedAt": "2026-09-27T12:47:00.000Z",
+      "fetchedAt": "2026-09-28T00:33:03.100Z"
     },
     {
-      "id": "f8c5c1e5c6a75ae0",
+      "id": "3ac1b4c9c4b46bde",
       "source": "遠見",
       "category": "AI／科技",
-      "title": "每3人就有1人在用AI！台灣使用率達33.8%，攀升全球第19名超車美德義",
-      "url": "https://www.gvm.com.tw/article/133264",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260714/236267.jpg",
-      "publishedAt": "2026-09-26T08:00:00.000Z",
-      "fetchedAt": "2026-09-27T00:26:47.915Z"
+      "title": "檢測工具標準掀熱議！法國文壇陷AI爭議：得獎小說被控整本幾乎由AI生成",
+      "url": "https://www.gvm.com.tw/article/133282",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260924/241837.jpg",
+      "publishedAt": "2026-09-27T08:00:00.000Z",
+      "fetchedAt": "2026-09-28T00:33:03.100Z"
     },
     {
       "id": "b0099878a802652e",
@@ -30,97 +30,97 @@
       "url": "https://www.gvm.com.tw/article/133301",
       "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260926/241891.jpg",
       "publishedAt": "2026-09-26T05:51:00.000Z",
-      "fetchedAt": "2026-09-27T00:26:47.915Z"
+      "fetchedAt": "2026-09-28T00:33:03.100Z"
     },
     {
-      "id": "986c86f1fd941620",
+      "id": "ee7c87ce4c1e5365",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "117歲都沒有重大疾病？長壽密碼大公開，科學家找到超級人瑞的「活得久」的線索",
-      "url": "https://www.gvm.com.tw/article/133280",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20240508/169990.jpg",
-      "publishedAt": "2026-09-26T23:00:00.000Z",
-      "fetchedAt": "2026-09-27T00:26:47.915Z"
+      "title": "2026名古屋亞運》棒球林昱珉8局10K5比1勝中國奪銅、克拉術李宛庭摘銀！中華隊獎牌、賽程、轉播一次看",
+      "url": "https://www.gvm.com.tw/article/132893",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260927/241903.jpg",
+      "publishedAt": "2026-09-27T06:25:00.000Z",
+      "fetchedAt": "2026-09-28T00:33:03.100Z"
     },
     {
-      "id": "76401bd07b6bfa78",
+      "id": "308ec4698ec92ae7",
       "source": "壹蘋",
       "category": "國際",
-      "title": "荒謬影片！紐約街頭能泛舟　美東風災恐成15年最慘",
-      "url": "https://news.nextapple.com/international/20260927/C8C03DCC1350BA974E1F5932A99F7AB3",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/C8C03DCC1350BA974E1F5932A99F7AB3/aa5fba2a61286d07c1ef84abba3361cb_1280.webp",
-      "publishedAt": "2026-09-27T00:19:27.000Z",
-      "fetchedAt": "2026-09-27T00:26:47.915Z"
+      "title": "影片｜機車行進中「竟被雷劈」　女騎士多處燒傷命危",
+      "url": "https://news.nextapple.com/international/20260928/CC69AB39317A12439C37012C628CA63A",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/CC69AB39317A12439C37012C628CA63A/12e47c7630f6b6fbeaf16be2167e26c9_1280.webp",
+      "publishedAt": "2026-09-28T00:06:00.000Z",
+      "fetchedAt": "2026-09-28T00:33:03.100Z"
     },
     {
-      "id": "0ff78cec61f39a30",
+      "id": "889bbb7bb9f3c8fb",
       "source": "壹蘋",
       "category": "生活",
-      "title": "舒力基變中颱！年度大潮今沿海防淹水　周四變天",
-      "url": "https://news.nextapple.com/life/20260927/36DC1841BA2392E12F2B4631BF26E870",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/36DC1841BA2392E12F2B4631BF26E870/9cef6da0f1362ab6f295eb032b549345_1280.webp",
-      "publishedAt": "2026-09-26T22:37:46.000Z",
-      "fetchedAt": "2026-09-27T00:26:47.915Z"
+      "title": "台中知名餐廳「10月底熄燈」退出一級戰區！　網友：撐11年很厲害",
+      "url": "https://news.nextapple.com/life/20260928/E05588F01B17835DCB483F18A3152532",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/E05588F01B17835DCB483F18A3152532/27cd938a2f7d897ac4fabf0644e0ef09_1280.webp",
+      "publishedAt": "2026-09-28T00:24:24.000Z",
+      "fetchedAt": "2026-09-28T00:33:03.100Z"
     },
     {
-      "id": "f974ed898f7c7996",
+      "id": "8fc9ac079c61a74b",
       "source": "壹蘋",
       "category": "社會",
-      "title": "大安區都更案竄火！蔣萬安：地下3樓難搶救　煙霧飄雙北7區",
-      "url": "https://news.nextapple.com/local/20260927/A307B0E4C15ACA9FB2D212F9B0A39E4E",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/A307B0E4C15ACA9FB2D212F9B0A39E4E/a61edbe8cd79d59799eee421fb86f304_1280.webp",
-      "publishedAt": "2026-09-26T23:01:17.000Z",
-      "fetchedAt": "2026-09-27T00:26:47.915Z"
+      "title": "超扯！乘客陳屍3天　新店客運「渾然不知」還載客遭罰3萬",
+      "url": "https://news.nextapple.com/local/20260928/CC531461D31E023CF509D38A73A52399",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/CC531461D31E023CF509D38A73A52399/6383c740f8789d94763806a518289f7f_1280.webp",
+      "publishedAt": "2026-09-27T22:20:01.000Z",
+      "fetchedAt": "2026-09-28T00:33:03.100Z"
     },
     {
-      "id": "013216d2badec44c",
+      "id": "a502d5e27e4ec5de",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "阿弟摸安心亞裸腰調情　把台下老婆當空氣！Mei動怒了",
-      "url": "https://news.nextapple.com/entertainment/20260927/0D40EA4932EA8B97660AEFA48C5486B0",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/0D40EA4932EA8B97660AEFA48C5486B0/daa352a3ea65d219465e20fd2116e08a_1280.webp",
-      "publishedAt": "2026-09-27T00:25:17.000Z",
-      "fetchedAt": "2026-09-27T00:26:47.915Z"
+      "title": "2萬人湧竹北！和三天王飆唱露天KTV　「匯成星海」空拍畫面太震撼",
+      "url": "https://news.nextapple.com/entertainment/20260928/71280DC690493E2EA0491792EC1765C0",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/71280DC690493E2EA0491792EC1765C0/55ab503ce598e597764508d273435f94_1280.webp",
+      "publishedAt": "2026-09-27T23:25:32.000Z",
+      "fetchedAt": "2026-09-28T00:33:03.100Z"
     },
     {
-      "id": "04bb41c92ee8b839",
+      "id": "87a5e8926b92b25f",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "Pixel Watch 3至5新增血壓、胰島素阻抗趨勢　首份報告10月出爐",
-      "url": "https://news.nextapple.com/aitech/20260926/B6D7F4E171C4C89F350B759A15EEE494",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/B6D7F4E171C4C89F350B759A15EEE494/acadfe665da9c55dbc903b49daf9bad7_1280.webp",
-      "publishedAt": "2026-09-26T08:59:52.000Z",
-      "fetchedAt": "2026-09-27T00:26:47.915Z"
+      "title": "Gmail星號變藍看不習慣　改回黃色、隱藏箭頭教學",
+      "url": "https://news.nextapple.com/aitech/20260927/DE681F41C374A9C2E3A112E0C067119F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/DE681F41C374A9C2E3A112E0C067119F/0f09efbd4043b0fd35c253b0dab24261_1280.webp",
+      "publishedAt": "2026-09-27T08:13:17.000Z",
+      "fetchedAt": "2026-09-28T00:33:03.100Z"
     },
     {
-      "id": "dbd6745022ef9894",
+      "id": "1e1aa97e4f7b4f48",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "騰訊推TenPayGo　遊中國可綁海外信用卡付款",
-      "url": "https://news.nextapple.com/finance/20260926/FB65DDAC95F67E76F0D885C01D66DFD0",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/FB65DDAC95F67E76F0D885C01D66DFD0/a8fdfad2b6c1e3c29b10a19f6ebb3f51_1280.webp",
-      "publishedAt": "2026-09-26T09:30:47.000Z",
-      "fetchedAt": "2026-09-27T00:26:47.915Z"
+      "title": "外資歸隊搶進693億！台股中秋後拚第四季行情　投顧上看4萬9",
+      "url": "https://news.nextapple.com/finance/20260928/D2F1009B465C3E851C0C1664A9B7E415",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/D2F1009B465C3E851C0C1664A9B7E415/625ad0d7bdb3e5c95ae58937c0ca5fae_1280.webp",
+      "publishedAt": "2026-09-27T17:00:00.000Z",
+      "fetchedAt": "2026-09-28T00:33:03.100Z"
     },
     {
-      "id": "a61ef7487c8f7408",
+      "id": "6506f7e7d211ab1d",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "弟猝死！男演員缺席葬禮　悲憶：父遭撞死也含淚拍完戲才奔喪",
-      "url": "https://news.nextapple.com/entertainment/20260926/B2854958E22113A0E4042BE426954F42",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/B2854958E22113A0E4042BE426954F42/a789b8ae0657e93eea7ff15ea19b6b25_1280.webp",
-      "publishedAt": "2026-09-26T15:55:00.000Z",
-      "fetchedAt": "2026-09-27T00:26:47.915Z"
+      "title": "水彩畫壇開戰！簡忠威怒轟楊立「俗辣」 ：讓法院教你如何道歉",
+      "url": "https://news.nextapple.com/life/20260928/7F2B77967A17257F5F82EDEA3C232975",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/7F2B77967A17257F5F82EDEA3C232975/a55ba0f8609aa5ed6bb111f76e917737_1280.webp",
+      "publishedAt": "2026-09-28T00:16:39.000Z",
+      "fetchedAt": "2026-09-28T00:33:03.100Z"
     },
     {
-      "id": "f0727a5c54c59797",
+      "id": "8278093a8fe12d27",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "凱特癌後完成24小時三峰挑戰　溫莎城堡作東邀同行者喝茶",
-      "url": "https://news.nextapple.com/international/20260926/89260C064B168A7E53FAC48FD3376B5D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/89260C064B168A7E53FAC48FD3376B5D/9a68acabdf3942b113cbbc335de05fa9_1280.webp",
-      "publishedAt": "2026-09-26T14:57:46.000Z",
-      "fetchedAt": "2026-09-27T00:26:47.915Z"
+      "title": "AI恐成致命武器？比爾蓋茲警告：落惡人手中「可能死10億人」",
+      "url": "https://news.nextapple.com/international/20260928/63C80DE8961AA70F776F0673F6722763",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/63C80DE8961AA70F776F0673F6722763/3e869c22b576f0e1d98008a576017064_1280.webp",
+      "publishedAt": "2026-09-27T23:46:00.000Z",
+      "fetchedAt": "2026-09-28T00:33:03.100Z"
     }
   ]
 }
