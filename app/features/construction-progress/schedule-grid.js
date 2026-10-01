@@ -3,6 +3,9 @@
 // scrolling left/right together, since they're visually one continuous
 // timeline even though they're separate <table> elements.
 let hscrollSyncing=false;
+// Focused progress test pages do not load the construction-guide module.
+// Keep this small local predicate so the stage picker works in both contexts.
+function isProgressDesignStage(stage){return getBibleStages().slice(0,16).includes(stage);}
 let lastHScrollLeft=0;
 let hscrollSyncFrame=0;
 let hscrollSyncSource=null;
@@ -409,7 +412,7 @@ window.filterStages=function(projId,ds){
   const inp=$(`ssi-${projId}-${ds}`);const list=$(`ssl-${projId}-${ds}`);
   if(!inp||!list)return;
   const val=inp.value.toLowerCase().trim();
-  const stages=getBibleStages().filter(s=>!isDesignStage(s));
+  const stages=getBibleStages().filter(s=>!isProgressDesignStage(s));
   const filtered=val?stages.filter(s=>s.toLowerCase().includes(val)):stages;
   list.innerHTML=filtered.map(s=>`<div class="stage-search-item" data-stage="${escAttr(s)}" onclick="addEvFromStage('${projId}','${ds}','${s}')">${displayStageName(s)}</div>`).join('');
   if(filtered.length)list.querySelectorAll('.stage-search-item')[0]?.classList.add('hi');
@@ -437,7 +440,7 @@ window.togglePicker=function(e,projId,ds,row){
 window.addEvFromStage=async function(projId,ds,stage){
   openPicker=null;
   const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
-  const schedule=[...(proj.schedule||[]),{date:ds,stage,label:displayStageName(stage),time:'',note:''}];
+  const schedule=[...(proj.schedule||[]),{date:ds,stage,label:displayStageName(stage),time:'',note:'',_progressItemId:progressItemId()}];
   if(localTestMode){proj.schedule=schedule;setSynced();renderProgress();return;}
   setSyncing();await updateDoc(doc(db,'projects',projId),{schedule});setSynced();
 }
@@ -459,12 +462,13 @@ window.handleChipClick=function(e,projId,ds,ei,stage){
     openCheckMo(projId,stage,stage,proj?.name||'');
   }
 }
-async function copyTagToCell(toProjId,toDs){
+window.copyTagToCell=async function(toProjId,toDs){
   if(!selectedTag)return;
   const srcProj=S.projects.find(p=>p.id===selectedTag.projId);if(!srcProj)return;
   const ev=(srcProj.schedule||[]).filter(e=>e.date===selectedTag.ds)[selectedTag.ei];if(!ev)return;
   const toProj=S.projects.find(p=>p.id===toProjId);if(!toProj)return;
-  const schedule=[...(toProj.schedule||[]),{...ev,date:toDs}];
+  const schedule=[...(toProj.schedule||[]),{...ev,date:toDs,_progressItemId:progressItemId()}];
+  if(localTestMode){toProj.schedule=schedule;setSynced();selectedTag=null;renderProgress();return;}
   setSyncing();await updateDoc(doc(db,'projects',toProjId),{schedule});setSynced();selectedTag=null;
 }
 var evDragSrc=null;
@@ -492,13 +496,21 @@ window.evDrop=async function(e,toProjId,toDs){
       const moved=[...(srcProj.schedule||[])];
       moved.splice(idx,1);
       moved.push({...ev,date:toDs});
+      if(localTestMode){srcProj.schedule=moved;evDragSrc=null;setSynced();renderProgress();return;}
       await updateDoc(doc(db,'projects',toProjId),{schedule:moved});
     }
     evDragSrc=null;
     setSynced();
     return;
   }
-  await updateDoc(doc(db,'projects',toProjId),{schedule:[...(toProj.schedule||[]),{...ev,date:toDs}]});
+  const copiedEvent={...ev,date:toDs,...(e.ctrlKey?{_progressItemId:progressItemId()}:{})};
+  const toSchedule=[...(toProj.schedule||[]),copiedEvent];
+  if(localTestMode){
+    toProj.schedule=toSchedule;
+    if(!e.ctrlKey){const idx=(srcProj.schedule||[]).indexOf(ev);if(idx>=0)srcProj.schedule=[...(srcProj.schedule||[]).slice(0,idx),...(srcProj.schedule||[]).slice(idx+1)];}
+    evDragSrc=null;setSynced();renderProgress();return;
+  }
+  await updateDoc(doc(db,'projects',toProjId),{schedule:toSchedule});
   if(!e.ctrlKey){
     const idx=(srcProj.schedule||[]).indexOf(ev);
     if(idx>=0){
@@ -517,6 +529,7 @@ window.removeEv=async function(projId,ds,ei){
   if(!window.confirm(`確定要刪除「${eventName}」嗎？\n\n按 Enter 可確認刪除，按 Esc 可取消。`))return;
   const idx=(proj.schedule||[]).indexOf(toRemove);
   const ns=[...(proj.schedule||[]).slice(0,idx),...(proj.schedule||[]).slice(idx+1)];
+  if(localTestMode){proj.schedule=ns;setSynced();renderProgress();return;}
   setSyncing();await updateDoc(doc(db,'projects',projId),{schedule:ns});setSynced();
 }
 function scheduleCellKey(projId,ds,ei){return{projId:String(projId),ds:String(ds),ei:Number(ei)};}
@@ -529,6 +542,7 @@ window.selectScheduleCell=function(span){
   scheduleSelected=next;scheduleEditing=null;
   document.querySelectorAll('.ev-field.excel-selected').forEach(el=>el.classList.remove('excel-selected'));
   span.classList.add('excel-selected');
+  refreshProgressActionToolbar();
 }
 window.startFieldEdit=function(span){
   const next=scheduleCellKey(span.dataset.proj,span.dataset.ds,span.dataset.ei);
@@ -698,3 +712,276 @@ window.setCheckAmount=async function(projId,stage,idx,value){
   setSyncing();
   try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}
 }
+
+// ── Progress-only operation undo ──────────────────────────────────────────
+// The history intentionally lives only in this tab.  Each record restores one
+// document/field and first verifies that its current value is still exactly the
+// value written by this user; this prevents an undo from overwriting a later
+// change received from another collaborator.
+var progressUndoStack=[];
+var progressUndoRunning=false;
+window.progressItemId=function(){return 'pi_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);};
+function progressClone(value){return JSON.parse(JSON.stringify(value==null?null:value));}
+function progressSame(a,b){return JSON.stringify(a)==JSON.stringify(b);}
+function progressUniqueTargets(targets){
+  var seen={};return(targets||[]).filter(function(target){var id=target.kind+'|'+target.key;if(seen[id])return false;seen[id]=true;return true;});
+}
+async function progressReadTarget(target){
+  if(target.kind==='private'){
+    if(localTestMode)return progressClone(S.privateNotes||{work:{},personal:{}});
+    var pnSnap=await getDoc(doc(db,'privateNotes',target.key));return pnSnap.exists()?progressClone(pnSnap.data()):{work:{},personal:{}};
+  }
+  if(target.kind==='meeting'){
+    if(localTestMode)return progressClone(((S.meetingLogs[target.key]||{}).items)||[]);
+    var meetingSnap=await getDoc(doc(db,'meetingLogs',target.key));return meetingSnap.exists()?progressClone(meetingSnap.data().items||[]):[];
+  }
+  if(target.kind==='schedule'){
+    if(localTestMode){var localProj=S.projects.find(function(project){return project.id===target.key;});return progressClone(localProj?.schedule||[]);}
+    var projectSnap=await getDoc(doc(db,'projects',target.key));return projectSnap.exists()?progressClone(projectSnap.data().schedule||[]):[];
+  }
+  if(target.kind==='checks'){
+    if(localTestMode)return progressClone(S.checks[target.key]||[]);
+    var checkSnap=await getDoc(doc(db,'checks',target.key));return checkSnap.exists()?progressClone(checkSnap.data().items||[]):[];
+  }
+  if(target.kind==='projectField'){
+    if(localTestMode){var fieldProject=S.projects.find(function(project){return project.id===target.key;});return progressClone(fieldProject?.[target.field]??'');}
+    var fieldSnap=await getDoc(doc(db,'projects',target.key));return fieldSnap.exists()?progressClone(fieldSnap.data()[target.field]??''):'';
+  }
+  if(target.kind==='userTodo'){
+    if(localTestMode){var localTodo=(S.userTodos||[]).find(function(item){return String(item.id)===String(target.key);});return localTodo?progressClone(localTodo):null;}
+    var todoSnap=await getDoc(doc(db,'userTodos',target.key));return todoSnap.exists()?progressClone(todoSnap.data()):null;
+  }
+  if(target.kind==='globalNote'){
+    if(localTestMode)return S.globalNotes[target.key]?progressClone(S.globalNotes[target.key]):null;
+    var noteSnap=await getDoc(doc(db,'globalNotes',target.key));return noteSnap.exists()?progressClone(noteSnap.data()):null;
+  }
+  return null;
+}
+async function progressRestoreMeetingDailyLogs(target,currentItems,restoredItems){
+  var max=Math.max(currentItems.length,restoredItems.length);
+  for(var idx=0;idx<max;idx++){
+    var current=currentItems[idx]||{},restored=restoredItems[idx]||{};
+    for(const uid of (current.mentions||[])){if(!(restored.mentions||[]).includes(uid))await mRemoveFromDailyLog(target.rowId,target.ds,idx,uid);}
+    for(const uid of (restored.mentions||[]))await mSyncDailyLog(target.rowId,target.ds,idx,uid,restored);
+  }
+}
+async function progressWriteTarget(target,value,current){
+  var restored=progressClone(value);
+  if(target.kind==='private'){
+    S.privateNotes=restored;persistLocalPrivateNotes();
+    await setDoc(doc(db,'privateNotes',target.key),restored);return;
+  }
+  if(target.kind==='meeting'){
+    S.meetingLogs=Object.assign({},S.meetingLogs,{[target.key]:{rowId:target.rowId,date:target.ds,items:restored}});
+    await setDoc(doc(db,'meetingLogs',target.key),{rowId:target.rowId,date:target.ds,items:restored,updatedAt:serverTimestamp()});
+    await progressRestoreMeetingDailyLogs(target,current||[],restored);return;
+  }
+  if(target.kind==='schedule'){
+    var project=S.projects.find(function(item){return item.id===target.key;});if(project)project.schedule=restored;
+    if(!localTestMode)await updateDoc(doc(db,'projects',target.key),{schedule:restored});return;
+  }
+  if(target.kind==='checks'){
+    S.checks=Object.assign({},S.checks,{[target.key]:restored});
+    await setDoc(doc(db,'checks',target.key),{items:restored});
+    return;
+  }
+  if(target.kind==='projectField'){
+    var fieldProject=S.projects.find(function(item){return item.id===target.key;});if(fieldProject)fieldProject[target.field]=restored;
+    await updateDoc(doc(db,'projects',target.key),{[target.field]:restored});
+    return;
+  }
+  if(target.kind==='userTodo'){
+    if(restored==null)await deleteDoc(doc(db,'userTodos',target.key));
+    else await setDoc(doc(db,'userTodos',target.key),restored);
+    return;
+  }
+  if(target.kind==='globalNote'){
+    if(restored==null)await deleteDoc(doc(db,'globalNotes',target.key));
+    else await setDoc(doc(db,'globalNotes',target.key),restored);
+  }
+}
+function progressUndoPush(record){
+  if(progressUndoRunning||!record||!record.targets||!record.targets.length)return;
+  progressUndoStack.push(record);
+  if(progressUndoStack.length>10)progressUndoStack.shift();
+  if(activePanel==='progress')renderProgress();
+}
+async function progressRecordCreatedTarget(action,label,target,before){
+  if(progressUndoRunning)return;
+  var after=await progressReadTarget(target);if(progressSame(before,after))return;
+  progressUndoPush({action:action,label:label,targets:[Object.assign({},target,{before:progressClone(before),after:after})]});
+}
+window.progressUndo=async function(){
+  var record=progressUndoStack.pop();
+  if(!record)return;
+  progressUndoRunning=true;
+  try{
+    var current=[];
+    for(const target of record.targets)current.push(await progressReadTarget(target));
+    var conflict=record.targets.some(function(target,index){return !progressSame(current[index],target.after);});
+    if(conflict){var conflictError=new Error('此項目已被其他操作修改，無法復原。');conflictError.undoConflict=true;throw conflictError;}
+    for(var i=0;i<record.targets.length;i++)await progressWriteTarget(record.targets[i],record.targets[i].before,current[i]);
+    setSynced();
+  }catch(error){
+    if(!error?.undoConflict)progressUndoStack.push(record);
+    alert(error&&error.message?error.message:'無法復原這筆操作');
+  }finally{
+    progressUndoRunning=false;
+    if(activePanel==='progress')renderProgress();
+  }
+};
+function progressUndoButton(){var next=progressUndoStack[progressUndoStack.length-1],title=next?('上一步：'+next.label+'（Ctrl+Z）'):'上一步（Ctrl+Z）';return '<button type="button" class="progress-undo-button progress-icon-button" data-undo-count="'+progressUndoStack.length+'" '+(progressUndoStack.length?'':'disabled ')+'onclick="progressUndo()" title="'+escAttr(title)+'" aria-label="上一步"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 6 3.5 11.7l5.7 5.7 1.4-1.4-3.3-3.3H15a4 4 0 1 1-3.4 6.1l-1.7 1a6 6 0 1 0 5.1-9.1H7.2l3.4-3.3L9.2 6Z"/></svg></button>';}
+window.progressSelectedTarget=function(){
+  var p=privateSelectedCell&&privateSelectedCell(),m=meetingSelectedCell&&meetingSelectedCell(),s=scheduleSelected;
+  if(p){var pItem=((((S.privateNotes||{})[p.type]||{})[p.ds]||[])[p.idx]);if(pItem)return{kind:'private',ref:p,item:pItem};}
+  if(m){var mItem=((((S.meetingLogs||{})[m.rowId+'_'+m.ds]||{}).items||[])[m.idx]);return{kind:'meeting',ref:m,item:mItem||{},empty:!mItem};}
+  if(s){var proj=S.projects.find(function(x){return x.id===s.projId;}),sItem=(proj?.schedule||[]).filter(function(x){return x.date===s.ds;})[s.ei];if(sItem)return{kind:'schedule',ref:s,item:sItem};}
+  return null;
+};
+window.progressApplySelectedColor=async function(kind,value){
+  var target=progressSelectedTarget();if(!target)return;
+  if(target.kind==='private')return kind==='text'?pnSetColor(target.ref.type,target.ref.ds,target.ref.idx,value):pnSetBackground(target.ref.type,target.ref.ds,target.ref.idx,value);
+  if(target.kind==='meeting')return mSetColor(target.ref.rowId,target.ref.ds,target.ref.idx,kind,value);
+  return scheduleSetStyle(target.ref.projId,target.ref.ds,target.ref.ei,kind==='text'?'color':'bg',value);
+};
+var PROGRESS_COLOR_ROWS=[
+  ['#f4cccc','#fce5cd','#fff2cc','#d9ead3','#d0e0e3','#cfe2f3','#d9d2e9','#ead1dc'],
+  ['#ea9999','#f9cb9c','#ffe599','#b6d7a8','#a2c4c9','#9fc5e8','#b4a7d6','#d5a6bd'],
+  ['#e06666','#f6b26b','#ffd966','#93c47d','#76a5af','#6fa8dc','#8e7cc3','#c27ba0'],
+  ['#cc0000','#e69138','#f1c232','#6aa84f','#45818e','#3d85c6','#674ea7','#a64d79']
+];
+var PROGRESS_STANDARD_COLORS=['#000000','#ffffff','#4a86e8','#e24b4a','#ef9f27','#f1c232','#1d9e75','#00a2ae'];
+window.openProgressColorPalette=function(e,kind,current){
+  e.stopPropagation();closeMeetingColorPalette();
+  var palette=document.createElement('div');palette.id='meeting-color-palette';palette.className='meeting-color-palette';
+  var swatch=function(color){var selected=(current||'').toLowerCase()===color.toLowerCase();return '<button type="button" class="meeting-palette-swatch'+(selected?' selected':'')+'" style="background:'+color+'" title="'+color+'" aria-label="選擇 '+color+'" onclick="progressApplySelectedColor(\''+kind+'\',\''+color+'\');closeMeetingColorPalette()">'+(selected?'✓':'')+'</button>';};
+  palette.innerHTML='<button type="button" class="meeting-palette-reset" onclick="progressApplySelectedColor(\''+kind+'\',\'\');closeMeetingColorPalette()">↙&nbsp; 重設</button>'+PROGRESS_COLOR_ROWS.map(function(row){return '<div class="meeting-palette-grid">'+row.map(swatch).join('')+'</div>';}).join('')+'<div class="meeting-palette-standard">標準</div><div class="meeting-palette-grid">'+PROGRESS_STANDARD_COLORS.map(swatch).join('')+'</div><label class="meeting-palette-custom"><span>自訂</span><input type="color" value="'+(current||'#000000')+'" aria-label="自訂顏色" onchange="progressApplySelectedColor(\''+kind+'\',this.value);closeMeetingColorPalette()"><span class="meeting-custom-preview" style="background:'+(current||'#000000')+'"></span></label>';
+  document.body.appendChild(palette);var rect=e.currentTarget.getBoundingClientRect(),pr=palette.getBoundingClientRect();palette.style.left=Math.max(8,Math.min(rect.left,window.innerWidth-pr.width-8))+'px';palette.style.top=Math.max(8,Math.min(rect.bottom+6,window.innerHeight-pr.height-8))+'px';
+};
+window.renderProgressActionToolbar=function(){
+  var p=privateSelectedCell&&privateSelectedCell(),m=meetingSelectedCell&&meetingSelectedCell(),s=scheduleSelected;
+  var active=!!(p||m||s), strikeCall='', completeCall='';
+  if(p){strikeCall="pnToggleStrike('"+p.type+"','"+p.ds+"',"+p.idx+")";completeCall="pnToggleComplete('"+p.type+"','"+p.ds+"',"+p.idx+")";}
+  else if(m){strikeCall="mToggleStrike('"+m.rowId+"','"+m.ds+"',"+m.idx+")";completeCall="mToggleComplete('"+m.rowId+"','"+m.ds+"',"+m.idx+")";}
+  else if(s){strikeCall="scheduleToggleStrike('"+s.projId+"','"+s.ds+"',"+s.ei+")";completeCall="scheduleToggleComplete('"+s.projId+"','"+s.ds+"',"+s.ei+")";}
+  return '<span class="progress-action-toolbar" id="progress-action-toolbar">'+progressUndoButton()+'<button type="button" class="progress-icon-button progress-complete-button" title="完成" aria-label="完成" '+(active?'onclick="'+completeCall+'"':'disabled')+'>✓</button><button type="button" class="progress-icon-button progress-delete-button" title="刪除線" aria-label="刪除線" '+(active?'onclick="'+strikeCall+'"':'disabled')+'><span class="progress-strikethrough-icon" aria-hidden="true">S</span></button></span>';
+};
+window.refreshProgressActionToolbar=function(){
+  var el=document.getElementById('progress-action-toolbar');if(el)el.outerHTML=renderProgressActionToolbar();
+  var target=progressSelectedTarget();document.querySelectorAll('.meeting-color-button').forEach(function(button,index){var kind=index===0?'text':'bg',value=target?(target.item[kind==='text'?'color':'bg']||''):'';button.disabled=!target;button.onclick=target?function(event){openProgressColorPalette(event,kind,value);}:null;var bar=button.querySelector('.meeting-color-bar');if(bar)bar.style.background=value||(kind==='text'?'#202124':'#ffffff');});
+};
+window.pnSetBackground=async function(type,ds,idx,bg){
+  var item=(((S.privateNotes||{})[type]||{})[ds]||[])[idx];if(!item)return;
+  var pn=progressClone(S.privateNotes);pn[type][ds][idx]=Object.assign({},item,{bg:bg});
+  S.privateNotes=pn;await setDoc(doc(db,'privateNotes',currentUser.uid),pn);
+};
+window.mToggleComplete=async function(rowId,ds,idx){
+  var key=rowId+'_'+ds,items=progressClone((S.meetingLogs[key]||{}).items||[]);while(items.length<=idx)items.push({text:'',color:'',bg:'',mentions:[]});
+  var nowDone=!items[idx].completed;
+  items[idx]=Object.assign({},items[idx],{completed:nowDone,color:nowDone?'#E24B4A':(items[idx].color==='#E24B4A'?'':items[idx].color),completedBy:nowDone?currentUser.uid:null,completedAt:nowDone?new Date().toISOString():null});
+  await setDoc(doc(db,'meetingLogs',key),{rowId:rowId,date:ds,items:items,updatedAt:serverTimestamp()});
+};
+window.mToggleStrike=async function(rowId,ds,idx){
+  var key=rowId+'_'+ds,items=progressClone((S.meetingLogs[key]||{}).items||[]);while(items.length<=idx)items.push({text:'',color:'',bg:'',mentions:[]});
+  items[idx]=Object.assign({},items[idx],{strike:!items[idx].strike});
+  await setDoc(doc(db,'meetingLogs',key),{rowId:rowId,date:ds,items:items,updatedAt:serverTimestamp()});
+};
+window.scheduleSetStyle=async function(projId,ds,ei,field,value){
+  var proj=S.projects.find(function(x){return x.id===projId;}),ev=(proj?.schedule||[]).filter(function(x){return x.date===ds;})[ei];if(!proj||!ev)return;
+  var at=proj.schedule.indexOf(ev),schedule=progressClone(proj.schedule);if(at<0)return;schedule[at]=Object.assign({},schedule[at],{[field]:value});
+  if(localTestMode){proj.schedule=schedule;setSynced();renderProgress();return;}
+  await updateDoc(doc(db,'projects',projId),{schedule:schedule});
+};
+window.scheduleToggleComplete=async function(projId,ds,ei){
+  var proj=S.projects.find(function(x){return x.id===projId;}),ev=(proj?.schedule||[]).filter(function(x){return x.date===ds;})[ei];if(!proj||!ev)return;
+  var at=proj.schedule.indexOf(ev),schedule=progressClone(proj.schedule);if(at<0)return;var nowDone=!schedule[at].completed;schedule[at]=Object.assign({},schedule[at],{completed:nowDone,color:nowDone?'#E24B4A':(schedule[at].color==='#E24B4A'?'':schedule[at].color),completedBy:nowDone?currentUser.uid:null,completedAt:nowDone?new Date().toISOString():null});
+  if(localTestMode){proj.schedule=schedule;setSynced();renderProgress();return;}
+  await updateDoc(doc(db,'projects',projId),{schedule:schedule});
+};
+window.scheduleToggleStrike=async function(projId,ds,ei){
+  var proj=S.projects.find(function(x){return x.id===projId;}),ev=(proj?.schedule||[]).filter(function(x){return x.date===ds;})[ei];if(!proj||!ev)return;
+  var at=proj.schedule.indexOf(ev),schedule=progressClone(proj.schedule);if(at<0)return;schedule[at]=Object.assign({},schedule[at],{strike:!schedule[at].strike});
+  if(localTestMode){proj.schedule=schedule;setSynced();renderProgress();return;}
+  await updateDoc(doc(db,'projects',projId),{schedule:schedule});
+};
+window.saveSiteNote=async function(projId,value){
+  var project=S.projects.find(function(item){return item.id===projId;});if(!project)return;
+  var text=String(value||'');if(String(project.siteNote||'')===text)return;
+  project.siteNote=text;setSyncing();await updateDoc(doc(db,'projects',projId),{siteNote:text});setSynced();
+};
+function progressMeetingDragTargets(args){
+  var event=args[0],toRowId=args[1],toDs=args[2],from=null,raw='';
+  try{raw=event?.dataTransfer?.getData('text/plain')||'';}catch(error){}
+  if(raw){var parts=raw.split('|');if(parts.length===4&&parts[0]==='meet')from={rowId:parts[1],ds:parts[2]};}
+  if(!from&&meetingDragSrc)from={rowId:meetingDragSrc.rowId,ds:meetingDragSrc.ds};
+  var targets=[{kind:'meeting',key:toRowId+'_'+toDs,rowId:toRowId,ds:toDs}];
+  if(from)targets.push({kind:'meeting',key:from.rowId+'_'+from.ds,rowId:from.rowId,ds:from.ds});
+  return progressUniqueTargets(targets);
+}
+function progressScheduleDragTargets(args){
+  var event=args[0],toProjId=args[1],from=null,raw='';
+  try{raw=event?.dataTransfer?.getData('text/plain')||'';}catch(error){}
+  if(raw){var parts=raw.split('|');if(parts.length===4&&parts[0]==='ev')from={projId:parts[1]};}
+  if(!from&&evDragSrc)from={projId:evDragSrc.projId};
+  return progressUniqueTargets([{kind:'schedule',key:toProjId}].concat(from?[{kind:'schedule',key:from.projId}]:[]));
+}
+function progressWrapOperation(name,targetFactory,label){
+  var original=window[name];if(!original)return;
+  window[name]=async function(){
+    if(progressUndoRunning)return original.apply(this,arguments);
+    var args=[].slice.call(arguments),targets=progressUniqueTargets(targetFactory(args)||[]),before=[];
+    for(const target of targets)before.push(await progressReadTarget(target));
+    var result=await original.apply(this,args),after=[];
+    for(const target of targets)after.push(await progressReadTarget(target));
+    var changed=[];
+    targets.forEach(function(target,index){if(!progressSame(before[index],after[index]))changed.push(Object.assign({},target,{before:before[index],after:after[index]}));});
+    if(changed.length)progressUndoPush({action:name,label:typeof label==='function'?label(args):label,targets:changed});
+    return result;
+  };
+}
+function progressPrivateTarget(){return[{kind:'private',key:currentUser.uid}];}
+function progressMeetingTarget(args,name){
+  var rowId=name==='mSaveBox'?args[1]:args[0],ds=name==='mSaveBox'?args[2]:args[1];
+  return rowId&&ds?[{kind:'meeting',key:rowId+'_'+ds,rowId:rowId,ds:ds}]:[];
+}
+function progressScheduleTarget(args,name){
+  if(name==='saveScheduleCell')return args[0]?.dataset?.proj?[{kind:'schedule',key:args[0].dataset.proj}]:[];
+  return args[0]?[{kind:'schedule',key:String(args[0])}]:[];
+}
+[
+  ['pnSetCellText','修改個人記事文字'],['pnSaveBlur','修改個人記事文字'],['pnSaveBox','修改個人記事文字'],
+  ['pnSetColor','修改個人記事文字顏色'],['pnSetBackground','修改個人記事底色'],['pnToggleComplete','切換個人記事完成狀態'],
+  ['pnToggleStrike','切換個人記事刪除線'],['pnAdd','新增個人記事'],['pnDelete','刪除個人記事'],['pnDrop','移動個人記事']
+].forEach(function(entry){progressWrapOperation(entry[0],progressPrivateTarget,entry[1]);});
+[
+  ['mSetCellText','修改會議事項文字'],['mAdd','新增會議事項'],['mSetColor','修改會議事項顏色'],
+  ['mToggleComplete','切換會議事項完成狀態'],['mToggleStrike','切換會議事項刪除線'],['mDelete','刪除會議事項'],
+  ['mToggleMention','修改會議事項標記'],['mSaveBox','修改會議事項文字']
+].forEach(function(entry){progressWrapOperation(entry[0],function(args){return progressMeetingTarget(args,entry[0]);},entry[1]);});
+progressWrapOperation('mDrop',progressMeetingDragTargets,'移動會議事項');
+[
+  ['addEvFromStage','新增工程項目'],['copyTagToCell','複製工程項目'],['removeEv','刪除工程項目'],
+  ['saveScheduleCell','修改工程項目備註'],['scheduleSetStyle','修改工程項目顏色'],
+  ['scheduleToggleComplete','切換工程項目完成狀態'],['scheduleToggleStrike','切換工程項目刪除線']
+].forEach(function(entry){progressWrapOperation(entry[0],function(args){return progressScheduleTarget(args,entry[0]);},entry[1]);});
+progressWrapOperation('evDrop',progressScheduleDragTargets,'移動工程項目');
+progressWrapOperation('saveSiteNote',function(args){return args[0]?[{kind:'projectField',key:String(args[0]),field:'siteNote'}]:[];},'修改工地共用備註');
+progressWrapOperation('setCheckStatus',function(args){return activePanel==='progress'?[{kind:'checks',key:args[0]+'_'+args[1]}]:[];},'修改工程檢核狀態');
+progressWrapOperation('setCheckAmount',function(args){return activePanel==='progress'?[{kind:'checks',key:args[0]+'_'+args[1]}]:[];},'修改工程估價金額');
+progressWrapOperation('saveGlobalNote',function(args){return currentUser&&args[0]?[{kind:'globalNote',key:currentUser.uid+'_'+args[0]}]:[];},'修改我的記事本');
+progressWrapOperation('saveTodoItemEdit',function(args){return String(args[0]||'').startsWith('m:')?[{kind:'userTodo',key:String(args[0]).slice(2)}]:progressPrivateTarget();},'修改工地待辦文字');
+progressWrapOperation('toggleManualTodo',function(args){return args[0]?[{kind:'userTodo',key:String(args[0])}]:[];},'切換工地待辦完成狀態');
+progressWrapOperation('deleteManualTodo',function(args){return args[0]?[{kind:'userTodo',key:String(args[0])}]:[];},'刪除工地待辦');
+progressWrapOperation('deleteNoteTodoByKey',progressPrivateTarget,'刪除個人記事');
+[
+  ['saveRecurringRule','儲存自動排程'],['toggleRecurringRule','切換自動排程'],['deleteRecurringRule','刪除自動排程'],
+  ['savePrivateNote','修改個人記事文字'],['togglePrivateNote','切換個人記事完成狀態'],['removePrivateNote','刪除個人記事']
+].forEach(function(entry){progressWrapOperation(entry[0],progressPrivateTarget,entry[1]);});
+// pnSaveBox is declared by the final shared module, after this feature file.
+// Install its wrapper once the combined module bundle has finished evaluating.
+setTimeout(function(){progressWrapOperation('pnSaveBox',progressPrivateTarget,'修改個人記事文字');},0);
+document.addEventListener('keydown',function(e){
+  if(activePanel!=='progress'||!(e.ctrlKey||e.metaKey)||e.key.toLowerCase()!=='z'||e.shiftKey)return;
+  var el=document.activeElement;if(el&&(el.tagName==='INPUT'||el.tagName==='TEXTAREA'||el.isContentEditable))return;
+  if(!progressUndoStack.length)return;e.preventDefault();progressUndo();
+});

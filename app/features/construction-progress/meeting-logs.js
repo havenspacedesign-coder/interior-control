@@ -45,6 +45,7 @@ window.mPointerSelect=function(e,rowId,ds,idx){
   document.querySelectorAll('.meet-chip.meet-chip-sel').forEach(function(el){el.classList.remove('meet-chip-sel');el.style.border='';});
   e.currentTarget.classList.add('meet-chip-sel');
   e.currentTarget.style.border='2px solid var(--purple)';
+  refreshProgressActionToolbar();
 }
 window.mStartEdit=function(rowId,ds,idx){
   meetingPendingSelection=null;meetingRapidPointer={key:'',time:0};
@@ -117,7 +118,8 @@ window.mSetColor=async function(rowId,ds,idx,kind,val){
   if(!currentUser)return;
   const key=rowId+'_'+ds;
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
-  if(idx<0||idx>=items.length)return;
+  if(idx<0)return;
+  while(items.length<=idx)items.push({text:'',color:'',bg:'',mentions:[]});
   items[idx]=Object.assign({},items[idx],kind==='text'?{color:val}:{bg:val});
   setSyncing();
   await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
@@ -301,14 +303,15 @@ window.mSaveBox=async function(el,rowId,ds,idx){
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
   const previousItem=items[idx]||{},previousMentions=previousItem.mentions||[];
   const isBlank=!text.trim()&&!link;
-  if(isBlank){items.splice(idx,1);}else{
+  const keepBlankItem=!!(previousItem.color||previousItem.bg||previousItem.completed||previousItem.strike);
+  if(isBlank&&!keepBlankItem){items.splice(idx,1);}else{
     while(items.length<=idx)items.push({text:'',color:'',bg:'',mentions:[]});
     items[idx]=Object.assign({},items[idx],{text,link});
   }
   setSyncing();
   await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
   // keep already-tagged members' daily logs in sync with the latest text
-  if(isBlank){
+  if(isBlank&&!keepBlankItem){
     for(const uid of previousMentions)await mRemoveFromDailyLog(rowId,ds,idx,uid);
   }else{
     const mentions=items[idx].mentions||[];

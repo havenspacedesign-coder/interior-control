@@ -157,11 +157,11 @@ function renderWeekView(shouldShow){
         const pn=pendingCount(p.id,resolvedStage);
         const isSel=selectedTag&&selectedTag.projId===p.id&&selectedTag.ds===ds&&selectedTag.ei===ei;
         return`<div class="ev-row">
-          <span class="ev-chip${isSel?' sel':''}" style="background:${sc(pi)};color:${tc(pi)}"
+          <span class="ev-chip${isSel?' sel':''}" style="background:${ev.bg||sc(pi)};color:${ev.completed?'#E24B4A':(ev.color||tc(pi))};${ev.strike?'text-decoration:line-through;':''}"
             draggable="true" ondragstart="evDragStart(event,'${p.id}','${ds}',${ei})"
-            onclick="event.stopPropagation();handleChipClick(event,'${p.id}','${ds}',${ei},'${resolvedStage}')">${displayStageName(ev.label||ev.stage||'?')}${pendBadge(pn)}</span>
+            onclick="event.stopPropagation();handleChipClick(event,'${p.id}','${ds}',${ei},'${resolvedStage}')">${displayStageName(ev.label||ev.stage||'?')}${ev.completed?'<span class="progress-item-check">✓</span>':''}${pendBadge(pn)}</span>
           <span class="ev-field excel-cell ${scheduleCellIsSelected(p.id,ds,ei)?'excel-selected':''} ${scheduleCellIsEditing(p.id,ds,ei)?'excel-editing':''}" data-proj="${p.id}" data-ds="${ds}" data-ei="${ei}" data-field="note" contenteditable="${scheduleCellIsEditing(p.id,ds,ei)?'true':'false'}"
-            onclick="event.stopPropagation();selectScheduleCell(this)" ondblclick="event.stopPropagation();startFieldEdit(this)" onblur="saveScheduleCell(this)" onkeydown="scheduleCellKeyDown(event,this)">${escAttr(ev.note||'')}</span>
+            style="${ev.bg?'background:'+ev.bg+';':''}${ev.completed?'color:#E24B4A;':(ev.color?'color:'+ev.color+';':'')}${ev.strike?'text-decoration:line-through;':''}" onclick="event.stopPropagation();selectScheduleCell(this)" ondblclick="event.stopPropagation();startFieldEdit(this)" onblur="saveScheduleCell(this)" onkeydown="scheduleCellKeyDown(event,this)">${escAttr(ev.note||'')}</span>
           ${!isDone?`<button class="ev-del" onclick="event.stopPropagation();removeEv('${p.id}','${ds}',${ei})">×</button>`:''}
         </div>`;}).join('')}
       ${!isDone?`<div class="add-ev-wrap">
@@ -171,7 +171,7 @@ function renderWeekView(shouldShow){
             oninput="filterStages('${p.id}','${ds}')"
             onkeydown="handleStageKey(event,'${p.id}','${ds}')">
           <div class="stage-search-list" id="ssl-${p.id}-${ds}">
-            ${getBibleStages().filter(s=>!isDesignStage(s)).map(s=>`<div class="stage-search-item" onclick="addEvFromStage('${p.id}','${ds}','${s}')">${displayStageName(s)}</div>`).join('')}
+            ${getBibleStages().filter(s=>!isProgressDesignStage(s)).map(s=>`<div class="stage-search-item" onclick="addEvFromStage('${p.id}','${ds}','${s}')">${displayStageName(s)}</div>`).join('')}
           </div>
         </div>`:''}
       </div>`:''}
@@ -196,15 +196,7 @@ function renderWeekView(shouldShow){
   </tr></thead>
   <tbody>
   ${(function(){
-    var mFound=null;
-    Object.keys(meetingSelected).forEach(function(k){
-      if(meetingSelected[k]>=0){
-        var parts=k.split('|');var rowId=parts[0],ds2=parts[1];
-        var mkey=rowId+'_'+ds2;
-        var mitems=(S.meetingLogs[mkey]&&S.meetingLogs[mkey].items)||[];
-        if(mitems[meetingSelected[k]])mFound={rowId:rowId,ds:ds2,idx:meetingSelected[k],color:mitems[meetingSelected[k]].color||'',bg:mitems[meetingSelected[k]].bg||''};
-      }
-    });
+    var mFound=(typeof progressSelectedTarget==='function')?progressSelectedTarget():null;
     function mColorButton(kind,curVal){
       var isText=kind==='text';
       var label=isText?'文字顏色':'填滿顏色';
@@ -212,19 +204,20 @@ function renderWeekView(shouldShow){
         ?'<span class="meeting-text-color-glyph">A</span>'
         :'<svg class="meeting-fill-color-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.2 3.4 17.7 14.9l-6.8 6.8a2 2 0 0 1-2.8 0l-5.8-5.8a2 2 0 0 1 0-2.8l7-7-3.1-3.1 1.4-1.4 3.1 3.1 1.5-1.5 1.4 1.4-7.4 7.4 5.8 5.8 2.9-2.9L4.8 4.8 6.2 3.4Z"/><path d="M18.4 17.2s-2.5 2.8-2.5 4.3a2.5 2.5 0 0 0 5 0c0-1.5-2.5-4.3-2.5-4.3Z"/></svg>';
       var bar=curVal||(isText?'#202124':'#ffffff');
-      var oc=mFound?(' onclick="openMeetingColorPalette(event,\''+mFound.rowId+'\',\''+mFound.ds+'\','+mFound.idx+',\''+kind+'\',\''+curVal+'\')"'):'';
+      var oc=mFound?(' onclick="openProgressColorPalette(event,\''+kind+'\',\''+curVal+'\')"'):'';
       return'<button type="button" class="meeting-color-button" aria-label="'+label+'" title="'+label+'" '+(mFound?'':'disabled')+oc+'>'
         +'<span class="meeting-color-icon">'+icon+'</span><span class="meeting-color-bar" style="background:'+bar+'"></span></button>';
     }
     var mColorBar='<span class="meeting-color-controls">'
-      +mColorButton('text',mFound?mFound.color:'')
-      +mColorButton('bg',mFound?mFound.bg:'')
+      +mColorButton('text',mFound?(mFound.item.color||''):'')
+      +mColorButton('bg',mFound?(mFound.item.bg||''):'')
       +'</span>';
     var hdr='<tr><td colspan="'+(days.length+1)+'" style="height:37px;box-sizing:border-box;padding:2px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:2px solid #1a1a1a">'
       +'<div class="meeting-toolbar">'
       +'<span class="meeting-toolbar-title">🗓 會議 / 其他事項</span>'
       +'<span class="meeting-toolbar-help"><span class="help-wrap"><button class="help-btn" type="button" aria-label="會議操作說明" onclick="toggleHelpPop(event,\'meeting-help\')">?</button><span class="help-pop" id="meeting-help" onclick="event.stopPropagation()"><ul><li>單擊項目後可選擇文字與底色。</li><li>雙擊項目可編輯內容。</li><li>點「＋標記」可標記人員，並同步到對方的每日施工日誌。</li><li>按住 Ctrl 拖拉可複製項目。</li><li>按 Delete 可刪除已選取的項目。</li></ul></span></span></span>'
       +'<span aria-hidden="true"></span>'+mColorBar
+      +((typeof renderProgressActionToolbar==='function')?renderProgressActionToolbar():'')
       +'</div></td></tr>';
     var rows=MEETING_ROWS.map(function(row){
       var rh='<tr><td class="site-hd" style="color:var(--text2)">'+row.name+'</td>';
@@ -238,10 +231,12 @@ function renderWeekView(shouldShow){
         var selIdx=(meetingSelected[selKey]!=null)?meetingSelected[selKey]:-1;
         var h='<td style="vertical-align:top;height:30px;padding:2px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'" ondragover="mDragOver(event)" ondragleave="mDragLeave(event)" ondrop="mDrop(event,\''+row.id+'\',\''+ds+'\')">';
         if(!hasVisibleItem){
+          var emptyItem=items[0]||{};
+          var emptyStyle=(emptyItem.color?'color:'+emptyItem.color+';':'color:var(--text3);')+(emptyItem.bg?'background:'+emptyItem.bg+';':'background:var(--surface);')+(emptyItem.strike?'text-decoration:line-through;':'');
           var emptySelected=selIdx===0;
           var emptyEditing=meetingEditing&&meetingEditing.rowId===row.id&&meetingEditing.ds===ds&&meetingEditing.idx===0;
           if(emptyEditing){
-            h+='<div style="border:2px solid var(--purple);padding:3px 8px;border-radius:5px;display:flex;align-items:center;min-height:30px;font-size:13px;line-height:1.3;background:var(--surface)">'
+            h+='<div style="border:2px solid var(--purple);padding:3px 8px;border-radius:5px;display:flex;align-items:center;min-height:30px;font-size:13px;line-height:1.3;'+emptyStyle+'">'
               +'<input type="text" class="pn-box-input meet-chip" id="meetbox-'+row.id+'-'+ds+'-0" value="" autocomplete="off" spellcheck="false"'
               +' style="flex:1;min-width:0;box-sizing:border-box;border:none;padding:0;font-size:13px;line-height:1.3;font-family:inherit;background:transparent;color:var(--text)"'
               +' onblur="mBoxBlur(this,\''+row.id+'\',\''+ds+'\',0)"'
@@ -251,7 +246,7 @@ function renderWeekView(shouldShow){
               +'<span class="meet-tag-btn" title="標記成員" onmouseenter="mOpenMentionPicker(event,\''+row.id+'\',\''+ds+'\',0)" onmouseleave="mScheduleCloseMention(\''+row.id+'\',\''+ds+'\')" onclick="event.stopPropagation()" style="font-size:11px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:50%;width:18px;height:18px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;flex-shrink:0">+</span>'
               +'</div>';
           }else{
-            h+='<div class="meet-chip '+(emptySelected?'excel-selected':'')+'" style="border:1.5px dashed var(--border);padding:3px 8px;border-radius:5px;font-size:13px;cursor:pointer;user-select:none;min-height:30px;line-height:1.3;color:var(--text3)"'
+            h+='<div class="meet-chip '+(emptySelected?'excel-selected':'')+'" style="border:1.5px dashed var(--border);padding:3px 8px;border-radius:5px;font-size:13px;cursor:pointer;user-select:none;min-height:30px;line-height:1.3;'+emptyStyle+'"'
             +' onmousedown="mPointerSelect(event,\''+row.id+'\',\''+ds+'\',0)" onclick="mSelectEmpty(\''+row.id+'\',\''+ds+'\')" ondblclick="event.stopPropagation();mStartEdit(\''+row.id+'\',\''+ds+'\',0)"></div>';
           }
         }else{
@@ -260,7 +255,7 @@ function renderWeekView(shouldShow){
           var mentions=(item.mentions||[]).filter(function(uid){var member=S.members.find(function(x){return x.uid===uid;});return member&&member.role!=='manager';});
           var isSel=selIdx===0;
           var border=isSel?'2px solid var(--purple)':'1.5px solid var(--border)';
-          var textStyle=(color?'color:'+color+';font-weight:500;':'color:var(--text);')+(bg?'background:'+bg+';':'background:var(--surface);');
+          var textStyle=(item.completed?'color:#E24B4A;font-weight:500;':(color?'color:'+color+';font-weight:500;':'color:var(--text);'))+(bg?'background:'+bg+';':'background:var(--surface);')+(item.strike?'text-decoration:line-through;':'');
           var markable=markableMembersList();
           var allMarked=markable.length>0&&markable.every(function(member){return mentions.indexOf(member.uid)>=0;});
           var dots=allMarked
@@ -290,7 +285,7 @@ function renderWeekView(shouldShow){
               +' draggable="true"'
               +' ondragstart="mDragStart(event,\''+row.id+'\',\''+ds+'\',0)"'
               +' ondragend="mDragEnd(event)"'
-              +'>'+renderItemText(item)
+              +'>'+renderItemText(item)+(item.completed?'<span class="progress-item-check">✓</span>':'')
               +(dots?'<span style="position:absolute;top:2px;right:2px;display:flex;gap:2px">'+dots+'</span>':'')
               +'</div>';
           }

@@ -147,7 +147,8 @@ window.addManualTodo=async function(projId,text){
   text=(text||'').trim();
   if(!text||!currentUser)return;
   setSyncing();
-  await addDoc(collection(db,'userTodos'),{uid:currentUser.uid,projId,text,done:false,createdAt:serverTimestamp()});
+  const created=await addDoc(collection(db,'userTodos'),{uid:currentUser.uid,projId,text,done:false,createdAt:serverTimestamp()});
+  if(typeof progressRecordCreatedTarget==='function'&&created?.id)await progressRecordCreatedTarget('addManualTodo','新增工地待辦',{kind:'userTodo',key:created.id},null);
   setSynced();
 }
 window.toggleManualTodo=async function(todoId,done){

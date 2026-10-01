@@ -58,7 +58,7 @@ function renderPrivateTodoSection(){
       var isSel=selIdx===i;
       var isEdit=editing&&editing.type===type&&editing.ds===ds&&editing.idx===i;
       var border=isSel?'2px solid var(--purple)':'1.5px solid var(--border)';
-      var textStyle=(color?'color:'+color+';font-weight:500':'color:var(--text)')+(item.strike?';text-decoration:line-through':'');
+      var textStyle=(color?'color:'+color+';font-weight:500':'color:var(--text)')+(item.bg?';background:'+item.bg:'')+(item.strike?';text-decoration:line-through':'');
       // Chip height matches add button
       if(isEdit){
         h+='<div style="border:'+border+';border-radius:5px;margin-bottom:4px;padding:6px 8px;background:var(--surface);display:flex;align-items:center;gap:5px">'
@@ -108,8 +108,7 @@ function renderPrivateTodoSection(){
     +'<div class="private-section-hdr mobile-progress-fixed-header" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">'
     +'<span class="private-section-title" style="width:180px;display:inline-flex;align-items:center;gap:6px;flex:none">🔒 個人專區'
     +'<span class="help-wrap"><button class="help-btn" type="button" aria-label="個人專區操作說明" onclick="toggleHelpPop(event,\'private-help\')">?</button><span class="help-pop" id="private-help" onclick="event.stopPropagation()"><ul><li>個人專區只有你自己看得到。</li><li>雙擊項目可編輯內容。</li><li>輸入 @ 可搜尋並連結工地。</li><li>按住 Ctrl 拖拉可複製項目。</li><li>按 Delete 可刪除已選取的項目。</li></ul></span></span></span>'
-    +'<span class="private-section-actions" style="display:inline-flex;align-items:center;gap:4px"><button class="btn btn-sm" onclick="openRecurringManager(true)">＋自動排程</button>'
-    +itemControls()+'</span>'
+    +'<span class="private-section-actions" style="display:inline-flex;align-items:center;gap:4px"><button class="btn btn-sm" onclick="openRecurringManager(true)">＋自動排程</button></span>'
     +'</div>'
     +'<div class="private-section" style="border-top:none;border-radius:0 0 var(--rl2) var(--rl2)">'
     +'<div class="hscroll-sync hide-hscrollbar" style="overflow-x:auto"><table style="'+tblStyle+';width:'+(200+days.length*180)+'px">'+colgroup+'<thead>'+hiddenHeader+'</thead><tbody>'
@@ -424,6 +423,7 @@ window.pnPointerSelect=function(e,type,ds,idx){
     document.querySelectorAll('.pn-chip[draggable="true"].pn-chip-sel').forEach(function(el){el.classList.remove('pn-chip-sel');});
     e.currentTarget.classList.add('pn-chip-sel');
     e.currentTarget.style.border='2px solid var(--purple)';
+    refreshProgressActionToolbar();
     return;
   }
   if(editing.type===type&&editing.ds===ds&&editing.idx===idx)return;
