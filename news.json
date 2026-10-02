@@ -1,126 +1,126 @@
 {
-  "date": "2026-10-01",
-  "updatedAt": "2026-10-01T01:12:53.177Z",
+  "date": "2026-10-02",
+  "updatedAt": "2026-10-02T01:34:32.880Z",
   "news": [
     {
-      "id": "b47f8a8db3c09825",
+      "id": "3c7be58eff058a7e",
       "source": "遠見",
       "category": "國際",
-      "title": "世界上最成功專案：動員3億人貨幣轉型，歐元成全球第2大幣全靠「它」",
-      "url": "https://www.gvm.com.tw/article/133384",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260930/242079.jpg",
-      "publishedAt": "2026-09-30T05:53:00.000Z",
-      "fetchedAt": "2026-10-01T01:12:53.177Z"
+      "title": "川普簽AI「憲法」！黃仁勳等科技巨頭聯手，四層稽核真能防失控？",
+      "url": "https://www.gvm.com.tw/article/133422",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261001/242153.jpg",
+      "publishedAt": "2026-10-01T06:39:00.000Z",
+      "fetchedAt": "2026-10-02T01:34:32.880Z"
     },
     {
-      "id": "6c225105a3f480d0",
+      "id": "8d6019d8d3950bfb",
       "source": "遠見",
       "category": "AI／科技",
-      "title": "記憶體「不缺貨」？潘健成：AI搶產能，PC明年恐再砍25%",
-      "url": "https://www.gvm.com.tw/article/133399",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260930/242096.jpg",
-      "publishedAt": "2026-09-30T10:12:00.000Z",
-      "fetchedAt": "2026-10-01T01:12:53.177Z"
+      "title": "遊戲買量別只看ROAS！用AI找出真正的增量玩家",
+      "url": "https://www.gvm.com.tw/article/133435",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261001/242207.jpg",
+      "publishedAt": "2026-10-01T10:13:00.000Z",
+      "fetchedAt": "2026-10-02T01:34:32.880Z"
     },
     {
-      "id": "5cad05ec3739ce4a",
+      "id": "58eaa2d27583659d",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "TNCAP第三季新車安全評等結果公佈！台灣MG「ZS」獲零星：啟動召回",
-      "url": "https://www.gvm.com.tw/article/133396",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260930/242113.jpg",
-      "publishedAt": "2026-09-30T09:38:00.000Z",
-      "fetchedAt": "2026-10-01T01:12:53.177Z"
+      "title": "AI深入企業核心運作！第六屆鼎革獎名單揭曉，企業布局AI代理與新商模",
+      "url": "https://www.gvm.com.tw/article/133431",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261001/242197.jpg",
+      "publishedAt": "2026-10-01T08:32:00.000Z",
+      "fetchedAt": "2026-10-02T01:34:32.880Z"
     },
     {
-      "id": "7fd96ac36c42fd01",
+      "id": "dcfa176090ddedd9",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "獨家調查》單棲時代來了！7成「非獨居者」預期未來單棲，77.6%最怕意外無人助",
-      "url": "https://www.gvm.com.tw/article/133394",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260930/242105.jpg",
-      "publishedAt": "2026-10-01T00:00:00.000Z",
-      "fetchedAt": "2026-10-01T01:12:53.177Z"
+      "title": "《鼠一般的你》台日合製幕後故事：曾敬驊新片如何讓台灣從拍攝地成為共同創作者？",
+      "url": "https://www.gvm.com.tw/article/133420",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261001/242168.jpg",
+      "publishedAt": "2026-10-01T13:16:00.000Z",
+      "fetchedAt": "2026-10-02T01:34:32.880Z"
     },
     {
-      "id": "86fe8afa1a1d35fe",
+      "id": "6e23839b0f8fb714",
       "source": "壹蘋",
       "category": "國際",
-      "title": "金正恩不只是「小胖」！狂吃魚子醬龍蝦　體重破140公斤",
-      "url": "https://news.nextapple.com/international/20261001/38B3D989B93792103AC03EB02FA66F4F",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/38B3D989B93792103AC03EB02FA66F4F/7d47ec6596a82c51c38565484b46cdf3_1280.webp",
-      "publishedAt": "2026-10-01T00:10:11.000Z",
-      "fetchedAt": "2026-10-01T01:12:53.177Z"
+      "title": "911翻版！杜拜航空劫機未遂「伊朗背後操刀」？川普撂重話",
+      "url": "https://news.nextapple.com/international/20261002/4B44754B198BE652DF5B693261907CD3",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/4B44754B198BE652DF5B693261907CD3/a625130d962e041aa1e5251026f332f2_1280.webp",
+      "publishedAt": "2026-10-02T01:16:35.000Z",
+      "fetchedAt": "2026-10-02T01:34:32.880Z"
     },
     {
-      "id": "879e748b197955e5",
+      "id": "76c4b558270c6210",
       "source": "壹蘋",
       "category": "生活",
-      "title": "機票買1送1！今起40天開搶　跨年、春節出國折1萬",
-      "url": "https://news.nextapple.com/life/20261001/1BC73290825933160C46D558AAD7BFBA",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/1BC73290825933160C46D558AAD7BFBA/b72568441ed2bbb1d4f90cdeeb005c89_1280.webp",
-      "publishedAt": "2026-10-01T00:32:07.000Z",
-      "fetchedAt": "2026-10-01T01:12:53.177Z"
+      "title": "彩雲恐升中颱！東北季風增強「1縣市」防大雨",
+      "url": "https://news.nextapple.com/life/20261002/B6D9A25ADB8F8DD088085E4A2B68B3F9",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/B6D9A25ADB8F8DD088085E4A2B68B3F9/952025849672ed1c0cf94e93771c744e_1280.webp",
+      "publishedAt": "2026-10-01T22:45:00.000Z",
+      "fetchedAt": "2026-10-02T01:34:32.880Z"
     },
     {
-      "id": "f8ff2cf28aa56891",
+      "id": "02abf17eabe3a84a",
       "source": "壹蘋",
       "category": "社會",
-      "title": "台版「地面師」涉詐獨居老人遺產1.5億　蔡尚岳一審判14年！二審今早宣判",
-      "url": "https://news.nextapple.com/local/20261001/2E4DECC0FBDAC842BD3198876DE24F7A",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/2E4DECC0FBDAC842BD3198876DE24F7A/3e493b03f6508b3140b07fe45555bd03_1280.webp",
-      "publishedAt": "2026-09-30T23:00:00.000Z",
-      "fetchedAt": "2026-10-01T01:12:53.177Z"
+      "title": "206旅女中尉墜樓！網傳「頭朝下西瓜破」　六軍團回應了",
+      "url": "https://news.nextapple.com/local/20261002/AE90C9CAAB9F8F34DA7213EA3AAA18CE",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/AE90C9CAAB9F8F34DA7213EA3AAA18CE/006bc24e17e88bc3bce4894a580a9755_1280.webp",
+      "publishedAt": "2026-10-02T00:42:00.000Z",
+      "fetchedAt": "2026-10-02T01:34:32.880Z"
     },
     {
-      "id": "55a87330724dbee9",
+      "id": "e549ad5a1a2b35d9",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "獨家｜藍琪胰臟癌病逝　同期女星陳明利悼念：她從不搞是非",
-      "url": "https://news.nextapple.com/entertainment/20261001/623E1916A3869D95FA8D1199F8D264F5",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/623E1916A3869D95FA8D1199F8D264F5/300a107cb51041b3403fe462b6d5e348_1280.webp",
-      "publishedAt": "2026-10-01T01:09:08.000Z",
-      "fetchedAt": "2026-10-01T01:12:53.177Z"
+      "title": "遭錫蘭挑釁後發新片！唐綺陽「1席話」網又跪了：真的很準",
+      "url": "https://news.nextapple.com/entertainment/20261002/4329079877121EF5B01F28EBB0673E90",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/4329079877121EF5B01F28EBB0673E90/09f87d722e0e4b058956f30d33c4709b_1280.webp",
+      "publishedAt": "2026-10-02T01:34:31.000Z",
+      "fetchedAt": "2026-10-02T01:34:32.880Z"
     },
     {
-      "id": "cf4a78f9a4b08a7b",
+      "id": "65076a944af6fbd7",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "6G何時釋照尚未定案　數發部：頻段與釋照方式仍研議中",
-      "url": "https://news.nextapple.com/aitech/20260930/976DA3CE7D62F28F0DB411AB05C22B76",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-09/976DA3CE7D62F28F0DB411AB05C22B76/dad6d7314e63dd3bf373a6757e9225f7_1280.webp",
-      "publishedAt": "2026-09-30T09:53:35.000Z",
-      "fetchedAt": "2026-10-01T01:12:53.177Z"
+      "title": "不只編輯訊息！LINE新功能還有這些",
+      "url": "https://news.nextapple.com/aitech/20261001/B583772A43F97A445B79AE994103A908",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/B583772A43F97A445B79AE994103A908/6fc2b6ff363269f0116c2b3000545d12_1280.webp",
+      "publishedAt": "2026-10-01T11:13:50.000Z",
+      "fetchedAt": "2026-10-02T01:34:32.880Z"
     },
     {
-      "id": "b424adc6baea832d",
+      "id": "6690c7c793fe4915",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "台股開盤漲逾241點重返4萬8　台積電開高至2490元",
-      "url": "https://news.nextapple.com/finance/20261001/940AE4544E752A884A6F3FA2F1D3AEC2",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/940AE4544E752A884A6F3FA2F1D3AEC2/ddd4e439727fd4acf14bb43f344a11db_1280.webp",
-      "publishedAt": "2026-10-01T01:07:29.000Z",
-      "fetchedAt": "2026-10-01T01:12:53.177Z"
+      "title": "台股開盤紅翻黑跌逾24點　台積電跌5元至2505元",
+      "url": "https://news.nextapple.com/finance/20261002/FEF8F1ECF55E3BB1E7790B19C25B2C2C",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/FEF8F1ECF55E3BB1E7790B19C25B2C2C/4083bed26c0cda2bceeed404c6918cae_1280.webp",
+      "publishedAt": "2026-10-02T01:07:15.000Z",
+      "fetchedAt": "2026-10-02T01:34:32.880Z"
     },
     {
-      "id": "db62c6380113a476",
+      "id": "ac1a258046060125",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "為甘蔗道歉8次太笨？郭正亮罵蔣萬安「很糟的危機管理！」",
-      "url": "https://news.nextapple.com/politics/20261001/A9FBD53262BC4FCD92B1E4203F44842E",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/A9FBD53262BC4FCD92B1E4203F44842E/c9ff5eec22ba057200bdda4b4e6db9c4_1280.webp",
-      "publishedAt": "2026-10-01T00:50:33.000Z",
-      "fetchedAt": "2026-10-01T01:12:53.177Z"
+      "title": "影片｜亞運柔道場驚傳「咬人」！中國女將狠咬日本對手留齒痕　下場GG了",
+      "url": "https://news.nextapple.com/sports/20261002/4002EA7AE77E23A504FEA15A304C1B3E",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/4002EA7AE77E23A504FEA15A304C1B3E/9ae6aa6224ab13562c4875301376da2a_1280.webp",
+      "publishedAt": "2026-10-02T01:29:00.000Z",
+      "fetchedAt": "2026-10-02T01:34:32.880Z"
     },
     {
-      "id": "c926283a05a05e6c",
+      "id": "3d2dca5a4606e38a",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "參選人AI換臉笑翻6萬人　網友：起碼差40歲 這是詐騙？",
-      "url": "https://news.nextapple.com/politics/20261001/74A9D9F539F480AE0908D248992FD03C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/74A9D9F539F480AE0908D248992FD03C/6f6038d43ea25a5bdd8c205b12003e6a_1280.webp",
-      "publishedAt": "2026-10-01T00:42:17.000Z",
-      "fetchedAt": "2026-10-01T01:12:53.177Z"
+      "title": "判周玉蔻減刑　徐巧芯嗆法官侯廷昌：刷掉你剛好而已！",
+      "url": "https://news.nextapple.com/politics/20261002/A3B0FDA6972DC1F3454CE010E5A0DED3",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/A3B0FDA6972DC1F3454CE010E5A0DED3/68bf237289a60c9ea6018b0bc4de0ed2_1280.webp",
+      "publishedAt": "2026-10-02T00:44:35.000Z",
+      "fetchedAt": "2026-10-02T01:34:32.880Z"
     }
   ]
 }
