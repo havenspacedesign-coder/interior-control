@@ -675,44 +675,6 @@ function isBibleInlineEditing(){
 function renderAfterCheckSync(){
   if(!isBibleInlineEditing())renderActive();
 }
-window.setCheckStatus=async function(projId,stage,idx,status){
-  const proj=S.projects.find(p=>p.id===projId);
-  const allItems=projectBibleItems(proj,stage);
-  const key=`${projId}_${stage}`;
-  const stored=[...(S.checks[key]||allItems.map(t=>({text:t,done:false})))];
-  while(stored.length<allItems.length)stored.push({done:false});
-  const cur=stored[idx]||{};
-  const newDone=status==='done'?!cur.done:false;
-  const newSkip=status==='skip'?!cur.skip:false;
-  stored[idx]={...cur,done:newDone,skip:newSkip};
-  S.checks=Object.assign({},S.checks,{[key]:stored});
-  // Reflect the change immediately — the open modal is a one-off innerHTML
-  // snapshot, so it needs an explicit re-render; it isn't part of the
-  // normal panel re-render that Firestore's onSnapshot triggers.
-  if(openCheckMoArgs&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage){
-    openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName);
-  }
-  if(activePanel==='progress')renderProgress();
-  else if(activePanel==='bible'&&!isBibleInlineEditing()){rememberBibleScrollPosition(2);renderBible();}
-  setSyncing();
-  try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}
-}
-window.setCheckAmount=async function(projId,stage,idx,value){
-  const proj=S.projects.find(p=>p.id===projId);
-  const allItems=projectBibleItems(proj,stage);
-  const key=`${projId}_${stage}`;
-  const stored=[...(S.checks[key]||allItems.map(t=>({text:t,done:false})))];
-  while(stored.length<allItems.length)stored.push({done:false});
-  const cur=stored[idx]||{};
-  stored[idx]={...cur,amount:value};
-  S.checks=Object.assign({},S.checks,{[key]:stored});
-  if(openCheckMoArgs&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage){
-    openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName);
-  }
-  setSyncing();
-  try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}
-}
-
 // ── Progress-only operation undo ──────────────────────────────────────────
 // The history intentionally lives only in this tab.  Each record restores one
 // document/field and first verifies that its current value is still exactly the

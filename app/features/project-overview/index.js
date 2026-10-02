@@ -1,6 +1,7 @@
 // Runtime-composed source module. Keep declarations in shared application scope.
 // ── Overview ──
 let overviewStatusFilter=null;
+let overviewCompletedMode=false;
 let overviewReportProjId=null;
 let overviewEditMode=false;
 function renderOverview(){
@@ -11,10 +12,14 @@ function renderOverview(){
   const inDesign=S.projects.filter(p=>p.status==='design').length;
   const inProg=S.projects.filter(p=>p.status==='prog').length;
   const done=S.projects.filter(p=>p.status==='done').length;
-  const shown=sortDesignProjs(overviewStatusFilter?S.projects.filter(p=>p.status===overviewStatusFilter):S.projects);
+  const shown=sortDesignProjs(overviewCompletedMode
+    ? S.projects.filter(p=>p.status==='done')
+    : S.projects.filter(p=>p.status!=='done'&&(!overviewStatusFilter||p.status===overviewStatusFilter)));
   function statCard(v,n,color,label){
-    const on=overviewStatusFilter===v;
-    return`<div class="stat" style="cursor:pointer;${on?'outline:2px solid '+color+';border-radius:var(--r)':''}" onclick="setOverviewFilter(${v?`'${v}'`:'null'})"><div class="stat-n" style="color:${color}">${n}</div><div class="stat-l">${label}</div></div>`;
+    const completed=v==='done';
+    const on=completed?overviewCompletedMode:(!overviewCompletedMode&&overviewStatusFilter===v);
+    const action=completed?'toggleOverviewCompletedMode()':`setOverviewFilter('${v}')`;
+    return`<div class="stat" style="cursor:pointer;${on?'outline:2px solid '+color+';border-radius:var(--r)':''}" onclick="${action}"><div class="stat-n" style="color:${color}">${n}</div><div class="stat-l">${label}</div></div>`;
   }
   el.innerHTML=`
   <div class="stats">
@@ -26,8 +31,8 @@ function renderOverview(){
   </div>
   <div class="card">
     <div class="card-hdr">
-      <div style="display:flex;align-items:center;gap:10px"><span class="card-title">${overviewStatusFilter?statusInfo(overviewStatusFilter).l+'案件':'所有案件'}</span>
-        ${isAdmin()?`<button class="btn btn-p btn-sm" onclick="showAddProject()">＋ 新增案件</button>`:''}
+      <div style="display:flex;align-items:center;gap:10px"><span class="card-title">${overviewCompletedMode?'已完工案件':overviewStatusFilter?statusInfo(overviewStatusFilter).l+'案件':'所有案件'}</span>
+        ${overviewCompletedMode?`<button class="btn btn-sm" onclick="toggleOverviewCompletedMode()">← 返回案件總覽</button>`:isAdmin()?`<button class="btn btn-p btn-sm" onclick="showAddProject()">＋ 新增案件</button>`:''}
       </div>
       ${canEditProjects()?`<button class="btn btn-sm" onclick="toggleOverviewEditMode()">${overviewEditMode?'完成':'編輯'}</button>`:''}
     </div>
@@ -49,7 +54,8 @@ function renderOverview(){
     </table></div>`}
   </div>`;
 }
-window.setOverviewFilter=function(v){overviewStatusFilter=overviewStatusFilter===v?null:v;renderOverview();}
+window.setOverviewFilter=function(v){overviewCompletedMode=false;overviewStatusFilter=overviewStatusFilter===v?null:v;renderOverview();}
+window.toggleOverviewCompletedMode=function(){overviewCompletedMode=!overviewCompletedMode;overviewStatusFilter=null;overviewEditMode=false;renderOverview();}
 window.toggleOverviewEditMode=function(){if(!canEditProjects())return;overviewEditMode=!overviewEditMode;renderOverview();}
 let overviewRowDragSrc=null;
 window.overviewRowDragStart=function(e,id){if(!isAdmin())return e.preventDefault();overviewRowDragSrc=id;e.dataTransfer.effectAllowed='move';}
@@ -165,12 +171,14 @@ function projectLinkedConstructionManualStages(proj){
   });
   return stages;
 }
-window.checkConstructionManualCompletion=function(projId){
+window.checkConstructionManualCompletion=function(projId,options={}){
   const proj=S.projects.find(p=>p.id===projId);
   const result={passed:true,incompleteTotal:0,manualIncompleteTotal:0,designProgressIncompleteCount:0,existingStages:[],incompleteStages:[]};
   if(!proj)return result;
+  const startStageIndex=Math.max(0,Number(options.startStageIndex)||0);
+  const includeDesignProgress=options.includeDesignProgress!==false;
   const linkedStages=projectLinkedConstructionManualStages(proj);
-  getBibleStages().forEach(stage=>{
+  getBibleStages().slice(startStageIndex).forEach(stage=>{
     const items=projectBibleItems(proj,stage);
     if(!items.length)return;
     const stored=S.checks[`${projId}_${stage}`]||[];
@@ -183,20 +191,37 @@ window.checkConstructionManualCompletion=function(projId){
       result.incompleteStages.push({stage,label:displayStageName(stage),incompleteCount});
     }
   });
-  result.designProgressIncompleteCount=designProgressMissingBlueCount(proj);
+  result.designProgressIncompleteCount=includeDesignProgress?designProgressMissingBlueCount(proj):0;
   result.incompleteTotal=result.manualIncompleteTotal+result.designProgressIncompleteCount;
   result.passed=result.incompleteTotal===0;
   return result;
 }
 function statusChangeNeedsConstructionManualCheck(fromStatus,toStatus){
   return (toStatus==='done'&&(fromStatus==='contact'||fromStatus==='cv'||fromStatus==='design'))
-    || (fromStatus==='design'&&toStatus==='prog');
+    || (fromStatus==='design'&&toStatus==='prog')
+    || (fromStatus==='prog'&&toStatus==='done');
 }
 function constructionManualBlockedMessage(targetStatus,checkResult){
   const targetLabel=statusInfo(targetStatus).l;
   const lines=checkResult.incompleteStages.map(stage=>`${stage.label}：${stage.incompleteCount} 項`);
   if(checkResult.designProgressIncompleteCount>0)lines.push(`設計進度未填欄位：${checkResult.designProgressIncompleteCount} 項`);
   return `無法變更為「${targetLabel}」\n此案件尚有 ${checkResult.incompleteTotal} 項未完成。\n${lines.length?lines.join('\n')+'\n':''}請先完成設計進度與施工寶典後再變更案件狀態。`;
+}
+function constructionCloseManualBlockedMessage(checkResult){
+  const lines=checkResult.incompleteStages.map(stage=>`- ${stage.label}：${stage.incompleteCount} 項`);
+  return `無法變更為「已完工」\n\n施工寶典尚有未完成項目：\n${lines.join('\n')}\n\n請先完成施工寶典後再進行結案。`;
+}
+function checkProjectTradeCompletion(projId){
+  const saved=S.projectTradeSelections[projId]||{};
+  const incompleteCategories=S.tradeCategories.filter(category=>{
+    const selection=saved[category.id];
+    return !selection||(!selection.none&&!(selection.vendorIds||[]).length);
+  });
+  return{passed:S.tradeCategories.length>0&&incompleteCategories.length===0,hasCategories:S.tradeCategories.length>0,incompleteCategories};
+}
+function projectTradeBlockedMessage(checkResult){
+  const lines=checkResult.hasCategories?checkResult.incompleteCategories.map(category=>`- ${category.name}`).join('\n'):'- 尚未建立工程分類';
+  return `無法變更為「已完工」\n\n案件工班尚未完成設定：\n${lines}\n\n每個工程都必須勾選施工廠商，\n若沒有此工程，請勾選「無」。`;
 }
 // The status <select> in 案件總覽 routes through here so switching to
 // 已完工 can collect completion type(s) first, instead of committing
@@ -206,12 +231,22 @@ window.handleStatusChange=function(projId,selectEl){
   const proj=S.projects.find(p=>p.id===projId);
   const prevStatus=proj?proj.status:'design';
   if(statusChangeNeedsConstructionManualCheck(prevStatus,v)){
-    const checkResult=checkConstructionManualCompletion(projId);
+    const isConstructionClose=prevStatus==='prog'&&v==='done';
+    const checkResult=checkConstructionManualCompletion(projId,isConstructionClose?{startStageIndex:16,includeDesignProgress:false}:{});
     if(!checkResult.passed){
       selectEl.value=prevStatus;
-      alert(constructionManualBlockedMessage(v,checkResult));
+      alert(isConstructionClose?constructionCloseManualBlockedMessage(checkResult):constructionManualBlockedMessage(v,checkResult));
       renderOverview();
       return;
+    }
+    if(isConstructionClose){
+      const tradeCheck=checkProjectTradeCompletion(projId);
+      if(!tradeCheck.passed){
+        selectEl.value=prevStatus;
+        alert(projectTradeBlockedMessage(tradeCheck));
+        renderOverview();
+        return;
+      }
     }
   }
   if(v!=='done'){updateStatus(projId,v);return;}

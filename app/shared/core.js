@@ -433,6 +433,41 @@ function renderCheckItemRow(projId,stage,idx,item,isEstimate){
     ${isEstimate?`<input type="number" class="ck-amount" placeholder="金額" value="${item.amount||''}" onclick="event.stopPropagation()" onchange="setCheckAmount('${projId}','${stage}',${idx},this.value)">`:''}
   </div>`;
 }
+window.setCheckStatus=async function(projId,stage,idx,status){
+  const proj=S.projects.find(p=>p.id===projId);
+  const allItems=projectBibleItems(proj,stage);
+  const key=`${projId}_${stage}`;
+  const stored=[...(S.checks[key]||allItems.map(t=>({text:t,done:false})))];
+  while(stored.length<allItems.length)stored.push({done:false});
+  const cur=stored[idx]||{};
+  stored[idx]={...cur,done:status==='done'?!cur.done:false,skip:status==='skip'?!cur.skip:false};
+  S.checks=Object.assign({},S.checks,{[key]:stored});
+  if(typeof openCheckMoArgs!=='undefined'&&openCheckMoArgs&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage){
+    openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName);
+  }
+  if(activePanel==='progress'&&typeof renderProgress==='function')renderProgress();
+  else if(activePanel==='bible'&&(typeof isBibleInlineEditing!=='function'||!isBibleInlineEditing())){
+    if(typeof rememberBibleScrollPosition==='function')rememberBibleScrollPosition(2);
+    if(typeof renderBible==='function')renderBible();
+  }
+  setSyncing();
+  try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}
+}
+window.setCheckAmount=async function(projId,stage,idx,value){
+  const proj=S.projects.find(p=>p.id===projId);
+  const allItems=projectBibleItems(proj,stage);
+  const key=`${projId}_${stage}`;
+  const stored=[...(S.checks[key]||allItems.map(t=>({text:t,done:false})))];
+  while(stored.length<allItems.length)stored.push({done:false});
+  const cur=stored[idx]||{};
+  stored[idx]={...cur,amount:value};
+  S.checks=Object.assign({},S.checks,{[key]:stored});
+  if(typeof openCheckMoArgs!=='undefined'&&openCheckMoArgs&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage){
+    openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName);
+  }
+  setSyncing();
+  try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}
+}
 function setSynced(){
   if(localTestMode){$('sdot').style.background='var(--amber)';$('slbl').textContent='本機測試';return;}
   $('sdot').style.background='#1D9E75';$('slbl').textContent='已同步';
