@@ -661,7 +661,7 @@ window.openCheckMo=function(projId,stage,label,projName){
   $('modal').style.display='flex';
   openCheckMoArgs={projId,stage,label,projName};
 }
-window.closeMo=function(){$('modal').style.display='none';delete $('mo-content').dataset.lockBackdrop;openCheckMoArgs=null;$('mo-content').style.maxWidth='';$('mo-content').classList.remove('project-detail-modal','module-manager-modal','company-duty-settings','sticky-wall-modal','estimate-check-modal','recurring-manager-modal','announcement-modal');if(bibleDeleteModalScrollPosition)restoreBibleDeleteModalScrollPosition();}
+window.closeMo=function(){$('modal').style.display='none';delete $('mo-content').dataset.lockBackdrop;openCheckMoArgs=null;$('mo-content').style.maxWidth='';$('mo-content').classList.remove('project-detail-modal','module-manager-modal','company-duty-settings','sticky-wall-modal','estimate-check-modal','recurring-manager-modal','announcement-modal');if(typeof bibleDeleteModalScrollPosition!=='undefined'&&bibleDeleteModalScrollPosition)restoreBibleDeleteModalScrollPosition();}
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'&&$('modal').style.display==='flex'&&!$('mo-content').dataset.lockBackdrop){
     e.preventDefault();

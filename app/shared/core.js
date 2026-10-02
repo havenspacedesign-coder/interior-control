@@ -263,6 +263,16 @@ function getDesignCols(){
   const raw=designCols||DEFAULT_DESIGN_COLS;
   return normalizeDesignCols(raw);
 }
+function designProgressMissingBlueCount(proj){
+  const progress=proj?.designProgress||{};
+  return getDesignCols().filter(col=>col.collapsible).filter(col=>{
+    const key=col.key||col.name;
+    const value=progress[key];
+    const customTags=progress[key+'__customTags'];
+    const hasCustomTags=Array.isArray(customTags)&&customTags.length>0;
+    return Array.isArray(value)?value.length===0&&!hasCustomTags:!String(value||'').trim()&&!hasCustomTags;
+  }).length;
+}
 
 function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r}
 function isSameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
@@ -288,6 +298,10 @@ function getBibleStages(){
   if(S.bibleOrder&&S.bibleOrder.length)return[...new Set(S.bibleOrder)];
   return Object.keys(S.bible).filter(k=>k!=='orderConfig');
 }
+// The first sixteen construction-manual stages belong to the design workflow.
+// This must stay shared because the focused design test page does not load the
+// construction-guide feature module.
+function getDesignBibleStages(){return getBibleStages().slice(0,16);}
 function displayStageName(stage){
   return String(stage||'').replace(/^.*?、\s*/,'').trim();
 }

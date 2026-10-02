@@ -323,7 +323,6 @@ function chineseNumPrefix(s){
 function isDesignStage(s){
   return getDesignBibleStages().includes(s);
 }
-function getDesignBibleStages(){return getBibleStages().slice(0,16);}
 window.confirmSortStagesByNumber=function(){
   $('mo-content').innerHTML=`
     <div class="mo-title">校正階段順序？</div>

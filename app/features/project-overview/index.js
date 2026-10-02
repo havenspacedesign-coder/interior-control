@@ -151,14 +151,70 @@ window.updateStatus=async function(projId,v,completionTypes,inspDate){
   await updateDoc(doc(db,'projects',projId),patch);
   setSynced();
 }
+function projectLinkedConstructionManualStages(proj){
+  const progress=proj?.designProgress||{};
+  const stages=new Set();
+  getDesignCols().filter(col=>col.kind!=='note'&&col.kind!=='member').forEach(col=>{
+    const key=col.key||col.name;
+    const stored=progress[key+'__stageLinks'];
+    const links=Array.isArray(stored)?stored:[progress[key]];
+    links.forEach(link=>{
+      const value=String(link||'').trim();
+      if(value.startsWith('#')&&getBibleStages().includes(value.slice(1)))stages.add(value.slice(1));
+    });
+  });
+  return stages;
+}
+window.checkConstructionManualCompletion=function(projId){
+  const proj=S.projects.find(p=>p.id===projId);
+  const result={passed:true,incompleteTotal:0,manualIncompleteTotal:0,designProgressIncompleteCount:0,existingStages:[],incompleteStages:[]};
+  if(!proj)return result;
+  const linkedStages=projectLinkedConstructionManualStages(proj);
+  getBibleStages().forEach(stage=>{
+    const items=projectBibleItems(proj,stage);
+    if(!items.length)return;
+    const stored=S.checks[`${projId}_${stage}`]||[];
+    const resolvedCount=items.reduce((count,_,index)=>count+(stored[index]?.done||stored[index]?.skip?1:0),0);
+    if(resolvedCount===0&&!linkedStages.has(stage))return;
+    const incompleteCount=items.length-resolvedCount;
+    result.existingStages.push({stage,label:displayStageName(stage),itemCount:items.length,incompleteCount});
+    if(incompleteCount>0){
+      result.manualIncompleteTotal+=incompleteCount;
+      result.incompleteStages.push({stage,label:displayStageName(stage),incompleteCount});
+    }
+  });
+  result.designProgressIncompleteCount=designProgressMissingBlueCount(proj);
+  result.incompleteTotal=result.manualIncompleteTotal+result.designProgressIncompleteCount;
+  result.passed=result.incompleteTotal===0;
+  return result;
+}
+function statusChangeNeedsConstructionManualCheck(fromStatus,toStatus){
+  return (toStatus==='done'&&(fromStatus==='contact'||fromStatus==='cv'||fromStatus==='design'))
+    || (fromStatus==='design'&&toStatus==='prog');
+}
+function constructionManualBlockedMessage(targetStatus,checkResult){
+  const targetLabel=statusInfo(targetStatus).l;
+  const lines=checkResult.incompleteStages.map(stage=>`${stage.label}：${stage.incompleteCount} 項`);
+  if(checkResult.designProgressIncompleteCount>0)lines.push(`設計進度未填欄位：${checkResult.designProgressIncompleteCount} 項`);
+  return `無法變更為「${targetLabel}」\n此案件尚有 ${checkResult.incompleteTotal} 項未完成。\n${lines.length?lines.join('\n')+'\n':''}請先完成設計進度與施工寶典後再變更案件狀態。`;
+}
 // The status <select> in 案件總覽 routes through here so switching to
 // 已完工 can collect completion type(s) first, instead of committing
 // immediately. Any other status change goes straight through.
 window.handleStatusChange=function(projId,selectEl){
   const v=selectEl.value;
-  if(v!=='done'){updateStatus(projId,v);return;}
   const proj=S.projects.find(p=>p.id===projId);
   const prevStatus=proj?proj.status:'design';
+  if(statusChangeNeedsConstructionManualCheck(prevStatus,v)){
+    const checkResult=checkConstructionManualCompletion(projId);
+    if(!checkResult.passed){
+      selectEl.value=prevStatus;
+      alert(constructionManualBlockedMessage(v,checkResult));
+      renderOverview();
+      return;
+    }
+  }
+  if(v!=='done'){updateStatus(projId,v);return;}
   const opts=['未簽約','設計終止','設計完成','工程完成'];
   const inspRow=`<div style="margin:2px 0 4px 26px">
       <div style="font-size:11px;color:var(--text2);margin-bottom:2px">初驗日</div>

@@ -36,7 +36,6 @@ function renderDesign(){
   const handle=(key)=>editing?`<span class="col-resize" onmousedown="startColResize(event,'${key}')"></span>`:'';
   const dragW=editing?22:0,nameW=colW('name',150),budgetW=colW('budget',90),toggleW=blueCols.length?38:0,noteW=noteCol?colW('c'+cols.indexOf(noteCol),150):0;
   const freeze=(left,width,extra='',name=false)=>`class="design-freeze${name?' design-freeze-name':''}" style="width:${width}px;left:${left}px;${extra}"`;
-  const missingBlueCount=p=>blueCols.filter(c=>{const key=c.key||c.name,progress=p.designProgress||{},value=progress[key],customTags=progress[key+'__customTags'],hasCustomTags=Array.isArray(customTags)&&customTags.length>0;return Array.isArray(value)?value.length===0&&!hasCustomTags:!String(value||'').trim()&&!hasCustomTags;}).length;
   el.innerHTML=`
   <div class="flex-sb" style="margin-bottom:1rem;position:relative">
     <span style="font-size:14px;font-weight:500">設計進度 <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:8px">可打 # 連結施工寶典階段</span></span>
@@ -69,7 +68,7 @@ function renderDesign(){
           </div>
         </td>
         <td ${freeze(dragW+nameW,budgetW,'padding:6px 8px;font-size:12px')}>${escAttr(p.budget||'')}${p.budget?'萬':''}</td>
-        ${blueCols.length?`<td ${freeze(dragW+nameW+budgetW,toggleW,'text-align:center')}>${missingBlueCount(p)?`<span class="design-missing-badge">${missingBlueCount(p)}</span>`:''}</td>`:''}
+        ${blueCols.length?`<td ${freeze(dragW+nameW+budgetW,toggleW,'text-align:center')}>${designProgressMissingBlueCount(p)?`<span class="design-missing-badge">${designProgressMissingBlueCount(p)}</span>`:''}</td>`:''}
         ${noteCol?renderDesignCell(p,noteCol).replace('class="','class="design-freeze ').replace('">','" style="width:'+noteW+'px;left:'+(dragW+nameW+budgetW+toggleW)+'px">') : ''}
         ${blueCols.length&&isOpen?blueCols.map(c=>renderDesignCell(p,c)).join(''):''}
         ${otherRedCols.map(c=>renderDesignCell(p,c)).join('')}
@@ -160,7 +159,7 @@ window.saveDesignDate=async function(projId,colName){
   const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
   const dp={...(proj.designProgress||{}),[colName+'__date']:val,[colName+'__date_y']:y,[colName+'__date_m']:m,[colName+'__date_d']:d};
   proj.designProgress=dp;
-  if(localTestMode){setSynced();return;}
+  if(localTestMode){saveLocalPreviewState();setSynced();return;}
   setSyncing();
   await updateDoc(doc(db,'projects',projId),{designProgress:dp});
   setSynced();
@@ -183,7 +182,7 @@ window.saveDesignField=async function(projId,col,val){
   const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
   const dp={...(proj.designProgress||{}),[col]:val};
   proj.designProgress=dp;
-  if(localTestMode){setSynced();if(activePanel==='design')renderDesign();return;}
+  if(localTestMode){saveLocalPreviewState();setSynced();if(activePanel==='design')renderDesign();return;}
   setSyncing();
   await updateDoc(doc(db,'projects',projId),{designProgress:dp});
   setSynced();
@@ -192,7 +191,7 @@ function designStageLinks(proj,col){const dp=proj?.designProgress||{},legacy=dp[
 window.addDesignStageLink=async function(projId,col){const proj=S.projects.find(p=>p.id===projId);if(!proj)return;const links=designStageLinks(proj,col);links.push('');await saveDesignStageLinks(projId,col,links);};
 window.saveDesignStageLink=async function(projId,col,index,value){const proj=S.projects.find(p=>p.id===projId);if(!proj)return;const links=designStageLinks(proj,col);links[index]=(value||'').trim();await saveDesignStageLinks(projId,col,links);};
 window.removeDesignStageLink=async function(projId,col,index){const proj=S.projects.find(p=>p.id===projId),links=designStageLinks(proj,col);if(!proj||!confirm('確定刪除此施工寶典連結？'))return;links.splice(index,1);await saveDesignStageLinks(projId,col,links.length?links:['']);};
-async function saveDesignStageLinks(projId,col,links){const proj=S.projects.find(p=>p.id===projId);if(!proj)return;const next=links.map(v=>String(v||'').trim()),dp={...(proj.designProgress||{}),[col]:next[0]||'',[col+'__stageLinks']:next};proj.designProgress=dp;if(localTestMode){setSynced();renderDesign();return;}setSyncing();await updateDoc(doc(db,'projects',projId),{designProgress:dp});setSynced();}
+async function saveDesignStageLinks(projId,col,links){const proj=S.projects.find(p=>p.id===projId);if(!proj)return;const next=links.map(v=>String(v||'').trim()),dp={...(proj.designProgress||{}),[col]:next[0]||'',[col+'__stageLinks']:next};proj.designProgress=dp;if(localTestMode){saveLocalPreviewState();setSynced();renderDesign();return;}setSyncing();await updateDoc(doc(db,'projects',projId),{designProgress:dp});setSynced();}
 function refreshDesignColSettingsIfOpen(){
   if($('modal').style.display==='flex'&&$('mo-content').querySelector('.mo-title')?.textContent==='欄位設定')openDesignColSettings();
 }
@@ -250,8 +249,8 @@ function dcRenderMemberPicker(projId,colName){
   }).join('')+'<button type="button" class="design-member-picker-row" style="width:100%;border:0;border-top:1px solid var(--border);text-align:left;font:inherit;color:var(--purple);cursor:pointer" onmousedown="event.preventDefault();mCancelCloseMention()" onclick="dcShowCustomTagInput(\''+projId+'\',\''+colName+'\')">＋ 自訂標記</button>';
 }
 window.dcShowCustomTagInput=function(projId,colName){const menu=document.getElementById('dc-mention-'+projId+'-'+colName);if(!menu||menu.querySelector('.dc-custom-tag-input'))return;const row=document.createElement('div');row.className='dc-custom-tag-input';row.style.cssText='display:flex;gap:5px;padding:7px;border-top:1px solid var(--border)';row.innerHTML=`<input type="text" placeholder="輸入文字…" style="min-width:0;flex:1;padding:5px;border:1px solid var(--border);border-radius:4px;font:inherit"><button type="button" class="btn btn-sm btn-p">加入</button>`;const input=row.querySelector('input'),save=()=>{const value=input.value.trim();if(value)dcAddCustomTag(projId,colName,value);};row.querySelector('button').onclick=save;input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();save();}if(e.key==='Escape'){row.remove();}};menu.appendChild(row);input.focus();};
-window.dcAddCustomTag=async function(projId,colName,value){const tag=String(value||'').trim(),proj=S.projects.find(p=>p.id===projId);if(!proj||!tag)return;const key=colName+'__customTags',tags=Array.isArray(proj.designProgress?.[key])?[...proj.designProgress[key]]:[];if(tags.includes(tag))return;const dp={...(proj.designProgress||{}),[key]:[...tags,tag]};proj.designProgress=dp;if(localTestMode){setSynced();renderDesign();return;}setSyncing();await updateDoc(doc(db,'projects',projId),{designProgress:dp});setSynced();renderDesign();}
-window.dcRemoveCustomTag=async function(projId,colName,index){const proj=S.projects.find(p=>p.id===projId);if(!proj)return;const key=colName+'__customTags',tags=Array.isArray(proj.designProgress?.[key])?[...proj.designProgress[key]]:[];if(index<0||index>=tags.length)return;tags.splice(index,1);const dp={...(proj.designProgress||{}),[key]:tags};proj.designProgress=dp;if(localTestMode){setSynced();renderDesign();return;}setSyncing();await updateDoc(doc(db,'projects',projId),{designProgress:dp});setSynced();renderDesign();}
+window.dcAddCustomTag=async function(projId,colName,value){const tag=String(value||'').trim(),proj=S.projects.find(p=>p.id===projId);if(!proj||!tag)return;const key=colName+'__customTags',tags=Array.isArray(proj.designProgress?.[key])?[...proj.designProgress[key]]:[];if(tags.includes(tag))return;const dp={...(proj.designProgress||{}),[key]:[...tags,tag]};proj.designProgress=dp;if(localTestMode){saveLocalPreviewState();setSynced();renderDesign();return;}setSyncing();await updateDoc(doc(db,'projects',projId),{designProgress:dp});setSynced();renderDesign();}
+window.dcRemoveCustomTag=async function(projId,colName,index){const proj=S.projects.find(p=>p.id===projId);if(!proj)return;const key=colName+'__customTags',tags=Array.isArray(proj.designProgress?.[key])?[...proj.designProgress[key]]:[];if(index<0||index>=tags.length)return;tags.splice(index,1);const dp={...(proj.designProgress||{}),[key]:tags};proj.designProgress=dp;if(localTestMode){saveLocalPreviewState();setSynced();renderDesign();return;}setSyncing();await updateDoc(doc(db,'projects',projId),{designProgress:dp});setSynced();renderDesign();}
 window.dcToggleMember=async function(projId,colName,uid,checked){
   const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
   if(checked&&!markableMembersList().some(m=>m.uid===uid))return;
@@ -262,7 +261,7 @@ window.dcToggleMember=async function(projId,colName,uid,checked){
   proj.designProgress=dp;
   const menuEl=document.getElementById('dc-mention-'+projId+'-'+colName);
   const refreshMemberUi=()=>menuEl&&menuEl.style.display!=='none'?dcRenderMemberPicker(projId,colName):renderDesign();
-  if(localTestMode){setSynced();refreshMemberUi();return;}
+  if(localTestMode){saveLocalPreviewState();setSynced();refreshMemberUi();return;}
   setSyncing();await updateDoc(doc(db,'projects',projId),{designProgress:dp});setSynced();
   refreshMemberUi();
 }
