@@ -1,5 +1,6 @@
 // Minimal local environment used only by the eight focused test pages.
 const focusedFeature = window.__APP_FEATURE_TEST__ || 'home';
+const unifiedTestMode = window.__APP_UNIFIED_TEST__ === true;
 const focusedTestSessionKey = 'interiorFocusedTestSession';
 const originalSignOut = window.signOut;
 
@@ -46,14 +47,14 @@ window.enterLocalTestMode = async function () {
   });
   activePanel = focusedFeature;
   document.querySelectorAll('.panel').forEach(node => node.classList.toggle('active', node.id === 'panel-' + focusedFeature));
-  if (focusedFeature === 'home') {
+  if (unifiedTestMode || focusedFeature === 'home') {
     if (typeof loadHomeLayouts === 'function') await loadHomeLayouts();
     if (typeof initTodayNews === 'function') initTodayNews();
     if (typeof initDailyJoke === 'function') initDailyJoke();
     if (typeof initDailyQuiz === 'function') initDailyQuiz();
     if (typeof initDailyWaste === 'function') initDailyWaste();
   }
-  if (focusedFeature === 'vendors' && typeof materialGuides !== 'undefined' && !materialGuides.length) {
+  if ((unifiedTestMode || focusedFeature === 'vendors') && typeof materialGuides !== 'undefined' && !materialGuides.length) {
     try {
       const saved = localStorage.getItem('materialGuides');
       materialGuides = saved ? JSON.parse(saved) : await (await fetch(new URL('assets/material-guide-seed.json', window.__APP_BASE_URL__))).json();
@@ -62,8 +63,8 @@ window.enterLocalTestMode = async function () {
       console.warn('material guide seed failed', error);
     }
   }
-  if (focusedFeature === 'b1f' && typeof ensureB1FSiteMaterialTestData === 'function') ensureB1FSiteMaterialTestData();
-  if (focusedFeature === 'b1f' && typeof initB1FSharedStore === 'function') await initB1FSharedStore();
+  if ((unifiedTestMode || focusedFeature === 'b1f') && typeof ensureB1FSiteMaterialTestData === 'function') ensureB1FSiteMaterialTestData();
+  if ((unifiedTestMode || focusedFeature === 'b1f') && typeof initB1FSharedStore === 'function') await initB1FSharedStore();
   renderActive();
   saveLocalPreviewState();
 };

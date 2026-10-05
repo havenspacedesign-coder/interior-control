@@ -1,25 +1,57 @@
 import { mountAppShell } from './shared/shell.js';
 import { MODULE_ORDER, FEATURE_MODULES, SHARED_MODULES } from './module-manifest.js';
 
-const feature = document.documentElement.dataset.appFeature || '';
+const pageFeature = document.documentElement.dataset.appFeature || '';
+const unifiedTestMode = pageFeature === 'test';
+const requestedTestFeature = location.hash.replace(/^#/, '');
+const feature = unifiedTestMode && FEATURE_MODULES[requestedTestFeature] ? requestedTestFeature : (unifiedTestMode ? 'home' : pageFeature);
 window.__APP_FEATURE_TEST__ = feature;
-mountAppShell(feature);
+window.__APP_UNIFIED_TEST__ = unifiedTestMode;
+mountAppShell(unifiedTestMode ? '' : feature);
 
 // Every production and focused-test page resolves shared data assets from the
 // application root, regardless of the page's own directory.
 const base = new URL('../', import.meta.url);
 window.__APP_BASE_URL__ = base.href;
 
-const [firebaseApp, firestore, firebaseAuth, firebaseStorage] = await Promise.all([
-  import('https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js'),
-  import('https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js'),
-  import('https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js'),
-  import('https://www.gstatic.com/firebasejs/11.9.0/firebase-storage.js')
-]);
+function createLocalFirebaseModules() {
+  const ref = (...parts) => ({path:parts.filter(part => typeof part === 'string').join('/')});
+  const emptySnapshot = {docs:[]};
+  return [
+    {initializeApp:() => ({})},
+    {
+      getFirestore:() => ({}), collection:ref, doc:ref,
+      addDoc:async () => ({id:'local-test'}), updateDoc:async () => {}, deleteDoc:async () => {}, setDoc:async () => {},
+      getDoc:async () => ({exists:() => false,data:() => undefined}), getDocs:async () => emptySnapshot,
+      onSnapshot:() => () => {}, serverTimestamp:() => new Date().toISOString(),
+      writeBatch:() => ({set:() => {},update:() => {},delete:() => {},commit:async () => {}}),
+      runTransaction:async (_database, updateFunction) => updateFunction({get:async () => ({exists:() => false,data:() => undefined}),set:() => {},update:() => {},delete:() => {}}),
+      query:value => value, where:() => ({})
+    },
+    {
+      getAuth:() => ({}), GoogleAuthProvider:class {},
+      signInWithPopup:async () => {}, signInWithRedirect:async () => {}, getRedirectResult:async () => null,
+      signOut:async () => {}, onAuthStateChanged:() => () => {}
+    },
+    {
+      getStorage:() => ({}), ref,
+      uploadBytes:async () => ({}), getDownloadURL:async () => '', deleteObject:async () => {}
+    }
+  ];
+}
 
-const requested = feature ? new Set([...SHARED_MODULES, ...(FEATURE_MODULES[feature] || [])]) : new Set(MODULE_ORDER);
+const [firebaseApp, firestore, firebaseAuth, firebaseStorage] = unifiedTestMode
+  ? createLocalFirebaseModules()
+  : await Promise.all([
+      import('https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js'),
+      import('https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js'),
+      import('https://www.gstatic.com/firebasejs/11.9.0/firebase-storage.js')
+    ]);
+
+const requested = unifiedTestMode || !feature ? new Set(MODULE_ORDER) : new Set([...SHARED_MODULES, ...(FEATURE_MODULES[feature] || [])]);
 const modulePaths = MODULE_ORDER.filter(path => requested.has(path));
-if (feature) modulePaths.push('app/test-bootstrap.js');
+if (unifiedTestMode || feature) modulePaths.push('app/test-bootstrap.js');
 
 const sources = await Promise.all(modulePaths.map(async path => {
   const response = await fetch(new URL(path, base));
@@ -51,6 +83,6 @@ try {
   document.body.innerHTML = '<main style="padding:24px;font-family:sans-serif"><h1>APP 載入失敗</h1><p>請查看瀏覽器 Console 取得詳細資訊。</p></main>';
 }
 
-if (!feature && 'serviceWorker' in navigator) {
+if (!pageFeature && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(error => console.error('Service worker registration failed:', error)));
 }
