@@ -226,6 +226,22 @@ function projectTradeBlockedMessage(checkResult){
   const lines=checkResult.hasCategories?checkResult.incompleteCategories.map(category=>`- ${category.name}`).join('\n'):'- 尚未建立工程分類';
   return `無法變更為「已完工」\n\n案件工班尚未完成設定：\n${lines}\n\n每個工程都必須勾選施工廠商，\n若沒有此工程，請勾選「無」。`;
 }
+function checkB1FProjectCompletion(projId){
+  const store=b1fData();
+  const pendingOtherOrders=(store.siteMaterialLists||[])
+    .filter(list=>list.projectId===projId)
+    .flatMap(list=>list.otherOrders||[])
+    .filter(order=>!['used','transferred'].includes(order.status));
+  const pendingUsages=(store.usages||[])
+    .filter(usage=>usage.projectId===projId&&(Number(usage.inUseQty)||0)>0);
+  return{passed:pendingOtherOrders.length===0&&pendingUsages.length===0,pendingOtherOrders,pendingUsages};
+}
+function b1fProjectCompletionBlockedMessage(checkResult){
+  const reasons=[];
+  if(checkResult.pendingOtherOrders.length)reasons.push('此案件仍有其他叫料尚未處理完成，請先至 B1F 商城處理。');
+  if(checkResult.pendingUsages.length)reasons.push('此案件在 B1F 商城仍有待結案項目，請先完成待結案處理。');
+  return `無法變更為「已完工」\n\n${reasons.join('\n')}`;
+}
 // The status <select> in 案件總覽 routes through here so switching to
 // 已完工 can collect completion type(s) first, instead of committing
 // immediately. Any other status change goes straight through.
@@ -252,6 +268,13 @@ window.handleStatusChange=function(projId,selectEl){
       if(!tradeCheck.passed){
         selectEl.value=prevStatus;
         alert(projectTradeBlockedMessage(tradeCheck));
+        renderOverview();
+        return;
+      }
+      const b1fCheck=checkB1FProjectCompletion(projId);
+      if(!b1fCheck.passed){
+        selectEl.value=prevStatus;
+        alert(b1fProjectCompletionBlockedMessage(b1fCheck));
         renderOverview();
         return;
       }
