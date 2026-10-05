@@ -15,6 +15,7 @@ function renderOverview(){
   const shown=sortDesignProjs(overviewCompletedMode
     ? S.projects.filter(p=>p.status==='done')
     : S.projects.filter(p=>p.status!=='done'&&(!overviewStatusFilter||p.status===overviewStatusFilter)));
+  const canEditShown=canEditProjects()&&shown.some(p=>p.status!=='done'||currentRole==='manager');
   function statCard(v,n,color,label){
     const completed=v==='done';
     const on=completed?overviewCompletedMode:(!overviewCompletedMode&&overviewStatusFilter===v);
@@ -34,22 +35,22 @@ function renderOverview(){
       <div style="display:flex;align-items:center;gap:10px"><span class="card-title">${overviewCompletedMode?'已完工案件':overviewStatusFilter?statusInfo(overviewStatusFilter).l+'案件':'所有案件'}</span>
         ${overviewCompletedMode?`<button class="btn btn-sm" onclick="toggleOverviewCompletedMode()">← 返回案件總覽</button>`:isAdmin()?`<button class="btn btn-p btn-sm" onclick="showAddProject()">＋ 新增案件</button>`:''}
       </div>
-      ${canEditProjects()?`<button class="btn btn-sm" onclick="toggleOverviewEditMode()">${overviewEditMode?'完成':'編輯'}</button>`:''}
+      ${canEditShown?`<button class="btn btn-sm" onclick="toggleOverviewEditMode()">${overviewEditMode?'完成':'編輯'}</button>`:''}
     </div>
     ${shown.length===0?`<div class="empty">尚無案件</div>`:`
     <div style="overflow-x:auto"><table>
-      <thead><tr>${isAdmin()&&overviewEditMode?'<th style="width:34px"></th>':''}<th>案件名稱</th><th>狀態</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>合約完工日</th>${canEditProjects()&&overviewEditMode?'<th>操作</th>':''}</tr></thead>
+      <thead><tr>${isAdmin()&&overviewEditMode?'<th style="width:34px"></th>':''}<th>案件名稱</th><th>狀態</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>合約完工日</th>${canEditShown&&overviewEditMode?'<th>操作</th>':''}</tr></thead>
       <tbody>${shown.map(p=>{
         const si=statusInfo(p.status);
         return`<tr ${isAdmin()&&overviewEditMode?`draggable="true" ondragstart="overviewRowDragStart(event,'${p.id}')" ondragover="overviewRowDragOver(event)" ondrop="overviewRowDrop(event,'${p.id}')"`:''}>${isAdmin()&&overviewEditMode?'<td style="text-align:center;cursor:grab;color:var(--text3)">⠿</td>':''}
           <td><strong style="font-weight:500;cursor:pointer;color:var(--purple)" onclick="${p.status==='done'?`showSiteReport('${p.id}')`:`showProjectDetail('${p.id}')`}">${p.name}</strong>${p.status==='done'?' <span style="font-size:10px;color:var(--text3)">(查看總報告表)</span>':''}</td>
-          <td>${isAdmin()?`<select class="status-sel" style="background:${si.bg};color:${si.color}" onchange="handleStatusChange('${p.id}',this)">
+          <td>${isAdmin()&&(p.status!=='done'||currentRole==='manager')?`<select class="status-sel" style="background:${si.bg};color:${si.color}" onchange="handleStatusChange('${p.id}',this)">
             ${STATUS_OPTS.map(o=>`<option value="${o.v}" ${p.status===o.v?'selected':''}>${o.l}</option>`).join('')}
           </select>`:`<span class="badge" style="background:${si.bg};color:${si.color}">${si.l}</span>`}</td>
           <td>${p.owner||''}</td><td style="color:var(--text2)">${p.type||''}</td>
           <td>${p.designer||''}</td><td>${p.budget||''}</td>
           <td style="color:var(--text2)">${p.contractEnd||p.finish||''}</td>
-          ${canEditProjects()&&overviewEditMode?`<td><button class="btn btn-sm" onclick="showEditProject('${p.id}')">編輯</button>${canDeleteProjects()?` <button class="btn btn-sm" onclick="deleteProject('${p.id}')">刪除</button>`:''}</td>`:''}
+          ${canEditShown&&overviewEditMode?`<td>${p.status!=='done'||currentRole==='manager'?`<button class="btn btn-sm" onclick="showEditProject('${p.id}')">編輯</button>${canDeleteProjects()?` <button class="btn btn-sm" onclick="deleteProject('${p.id}')">刪除</button>`:''}`:''}</td>`:''}
         </tr>`;}).join('')}</tbody>
     </table></div>`}
   </div>`;
@@ -139,6 +140,8 @@ function getMeetingEntriesForProject(projName){
   return out;
 }
 window.updateStatus=async function(projId,v,completionTypes,inspDate){
+  const existing=S.projects.find(p=>p.id===projId);
+  if(existing?.status==='done'&&currentRole!=='manager')return alert('已完工案件僅限管理員變更狀態。');
   setSyncing();
   const patch={status:v};
   if(v==='done'){
@@ -229,6 +232,11 @@ function projectTradeBlockedMessage(checkResult){
 window.handleStatusChange=function(projId,selectEl){
   const v=selectEl.value;
   const proj=S.projects.find(p=>p.id===projId);
+  if(proj?.status==='done'&&currentRole!=='manager'){
+    selectEl.value=proj.status;
+    alert('已完工案件僅限管理員變更狀態。');
+    return;
+  }
   const prevStatus=proj?proj.status:'design';
   if(statusChangeNeedsConstructionManualCheck(prevStatus,v)){
     const isConstructionClose=prevStatus==='prog'&&v==='done';

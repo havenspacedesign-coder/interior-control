@@ -35,6 +35,7 @@ window.showAddProject=function(){
 }
 window.showEditProject=function(projId){
   if(!canEditProjects())return;
+  if(S.projects.find(p=>p.id===projId)?.status==='done'&&currentRole!=='manager')return alert('已完工案件僅限管理員編輯。');
   showProjectForm(projId);
 }
 let projectFormDraft=null;
@@ -98,6 +99,7 @@ window.updateProjectTypeRequired=function(){
 }
 window.saveProjectForm=async function(projId){
   if(projId?!canEditProjects():!isAdmin())return;
+  if(projId&&S.projects.find(p=>p.id===projId)?.status==='done'&&currentRole!=='manager')return alert('已完工案件僅限管理員編輯。');
   const name=$('np-name').value.trim();if(!name)return alert('請填寫案件名稱');
   if(!projId&&(!$('np-type-kind').value||!$('np-type-building').value))return alert('請選擇房屋狀態與建築類型');
   const contractStart=ymdValue('np-cs');
