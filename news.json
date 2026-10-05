@@ -1,86 +1,86 @@
 {
-  "date": "2026-10-04",
-  "updatedAt": "2026-10-04T00:29:38.452Z",
+  "date": "2026-10-05",
+  "updatedAt": "2026-10-05T00:45:44.690Z",
   "news": [
     {
-      "id": "c5de5d518c71f219",
+      "id": "b47f8a8db3c09825",
       "source": "遠見",
       "category": "國際",
-      "title": "川普接受《時代》專訪又提台積電？曝「台灣晶片公司」投資5000億美元",
-      "url": "https://www.gvm.com.tw/article/133453",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260921/241438.jpg",
-      "publishedAt": "2026-10-02T07:22:00.000Z",
-      "fetchedAt": "2026-10-04T00:29:38.452Z"
+      "title": "一場動員3億人的貨幣轉型：歐元為何能成為全球第2大幣？全靠「它」",
+      "url": "https://www.gvm.com.tw/article/133384",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260930/242079.jpg",
+      "publishedAt": "2026-10-04T13:45:00.000Z",
+      "fetchedAt": "2026-10-05T00:45:44.690Z"
     },
     {
-      "id": "b1b28d1490c7c2ef",
-      "source": "遠見",
-      "category": "AI／科技",
-      "title": "Threads網友為何一直@Meta AI？怎麼免費用？",
-      "url": "https://www.gvm.com.tw/article/133452",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261002/242298.jpg",
-      "publishedAt": "2026-10-02T07:04:00.000Z",
-      "fetchedAt": "2026-10-04T00:29:38.452Z"
-    },
-    {
-      "id": "c617427fa47cc604",
+      "id": "5da65e9220a2c519",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "繼承房子卻繳不出遺產稅？３招避免「看得到、收不到」",
-      "url": "https://www.gvm.com.tw/article/133473",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260818/238802.jpg",
-      "publishedAt": "2026-10-03T08:59:00.000Z",
-      "fetchedAt": "2026-10-04T00:29:38.452Z"
+      "title": "東元七十年淬鍊，雙軸轉型再造成長新動能",
+      "url": "https://www.gvm.com.tw/article/133320",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260929/241924.jpg",
+      "publishedAt": "2026-10-04T16:00:00.000Z",
+      "fetchedAt": "2026-10-05T00:45:44.690Z"
     },
     {
-      "id": "cd53a67cdfa71200",
+      "id": "399d75721c909916",
+      "source": "遠見",
+      "category": "金融／產經",
+      "title": "美債殖利率飆破5％，投資穩賺不賠？華爾街知名操盤手：公債也曾經歷36年空頭市場",
+      "url": "https://www.gvm.com.tw/article/133386",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260930/242085.jpg",
+      "publishedAt": "2026-10-04T13:47:00.000Z",
+      "fetchedAt": "2026-10-05T00:45:44.690Z"
+    },
+    {
+      "id": "a486a3a735427c3a",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "肝癌15公分可開刀？56歲男靠這療法「切7成肝臟」再活4年",
-      "url": "https://www.gvm.com.tw/article/133463",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260626/234682.jpg",
-      "publishedAt": "2026-10-03T23:00:00.000Z",
-      "fetchedAt": "2026-10-04T00:29:38.452Z"
+      "title": "一個人離開職場多久會「回不去」？他60歲重新找工作，結果如何了？",
+      "url": "https://www.gvm.com.tw/article/133397",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260930/242114.jpg",
+      "publishedAt": "2026-10-04T13:51:00.000Z",
+      "fetchedAt": "2026-10-05T00:45:44.690Z"
     },
     {
-      "id": "7b1cdf42d962b69c",
+      "id": "846552078930d080",
       "source": "壹蘋",
       "category": "國際",
-      "title": "台積電牽手馬斯克有譜？Terafab德州晶圓廠傳合作　一句話藏玄機",
-      "url": "https://news.nextapple.com/international/20261004/6E98892799F9DC130ED277ADAD2B4B78",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/6E98892799F9DC130ED277ADAD2B4B78/ebfe7ff0924d17377d3c89833844e1d6_1280.webp",
-      "publishedAt": "2026-10-03T22:56:24.000Z",
-      "fetchedAt": "2026-10-04T00:29:38.452Z"
+      "title": "火焰噴臉女哀號！法國學運失控5000人被捕　500校今停課",
+      "url": "https://news.nextapple.com/international/20261005/27CAE1249E2E549F7E126535842AD360",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/27CAE1249E2E549F7E126535842AD360/1146bcc4dd4566fc7268d68b86ce5c1c_1280.webp",
+      "publishedAt": "2026-10-05T00:11:07.000Z",
+      "fetchedAt": "2026-10-05T00:45:44.690Z"
     },
     {
-      "id": "b4d347e0aa1a8281",
+      "id": "bb28983fbd443f7e",
       "source": "壹蘋",
       "category": "生活",
-      "title": "明起變天！2地區注意大雨　週三最冷剩16℃",
-      "url": "https://news.nextapple.com/life/20261004/9729E6DE2084352AC8646EFA987A28D8",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/9729E6DE2084352AC8646EFA987A28D8/0680c7c7b28973231715b4aae405d2b2_1280.webp",
-      "publishedAt": "2026-10-03T22:54:44.000Z",
-      "fetchedAt": "2026-10-04T00:29:38.452Z"
+      "title": "蔣vs.沈 美沙冬大戰！台灣2006年就推行　醫師揭減害真相",
+      "url": "https://news.nextapple.com/life/20261005/9F5EB4D3B659F904D6EF84D03118D799",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/9F5EB4D3B659F904D6EF84D03118D799/00a42293251709fe964d3735dddc2763_1280.webp",
+      "publishedAt": "2026-10-05T00:07:00.000Z",
+      "fetchedAt": "2026-10-05T00:45:44.690Z"
     },
     {
-      "id": "a0c94b9c2c3ed128",
+      "id": "693a1b04113cf3f8",
       "source": "壹蘋",
       "category": "社會",
-      "title": "熟門熟路搶老東家5000元　女失控掏菜刀逼近！店員一招引開她",
-      "url": "https://news.nextapple.com/local/20261004/305048DA716F8ECFFFC3EA2A226B9E8D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/305048DA716F8ECFFFC3EA2A226B9E8D/d515e99e81c0b42c3e687880ed8ae51a_1280.webp",
-      "publishedAt": "2026-10-03T16:01:00.000Z",
-      "fetchedAt": "2026-10-04T00:29:38.452Z"
+      "title": "台南惡火！大廠燒到變形淪火海　目擊者嚇：可能原地倒塌",
+      "url": "https://news.nextapple.com/local/20261005/B83660C18A0E23CC6E1043DDD4538E32",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/B83660C18A0E23CC6E1043DDD4538E32/bcbda109291f4c80186e7e51ed6752ef_1280.webp",
+      "publishedAt": "2026-10-04T23:41:47.000Z",
+      "fetchedAt": "2026-10-05T00:45:44.690Z"
     },
     {
-      "id": "ef1b7c9950b71fb8",
+      "id": "9a7afd58c8df584b",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "知名直播主「阿北」驚傳驟逝！粉絲淚嚇：前幾天還在啊",
-      "url": "https://news.nextapple.com/entertainment/20261004/8A5DB79F9D52BD52C517977FE71716C8",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/8A5DB79F9D52BD52C517977FE71716C8/cdd58252cc40e84d5403ed9a4d9aeb61_1280.webp",
-      "publishedAt": "2026-10-03T23:20:05.000Z",
-      "fetchedAt": "2026-10-04T00:29:38.452Z"
+      "title": "第二槍！中國時尚雜誌下架蔡康永　汽車廠商發聲反台獨",
+      "url": "https://news.nextapple.com/entertainment/20261005/556F22F1ED381978C33B80E60D86357B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/556F22F1ED381978C33B80E60D86357B/d707192302e1c6e2e526b9e0dac2a61c_1280.webp",
+      "publishedAt": "2026-10-05T00:24:43.000Z",
+      "fetchedAt": "2026-10-05T00:45:44.690Z"
     },
     {
       "id": "94563a74918783a6",
@@ -90,37 +90,37 @@
       "url": "https://news.nextapple.com/aitech/20261004/09F123A8233FA0490A5148B05210EC71",
       "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/09F123A8233FA0490A5148B05210EC71/8eddca29f353f3e4ba4dde1e43e3e817_1280.webp",
       "publishedAt": "2026-10-03T16:07:00.000Z",
-      "fetchedAt": "2026-10-04T00:29:38.452Z"
+      "fetchedAt": "2026-10-05T00:45:44.690Z"
     },
     {
-      "id": "07e47f72a52373ea",
+      "id": "628fe96aa44bd12b",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "下週油價凍漲　95無鉛維持32.7元",
-      "url": "https://news.nextapple.com/finance/20261003/70AA82167BC4F97EDA422459FA2CC68C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/70AA82167BC4F97EDA422459FA2CC68C/554325732b7e2e0cfb9323aa88a18f04_1280.webp",
-      "publishedAt": "2026-10-03T09:25:30.000Z",
-      "fetchedAt": "2026-10-04T00:29:38.452Z"
+      "title": "台股量縮創高還能攻？投顧看本週上探5萬　台積電9月營收成關鍵",
+      "url": "https://news.nextapple.com/finance/20261005/C45FE9007ACF3C64B9C2451DD6DDC36E",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/C45FE9007ACF3C64B9C2451DD6DDC36E/cfca677d6b507672b32cb80ccd3f19c6_1280.webp",
+      "publishedAt": "2026-10-04T17:00:00.000Z",
+      "fetchedAt": "2026-10-05T00:45:44.690Z"
     },
     {
-      "id": "da4533ef5499d401",
+      "id": "9f6b7bec93a29603",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "沈伯洋反擊「蔣萬安曾挺美沙冬」　北市也提供乾淨針具給吸毒者",
-      "url": "https://news.nextapple.com/politics/20261004/6C2701EE4D940152A2F7E348E753F3B1",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/6C2701EE4D940152A2F7E348E753F3B1/3b114ca308d312ed1faf6913178dc79e_1280.webp",
-      "publishedAt": "2026-10-04T00:00:21.000Z",
-      "fetchedAt": "2026-10-04T00:29:38.452Z"
+      "title": "前幕僚跨黨站台沈伯洋　「國民黨罵我們綠了！如今惡夢成真」",
+      "url": "https://news.nextapple.com/politics/20261005/84228AB9773EF87144BE671D1151F44B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/84228AB9773EF87144BE671D1151F44B/e6a7ec563a8fb28a18c0b746d32c3cf2_1280.webp",
+      "publishedAt": "2026-10-05T00:20:47.000Z",
+      "fetchedAt": "2026-10-05T00:45:44.690Z"
     },
     {
-      "id": "170e45a51c389b2a",
+      "id": "d04f2ac2abb93b6f",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "杜拜航空副機師砍機長　兇器曝光！阿聯酋檢方正式定調「恐攻」",
-      "url": "https://news.nextapple.com/international/20261004/EFEF26C5B5A39443E467B9E57E356DA3",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/EFEF26C5B5A39443E467B9E57E356DA3/5a2eee6b273aadbecf9accd55a0e7f92_1280.webp",
-      "publishedAt": "2026-10-03T22:45:11.000Z",
-      "fetchedAt": "2026-10-04T00:29:38.452Z"
+      "title": "沈伯洋競總吸12萬人　他見1跡象「沒破圈」：差2014年太多",
+      "url": "https://news.nextapple.com/politics/20261005/5EB500E7F8B2064E48C87825E44E08EA",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/5EB500E7F8B2064E48C87825E44E08EA/9464cd372865fbc7e7f1eac520bae9cd_1280.webp",
+      "publishedAt": "2026-10-05T00:15:50.000Z",
+      "fetchedAt": "2026-10-05T00:45:44.690Z"
     }
   ]
 }
