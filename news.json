@@ -1,16 +1,16 @@
 {
-  "date": "2026-10-09",
-  "updatedAt": "2026-10-09T01:59:39.628Z",
+  "date": "2026-10-10",
+  "updatedAt": "2026-10-10T01:40:04.286Z",
   "news": [
     {
-      "id": "5ffdc5ae1fe92472",
+      "id": "ff80cc37f610c06a",
       "source": "遠見",
       "category": "國際",
-      "title": "全球衛生供應鏈的韌性與政治：從疫情整備走向全民健康覆蓋",
-      "url": "https://www.gvm.com.tw/article/133609",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20200203/70827_01.jpg",
-      "publishedAt": "2026-10-08T09:07:00.000Z",
-      "fetchedAt": "2026-10-09T01:59:39.628Z"
+      "title": "川普還是落空了！2026諾貝爾和平獎得主皮萊是誰？曾籲中國公布天安門真相",
+      "url": "https://www.gvm.com.tw/article/133619",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261010/242705.jpg",
+      "publishedAt": "2026-10-09T18:06:00.000Z",
+      "fetchedAt": "2026-10-10T01:40:04.286Z"
     },
     {
       "id": "cb5b58016d5ccf8f",
@@ -20,7 +20,7 @@
       "url": "https://www.gvm.com.tw/article/133616",
       "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261008/242687.jpg",
       "publishedAt": "2026-10-08T10:41:00.000Z",
-      "fetchedAt": "2026-10-09T01:59:39.628Z"
+      "fetchedAt": "2026-10-10T01:40:04.286Z"
     },
     {
       "id": "5cf4475a760f5a64",
@@ -30,97 +30,97 @@
       "url": "https://www.gvm.com.tw/article/133605",
       "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261008/242674.jpg",
       "publishedAt": "2026-10-08T10:00:00.000Z",
-      "fetchedAt": "2026-10-09T01:59:39.628Z"
+      "fetchedAt": "2026-10-10T01:40:04.286Z"
     },
     {
-      "id": "e3b0c7dc12d085be",
+      "id": "e633bfa1e1108678",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "憂鬱會增加失智症風險！長期負面思考可能讓大腦提早老化，研究：與認知退化有關",
-      "url": "https://www.gvm.com.tw/article/133586",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20241127/189586.jpg",
-      "publishedAt": "2026-10-08T23:00:00.000Z",
-      "fetchedAt": "2026-10-09T01:59:39.628Z"
+      "title": "健檢別只看紅字！醫揭報告「5大指標」藏失智及中風風險",
+      "url": "https://www.gvm.com.tw/article/133592",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260805/237919.jpg",
+      "publishedAt": "2026-10-09T23:00:00.000Z",
+      "fetchedAt": "2026-10-10T01:40:04.286Z"
     },
     {
-      "id": "8fea81fc7b306665",
+      "id": "bcfd308efce07fe9",
       "source": "壹蘋",
       "category": "國際",
-      "title": "二戰後首次！美軍行刑隊處決醫師　全程將線上直播",
-      "url": "https://news.nextapple.com/international/20261009/CE9E162B770713352CD3B7AA7A7D6820",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/CE9E162B770713352CD3B7AA7A7D6820/ba9401f4d7f4a9e8b90ce7e29d283bcc_1280.webp",
-      "publishedAt": "2026-10-09T01:43:00.000Z",
-      "fetchedAt": "2026-10-09T01:59:39.628Z"
+      "title": "要求公開六四真相　諾貝爾和平獎得主皮萊多次槓上中國",
+      "url": "https://news.nextapple.com/international/20261010/CF9AFAFDF8E63372BDF865496D9336B4",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/CF9AFAFDF8E63372BDF865496D9336B4/64b9aa0b26d39bae0c4f24db38a6fdcb_1280.webp",
+      "publishedAt": "2026-10-10T00:56:14.000Z",
+      "fetchedAt": "2026-10-10T01:40:04.286Z"
     },
     {
-      "id": "f8bc98b448879ccf",
+      "id": "1d294c342fd9255a",
       "source": "壹蘋",
       "category": "生活",
-      "title": "國慶連假車流塞到晚上8點！今國道「9處魔王路段」快避",
-      "url": "https://news.nextapple.com/life/20261009/F85ABB8DC5A3EB575ABF69FB20CBF782",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/F85ABB8DC5A3EB575ABF69FB20CBF782/7732b84f9f4462f23175dc4b5cfc5833_1280.webp",
-      "publishedAt": "2026-10-09T01:48:00.000Z",
-      "fetchedAt": "2026-10-09T01:59:39.628Z"
+      "title": "出國買零食、泡麵小心！「4類食品」通關被抓恐罰100萬",
+      "url": "https://news.nextapple.com/life/20261010/12BAF2C1FA3A1C82913065935025B1C2",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/12BAF2C1FA3A1C82913065935025B1C2/7c3636e276f5b76271159e58b5eb8764_1280.webp",
+      "publishedAt": "2026-10-10T00:57:10.000Z",
+      "fetchedAt": "2026-10-10T01:40:04.286Z"
     },
     {
-      "id": "9a3069557e437b6b",
+      "id": "34604f1b5f80aec9",
       "source": "壹蘋",
       "category": "社會",
-      "title": "高雄水產行二代5天遇襲兩次　兩嫌落網警續追幕後主謀",
-      "url": "https://news.nextapple.com/local/20261009/64D2EB3AD75F24B2476D6523184D21D9",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/64D2EB3AD75F24B2476D6523184D21D9/1e3319f8ebdc28f9d84095a9d4e72445_1280.webp",
-      "publishedAt": "2026-10-09T01:51:40.000Z",
-      "fetchedAt": "2026-10-09T01:59:39.628Z"
+      "title": "名醫爆偷吃網美「床上從頭吻到妹妹」　妻竟非首次抓包外遇！",
+      "url": "https://news.nextapple.com/local/20261010/CDAE9658AA25617DBBC459A9D1E65213",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/CDAE9658AA25617DBBC459A9D1E65213/dec0e24b46688029e3f461dd34beac24_1280.webp",
+      "publishedAt": "2026-10-10T00:46:58.000Z",
+      "fetchedAt": "2026-10-10T01:40:04.286Z"
     },
     {
-      "id": "301a08f49fa2f36d",
+      "id": "b6ae585eb607814a",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "台灣之光妮妃雅首度登郵輪開秀　嗆辣女神薔薔也來了",
-      "url": "https://news.nextapple.com/entertainment/20261009/07CD397DD956114E8550333568AAB9E0",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/07CD397DD956114E8550333568AAB9E0/6f77126bd37538f170a7bd5d8f5d7784_1280.webp",
-      "publishedAt": "2026-10-09T01:48:26.000Z",
-      "fetchedAt": "2026-10-09T01:59:39.628Z"
+      "title": "美魔女雙十國慶放大招　國旗比基尼秀逆天曲線",
+      "url": "https://news.nextapple.com/entertainment/20261010/C07DB0F047A7C832FAD4BF3C119E6604",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/C07DB0F047A7C832FAD4BF3C119E6604/35e90d1079683c3344e6968c85cd49e5_1280.webp",
+      "publishedAt": "2026-10-10T01:31:45.000Z",
+      "fetchedAt": "2026-10-10T01:40:04.286Z"
     },
     {
-      "id": "94ea7029818f9e6a",
+      "id": "2d7e7ce241751309",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "蘋果10月13日新品活動登場！3款智慧家庭新品有望亮相",
-      "url": "https://news.nextapple.com/aitech/20261009/A0E0AE06E3D44A2E48ADC58E0175F661",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/A0E0AE06E3D44A2E48ADC58E0175F661/133fd9e10156042f3a5a2458f4485cea_1280.webp",
-      "publishedAt": "2026-10-09T01:32:33.000Z",
-      "fetchedAt": "2026-10-09T01:59:39.628Z"
+      "title": "蘋果10月底傳再推新品！觸控MacBook、OLED iPad mini有望登場",
+      "url": "https://news.nextapple.com/aitech/20261009/F6BE6D1F2CF54E47B73EC9D11AE5AC09",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/F6BE6D1F2CF54E47B73EC9D11AE5AC09/886789b0c94c438f611d1de6fea6aa49_1280.webp",
+      "publishedAt": "2026-10-09T10:45:05.000Z",
+      "fetchedAt": "2026-10-10T01:40:04.286Z"
     },
     {
-      "id": "876941b87b2d61b5",
+      "id": "39d435386aafad80",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "AI大廠拖累美股！費半跳水逾3%　台積電ADR慘摔",
-      "url": "https://news.nextapple.com/finance/20261009/6D04A115FAE4E8A1ABD7082B03BFE327",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/6D04A115FAE4E8A1ABD7082B03BFE327/4614e9778b5bcb2ade5ae3e5f2e697e3_1280.webp",
-      "publishedAt": "2026-10-08T23:06:57.000Z",
-      "fetchedAt": "2026-10-09T01:59:39.628Z"
+      "title": "美股小紅作收！道瓊漲423點　台積電ADR逆勢跌",
+      "url": "https://news.nextapple.com/finance/20261010/671CA7EDBD9F683103E37794E0E4D2C4",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/671CA7EDBD9F683103E37794E0E4D2C4/d9aace9736a1909704789d101ac522db_1280.webp",
+      "publishedAt": "2026-10-09T23:16:32.000Z",
+      "fetchedAt": "2026-10-10T01:40:04.286Z"
     },
     {
-      "id": "5d904dde96d18383",
+      "id": "d9ed7810048d31fe",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "洋基連17年無冠！A-Rod不忍了開砲　揭球團最離譜問題",
-      "url": "https://news.nextapple.com/sports/20261009/54D93ED7F6CFBE0387C7B9CF4ADCD5F7",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/54D93ED7F6CFBE0387C7B9CF4ADCD5F7/68ee919fd5ddf31f51112995c55f5839_1280.webp",
-      "publishedAt": "2026-10-09T01:41:00.000Z",
-      "fetchedAt": "2026-10-09T01:59:39.628Z"
+      "title": "直播｜國慶大會登場！三軍儀隊、巨幅國旗、雷虎小組表演亮點一次看",
+      "url": "https://news.nextapple.com/politics/20261010/51EDA9A37B13AF9639A1FF95272F7B1C",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/51EDA9A37B13AF9639A1FF95272F7B1C/3a97c91f87a89fe1311fd7ece7daa1e6_1280.webp",
+      "publishedAt": "2026-10-10T01:24:12.000Z",
+      "fetchedAt": "2026-10-10T01:40:04.286Z"
     },
     {
-      "id": "a0f1eeba30c5cc20",
+      "id": "c60be3b85432088a",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "專訪後遭網辱罵「妓女」　錢子不忍了全告！沈伯洋反應曝光",
-      "url": "https://news.nextapple.com/politics/20261009/955C981A63684501E50F193C6B587380",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/955C981A63684501E50F193C6B587380/eab5acd5094da6249c2178a33f9e279c_1280.webp",
-      "publishedAt": "2026-10-09T01:21:00.000Z",
-      "fetchedAt": "2026-10-09T01:59:39.628Z"
+      "title": "李彥秀「以後社工會在社區發毒品」　她轟：為選舉講得如此不堪",
+      "url": "https://news.nextapple.com/politics/20261010/07BA10D02722743D9CB51BCEAC28787E",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/07BA10D02722743D9CB51BCEAC28787E/3b630b2a9f4f436ae2f16a60c59bb5d6_1280.webp",
+      "publishedAt": "2026-10-10T01:10:13.000Z",
+      "fetchedAt": "2026-10-10T01:40:04.286Z"
     }
   ]
 }
