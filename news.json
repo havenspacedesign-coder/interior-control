@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-10",
-  "updatedAt": "2026-10-10T01:40:04.286Z",
+  "date": "2026-10-11",
+  "updatedAt": "2026-10-11T00:50:23.616Z",
   "news": [
     {
       "id": "ff80cc37f610c06a",
@@ -10,117 +10,117 @@
       "url": "https://www.gvm.com.tw/article/133619",
       "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261010/242705.jpg",
       "publishedAt": "2026-10-09T18:06:00.000Z",
-      "fetchedAt": "2026-10-10T01:40:04.286Z"
+      "fetchedAt": "2026-10-11T00:50:23.616Z"
     },
     {
-      "id": "cb5b58016d5ccf8f",
-      "source": "遠見",
-      "category": "AI／科技",
-      "title": "AI繪圖爭議全解析：繪師為何反彈？被掠奪這個難以承受",
-      "url": "https://www.gvm.com.tw/article/133616",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261008/242687.jpg",
-      "publishedAt": "2026-10-08T10:41:00.000Z",
-      "fetchedAt": "2026-10-10T01:40:04.286Z"
-    },
-    {
-      "id": "5cf4475a760f5a64",
-      "source": "遠見",
-      "category": "金融／產經",
-      "title": "從AI充電到缺工危機，公共運輸迎來「雙軸轉型」，臺灣如何駛向下一個十年？",
-      "url": "https://www.gvm.com.tw/article/133605",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261008/242674.jpg",
-      "publishedAt": "2026-10-08T10:00:00.000Z",
-      "fetchedAt": "2026-10-10T01:40:04.286Z"
-    },
-    {
-      "id": "e633bfa1e1108678",
+      "id": "661cf918fc6b7e97",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "健檢別只看紅字！醫揭報告「5大指標」藏失智及中風風險",
-      "url": "https://www.gvm.com.tw/article/133592",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260805/237919.jpg",
-      "publishedAt": "2026-10-09T23:00:00.000Z",
-      "fetchedAt": "2026-10-10T01:40:04.286Z"
+      "title": "吸菸傷肺還「催老」 ！可能加速外表老化，國健署研究：女性吸菸臉部皺紋風險增3.1倍",
+      "url": "https://www.gvm.com.tw/article/133613",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20220701/108829.jpg",
+      "publishedAt": "2026-10-10T23:00:00.000Z",
+      "fetchedAt": "2026-10-11T00:50:23.616Z"
     },
     {
-      "id": "bcfd308efce07fe9",
+      "id": "dcc05e996c69abfa",
+      "source": "遠見",
+      "category": "好享生活／教育／話題",
+      "title": "韓國瑜國慶致詞談不副署，又如何直指台灣「最大問題」？",
+      "url": "https://www.gvm.com.tw/article/133623",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261010/242733.jpg",
+      "publishedAt": "2026-10-10T10:01:00.000Z",
+      "fetchedAt": "2026-10-11T00:50:23.616Z"
+    },
+    {
+      "id": "a9ce0793c89d1cc4",
+      "source": "遠見",
+      "category": "好享生活／教育／話題",
+      "title": "柯志恩再戰高雄「穿破4雙鞋」民調只差賴瑞隆0.3個百分點！台積電都來了，港都為何留不住青年？",
+      "url": "https://www.gvm.com.tw/article/133308",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260927/241905.jpg",
+      "publishedAt": "2026-10-10T08:00:00.000Z",
+      "fetchedAt": "2026-10-11T00:50:23.616Z"
+    },
+    {
+      "id": "ffb43aa690686b8e",
       "source": "壹蘋",
       "category": "國際",
-      "title": "要求公開六四真相　諾貝爾和平獎得主皮萊多次槓上中國",
-      "url": "https://news.nextapple.com/international/20261010/CF9AFAFDF8E63372BDF865496D9336B4",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/CF9AFAFDF8E63372BDF865496D9336B4/64b9aa0b26d39bae0c4f24db38a6fdcb_1280.webp",
-      "publishedAt": "2026-10-10T00:56:14.000Z",
-      "fetchedAt": "2026-10-10T01:40:04.286Z"
+      "title": "他們不好了嗎？澤連斯基「這件事」踩線　川普開嗆：該換總統了",
+      "url": "https://news.nextapple.com/international/20261011/957C8A9E4B27C1658EA25A0D26E43E12",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/957C8A9E4B27C1658EA25A0D26E43E12/19a0a9828481bc3c02753264df099ee8_1280.webp",
+      "publishedAt": "2026-10-11T00:28:24.000Z",
+      "fetchedAt": "2026-10-11T00:50:23.616Z"
     },
     {
-      "id": "1d294c342fd9255a",
+      "id": "e434bb75f4d277b1",
       "source": "壹蘋",
       "category": "生活",
-      "title": "出國買零食、泡麵小心！「4類食品」通關被抓恐罰100萬",
-      "url": "https://news.nextapple.com/life/20261010/12BAF2C1FA3A1C82913065935025B1C2",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/12BAF2C1FA3A1C82913065935025B1C2/7c3636e276f5b76271159e58b5eb8764_1280.webp",
-      "publishedAt": "2026-10-10T00:57:10.000Z",
-      "fetchedAt": "2026-10-10T01:40:04.286Z"
+      "title": "愛馬仕包遭滴紅酒　富錦樹拒賠93萬！女CEO公開消極對話",
+      "url": "https://news.nextapple.com/life/20261011/3136D1E938936C4CB2C2E8233C6560A3",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/3136D1E938936C4CB2C2E8233C6560A3/2b73088bb06a1f192c0b03c0d70e2b74_1280.webp",
+      "publishedAt": "2026-10-11T00:23:47.000Z",
+      "fetchedAt": "2026-10-11T00:50:23.616Z"
     },
     {
-      "id": "34604f1b5f80aec9",
+      "id": "13553a1a1f75bf88",
       "source": "壹蘋",
       "category": "社會",
-      "title": "名醫爆偷吃網美「床上從頭吻到妹妹」　妻竟非首次抓包外遇！",
-      "url": "https://news.nextapple.com/local/20261010/CDAE9658AA25617DBBC459A9D1E65213",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/CDAE9658AA25617DBBC459A9D1E65213/dec0e24b46688029e3f461dd34beac24_1280.webp",
-      "publishedAt": "2026-10-10T00:46:58.000Z",
-      "fetchedAt": "2026-10-10T01:40:04.286Z"
+      "title": "士官長聽行車記錄器綠了！前妻與更生人互喊「公婆」　二審逆轉判賠20萬",
+      "url": "https://news.nextapple.com/local/20261011/23C38DBD9A4BC399C74E892E77FE675B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/23C38DBD9A4BC399C74E892E77FE675B/73047d6fa4ac16ec169481b5c3a6668d_1280.webp",
+      "publishedAt": "2026-10-10T16:01:00.000Z",
+      "fetchedAt": "2026-10-11T00:50:23.616Z"
     },
     {
-      "id": "b6ae585eb607814a",
+      "id": "7d03ddb777a5e456",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "美魔女雙十國慶放大招　國旗比基尼秀逆天曲線",
-      "url": "https://news.nextapple.com/entertainment/20261010/C07DB0F047A7C832FAD4BF3C119E6604",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/C07DB0F047A7C832FAD4BF3C119E6604/35e90d1079683c3344e6968c85cd49e5_1280.webp",
-      "publishedAt": "2026-10-10T01:31:45.000Z",
-      "fetchedAt": "2026-10-10T01:40:04.286Z"
+      "title": "梅艷芳骨灰遭竊！報警3個月未尋回　家屬懇求：讓她早日回家",
+      "url": "https://news.nextapple.com/entertainment/20261011/22795B5E9D7C431E71EB112095BA69F1",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/22795B5E9D7C431E71EB112095BA69F1/e05833b167af3233f32c4a2c732bfe72_1280.webp",
+      "publishedAt": "2026-10-11T00:23:34.000Z",
+      "fetchedAt": "2026-10-11T00:50:23.616Z"
     },
     {
-      "id": "2d7e7ce241751309",
+      "id": "caa2202be539b321",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "蘋果10月底傳再推新品！觸控MacBook、OLED iPad mini有望登場",
-      "url": "https://news.nextapple.com/aitech/20261009/F6BE6D1F2CF54E47B73EC9D11AE5AC09",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/F6BE6D1F2CF54E47B73EC9D11AE5AC09/886789b0c94c438f611d1de6fea6aa49_1280.webp",
-      "publishedAt": "2026-10-09T10:45:05.000Z",
-      "fetchedAt": "2026-10-10T01:40:04.286Z"
+      "title": "BenQ推Mac專屬品牌INFTYLAB　滑鼠、支架打造蘋果桌面",
+      "url": "https://news.nextapple.com/aitech/20261011/68C4BF3F7EEAD657C671DE7026F2C06A",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/68C4BF3F7EEAD657C671DE7026F2C06A/57e26510a4d4a4aaf487cd1b438f947a_1280.webp",
+      "publishedAt": "2026-10-10T16:05:00.000Z",
+      "fetchedAt": "2026-10-11T00:50:23.616Z"
     },
     {
-      "id": "39d435386aafad80",
+      "id": "be2cfa7cb5f36260",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "美股小紅作收！道瓊漲423點　台積電ADR逆勢跌",
-      "url": "https://news.nextapple.com/finance/20261010/671CA7EDBD9F683103E37794E0E4D2C4",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/671CA7EDBD9F683103E37794E0E4D2C4/d9aace9736a1909704789d101ac522db_1280.webp",
-      "publishedAt": "2026-10-09T23:16:32.000Z",
-      "fetchedAt": "2026-10-10T01:40:04.286Z"
+      "title": "只花45元就發財！公館手搖飲開出1000萬　永和豆漿也中獎",
+      "url": "https://news.nextapple.com/finance/20261011/C7867CFF05EBD0935D106ACF19FD8C93",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/C7867CFF05EBD0935D106ACF19FD8C93/8081544bcaa4b0945c722b609f6f0f78_1280.webp",
+      "publishedAt": "2026-10-10T16:46:43.000Z",
+      "fetchedAt": "2026-10-11T00:50:23.616Z"
     },
     {
-      "id": "d9ed7810048d31fe",
+      "id": "e4fb9a95772f4527",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "直播｜國慶大會登場！三軍儀隊、巨幅國旗、雷虎小組表演亮點一次看",
-      "url": "https://news.nextapple.com/politics/20261010/51EDA9A37B13AF9639A1FF95272F7B1C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/51EDA9A37B13AF9639A1FF95272F7B1C/3a97c91f87a89fe1311fd7ece7daa1e6_1280.webp",
-      "publishedAt": "2026-10-10T01:24:12.000Z",
-      "fetchedAt": "2026-10-10T01:40:04.286Z"
+      "title": "候選人撞臉「閃身步」大叔！網敲碗模仿　釣出本人回應",
+      "url": "https://news.nextapple.com/politics/20261011/9F8F2741D987C0883FF01896B963953D",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/9F8F2741D987C0883FF01896B963953D/46cf912880e7a22ab33c149620ec9b21_1280.webp",
+      "publishedAt": "2026-10-11T00:11:27.000Z",
+      "fetchedAt": "2026-10-11T00:50:23.616Z"
     },
     {
-      "id": "c60be3b85432088a",
+      "id": "e5476a3c28ba475a",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "李彥秀「以後社工會在社區發毒品」　她轟：為選舉講得如此不堪",
-      "url": "https://news.nextapple.com/politics/20261010/07BA10D02722743D9CB51BCEAC28787E",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/07BA10D02722743D9CB51BCEAC28787E/3b630b2a9f4f436ae2f16a60c59bb5d6_1280.webp",
-      "publishedAt": "2026-10-10T01:10:13.000Z",
-      "fetchedAt": "2026-10-10T01:40:04.286Z"
+      "title": "影｜利雅德機場挨轟12死309傷！武裝組織「事前發文」細思極恐",
+      "url": "https://news.nextapple.com/international/20261011/0D4A022CDA2F1BDC11027A86BBBEA903",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/0D4A022CDA2F1BDC11027A86BBBEA903/cc6274150011523f379a93feeef55b5e_1280.webp",
+      "publishedAt": "2026-10-10T23:51:20.000Z",
+      "fetchedAt": "2026-10-11T00:50:23.616Z"
     }
   ]
 }
