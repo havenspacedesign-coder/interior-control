@@ -14,6 +14,8 @@ function renderMobileProgressDateHeader(days){
   }).join('')}</div></div>`;
 }
 function renderProgress(force){
+  // 連續拖曳時，前一次儲存／撤銷記錄的完成通知不能替換目前的拖曳來源。
+  if(pnPointerHeld||pnDragSrc){pendingProgressRender=true;return;}
   var af=document.activeElement;
   var menuOpen=false;
   var typingInProgress=!!(af&&af.matches&&af.matches('input,textarea,[contenteditable="true"]')&&af.closest&&af.closest('#panel-progress'));

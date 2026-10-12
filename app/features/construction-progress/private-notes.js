@@ -121,6 +121,37 @@ function renderPrivateTodoSection(){
 var pnDragSrc=null;
 var pnDragPreview=null;
 var pnDragLayout=null;
+var pnPointerHeld=false;
+function pnCaptureDropContext(e){
+  // 原生拖曳資料只能在 drop 當下讀取；撤銷記錄可能先等待遠端資料。
+  e.preventDefault();e.stopPropagation();
+  if(e.pnDropContext)return e.pnDropContext;
+  var raw=e.dataTransfer?.getData('text/plain')||'',from=null;
+  if(raw){var parts=raw.split('|');if(parts.length===3&&(parts[0]==='work'||parts[0]==='personal')&&Number.isInteger(Number(parts[2])))from={type:parts[0],ds:parts[1],idx:Number(parts[2])};}
+  if(!from&&pnDragSrc)from=Object.assign({},pnDragSrc);
+  return e.pnDropContext={from:from,preview:pnDragPreview?Object.assign({},pnDragPreview):null,copy:!!e.ctrlKey,dragSource:pnDragSrc};
+}
+function pnFinishDropPreview(context){
+  // 前一次儲存完成時，不能清掉使用者已開始的下一次拖曳。
+  if(pnDragSrc!==context.dragSource)return;
+  pnClearDragPreview();pnDragSrc=null;
+}
+function pnSelectDropTarget(type,ds,idx,item){
+  // 放置完成後，編輯欄也必須指向新位置，不能再把內容存回已移走的來源格。
+  selGen++;
+  S.privateSelected={};S.privateSelected[type+'|'+ds]=idx;S.privateEditing=null;
+  var linked=normalizeLinkedItem(item);
+  updateFormulaBar(type,ds,idx,linked.text,undefined,linked.link);
+}
+function pnResumeProgressRender(){
+  if(!pnPointerHeld&&!pnDragSrc&&pendingProgressRender&&activePanel==='progress')renderProgress();
+}
+document.addEventListener('mouseup',function(){
+  if(!pnPointerHeld)return;
+  pnPointerHeld=false;
+  setTimeout(pnResumeProgressRender,0);
+},true);
+window.addEventListener('blur',function(){pnPointerHeld=false;setTimeout(pnResumeProgressRender,0);});
 function pnClearDragPreview(){
   document.querySelectorAll('.pn-chip.pn-dragging').forEach(function(el){el.classList.remove('pn-dragging');});
   document.querySelectorAll('[data-pn-cell] .pn-chip[draggable="true"]').forEach(function(el){el.style.transform='';});
@@ -409,6 +440,7 @@ function clearSpreadsheetSelections(keep){
   if(keep!=='schedule'){scheduleSelected=null;scheduleEditing=null;}
 }
 window.pnPointerSelect=function(e,type,ds,idx){
+  if(e.button===0)pnPointerHeld=true;
   var editing=S.privateEditing;
   if(!editing){
     var key=type+'|'+ds;
@@ -592,22 +624,18 @@ window.pnDragStart=function(e,type,ds,idx){
   requestAnimationFrame(function(){dragEl.classList.add('pn-dragging');});
   setTimeout(function(){ghost.remove();},0);
 }
-window.pnDragEnd=function(){pnClearDragPreview();pnDragSrc=null;}
+window.pnDragEnd=function(){pnClearDragPreview();pnDragSrc=null;pnPointerHeld=false;setTimeout(pnResumeProgressRender,0);}
 window.pnDrop=async function(e,toType,toDs,insertAt){
-  e.preventDefault();e.stopPropagation();
-  var raw=e.dataTransfer.getData('text/plain');
-  var from=null;
-  if(raw){var p=raw.split('|');if(p.length===3)from={type:p[0],ds:p[1],idx:parseInt(p[2])};}
-  if(!from)from=pnDragSrc;
-  if(!from||!currentUser){pnClearDragPreview();return;}
+  var context=pnCaptureDropContext(e),from=context.from;
+  if(!from||!currentUser){pnFinishDropPreview(context);return;}
   var pn=S.privateNotes||{work:{},personal:{}};
   var fromItems=(pn[from.type]&&pn[from.type][from.ds])?[...pn[from.type][from.ds]]:[];
   var item=fromItems[from.idx];
-  if(!item){pnClearDragPreview();pnDragSrc=null;return;}
+  if(!item){pnFinishDropPreview(context);return;}
   if(from.type===toType&&from.ds===toDs){
     var reordered=[...fromItems];
     reordered.splice(from.idx,1);
-    var preview=pnDragPreview&&pnDragPreview.type===toType&&pnDragPreview.ds===toDs?pnDragPreview.index:null;
+    var preview=context.preview&&context.preview.type===toType&&context.preview.ds===toDs?context.preview.index:null;
     var target=Number.isInteger(preview)?preview:(Number.isInteger(insertAt)?insertAt:reordered.length);
     if(preview===null&&from.idx<target)target--;
     target=Math.max(0,Math.min(target,reordered.length));
@@ -615,8 +643,9 @@ window.pnDrop=async function(e,toType,toDs,insertAt){
     S.privateNotes=Object.assign({},pn);
     S.privateNotes[toType]=Object.assign({},pn[toType]||{});
     S.privateNotes[toType][toDs]=reordered;
+    pnSelectDropTarget(toType,toDs,target,item);
     await setDoc(doc(db,'privateNotes',currentUser.uid),S.privateNotes);
-    pnClearDragPreview();pnDragSrc=null;
+    pnFinishDropPreview(context);
     renderProgress();
     return;
   }
@@ -639,7 +668,7 @@ window.pnDrop=async function(e,toType,toDs,insertAt){
   var newPn=Object.assign({},pn);
   newPn[toType]=Object.assign({},pn[toType]||{});
   newPn[toType][toDs]=toItems;
-  if(!e.ctrlKey){
+  if(!context.copy){
     fromItems.splice(from.idx,1);
     newPn[from.type]=Object.assign({},newPn[from.type]||{});
     newPn[from.type][from.ds]=fromItems;
@@ -653,7 +682,8 @@ window.pnDrop=async function(e,toType,toDs,insertAt){
     newPn[from.type][from.ds]=fromItems;
   }
   S.privateNotes=newPn;
+  pnSelectDropTarget(toType,toDs,toItems.length-1,movedItem);
   await setDoc(doc(db,'privateNotes',currentUser.uid),newPn);
-  pnClearDragPreview();pnDragSrc=null;
+  pnFinishDropPreview(context);
   renderProgress();
 }

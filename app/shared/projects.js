@@ -441,6 +441,13 @@ window.pnSaveBox=async function(el,type,ds,idx){
   var text=el.value;var link=linkFromInput(el,text);
   var pn=S.privateNotes||{work:{},personal:{}};
   var items=(pn[type]&&pn[type][ds])?[...pn[type][ds]]:[];
+  var original=items[idx]?normalizeLinkedItem(items[idx]):null;
+  var unchanged=original&&original.text===text&&(original.link?.url||'')===(link?.url||'')&&(original.link?.label||'')===(link?.label||'');
+  if(unchanged||(!original&&!text&&!link)){
+    S.privateEditing=null;
+    if(activePanel==='progress')renderProgress();
+    return;
+  }
   while(items.length<=idx)items.push({text:'',color:''});
   items[idx]=Object.assign({},items[idx],{text:text,link:link});
   S.privateNotes=Object.assign({},pn);
@@ -456,13 +463,14 @@ window.pnSaveBox=async function(el,type,ds,idx){
 // Box (in-place chip) blur — identity is baked into the call at render time.
 window.pnBoxBlur=function(el,type,ds,idx){
   var pending=S.privatePendingSelection;
+  var pendingGeneration=selGen;
   var pendingAdd=S.privatePendingAdd;
   S.privatePendingSelection=null;
   S.privatePendingAdd=null;
   if(pendingAdd)S.privateAddingFromBlur=true;
   pnSaveBox(el,type,ds,idx).then(function(){
     if(pendingAdd){S.privateAddingFromBlur=false;pnAdd(pendingAdd.type,pendingAdd.ds);return;}
-    if(pending)pnSelect(pending.type,pending.ds,pending.idx);
+    if(pending&&pendingGeneration===selGen)pnSelect(pending.type,pending.ds,pending.idx);
   });
 }
 function updateFormulaBar(type,ds,idx,text,rowId,link){

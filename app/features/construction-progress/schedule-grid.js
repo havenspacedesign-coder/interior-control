@@ -731,6 +731,9 @@ async function progressWriteTarget(target,value,current){
   var restored=progressClone(value);
   if(target.kind==='private'){
     S.privateNotes=restored;persistLocalPrivateNotes();
+    // 日期與排序還原後，舊的選取位置可能已空白或指到另一筆記事。
+    S.privateSelected={};S.privateEditing=null;
+    if(formulaBarState&&(formulaBarState.type==='work'||formulaBarState.type==='personal'))updateFormulaBar(null);
     await setDoc(doc(db,'privateNotes',target.key),restored);return;
   }
   if(target.kind==='meeting'){
@@ -890,8 +893,11 @@ function progressScheduleDragTargets(args){
 function progressWrapOperation(name,targetFactory,label){
   var original=window[name];if(!original)return;
   window[name]=async function(){
-    if(progressUndoRunning)return original.apply(this,arguments);
-    var args=[].slice.call(arguments),targets=progressUniqueTargets(targetFactory(args)||[]),before=[];
+    var args=[].slice.call(arguments);
+    // 必須在第一個 await 前接住原生 drop，避免來源被 dragend 清掉或事件冒泡執行兩次。
+    if(name==='pnDrop')pnCaptureDropContext(args[0]);
+    if(progressUndoRunning)return original.apply(this,args);
+    var targets=progressUniqueTargets(targetFactory(args)||[]),before=[];
     for(const target of targets)before.push(await progressReadTarget(target));
     var result=await original.apply(this,args),after=[];
     for(const target of targets)after.push(await progressReadTarget(target));
