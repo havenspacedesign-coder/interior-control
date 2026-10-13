@@ -17,8 +17,9 @@ function sortDesignProjs(projs){
     return ra-rb;
   });
 }
+let designDateEditing=false;
 function renderDesign(){
-  if(designRowDragInProgress){pendingDesignRender=true;return;}
+  if(designRowDragInProgress||designDateEditing){pendingDesignRender=true;return;}
   const el=$('panel-design');
   const previousDesignScroll=$('design-scroll-wrap')?.scrollLeft;
   if(Number.isFinite(previousDesignScroll))designLastHScrollLeft=previousDesignScroll;
@@ -139,9 +140,9 @@ function renderDesignCell(p,col){
   const dm=dp[colKey+'__date_m']!==undefined?dp[colKey+'__date_m']:(dparts[1]?parseInt(dparts[1],10):'');
   const dd=dp[colKey+'__date_d']!==undefined?dp[colKey+'__date_d']:(dparts[2]?parseInt(dparts[2],10):'');
   const dateRow=`<div style="display:flex;align-items:center;flex-wrap:nowrap;white-space:nowrap;gap:2px;font-size:10px;color:var(--text2);padding:3px 4px 0;min-width:172px;box-sizing:border-box;overflow:hidden">
-    <input id="ddy-${p.id}-${colKey}" type="number" value="${dy}" onchange="saveDesignDate('${p.id}','${colKey}')" style="width:40px;flex:0 0 40px;box-sizing:border-box;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">年
-    <input id="ddm-${p.id}-${colKey}" type="number" min="1" max="12" value="${dm}" onchange="saveDesignDate('${p.id}','${colKey}')" style="width:28px;flex:0 0 28px;box-sizing:border-box;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">月
-    <input id="ddd-${p.id}-${colKey}" type="number" min="1" max="31" value="${dd}" onchange="saveDesignDate('${p.id}','${colKey}')" style="width:28px;flex:0 0 28px;box-sizing:border-box;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">日
+    <input class="design-date-input" id="ddy-${p.id}-${colKey}" type="number" value="${dy}" onfocus="designDateFocus()" onblur="designDateBlur()" onkeydown="designDateKeydown(event)" onchange="saveDesignDate('${p.id}','${colKey}')" style="width:40px;flex:0 0 40px;box-sizing:border-box;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">年
+    <input class="design-date-input" id="ddm-${p.id}-${colKey}" type="number" min="1" max="12" value="${dm}" onfocus="designDateFocus()" onblur="designDateBlur()" onkeydown="designDateKeydown(event)" onchange="saveDesignDate('${p.id}','${colKey}')" style="width:28px;flex:0 0 28px;box-sizing:border-box;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">月
+    <input class="design-date-input" id="ddd-${p.id}-${colKey}" type="number" min="1" max="31" value="${dd}" onfocus="designDateFocus()" onblur="designDateBlur()" onkeydown="designDateKeydown(event)" onchange="saveDesignDate('${p.id}','${colKey}')" style="width:28px;flex:0 0 28px;box-sizing:border-box;padding:1px 2px;border:1px solid var(--border);border-radius:3px;font-size:10px">日
     <button type="button" onclick="addDesignStageLink('${p.id}','${colKey}')" title="新增同日施工寶典" aria-label="新增同日施工寶典" style="width:18px;height:18px;flex:0 0 18px;padding:0;border:1px solid rgba(120,120,120,.18);border-radius:4px;background:transparent;color:var(--text3);opacity:.62;font:inherit;font-size:13px;line-height:1;cursor:pointer">＋</button>
   </div>`;
   const savedLinks=Array.isArray(dp[colKey+'__stageLinks'])?dp[colKey+'__stageLinks']:(val?[val]:['']);
@@ -152,6 +153,14 @@ function renderDesignCell(p,col){
   }).join('');
   return`<td class="${links.some(Boolean)?'':'empty-cell'}">${dateRow}${linkMarkup}</td>`;
 }
+window.designDateFocus=function(){designDateEditing=true;};
+window.designDateBlur=function(){setTimeout(()=>{designDateEditing=!!document.activeElement?.matches('.design-date-input');if(!designDateEditing&&pendingDesignRender&&activePanel==='design'){pendingDesignRender=false;renderDesign();}},0);};
+window.designDateKeydown=function(event){
+  if(event.key==='Enter'){event.preventDefault();event.currentTarget.blur();return;}
+  if(event.key!=='Tab'||event.ctrlKey||event.altKey||event.metaKey)return;
+  const inputs=[...event.currentTarget.parentElement.querySelectorAll('.design-date-input')],index=inputs.indexOf(event.currentTarget),next=inputs[index+(event.shiftKey?-1:1)];
+  if(next){event.preventDefault();next.focus();next.select();}
+};
 window.saveDesignDate=async function(projId,colName){
   const yEl=$(`ddy-${projId}-${colName}`),mEl=$(`ddm-${projId}-${colName}`),dEl=$(`ddd-${projId}-${colName}`);
   const y=yEl?yEl.value.trim():'',m=mEl?mEl.value.trim():'',d=dEl?dEl.value.trim():'';
@@ -164,17 +173,6 @@ window.saveDesignDate=async function(projId,colName){
   await updateDoc(doc(db,'projects',projId),{designProgress:dp});
   setSynced();
 }
-document.addEventListener('keyup',event=>{
-  if(event.key!=='Shift'||event.ctrlKey||event.altKey||event.metaKey)return;
-  const current=document.activeElement;
-  if(!current||!current.id)return;
-  let nextId='';
-  if(current.id.startsWith('ddy-'))nextId=current.id.replace(/^ddy-/,'ddm-');
-  else if(current.id.startsWith('ddm-'))nextId=current.id.replace(/^ddm-/,'ddd-');
-  if(!nextId)return;
-  const next=$(nextId);
-  if(next){event.preventDefault();next.focus();next.select();}
-});
 window.toggleDesignBlueCols=function(){designBlueColsGlobalOpen=!designBlueColsGlobalOpen;renderDesign();}
 window.toggleDesignProj=function(projId){expandedProjs[projId]=!expandedProjs[projId];renderDesign();}
 window.toggleDesignFields=function(projId){expandedFields[projId]=!expandedFields[projId];renderDesign();}
