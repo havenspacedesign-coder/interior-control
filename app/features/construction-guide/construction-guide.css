@@ -24,6 +24,7 @@
 .bib-item-text{flex:1;min-width:0;font-size:13px}
 .bib-item-del{color:var(--text3);cursor:pointer;font-size:15px;padding:0 4px;border:none;background:none}
 .bib-item-del:hover{color:var(--red)}
+.bib-emoji-setting{flex-shrink:0;padding:0 4px;border:0;background:none;font-size:15px;cursor:pointer;border-radius:4px}.bib-emoji-setting:hover{background:var(--pl)}.bib-item-emoji{flex-shrink:0;font-size:17px}.ck-emoji{display:inline-flex;align-items:center;justify-content:center;width:62px;flex:0 0 62px;font-size:18px;line-height:22px}.bible-emoji-label{font-size:12px;color:var(--text2);margin-top:14px}.bible-emoji-recent{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0 14px;min-height:8px}.bible-emoji-recent button{width:32px;height:32px;border:1px solid var(--border);border-radius:6px;background:var(--surface);font-size:20px;cursor:pointer}.bible-emoji-recent button:hover{background:var(--pl);border-color:var(--purple)}.bible-emoji-field{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--text2)}.bible-emoji-field input{padding:8px;border:1px solid var(--border);border-radius:6px;font:inherit;font-size:20px;color:var(--text)}.bible-emoji-error{font-size:12px;color:var(--red);margin-top:7px}
 .bib-item-add{color:var(--text3);cursor:pointer;font-size:15px;padding:0 4px;border:none;background:none}
 .bib-item-add:hover{color:var(--purple)}
 .bib-item-add-root{color:var(--text);font-weight:700}

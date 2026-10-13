@@ -3,7 +3,7 @@ let currentUser=null,currentRole=null;
 function isSystemAdmin(){return currentRole==='manager';}
 const IS_LOCAL_PREVIEW=location.protocol==='file:'||['127.0.0.1','localhost'].includes(location.hostname);
 let localTestMode=false;
-let S={projects:[],checks:{},bible:{},bibleOrder:[],members:[],homeNotes:[],recommendations:[],recommendationCategories:[],recommendationRegions:[],growthItems:[],announcements:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},globalNotes:{},userTodos:[],tradeCategories:[],tradeVendors:[],otherVendorCategories:[],otherVendors:[],projectTradeSelections:{}};
+let S={projects:[],checks:{},bible:{},bibleOrder:[],bibleEmojiRecent:[],members:[],homeNotes:[],recommendations:[],recommendationCategories:[],recommendationRegions:[],growthItems:[],announcements:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},globalNotes:{},userTodos:[],tradeCategories:[],tradeVendors:[],otherVendorCategories:[],otherVendors:[],projectTradeSelections:{}};
 let selectedProjectDetailId='',selectedProjectDetailPhotoId='',selectedProjectDetailPhotoBlob=null;
 let userPrefs={todoProjects:[]};
 const DEFAULT_APPEARANCE={theme:'default',fontSize:'small'};
@@ -59,6 +59,7 @@ function localRead(collectionName,id){
   if(collectionName==='privateNotes')return S.privateNotes;
   if(collectionName==='userPrefs')return userPrefs;
   if(collectionName==='settings'){
+    if(id==='bibleEmojiRecent')return{emojis:S.bibleEmojiRecent};
     if(id==='designCols')return{cols:designCols||DEFAULT_DESIGN_COLS};
     if(id==='designColWidths')return{widths:designColWidths};
     if(id==='designProjectOrder')return{order:designProjectOrder};
@@ -86,7 +87,8 @@ function localWrite(collectionName,id,data,merge=false){
   else if(collectionName==='privateNotes'){S.privateNotes=merge?{...(S.privateNotes||{}),...value}:value;try{localStorage.setItem('localPreviewPrivateNotes_'+(currentUser?.uid||'local-test-admin'),JSON.stringify(S.privateNotes));}catch(error){console.warn('本機記事狀態無法保存',error);}}
   else if(collectionName==='userPrefs')userPrefs=merge?{...userPrefs,...value}:value;
   else if(collectionName==='settings'){
-    if(id==='designCols')designCols=value.cols||DEFAULT_DESIGN_COLS;
+    if(id==='bibleEmojiRecent')S.bibleEmojiRecent=normalizeBibleEmojiRecent(value.emojis);
+    else if(id==='designCols')designCols=value.cols||DEFAULT_DESIGN_COLS;
     else if(id==='designColWidths')designColWidths=value.widths||{};
     else if(id==='designProjectOrder')designProjectOrder=value.order||[];
     else if(id==='dateColors')S.dateColors=value.colors||{};
@@ -324,15 +326,17 @@ function getBiblePhaseItems(stage,phase){const b=S.bible[stage];return(b&&b[phas
 // {text, subs:[...]} so it can carry indented sub-items. This normalizes
 // either shape so the rest of the code only has to handle one format.
 function normalizeBibleItem(it){
-  if(typeof it==='string')return{text:it,subs:[]};
-  return{text:it?.text||'',subs:Array.isArray(it?.subs)?it.subs:[]};
+  if(typeof it==='string')return{text:it,subs:[],emoji:''};
+  return{...it,text:it?.text||'',subs:Array.isArray(it?.subs)?it.subs:[],emoji:typeof it?.emoji==='string'?it.emoji:''};
 }
+function bibleItemNeedsCheck(item){return !normalizeBibleItem(item).emoji;}
+function normalizeBibleEmojiRecent(values){return [...new Set((Array.isArray(values)?values:[]).filter(value=>typeof value==='string'&&value))].slice(0,10);}
 function flattenPhaseItems(rawArr,depth){
   depth=depth||0;
   const flat=[];
   (rawArr||[]).forEach(it=>{
     const n=normalizeBibleItem(it);
-    flat.push({text:n.text,depth:depth,isSub:depth>0});
+    flat.push({text:n.text,depth:depth,isSub:depth>0,emoji:n.emoji});
     flat.push(...flattenPhaseItems(n.subs,depth+1));
   });
   return flat;
@@ -345,16 +349,16 @@ function replaceAtPath(arr,path,newNode){
   const copy=[...arr];
   if(path.length===1){copy[path[0]]=newNode;return copy;}
   const cur=normalizeBibleItem(copy[path[0]]);
-  copy[path[0]]={text:cur.text,subs:replaceAtPath(cur.subs,path.slice(1),newNode)};
+  copy[path[0]]={...cur,subs:replaceAtPath(cur.subs,path.slice(1),newNode)};
   return copy;
 }
 function addChildAtPath(arr,path,text){
   const copy=[...arr];
   const cur=normalizeBibleItem(copy[path[0]]);
   if(path.length===1){
-    copy[path[0]]={text:cur.text,subs:[...cur.subs,text]};
+    copy[path[0]]={...cur,subs:[...cur.subs,text]};
   }else{
-    copy[path[0]]={text:cur.text,subs:addChildAtPath(cur.subs,path.slice(1),text)};
+    copy[path[0]]={...cur,subs:addChildAtPath(cur.subs,path.slice(1),text)};
   }
   return copy;
 }
@@ -362,7 +366,7 @@ function removeAtPath(arr,path){
   const copy=[...arr];
   if(path.length===1){copy.splice(path[0],1);return copy;}
   const cur=normalizeBibleItem(copy[path[0]]);
-  copy[path[0]]={text:cur.text,subs:removeAtPath(cur.subs,path.slice(1))};
+  copy[path[0]]={...cur,subs:removeAtPath(cur.subs,path.slice(1))};
   return copy;
 }
 function getNodeAtPath(arr,path){
@@ -406,9 +410,9 @@ function projectBibleItems(proj,stage){return projectBibleItemsMeta(proj,stage).
 function pendingCount(projId,stage){
   if(!stage)return null;
   const proj=S.projects.find(p=>p.id===projId);
-  const items=projectBibleItems(proj,stage);if(!items.length)return null;
+  const items=projectBibleItemsMeta(proj,stage);if(!items.length)return null;
   const stored=S.checks[`${projId}_${stage}`]||[];
-  return items.length-items.filter((_,i)=>stored[i]?.done||stored[i]?.skip).length;
+  return items.reduce((count,item,i)=>count+(bibleItemNeedsCheck(item)&&!stored[i]?.done&&!stored[i]?.skip?1:0),0);
 }
 function pendBadge(n){
   if(n===null)return'';
@@ -419,22 +423,25 @@ function pendBadge(n){
 // "seen but not applicable to this site". Both count as resolved. Sub-items
 // (item.isSub) render indented under their parent.
 function renderCheckItemRow(projId,stage,idx,item,isEstimate){
-  const cls=item.done?'done':(item.skip?'skip':'');
+  const emoji=normalizeBibleItem(item).emoji;
+  const cls=emoji?'':item.done?'done':(item.skip?'skip':'');
   const depth=item.depth||(item.isSub?1:0);
   const stageStarted=(S.checks[`${projId}_${stage}`]||[]).some(row=>row?.done||row?.skip);
-  const showPending=stageStarted&&!item.done&&!item.skip;
+  const showPending=!emoji&&stageStarted&&!item.done&&!item.skip;
   return`<div class="ws-cl-item ${cls}"${depth>0?` style="padding-left:${depth*26}px"`:''}>
-    <div class="ck-btns">
+    ${emoji?`<span class="ck-emoji" role="img" aria-label="分類圖示" style="display:inline-flex;align-items:center;justify-content:center;width:62px;flex:0 0 62px;font-size:18px;line-height:22px">${escAttr(emoji)}</span>`:`<div class="ck-btns">
       <span class="ck-pending-marker ${showPending?'show':''}" aria-hidden="true"></span>
       <button type="button" class="ck-btn ${item.done?'on-done':''}" title="完成" onclick="setCheckStatus('${projId}','${stage}',${idx},'done')">✓</button>
       <button type="button" class="ck-btn ${item.skip?'on-skip':''}" title="不適用" onclick="setCheckStatus('${projId}','${stage}',${idx},'skip')">✗</button>
-    </div>
+    </div>`}
     <label>${depth>0?'└ ':''}${item.text}</label>
     ${isEstimate?`<input type="number" class="ck-amount" placeholder="金額" value="${item.amount||''}" onclick="event.stopPropagation()" onchange="setCheckAmount('${projId}','${stage}',${idx},this.value)">`:''}
   </div>`;
 }
 window.setCheckStatus=async function(projId,stage,idx,status){
   const proj=S.projects.find(p=>p.id===projId);
+  const meta=projectBibleItemsMeta(proj,stage);
+  if(!meta[idx]||!bibleItemNeedsCheck(meta[idx]))return;
   const allItems=projectBibleItems(proj,stage);
   const key=`${projId}_${stage}`;
   const stored=[...(S.checks[key]||allItems.map(t=>({text:t,done:false})))];

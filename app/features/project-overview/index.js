@@ -96,13 +96,14 @@ function renderSiteReport(projId){
         const metaItems=projectBibleItemsMeta(p,s);
         if(!metaItems.length)return'';
         const stored=S.checks[`${p.id}_${s}`]||[];
-        const done=metaItems.filter((_,i)=>stored[i]?.done||stored[i]?.skip).length;
+        const requiredCount=metaItems.filter(bibleItemNeedsCheck).length;
+        const done=metaItems.filter((item,i)=>bibleItemNeedsCheck(item)&&(stored[i]?.done||stored[i]?.skip)).length;
         return`<div style="margin-bottom:14px">
-          <div style="font-size:13px;font-weight:600;margin-bottom:4px">${s}（${done}/${metaItems.length}）</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px">${s}（${done}/${requiredCount}）</div>
           ${metaItems.map((m,i)=>{
             const st=stored[i]||{};
-            const icon=st.done?'✓':(st.skip?'✗':'○');
-            const color=st.done?'var(--teal)':'var(--text3)';
+            const icon=m.emoji|| (st.done?'✓':(st.skip?'✗':'○'));
+            const color=!m.emoji&&st.done?'var(--teal)':'var(--text3)';
             const depth=m.depth||(m.isSub?1:0);
             return`<div style="font-size:12px;padding:3px 0 3px ${depth*26}px;display:flex;gap:6px"><span style="color:${color};font-weight:600;width:14px">${icon}</span>${depth>0?'└ ':''}${m.text}</div>`;
           }).join('')}
@@ -182,13 +183,15 @@ window.checkConstructionManualCompletion=function(projId,options={}){
   const includeDesignProgress=options.includeDesignProgress!==false;
   const linkedStages=projectLinkedConstructionManualStages(proj);
   getBibleStages().slice(startStageIndex).forEach(stage=>{
-    const items=projectBibleItems(proj,stage);
+    const items=projectBibleItemsMeta(proj,stage);
     if(!items.length)return;
     const stored=S.checks[`${projId}_${stage}`]||[];
-    const resolvedCount=items.reduce((count,_,index)=>count+(stored[index]?.done||stored[index]?.skip?1:0),0);
-    if(resolvedCount===0&&!linkedStages.has(stage))return;
-    const incompleteCount=items.length-resolvedCount;
-    result.existingStages.push({stage,label:displayStageName(stage),itemCount:items.length,incompleteCount});
+    const stageStarted=items.some((_,index)=>stored[index]?.done||stored[index]?.skip);
+    if(!stageStarted&&!linkedStages.has(stage))return;
+    const requiredCount=items.filter(bibleItemNeedsCheck).length;
+    const resolvedCount=items.reduce((count,item,index)=>count+(bibleItemNeedsCheck(item)&&(stored[index]?.done||stored[index]?.skip)?1:0),0);
+    const incompleteCount=requiredCount-resolvedCount;
+    result.existingStages.push({stage,label:displayStageName(stage),itemCount:requiredCount,incompleteCount});
     if(incompleteCount>0){
       result.manualIncompleteTotal+=incompleteCount;
       result.incompleteStages.push({stage,label:displayStageName(stage),incompleteCount});

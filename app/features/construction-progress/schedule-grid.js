@@ -621,8 +621,9 @@ window.openCheckMo=function(projId,stage,label,projName){
   if(!metaItems.length){alert('此階段尚無項目');return;}
   const isEstimate=!!(S.bible[stage]&&S.bible[stage].isEstimate);
   const key=`${projId}_${stage}`;const stored=S.checks[key]||[];
-  const merged=metaItems.map((m,i)=>({text:m.text,depth:m.depth,isSub:m.isSub,done:stored[i]?.done||false,skip:stored[i]?.skip||false,amount:stored[i]?.amount||''}));
-  const done=merged.filter(x=>x.done||x.skip).length;const pct=Math.round(done/merged.length*100);
+  const merged=metaItems.map((m,i)=>({...m,done:stored[i]?.done||false,skip:stored[i]?.skip||false,amount:stored[i]?.amount||''}));
+  const required=merged.filter(bibleItemNeedsCheck);
+  const done=required.filter(x=>x.done||x.skip).length;const pct=required.length?Math.round(done/required.length*100):100;
   const totalAmount=merged.reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
   const bData=projectBibleData(proj,stage);
   const beforeLen=flattenPhaseItems(bData.before).length,duringLen=flattenPhaseItems(bData.during).length;
@@ -642,13 +643,13 @@ window.openCheckMo=function(projId,stage,label,projName){
   const oldScroll=$('mo-content').querySelector('.estimate-check-list')?.scrollTop||0;
   $('mo-content').classList.toggle('estimate-check-modal',isEstimate);
   const summary=`<div class="mo-title">${label}</div>
-    <div class="mo-sub">${projName} — ${done}/${merged.length} 完成${isEstimate?`　｜　粗估總金額：<strong>${totalAmount.toLocaleString()}</strong>`:''}</div>
+    <div class="mo-sub">${projName} — ${done}/${required.length} 完成${isEstimate?`　｜　粗估總金額：<strong>${totalAmount.toLocaleString()}</strong>`:''}</div>
     <div class="pb-wrap"><div class="pb-fill" style="width:${pct}%;background:${pct===100?'var(--teal)':'var(--purple)'}"></div></div>`;
   $('mo-content').innerHTML=isEstimate
     ?`<div class="estimate-check-head">${summary}</div><div class="estimate-check-list">${itemsHtml}<div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div></div>`
     :`${summary}${itemsHtml}<div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;
   if(isEstimate)$('mo-content').querySelector('.estimate-check-list').scrollTop=oldScroll;
-  $('mo-content').style.maxWidth=isEstimate?'520px':'880px';
+  $('mo-content').style.maxWidth='880px';
   $('modal').style.display='flex';
   openCheckMoArgs={projId,stage,label,projName};
 }

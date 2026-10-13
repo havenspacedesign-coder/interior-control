@@ -104,7 +104,7 @@ function renderBibleWorksite(stage){
     const metaItems=getAllBibleItemsMeta(s);
     if(!metaItems.length)return'';
     const key=`${activeBibleWs}_${s}`;const stored=S.checks[key]||[];
-    const merged=metaItems.map((m,i)=>({text:m.text,depth:m.depth,isSub:m.isSub,done:stored[i]?.done||false,skip:stored[i]?.skip||false}));
+    const merged=metaItems.map((m,i)=>({...m,done:stored[i]?.done||false,skip:stored[i]?.skip||false}));
     return`<div class="bible-worksite-stage" data-worksite-stage="${escAttr(s)}" style="margin-top:16px">
       <div style="font-size:13px;font-weight:600;margin-bottom:6px">${displayStageName(s)}</div>
       ${merged.map((item,i)=>renderCheckItemRow(activeBibleWs,s,i,item)).join('')}
@@ -158,8 +158,9 @@ function renderBibleItemNode(stage,phase,path,rawItem){
     ${depth===0?`<span class="bib-item-num">${path[0]+1}</span>`:`<span style="color:var(--text3);flex-shrink:0;margin-left:${32+(depth-1)*20}px">└</span>`}
     ${canSort?`<button type="button" class="bib-drag-handle" draggable="true" aria-label="拖曳排序" title="按住拖曳排序" ondragstart="bibleItemDragStart(event,'${stage}','${phase}','${pathStr}','${parentPath}')" ondragend="bibleItemDragEnd()">⠿</button>`:''}
     ${isAdmin()&&dragModeOn?`<button class="bib-item-add ${depth===0?'bib-item-add-root':''}" title="新增子項目" onclick="toggleBibleSubItems('${stage}','${phase}','${pathStr}')">＋</button>`:''}
+    ${item.emoji?`<span class="bib-item-emoji" role="img" aria-label="分類圖示">${escAttr(item.emoji)}</span>`:''}
     <span class="bib-item-text" style="flex:1" ondblclick="startEditBibleNode('${stage}','${phase}','${pathStr}',this)">${item.text}</span>
-    ${isAdmin()&&dragModeOn?`<button class="bib-item-del" onclick="confirmDelBibleNode('${stage}','${phase}','${pathStr}','${escAttr(item.text).replace(/'/g,"\\'")}')">×</button>`:''}
+    ${isAdmin()&&dragModeOn?`<button type="button" class="bib-emoji-setting" title="設定 Emoji 圖示" aria-label="設定 Emoji 圖示：${escAttr(item.text)}" onclick="showBibleEmojiSettings('${stage}','${phase}','${pathStr}')">😀</button><button class="bib-item-del" onclick="confirmDelBibleNode('${stage}','${phase}','${pathStr}','${escAttr(item.text).replace(/'/g,"\\'")}')">×</button>`:''}
   </div>`;
   item.subs.forEach((sub,i)=>{html+=renderBibleItemNode(stage,phase,[...path,i],sub);});
   if(isAdmin()&&dragModeOn){
@@ -169,6 +170,59 @@ function renderBibleItemNode(stage,phase,path,rawItem){
   }
   return html;
 }
+let bibleEmojiTarget=null,bibleEmojiSaving=false,bibleEmojiPattern=null;
+function validBibleEmoji(value){
+  const emoji=String(value||'').trim();if(!emoji)return'';
+  try{
+    bibleEmojiPattern||=(new RegExp('^(?:\\p{RGI_Emoji}|[\\p{Extended_Pictographic}&&\\p{Emoji}]\\uFE0F?)$','v'));
+    if(!bibleEmojiPattern.test(emoji))return'';
+    const base=emoji.replace(/\uFE0F$/,'');
+    if(/^\p{Extended_Pictographic}$/u.test(base))return /^\p{Emoji_Presentation}$/u.test(base)?base:base+'\uFE0F';
+    return emoji;
+  }catch(error){return'';}
+}
+function bibleEmojiNextRecent(emoji,values){return normalizeBibleEmojiRecent([emoji,...normalizeBibleEmojiRecent(values).map(value=>validBibleEmoji(value)||value).filter(value=>value!==emoji)]);}
+function bibleEmojiRecentMarkup(){return normalizeBibleEmojiRecent(S.bibleEmojiRecent).map(emoji=>`<button type="button" data-emoji="${escAttr(emoji)}" title="套用 ${escAttr(emoji)}" aria-label="套用 ${escAttr(emoji)}" onclick="saveBibleItemEmoji(this.dataset.emoji)">${escAttr(emoji)}</button>`).join('');}
+function bibleEmojiSignature(raw){const item=normalizeBibleItem(raw);return JSON.stringify([item.text,item.emoji,item.subs.map(bibleEmojiSignature)]);}
+window.refreshBibleEmojiRecent=function(){const el=$('bible-emoji-recent');if(el)el.innerHTML=bibleEmojiRecentMarkup();};
+window.showBibleEmojiSettings=function(stage,phase,pathStr){
+  if(!isAdmin()||!dragModeOn||bibleEmojiSaving)return;
+  const path=pathStr.split(',').map(Number),raw=getNodeAtPath(S.bible[stage]?.[phase]||[],path);if(raw===undefined)return;
+  const item=normalizeBibleItem(raw);bibleEmojiTarget={stage,phase,path,signature:bibleEmojiSignature(raw)};
+  $('mo-content').style.maxWidth='360px';
+  $('mo-content').innerHTML=`<div class="mo-title">自訂 Emoji 圖示</div><div class="mo-sub">${escAttr(item.text)}</div><div class="bible-emoji-label">最近使用（最多 10 種）</div><div id="bible-emoji-recent" class="bible-emoji-recent">${bibleEmojiRecentMarkup()}</div><label class="bible-emoji-field">自由輸入 Emoji<input id="bible-emoji-input" value="${escAttr(item.emoji)}" placeholder="輸入或貼上單一 Emoji" autocomplete="off" onkeydown="if(event.key==='Enter'&&!event.isComposing){event.preventDefault();saveBibleItemEmoji()}"></label><div id="bible-emoji-error" class="bible-emoji-error" role="alert"></div><div class="mo-footer"><button type="button" class="btn" onclick="saveBibleItemEmoji('')">恢復勾叉模式</button><button type="button" class="btn" onclick="closeMo()">取消</button><button type="button" id="bible-emoji-apply" class="btn btn-p" onclick="saveBibleItemEmoji()">套用</button></div>`;
+  $('modal').style.display='flex';$('bible-emoji-input').focus();
+};
+function bibleEmojiUpdatedData(data,target,emoji){
+  const arr=data?.[target.phase]||[],raw=getNodeAtPath(arr,target.path);
+  if(raw===undefined||bibleEmojiSignature(raw)!==target.signature)throw Object.assign(new Error('此項目已變更，請關閉後重新開啟設定。'),{bibleEmojiValidation:true});
+  return{...data,[target.phase]:replaceAtPath(arr,target.path,{...normalizeBibleItem(raw),emoji})};
+}
+window.saveBibleItemEmoji=async function(value){
+  if(!isAdmin()||!dragModeOn||!bibleEmojiTarget||bibleEmojiSaving)return;
+  const errorEl=$('bible-emoji-error');if(!errorEl)return;
+  const restoring=value==='',emoji=restoring?'':validBibleEmoji(value===undefined?$('bible-emoji-input')?.value:value);
+  if(!restoring&&!emoji){errorEl.textContent='請輸入單一完整 Emoji，不接受一般文字或多個 Emoji。';return;}
+  const target=bibleEmojiTarget,stageRef=bibleStageDoc(target.stage),recentRef=doc(db,'settings','bibleEmojiRecent');
+  bibleEmojiSaving=true;errorEl.textContent='';$('bible-emoji-apply').disabled=true;rememberBibleScrollPosition(2);setSyncing();
+  try{
+    let result;
+    if(localTestMode){
+      const updated=bibleEmojiUpdatedData(S.bible[target.stage],target,emoji),recent=emoji?bibleEmojiNextRecent(emoji,S.bibleEmojiRecent):S.bibleEmojiRecent;
+      const batch=writeBatch(db);batch.set(stageRef,bibleStageData(target.stage,updated));if(emoji)batch.set(recentRef,{emojis:recent},{merge:true});await batch.commit();result={updated,recent};
+    }else{
+      result=await fbRunTransaction(db,async transaction=>{
+        const stageSnap=await transaction.get(stageRef),recentSnap=emoji?await transaction.get(recentRef):null;
+        const data=stageSnap.exists()?stageSnap.data():{},updated=bibleEmojiUpdatedData(data,target,emoji);
+        const recent=emoji?bibleEmojiNextRecent(emoji,recentSnap.exists()?recentSnap.data().emojis:[]):S.bibleEmojiRecent;
+        transaction.set(stageRef,bibleStageData(target.stage,updated));if(emoji)transaction.set(recentRef,{emojis:recent},{merge:true});return{updated,recent};
+      });
+    }
+    S.bible=Object.assign({},S.bible,{[target.stage]:result.updated});S.bibleEmojiRecent=result.recent;
+    setSynced();closeMo();renderActive();
+  }catch(error){errorEl.textContent=error.message||'圖示儲存失敗，請稍後再試。';if(error.bibleEmojiValidation)setSynced();else{console.error('Emoji 圖示儲存失敗',error);setOffline();}}
+  finally{bibleEmojiSaving=false;const apply=$('bible-emoji-apply');if(apply)apply.disabled=false;}
+};
 function bibleSiblingArray(arr,parentPath){
   let current=arr;
   parentPath.forEach(index=>{current=normalizeBibleItem(current[index]).subs;});
@@ -181,7 +235,7 @@ function reorderBibleSiblings(arr,parentPath,fromIndex,targetIndex,placeBefore){
     next.splice(insertAt,0,moved);return next;
   }
   const [head,...tail]=parentPath,copy=[...arr],item=normalizeBibleItem(copy[head]);
-  copy[head]={text:item.text,subs:reorderBibleSiblings(item.subs,tail,fromIndex,targetIndex,placeBefore)};
+  copy[head]={...item,subs:reorderBibleSiblings(item.subs,tail,fromIndex,targetIndex,placeBefore)};
   return copy;
 }
 function clearBibleItemDropClasses(){document.querySelectorAll('.bib-drag-group').forEach(el=>el.classList.remove('drag-over-before','drag-over-after'));}
@@ -235,7 +289,7 @@ window.saveBibleNodeText=async function(stage,phase,pathStr,text){
   const data=S.bible[stage]||{before:[],during:[],after:[]};
   const arr=data[phase]||[];
   const cur=normalizeBibleItem(getNodeAtPath(arr,path));
-  const newArr=replaceAtPath(arr,path,cur.subs.length?{text,subs:cur.subs}:text);
+  const newArr=replaceAtPath(arr,path,cur.subs.length||cur.emoji?{...cur,text}:text);
   const updated={...data,[phase]:newArr};
   // 保留目前閱讀位置，並涵蓋存檔後同步觸發的第二次重新渲染。
   rememberBibleScrollPosition(2);S.bible=Object.assign({},S.bible,{[stage]:updated});

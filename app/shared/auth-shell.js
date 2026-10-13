@@ -224,6 +224,7 @@ function initListeners(){
   onSnapshot(collection(db,'materialGuides'),snap=>{materialGuides=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));if(!materialGuides.length&&isAdmin())ensureMaterialGuideSeed();if(activePanel==='vendors')renderVendors();});
   onSnapshot(collection(db,'growthItems'),snap=>{S.growthItems=snap.docs.map(d=>({id:d.id,...d.data()}));if(activePanel==='home')renderHome();});
   onSnapshot(collection(db,'announcements'),snap=>{S.announcements=snap.docs.map(d=>({id:d.id,...d.data()}));if(activePanel==='home')renderHome();});
+  onSnapshot(doc(db,'settings','bibleEmojiRecent'),snap=>{S.bibleEmojiRecent=normalizeBibleEmojiRecent(snap.exists()?snap.data().emojis:[]);if(typeof refreshBibleEmojiRecent==='function')refreshBibleEmojiRecent();});
   onSnapshot(doc(db,'settings','companyDuty'),snap=>{companyDutyConfig=normalizeCompanyDutyConfig(snap.exists()?snap.data():{});if(activePanel==='home')renderHome();});
   onSnapshot(collection(db,'tradeCategories'),snap=>{S.tradeCategories=sortTradeCategories(snap.docs.map(d=>({id:d.id,...d.data()})));if(activePanel==='vendors')renderVendors();});
   onSnapshot(collection(db,'tradeVendors'),snap=>{S.tradeVendors=snap.docs.map(d=>({id:d.id,...d.data()}));if(activePanel==='vendors')renderVendors();});
