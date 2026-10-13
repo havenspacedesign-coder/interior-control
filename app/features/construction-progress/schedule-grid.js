@@ -7,9 +7,6 @@ let hscrollSyncing=false;
 // Keep this small local predicate so the stage picker works in both contexts.
 function isProgressDesignStage(stage){return getBibleStages().slice(0,16).includes(stage);}
 let lastHScrollLeft=0;
-let hscrollSyncFrame=0;
-let hscrollSyncSource=null;
-let hscrollSyncTarget=0;
 const MOBILE_SCROLL_DEBUG=new URLSearchParams(location.search).has('scrollDebug');
 const mobileScrollDiagnostics=[];
 let mobileDateHeaderFrame=0;
@@ -87,34 +84,26 @@ window.confirmClearDesignStage=function(projId,col,label){
 }
 window.addEventListener('resize',function(){alignProgressBottomScrollbar();alignDesignBottomScrollbar();});
 function syncHScrollPosition(source,left){
-  const max=Math.max(0,source.scrollWidth-source.clientWidth);
+  const scrollers=Array.from(document.querySelectorAll('.hscroll-sync'));
+  const max=Math.min(Math.max(0,source.scrollWidth-source.clientWidth),...scrollers.filter(other=>other.clientWidth>0).map(other=>Math.max(0,other.scrollWidth-other.clientWidth)));
   const next=Math.max(0,Math.min(max,left));
   if(Math.abs(source.scrollLeft-next)>.5)source.scrollLeft=next;
   lastHScrollLeft=next;
   if(calMode==='month')progressMonthScrollPositions[progressMonthKey()]=next;
   updateMobileProgressDateHeader(next);
-  hscrollSyncSource=source;
-  hscrollSyncTarget=next;
-  if(!hscrollSyncFrame)hscrollSyncFrame=requestAnimationFrame(function(){
-    hscrollSyncFrame=0;
-    if(!hscrollSyncSource||!hscrollSyncSource.isConnected)return;
-    hscrollSyncing=true;
-    document.querySelectorAll('.hscroll-sync').forEach(function(other){
-      if(other!==hscrollSyncSource&&Math.abs(other.scrollLeft-hscrollSyncTarget)>.5)other.scrollLeft=hscrollSyncTarget;
-    });
-    hscrollSyncing=false;
+  // 每次拖曳及慣性移動都在同一次更新內對齊所有日期表，不能等放開才補同步。
+  hscrollSyncing=true;
+  scrollers.forEach(function(other){
+    if(other!==source&&Math.abs(other.scrollLeft-next)>.5)other.scrollLeft=next;
   });
+  hscrollSyncing=false;
   return next;
 }
 function setHorizontalScrollPosition(scroller,left){
+  if(scroller.classList.contains('hscroll-sync'))return syncHScrollPosition(scroller,left);
   const max=Math.max(0,scroller.scrollWidth-scroller.clientWidth);
   const next=Math.max(0,Math.min(max,left));
   if(Math.abs(scroller.scrollLeft-next)>.5)scroller.scrollLeft=next;
-  if(scroller.classList.contains('hscroll-sync')){
-    lastHScrollLeft=next;
-    if(calMode==='month')progressMonthScrollPositions[progressMonthKey()]=next;
-    updateMobileProgressDateHeader(next);
-  }
   return next;
 }
 document.addEventListener('scroll',function(e){
@@ -209,6 +198,8 @@ function runHorizontalInertia(scroller,velocity){
 function getHorizontalPointerScroller(target){
   if(!target||!target.closest)return null;
   if(isNativeMobileProgressScroller(target))return null;
+  // 底部捲軸由瀏覽器原生拖曳，再透過 scroll 事件同步；不可當成內容反向平移。
+  if(target.closest('#progress-bottom-hscroll'))return null;
   if(target.closest('.daily-log-table'))return null;
   return target.closest('.hscroll-sync,.horizontal-card-list');
 }
