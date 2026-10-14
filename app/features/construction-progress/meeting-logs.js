@@ -251,14 +251,50 @@ window.mScheduleCloseMention=function(rowId,ds){
 window.mCancelCloseMention=function(){
   clearTimeout(mCloseTimer);
 }
+var mMentionToggleQueues={};
+function mEffectiveMentions(rowId,ds,idx){
+  const mentions=[...((((S.meetingLogs[rowId+'_'+ds]||{}).items||[])[idx]||{}).mentions||[])];
+  const queue=mMentionToggleQueues[rowId+'|'+ds+'|'+idx];
+  for(const intent of (queue?.pending||[])){
+    const at=mentions.indexOf(intent.uid);
+    if(intent.checked&&at<0)mentions.push(intent.uid);else if(!intent.checked&&at>=0)mentions.splice(at,1);
+  }
+  return mentions;
+}
+function mRefreshMentionMenu(rowId,ds,idx){
+  const menu=document.getElementById('meet-mention-'+rowId+'-'+ds);if(!menu)return;
+  const mentions=mEffectiveMentions(rowId,ds,idx);
+  menu.querySelectorAll('.meeting-mention-option').forEach(function(option){
+    const checked=mentions.includes(option.dataset.memberUid);
+    option.setAttribute('aria-checked',String(checked));
+    const box=option.querySelector('.meeting-mention-check');box.classList.toggle('checked',checked);box.textContent=checked?'✓':'';
+  });
+}
+window.mRequestMentionToggle=function(rowId,ds,idx,uid,option){
+  if(!currentUser||!markableMembersList().some(m=>m.uid===uid))return;
+  const key=rowId+'|'+ds+'|'+idx,queue=mMentionToggleQueues[key]||(mMentionToggleQueues[key]={pending:[],tail:Promise.resolve()});
+  const input=document.getElementById('meetbox-'+rowId+'-'+ds+'-'+idx);
+  const intent={uid,checked:option.getAttribute('aria-checked')!=='true',draft:input?{text:input.value,link:linkFromInput(input,input.value)}:null};
+  queue.pending.push(intent);
+  // 先更新勾選框；儲存與日誌同步依序在背景完成，不等待網路才顯示。
+  mRefreshMentionMenu(rowId,ds,idx);
+  queue.tail=queue.tail.then(function(){return mToggleMention(rowId,ds,idx,uid,intent.checked,intent.draft);}).catch(function(error){
+    console.error('標記或日誌同步未完成',error);setOffline();alert('標記或日誌同步未完成，請稍後再試。');
+  }).finally(function(){
+    queue.pending.splice(queue.pending.indexOf(intent),1);
+    mRefreshMentionMenu(rowId,ds,idx);
+    if(!queue.pending.length)delete mMentionToggleQueues[key];
+  });
+  return queue.tail;
+};
 function mMentionMenuHTML(rowId,ds,idx){
   const key=rowId+'_'+ds;
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)||[];
   const item=items[idx]||{};
-  const mentions=item.mentions||[];
+  const mentions=mEffectiveMentions(rowId,ds,idx);
   return markableMembersList().map(function(m){
     const checked=mentions.indexOf(m.uid)>=0;
-    return'<button type="button" role="checkbox" aria-checked="'+checked+'" aria-label="'+escAttr(memberDisplayName(m))+'" class="meeting-mention-option" onmousedown="event.preventDefault()" onclick="event.stopPropagation();mToggleMention(\''+rowId+'\',\''+ds+'\','+idx+',\''+m.uid+'\')">'
+    return'<button type="button" role="checkbox" aria-checked="'+checked+'" aria-label="'+escAttr(memberDisplayName(m))+'" data-member-uid="'+escAttr(m.uid)+'" class="meeting-mention-option" onmousedown="event.preventDefault()" onclick="event.stopPropagation();mRequestMentionToggle(\''+rowId+'\',\''+ds+'\','+idx+',\''+m.uid+'\',this)">'
       +'<span class="meeting-mention-check '+(checked?'checked':'')+'" aria-hidden="true">'+(checked?'✓':'')+'</span><span>'+escAttr(memberDisplayName(m))+'</span></button>';
   }).join('');
 }
@@ -270,32 +306,35 @@ window.mOpenMentionPicker=function(e,rowId,ds,idx){
   menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:200px;overflow-y:auto';
   menuEl.innerHTML=mMentionMenuHTML(rowId,ds,idx);
 }
-window.mToggleMention=async function(rowId,ds,idx,uid){
+window.mToggleMention=async function(rowId,ds,idx,uid,checked,draft){
   if(!currentUser)return;
   if(!markableMembersList().some(m=>m.uid===uid))return;
   const key=rowId+'_'+ds;
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
   if(idx<0)return;
   const input=document.getElementById('meetbox-'+rowId+'-'+ds+'-'+idx);
-  if(idx>=items.length&&!input)return;
-  while(items.length<=idx)items.push({text:'',color:'',bg:'',mentions:[]});
+  if(idx>=items.length&&!input&&!draft)return;
+  while(items.length<=idx)items.push({text:'',color:'',bg:'',mentions:[],...(draft||{})});
+  const previousText=items[idx].text||'',previousRecord=S.meetingLogs[key];
   if(input)items[idx]={...items[idx],text:input.value,link:linkFromInput(input,input.value)};
   const mentions=(items[idx].mentions||[]).slice();
   const pos=mentions.indexOf(uid);
-  const adding=pos<0;
-  if(adding)mentions.push(uid);else mentions.splice(pos,1);
+  const adding=checked===undefined?pos<0:!!checked;
+  if(adding&&pos<0)mentions.push(uid);else if(!adding&&pos>=0)mentions.splice(pos,1);
   items[idx]=Object.assign({},items[idx],{mentions});
   S.meetingLogs=Object.assign({},S.meetingLogs);
   S.meetingLogs[key]=Object.assign({},S.meetingLogs[key],{items});
   setSyncing();
-  await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
-  for(const memberUid of mentions)await mSyncDailyLog(rowId,ds,idx,memberUid,items[idx]);
+  try{await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});}
+  catch(error){if(S.meetingLogs[key]?.items===items)S.meetingLogs[key]=previousRecord||{rowId,date:ds,items:[]};throw error;}
+  for(const memberUid of mentions){
+    if(previousText!==items[idx].text||(adding&&memberUid===uid))await mSyncDailyLog(rowId,ds,idx,memberUid,items[idx]);
+  }
   if(!adding)await mRemoveFromDailyLog(rowId,ds,idx,uid);
   setSynced();
   // Refresh just the checklist (keep it open) instead of a full re-render,
   // so tagging several people doesn't require re-hovering each time.
-  const menuEl=document.getElementById('meet-mention-'+rowId+'-'+ds);
-  if(menuEl&&menuEl.style.display==='block')menuEl.innerHTML=mMentionMenuHTML(rowId,ds,idx);
+  mRefreshMentionMenu(rowId,ds,idx);
 }
 // Upsert this meeting entry's own text as one line in the member's daily
 // log, remembering exactly which line came from this entry (so editing the
