@@ -15,7 +15,7 @@ function renderMobileProgressDateHeader(days){
 }
 function renderProgress(force){
   // 連續拖曳時，前一次儲存／撤銷記錄的完成通知不能替換目前的拖曳來源。
-  if(pnPointerHeld||pnDragSrc){pendingProgressRender=true;return;}
+  if(pnPointerHeld||pnDragSrc||meetingPointerHeld||meetingDragSrc||document.getElementById('meeting-color-palette')){pendingProgressRender=true;return;}
   var af=document.activeElement;
   var menuOpen=false;
   var typingInProgress=!!(af&&af.matches&&af.matches('input,textarea,[contenteditable="true"]')&&af.closest&&af.closest('#panel-progress'));
@@ -228,10 +228,10 @@ function renderWeekView(shouldShow){
         var isT=isSameDay(d,td);
         var key=row.id+'_'+ds;
         var items=(S.meetingLogs[key]&&S.meetingLogs[key].items)||[];
-        var hasVisibleItem=items.length>0&&String(items[0]?.text||'').trim()!=='';
+        var hasVisibleItem=items.length>0&&(String(items[0]?.text||'').trim()!==''||(items[0].mentions||[]).length>0);
         var selKey=row.id+'|'+ds;
         var selIdx=(meetingSelected[selKey]!=null)?meetingSelected[selKey]:-1;
-        var h='<td style="vertical-align:top;height:30px;padding:2px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'" ondragover="mDragOver(event)" ondragleave="mDragLeave(event)" ondrop="mDrop(event,\''+row.id+'\',\''+ds+'\')">';
+        var h='<td data-meeting-cell="'+row.id+'|'+ds+'" style="vertical-align:top;height:30px;padding:2px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'" ondragover="mDragOver(event)" ondragleave="mDragLeave(event)" ondrop="mDrop(event,\''+row.id+'\',\''+ds+'\')">';
         if(!hasVisibleItem){
           var emptyItem=items[0]||{};
           var emptyStyle=(emptyItem.color?'color:'+emptyItem.color+';':'color:var(--text3);')+(emptyItem.bg?'background:'+emptyItem.bg+';':'background:var(--surface);')+(emptyItem.strike?'text-decoration:line-through;':'');
@@ -245,7 +245,7 @@ function renderWeekView(shouldShow){
               +' onkeydown="mEditKeyDown(event,this,\''+row.id+'\',\''+ds+'\',0)"'
               +' onclick="event.stopPropagation()"'
               +'>'
-              +'<span class="meet-tag-btn" title="標記成員" onmouseenter="mOpenMentionPicker(event,\''+row.id+'\',\''+ds+'\',0)" onmouseleave="mScheduleCloseMention(\''+row.id+'\',\''+ds+'\')" onclick="event.stopPropagation()" style="font-size:11px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:50%;width:18px;height:18px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;flex-shrink:0">+</span>'
+              +'<span class="meet-tag-btn" title="標記成員" onmousedown="event.preventDefault()" onmouseenter="mOpenMentionPicker(event,\''+row.id+'\',\''+ds+'\',0)" onmouseleave="mScheduleCloseMention(\''+row.id+'\',\''+ds+'\')" onclick="event.stopPropagation()" style="font-size:11px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:50%;width:18px;height:18px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;flex-shrink:0">+</span>'
               +'</div>';
           }else{
             h+='<div class="meet-chip '+(emptySelected?'excel-selected':'')+'" style="border:1.5px dashed var(--border);padding:3px 8px;border-radius:5px;font-size:13px;cursor:pointer;user-select:none;min-height:30px;line-height:1.3;'+emptyStyle+'"'
@@ -278,7 +278,7 @@ function renderWeekView(shouldShow){
               +' onclick="event.stopPropagation()"'
               +'>'
               +'<div style="display:flex;gap:3px;align-items:center;flex-shrink:0">'+dots
-              +'<span class="meet-tag-btn" title="標記成員" onmouseenter="mOpenMentionPicker(event,\''+row.id+'\',\''+ds+'\',0)" onmouseleave="mScheduleCloseMention(\''+row.id+'\',\''+ds+'\')" onclick="event.stopPropagation()" style="font-size:11px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:50%;width:18px;height:18px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap">+</span>'
+              +'<span class="meet-tag-btn" title="標記成員" onmousedown="event.preventDefault()" onmouseenter="mOpenMentionPicker(event,\''+row.id+'\',\''+ds+'\',0)" onmouseleave="mScheduleCloseMention(\''+row.id+'\',\''+ds+'\')" onclick="event.stopPropagation()" style="font-size:11px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:50%;width:18px;height:18px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap">+</span>'
               +'</div></div>';
           }else{
             h+='<div class="meet-chip '+(isSel?'excel-selected':'')+'" style="border:'+border+';padding:3px 8px;border-radius:5px;font-size:13px;cursor:pointer;user-select:none;min-height:30px;line-height:1.3;position:relative;'+textStyle+'"'

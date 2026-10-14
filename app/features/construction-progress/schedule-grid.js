@@ -317,7 +317,7 @@ document.addEventListener('click',function(e){
   }
   // 每日施工日誌的文字欄位第一次取得焦點時，不能因清除其他選取狀態
   // 而重畫整個月視圖，否則瀏覽器會立刻失焦、必須再點一次才能輸入。
-  if(e.target.closest('.pn-chip')||e.target.closest('.meet-chip')||e.target.closest('.formula-bar')||e.target.closest('.log-textarea'))return;
+  if(e.target.closest('.pn-chip')||e.target.closest('.meet-chip')||e.target.closest('.formula-bar')||e.target.closest('.log-textarea')||e.target.closest('.meeting-toolbar')||e.target.closest('.meeting-color-palette')||e.target.closest('.pn-mention-menu'))return;
   var changed=false;
   if(S.privateSelected&&Object.keys(S.privateSelected).some(function(k){return S.privateSelected[k]>=0;})){
     S.privateSelected={};changed=true;
@@ -795,11 +795,16 @@ window.progressSelectedTarget=function(){
   if(s){var proj=S.projects.find(function(x){return x.id===s.projId;}),sItem=(proj?.schedule||[]).filter(function(x){return x.date===s.ds;})[s.ei];if(sItem)return{kind:'schedule',ref:s,item:sItem};}
   return null;
 };
-window.progressApplySelectedColor=async function(kind,value){
-  var target=progressSelectedTarget();if(!target)return;
+window.progressApplySelectedColor=async function(kind,value,target){
+  target=target||progressSelectedTarget();if(!target)return;
   if(target.kind==='private')return kind==='text'?pnSetColor(target.ref.type,target.ref.ds,target.ref.idx,value):pnSetBackground(target.ref.type,target.ref.ds,target.ref.idx,value);
   if(target.kind==='meeting')return mSetColor(target.ref.rowId,target.ref.ds,target.ref.idx,kind,value);
   return scheduleSetStyle(target.ref.projId,target.ref.ds,target.ref.ei,kind==='text'?'color':'bg',value);
+};
+window.progressApplyPaletteColor=function(kind,value){
+  const target=meetingColorPreview?.target;
+  closeMeetingColorPalette();
+  return progressApplySelectedColor(kind,value,target);
 };
 var PROGRESS_COLOR_ROWS=[
   ['#f4cccc','#fce5cd','#fff2cc','#d9ead3','#d0e0e3','#cfe2f3','#d9d2e9','#ead1dc'],
@@ -810,9 +815,10 @@ var PROGRESS_COLOR_ROWS=[
 var PROGRESS_STANDARD_COLORS=['#000000','#ffffff','#4a86e8','#e24b4a','#ef9f27','#f1c232','#1d9e75','#00a2ae'];
 window.openProgressColorPalette=function(e,kind,current){
   e.stopPropagation();closeMeetingColorPalette();
+  beginMeetingColorPreview(progressSelectedTarget(),kind);
   var palette=document.createElement('div');palette.id='meeting-color-palette';palette.className='meeting-color-palette';
-  var swatch=function(color){var selected=(current||'').toLowerCase()===color.toLowerCase();return '<button type="button" class="meeting-palette-swatch'+(selected?' selected':'')+'" style="background:'+color+'" title="'+color+'" aria-label="選擇 '+color+'" onclick="progressApplySelectedColor(\''+kind+'\',\''+color+'\');closeMeetingColorPalette()">'+(selected?'✓':'')+'</button>';};
-  palette.innerHTML='<button type="button" class="meeting-palette-reset" onclick="progressApplySelectedColor(\''+kind+'\',\'\');closeMeetingColorPalette()">↙&nbsp; 重設</button>'+PROGRESS_COLOR_ROWS.map(function(row){return '<div class="meeting-palette-grid">'+row.map(swatch).join('')+'</div>';}).join('')+'<div class="meeting-palette-standard">標準</div><div class="meeting-palette-grid">'+PROGRESS_STANDARD_COLORS.map(swatch).join('')+'</div><label class="meeting-palette-custom"><span>自訂</span><input type="color" value="'+(current||'#000000')+'" aria-label="自訂顏色" onchange="progressApplySelectedColor(\''+kind+'\',this.value);closeMeetingColorPalette()"><span class="meeting-custom-preview" style="background:'+(current||'#000000')+'"></span></label>';
+  var swatch=function(color){var selected=(current||'').toLowerCase()===color.toLowerCase();return '<button type="button" class="meeting-palette-swatch'+(selected?' selected':'')+'" style="background:'+color+'" title="'+color+'" aria-label="選擇 '+color+'" onclick="progressApplyPaletteColor(\''+kind+'\',\''+color+'\')">'+(selected?'✓':'')+'</button>';};
+  palette.innerHTML='<button type="button" class="meeting-palette-reset" onclick="progressApplyPaletteColor(\''+kind+'\',\'\')">↙&nbsp; 重設</button>'+PROGRESS_COLOR_ROWS.map(function(row){return '<div class="meeting-palette-grid">'+row.map(swatch).join('')+'</div>';}).join('')+'<div class="meeting-palette-standard">標準</div><div class="meeting-palette-grid">'+PROGRESS_STANDARD_COLORS.map(swatch).join('')+'</div>'+meetingCustomColorMarkup(current,"progressApplyPaletteColor('"+kind+"',document.getElementById('meeting-custom-color').value)");
   document.body.appendChild(palette);var rect=e.currentTarget.getBoundingClientRect(),pr=palette.getBoundingClientRect();palette.style.left=Math.max(8,Math.min(rect.left,window.innerWidth-pr.width-8))+'px';palette.style.top=Math.max(8,Math.min(rect.bottom+6,window.innerHeight-pr.height-8))+'px';
 };
 window.renderProgressActionToolbar=function(){
@@ -868,6 +874,7 @@ window.saveSiteNote=async function(projId,value){
 };
 function progressMeetingDragTargets(args){
   var event=args[0],toRowId=args[1],toDs=args[2],from=null,raw='';
+  if(event?._meetingDropContext)from=event._meetingDropContext.from;
   try{raw=event?.dataTransfer?.getData('text/plain')||'';}catch(error){}
   if(raw){var parts=raw.split('|');if(parts.length===4&&parts[0]==='meet')from={rowId:parts[1],ds:parts[2]};}
   if(!from&&meetingDragSrc)from={rowId:meetingDragSrc.rowId,ds:meetingDragSrc.ds};
@@ -888,6 +895,7 @@ function progressWrapOperation(name,targetFactory,label){
     var args=[].slice.call(arguments);
     // 必須在第一個 await 前接住原生 drop，避免來源被 dragend 清掉或事件冒泡執行兩次。
     if(name==='pnDrop')pnCaptureDropContext(args[0]);
+    if(name==='mDrop')mCaptureDropContext(args[0]);
     if(progressUndoRunning)return original.apply(this,args);
     var targets=progressUniqueTargets(targetFactory(args)||[]),before=[];
     for(const target of targets)before.push(await progressReadTarget(target));

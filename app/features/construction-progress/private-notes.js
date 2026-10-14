@@ -436,7 +436,7 @@ document.addEventListener('compositionstart',function(e){
 document.addEventListener('compositionend',function(){pnImePending=null;});
 function clearSpreadsheetSelections(keep){
   if(keep!=='private'){S.privateSelected={};S.privateEditing=null;}
-  if(keep!=='meeting'){meetingSelected={};meetingEditing=null;}
+  if(keep!=='meeting'){meetingSelected={};meetingEditing=null;mRefreshSelectionOutline(null);}
   if(keep!=='schedule'){scheduleSelected=null;scheduleEditing=null;}
 }
 window.pnPointerSelect=function(e,type,ds,idx){
@@ -474,7 +474,7 @@ document.addEventListener('keydown',function(e){
   if((e.ctrlKey||e.metaKey)&&['c','x','v'].includes(e.key.toLowerCase())){
     e.preventDefault();const key=e.key.toLowerCase();if(key==='c'||key==='x'){excelTextClipboard=selectedExcelText();navigator.clipboard?.writeText(excelTextClipboard).catch(function(){});if(key==='x')pasteExcelText('');}else{const paste=navigator.clipboard?.readText?navigator.clipboard.readText().catch(function(){return excelTextClipboard;}):Promise.resolve(excelTextClipboard);paste.then(function(text){pasteExcelText(text||'');});}return;
   }
-  if(e.key==='Delete'){e.preventDefault();if(p){pnDelete(p.type,p.ds,p.idx);return;}pasteExcelText('');return;}
+  if(e.key==='Delete'){e.preventDefault();if(p){pnDelete(p.type,p.ds,p.idx);return;}if(m){mDelete(m.rowId,m.ds,m.idx);return;}pasteExcelText('');return;}
   if(e.key==='F2'){e.preventDefault();if(p)pnStartEdit(p.type,p.ds,p.idx);else if(m)mStartEdit(m.rowId,m.ds,m.idx);else if(scheduleSelected){const span=document.querySelector(`.ev-field[data-proj="${CSS.escape(scheduleSelected.projId)}"][data-ds="${CSS.escape(scheduleSelected.ds)}"][data-ei="${scheduleSelected.ei}"]`);if(span)startFieldEdit(span);}return;}
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();const direction=e.key.replace('Arrow','').toLowerCase();if(p)pnMove(p.type,p.ds,p.idx,direction);else if(m)mMove(m.rowId,m.ds,direction);else moveScheduleSelection(direction);return;}
   if(e.key.length===1&&!e.ctrlKey&&!e.metaKey&&!e.altKey){if(p)pnStartEditWithChar(p.type,p.ds,p.idx,e.key);else if(m)mStartEditWithChar(m.rowId,m.ds,m.idx,e.key);else startScheduleEditWithText(e.key);e.preventDefault();}

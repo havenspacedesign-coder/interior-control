@@ -24,7 +24,22 @@ window.mSelect=function(rowId,ds,idx){
   if(activePanel==='progress')renderProgress(true);
 }
 window.mSelectEmpty=function(rowId,ds){mSelect(rowId,ds,0);}
+function mRefreshSelectionOutline(selectedEl){
+  document.querySelectorAll('.meet-chip.meet-chip-sel,.meet-chip.excel-selected').forEach(function(el){
+    el.classList.remove('meet-chip-sel','excel-selected');
+    const cell=el.closest('[data-meeting-cell]'),parts=(cell?.dataset.meetingCell||'').split('|');
+    const item=((S.meetingLogs[parts[0]+'_'+parts[1]]||{}).items||[])[0];
+    const filled=!!item&&(String(item.text||'').trim()!==''||(item.mentions||[]).length>0);
+    el.style.border='1.5px '+(filled?'solid':'dashed')+' var(--border)';
+  });
+  if(selectedEl){selectedEl.classList.add('meet-chip-sel');selectedEl.style.border='2px solid var(--purple)';}
+}
+var meetingPointerHeld=false;
+function mResumeProgressRender(){if(!meetingPointerHeld&&!meetingDragSrc&&pendingProgressRender&&activePanel==='progress')renderProgress();}
+document.addEventListener('mouseup',function(){if(!meetingPointerHeld)return;meetingPointerHeld=false;setTimeout(mResumeProgressRender,0);},true);
+window.addEventListener('blur',function(){meetingPointerHeld=false;setTimeout(mResumeProgressRender,0);});
 window.mPointerSelect=function(e,rowId,ds,idx){
+  if(e.button===0)meetingPointerHeld=true;
   const pointerKey=rowId+'|'+ds+'|'+idx,now=Date.now();
   const isRapidSecond=meetingRapidPointer.key===pointerKey&&now-meetingRapidPointer.time<=500;
   meetingRapidPointer=isRapidSecond?{key:'',time:0}:{key:pointerKey,time:now};
@@ -34,17 +49,16 @@ window.mPointerSelect=function(e,rowId,ds,idx){
     meetingPendingSelection={rowId:rowId,ds:ds,idx:idx,edit:isRapidSecond};
     return;
   }
-  if(isRapidSecond){mStartEdit(rowId,ds,idx);return;}
+  // 已輸入的模塊由 dblclick 進入編輯，第二次按住時不可先重畫並移除拖曳來源。
+  if(isRapidSecond&&!e.currentTarget.draggable){mStartEdit(rowId,ds,idx);return;}
   const current=meetingSelectedCell();
+  mRefreshSelectionOutline(e.currentTarget);
   if(current&&current.rowId===rowId&&current.ds===ds&&current.idx===idx)return;
   clearSpreadsheetSelections('meeting');
   meetingSelGen++;meetingSelected={};meetingSelected[rowId+'|'+ds]=idx;
   const item=(((S.meetingLogs||{})[rowId+'_'+ds]||{}).items||[])[idx]||{};
   const linked=normalizeLinkedItem(item);
   updateFormulaBar('meeting',ds,idx,linked.text,rowId,linked.link);
-  document.querySelectorAll('.meet-chip.meet-chip-sel').forEach(function(el){el.classList.remove('meet-chip-sel');el.style.border='';});
-  e.currentTarget.classList.add('meet-chip-sel');
-  e.currentTarget.style.border='2px solid var(--purple)';
   refreshProgressActionToolbar();
 }
 window.mStartEdit=function(rowId,ds,idx){
@@ -71,8 +85,13 @@ window.mMove=function(rowId,ds,direction){
 }
 window.mSetCellText=async function(rowId,ds,text){
   const key=rowId+'_'+ds,items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
+  if(!String(text||'').trim()&&items.length){
+    setSyncing();await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items:items.slice(1),updatedAt:serverTimestamp()});
+    for(const uid of (items[0].mentions||[]))await mRemoveFromDailyLog(rowId,ds,0,uid);
+    meetingEditing=null;meetingSelected={};updateFormulaBar(null);setSynced();if(activePanel==='progress')renderProgress();return;
+  }
   if(!items.length&&text===''){mSelectEmpty(rowId,ds);return;}while(items.length<1)items.push({text:'',color:'',bg:'',mentions:[]});items[0]=Object.assign({},items[0],{text:text,link:null});
-  setSyncing();await setDoc(doc(db,'meetingLogs',key),{rowId:rowId,date:ds,items:items,updatedAt:serverTimestamp()});setSynced();meetingEditing=null;meetingSelected={};meetingSelected[rowId+'|'+ds]=0;if(activePanel==='progress')renderProgress();
+  setSyncing();await setDoc(doc(db,'meetingLogs',key),{rowId:rowId,date:ds,items:items,updatedAt:serverTimestamp()});for(const uid of (items[0].mentions||[]))await mSyncDailyLog(rowId,ds,0,uid,items[0]);setSynced();meetingEditing=null;meetingSelected={};meetingSelected[rowId+'|'+ds]=0;if(activePanel==='progress')renderProgress();
 }
 window.mAdd=async function(rowId,ds){
   if(!currentUser)return;
@@ -86,13 +105,43 @@ window.mAdd=async function(rowId,ds){
   meetingSelGen++;
   mSelect(rowId,ds,0);
 }
+var meetingColorPreview=null;
+function beginMeetingColorPreview(target,kind){
+  if(!target)return;
+  const ref=target.ref,property=kind==='text'?'color':'background',nodes=[];
+  let chip=null;
+  if(target.kind==='meeting')chip=document.querySelector('[data-meeting-cell="'+CSS.escape(ref.rowId+'|'+ref.ds)+'"] .meet-chip');
+  else if(target.kind==='private')chip=document.querySelector('[data-pn-cell="'+CSS.escape(ref.type+'|'+ref.ds)+'"] .pn-chip[data-pn-index="'+ref.idx+'"]')||document.getElementById('pnbox-'+ref.type+'-'+ref.ds+'-'+ref.idx);
+  else{
+    chip=document.querySelector('.ev-field[data-proj="'+CSS.escape(ref.projId)+'"][data-ds="'+CSS.escape(ref.ds)+'"][data-ei="'+ref.ei+'"]');
+    const tag=chip?.parentElement.querySelector('.ev-chip');if(tag)nodes.push(tag);
+  }
+  if(chip){nodes.push(chip);if(chip.tagName==='INPUT'&&kind==='bg')nodes.push(chip.parentElement);}
+  meetingColorPreview={target:{kind:target.kind,ref:{...ref}},kind,styles:[...new Set(nodes)].map(el=>({el,property,value:el.style.getPropertyValue(property),priority:el.style.getPropertyPriority(property)}))};
+}
 window.closeMeetingColorPalette=function(){
+  if(meetingColorPreview){
+    meetingColorPreview.styles.forEach(({el,property,value,priority})=>{if(value)el.style.setProperty(property,value,priority);else el.style.removeProperty(property);});
+    meetingColorPreview=null;
+  }
   const old=document.getElementById('meeting-color-palette');
-  if(old)old.remove();
+  if(old){old.remove();setTimeout(function(){if(pendingProgressRender&&activePanel==='progress')renderProgress();},0);}
+};
+function meetingCustomColorMarkup(current,applyCall){
+  const color=/^#[0-9a-f]{6}$/i.test(current||'')?current:'#000000';
+  return '<div class="meeting-palette-custom"><label><span>自訂</span><input id="meeting-custom-color" type="color" value="'+color+'" aria-label="自訂顏色" oninput="mPreviewCustomColor(this.value)" onchange="mPreviewCustomColor(this.value)"></label><input id="meeting-custom-hex" type="text" value="'+color+'" aria-label="自訂色碼" maxlength="7" pattern="#[0-9a-fA-F]{6}" required oninput="mPreviewCustomColor(this.value)"><button type="button" class="btn btn-sm" onclick="event.stopPropagation();if(!document.getElementById(\'meeting-custom-hex\').reportValidity())return;'+applyCall+'">確定</button></div>';
+}
+window.mPreviewCustomColor=function(value){
+  if(!/^#[0-9a-f]{6}$/i.test(value||''))return;
+  const palette=document.getElementById('meeting-color-palette');if(!palette)return;
+  palette.querySelector('#meeting-custom-color').value=value;
+  palette.querySelector('#meeting-custom-hex').value=value;
+  if(meetingColorPreview)meetingColorPreview.styles.forEach(({el,property})=>el.style.setProperty(property,value));
 };
 window.openMeetingColorPalette=function(e,rowId,ds,idx,kind,current){
   e.stopPropagation();
   closeMeetingColorPalette();
+  beginMeetingColorPreview({kind:'meeting',ref:{rowId,ds,idx}},kind);
   const palette=document.createElement('div');
   palette.id='meeting-color-palette';
   palette.className='meeting-color-palette';
@@ -103,7 +152,7 @@ window.openMeetingColorPalette=function(e,rowId,ds,idx,kind,current){
   palette.innerHTML='<button type="button" class="meeting-palette-reset" onclick="mPickMeetingColor(\''+rowId+'\',\''+ds+'\','+idx+',\''+kind+'\',\'\')">↙&nbsp; 重設</button>'
     +MEETING_COLOR_ROWS.map(function(row){return '<div class="meeting-palette-grid">'+row.map(swatch).join('')+'</div>';}).join('')
     +'<div class="meeting-palette-standard">標準</div><div class="meeting-palette-grid">'+MEETING_STANDARD_COLORS.map(swatch).join('')+'</div>'
-    +'<label class="meeting-palette-custom"><span>自訂</span><input type="color" value="'+(current||'#000000')+'" aria-label="自訂顏色" onchange="mPickMeetingColor(\''+rowId+'\',\''+ds+'\','+idx+',\''+kind+'\',this.value)"><span class="meeting-custom-preview" style="background:'+(current||'#000000')+'"></span></label>';
+    +meetingCustomColorMarkup(current,"mPickMeetingColor('"+rowId+"','"+ds+"',"+idx+",'"+kind+"',document.getElementById('meeting-custom-color').value)");
   document.body.appendChild(palette);
   const rect=e.currentTarget.getBoundingClientRect();
   const pr=palette.getBoundingClientRect();
@@ -131,8 +180,9 @@ window.mDelete=async function(rowId,ds,idx){
   const key=rowId+'_'+ds;
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
   const removed=items[idx];
+  if(!removed)return;
   items.splice(idx,1);
-  meetingSelected={};
+  meetingSelected={};meetingEditing=null;updateFormulaBar(null);
   setSyncing();
   await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
   if(removed&&removed.mentions&&removed.mentions.length){
@@ -150,14 +200,17 @@ window.mDragStart=function(e,rowId,ds,idx){
 }
 window.mDragOver=function(e){if(!meetingDragSrc)return;e.preventDefault();e.dataTransfer.dropEffect=e.ctrlKey?'copy':'move';e.currentTarget.classList.add('meet-drop-active');}
 window.mDragLeave=function(e){if(!e.currentTarget.contains(e.relatedTarget))e.currentTarget.classList.remove('meet-drop-active');}
-window.mDragEnd=function(){document.querySelectorAll('.meet-dragging').forEach(el=>el.classList.remove('meet-dragging'));document.querySelectorAll('.meet-drop-active').forEach(el=>el.classList.remove('meet-drop-active'));meetingDragSrc=null;}
+window.mDragEnd=function(){document.querySelectorAll('.meet-dragging').forEach(el=>el.classList.remove('meet-dragging'));document.querySelectorAll('.meet-drop-active').forEach(el=>el.classList.remove('meet-drop-active'));meetingDragSrc=null;meetingPointerHeld=false;setTimeout(mResumeProgressRender,0);}
+function mCaptureDropContext(e){
+  if(e._meetingDropContext)return e._meetingDropContext;
+  e.preventDefault();e.stopPropagation();e.currentTarget?.classList.remove('meet-drop-active');
+  let from=null,raw='';try{raw=e.dataTransfer?.getData('text/plain')||'';}catch(error){}
+  if(raw){const parts=raw.split('|');if(parts.length===4&&parts[0]==='meet')from={rowId:parts[1],ds:parts[2],idx:parseInt(parts[3],10)};}
+  if(!from&&meetingDragSrc)from={...meetingDragSrc};
+  return e._meetingDropContext={from,copy:!!e.ctrlKey};
+}
 window.mDrop=async function(e,toRowId,toDs){
-  e.preventDefault();e.stopPropagation();
-  e.currentTarget.classList.remove('meet-drop-active');
-  const raw=e.dataTransfer.getData('text/plain');
-  let from=null;
-  if(raw){const p=raw.split('|');if(p.length===4&&p[0]==='meet')from={rowId:p[1],ds:p[2],idx:parseInt(p[3])};}
-  if(!from)from=meetingDragSrc;
+  const context=mCaptureDropContext(e),from=context.from;
   if(!from||!currentUser)return;
   if(from.rowId===toRowId&&from.ds===toDs){meetingDragSrc=null;return;}
   const toKey=toRowId+'_'+toDs;
@@ -173,11 +226,13 @@ window.mDrop=async function(e,toRowId,toDs){
   setSyncing();
   await setDoc(doc(db,'meetingLogs',toKey),{rowId:toRowId,date:toDs,items:toItems,updatedAt:serverTimestamp()});
   for(const uid of movedItem.mentions)await mSyncDailyLog(toRowId,toDs,toIdx,uid,movedItem);
-  if(!e.ctrlKey){
+  if(!context.copy){
     for(const uid of movedItem.mentions)await mRemoveFromDailyLog(from.rowId,from.ds,from.idx,uid);
     fromItems.splice(from.idx,1);
     await setDoc(doc(db,'meetingLogs',fromKey),{rowId:from.rowId,date:from.ds,items:fromItems,updatedAt:serverTimestamp()});
   }
+  meetingSelected={};meetingSelected[toRowId+'|'+toDs]=toIdx;
+  updateFormulaBar('meeting',toDs,toIdx,movedItem.text||'',toRowId,movedItem.link||null);
   meetingDragSrc=null;
   setSynced();
 }
@@ -203,8 +258,8 @@ function mMentionMenuHTML(rowId,ds,idx){
   const mentions=item.mentions||[];
   return markableMembersList().map(function(m){
     const checked=mentions.indexOf(m.uid)>=0;
-    return'<div onmousedown="event.preventDefault();mToggleMention(\''+rowId+'\',\''+ds+'\','+idx+',\''+m.uid+'\')" style="padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">'
-      +'<span>'+(checked?'☑':'☐')+'</span><span>'+memberDisplayName(m)+'</span></div>';
+    return'<button type="button" role="checkbox" aria-checked="'+checked+'" aria-label="'+escAttr(memberDisplayName(m))+'" class="meeting-mention-option" onmousedown="event.preventDefault()" onclick="event.stopPropagation();mToggleMention(\''+rowId+'\',\''+ds+'\','+idx+',\''+m.uid+'\')">'
+      +'<span class="meeting-mention-check '+(checked?'checked':'')+'" aria-hidden="true">'+(checked?'✓':'')+'</span><span>'+escAttr(memberDisplayName(m))+'</span></button>';
   }).join('');
 }
 window.mOpenMentionPicker=function(e,rowId,ds,idx){
@@ -220,7 +275,11 @@ window.mToggleMention=async function(rowId,ds,idx,uid){
   if(!markableMembersList().some(m=>m.uid===uid))return;
   const key=rowId+'_'+ds;
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
-  if(idx<0||idx>=items.length)return;
+  if(idx<0)return;
+  const input=document.getElementById('meetbox-'+rowId+'-'+ds+'-'+idx);
+  if(idx>=items.length&&!input)return;
+  while(items.length<=idx)items.push({text:'',color:'',bg:'',mentions:[]});
+  if(input)items[idx]={...items[idx],text:input.value,link:linkFromInput(input,input.value)};
   const mentions=(items[idx].mentions||[]).slice();
   const pos=mentions.indexOf(uid);
   const adding=pos<0;
@@ -228,20 +287,11 @@ window.mToggleMention=async function(rowId,ds,idx,uid){
   items[idx]=Object.assign({},items[idx],{mentions});
   S.meetingLogs=Object.assign({},S.meetingLogs);
   S.meetingLogs[key]=Object.assign({},S.meetingLogs[key],{items});
-  if(localTestMode){
-    if(adding)await mSyncDailyLog(rowId,ds,idx,uid,items[idx]);
-    else await mRemoveFromDailyLog(rowId,ds,idx,uid);
-    setSynced();
-    const menuEl=document.getElementById('meet-mention-'+rowId+'-'+ds);
-    if(menuEl&&menuEl.style.display==='block')menuEl.innerHTML=mMentionMenuHTML(rowId,ds,idx);
-    if(activePanel==='progress')renderProgress();
-    return;
-  }
   setSyncing();
   await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
+  for(const memberUid of mentions)await mSyncDailyLog(rowId,ds,idx,memberUid,items[idx]);
+  if(!adding)await mRemoveFromDailyLog(rowId,ds,idx,uid);
   setSynced();
-  if(adding)await mSyncDailyLog(rowId,ds,idx,uid,items[idx]);
-  else await mRemoveFromDailyLog(rowId,ds,idx,uid);
   // Refresh just the checklist (keep it open) instead of a full re-render,
   // so tagging several people doesn't require re-hovering each time.
   const menuEl=document.getElementById('meet-mention-'+rowId+'-'+ds);
@@ -251,10 +301,12 @@ window.mToggleMention=async function(rowId,ds,idx,uid){
 // log, remembering exactly which line came from this entry (so editing the
 // text later replaces the same line, and untagging removes the same line).
 async function mSyncDailyLog(rowId,ds,idx,uid,item){
+  if(!String(item?.text||'').trim())return mRemoveFromDailyLog(rowId,ds,idx,uid);
   const m=S.members.find(x=>x.uid===uid);
   if(!m)return;
   const logKey=`${m.uid}_${ds}`;
-  const cur=S.dailyLogs[logKey]||{};
+  const logSnap=await getDoc(doc(db,'dailyLogs',logKey));
+  const cur=logSnap.exists()?logSnap.data():{};
   const autoLines=Object.assign({},cur.autoLines||{});
   const trackKey=rowId+'_'+idx;
   const oldLine=autoLines[trackKey];
@@ -280,7 +332,8 @@ async function mRemoveFromDailyLog(rowId,ds,idx,uid){
   const m=S.members.find(x=>x.uid===uid);
   if(!m)return;
   const logKey=`${m.uid}_${ds}`;
-  const cur=S.dailyLogs[logKey]||{};
+  const logSnap=await getDoc(doc(db,'dailyLogs',logKey));
+  const cur=logSnap.exists()?logSnap.data():{};
   const autoLines=Object.assign({},cur.autoLines||{});
   const trackKey=rowId+'_'+idx;
   const oldLine=autoLines[trackKey];
@@ -303,15 +356,15 @@ window.mSaveBox=async function(el,rowId,ds,idx){
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
   const previousItem=items[idx]||{},previousMentions=previousItem.mentions||[];
   const isBlank=!text.trim()&&!link;
-  const keepBlankItem=!!(previousItem.color||previousItem.bg||previousItem.completed||previousItem.strike);
-  if(isBlank&&!keepBlankItem){items.splice(idx,1);}else{
+  const keepTaggedDraft=isBlank&&previousMentions.length>0&&!String(previousItem.text||'').trim()&&!previousItem.link;
+  if(isBlank&&!keepTaggedDraft){items.splice(idx,1);}else{
     while(items.length<=idx)items.push({text:'',color:'',bg:'',mentions:[]});
     items[idx]=Object.assign({},items[idx],{text,link});
   }
   setSyncing();
   await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
   // keep already-tagged members' daily logs in sync with the latest text
-  if(isBlank&&!keepBlankItem){
+  if(isBlank){
     for(const uid of previousMentions)await mRemoveFromDailyLog(rowId,ds,idx,uid);
   }else{
     const mentions=items[idx].mentions||[];
