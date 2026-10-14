@@ -1,126 +1,126 @@
 {
-  "date": "2026-10-13",
-  "updatedAt": "2026-10-13T02:58:21.944Z",
+  "date": "2026-10-14",
+  "updatedAt": "2026-10-14T01:07:02.430Z",
   "news": [
     {
-      "id": "4c8da322f76e54dc",
+      "id": "aa4449df38737e2d",
       "source": "遠見",
       "category": "國際",
-      "title": "中國制裁台灣友邦巴拉圭、貝里斯官員！卓榮泰：霸權心態引起全球反感",
-      "url": "https://www.gvm.com.tw/article/133692",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260611/233879.jpg",
-      "publishedAt": "2026-10-13T02:52:00.000Z",
-      "fetchedAt": "2026-10-13T02:58:21.944Z"
+      "title": "川習會釋出什麼訊號？中美關係變化給台灣的戰略考驗",
+      "url": "https://www.gvm.com.tw/article/133736",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261002/242300.jpg",
+      "publishedAt": "2026-10-14T01:06:00.000Z",
+      "fetchedAt": "2026-10-14T01:07:02.430Z"
     },
     {
-      "id": "2debcb4baaf2612e",
+      "id": "ca1c7c24fbea27ad",
       "source": "遠見",
       "category": "AI／科技",
-      "title": "馬斯克：目前完全不知如何製造晶片，但Terafab將找到方法",
-      "url": "https://www.gvm.com.tw/article/133630",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20251126/219938.jpg",
-      "publishedAt": "2026-10-12T03:16:00.000Z",
-      "fetchedAt": "2026-10-13T02:58:21.944Z"
+      "title": "LINE的AI Agent要來了！聊天室找食譜、官方帳號約美甲",
+      "url": "https://www.gvm.com.tw/article/133732",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261013/242911.jpg",
+      "publishedAt": "2026-10-13T10:51:00.000Z",
+      "fetchedAt": "2026-10-14T01:07:02.430Z"
     },
     {
-      "id": "5de4d83dd18f4483",
+      "id": "b7048ab8d11aa0cf",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "美股拖累！台股早盤重挫900點，失守49000點大關",
-      "url": "https://www.gvm.com.tw/article/133685",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20251211/221049.jpg",
-      "publishedAt": "2026-10-13T02:12:00.000Z",
-      "fetchedAt": "2026-10-13T02:58:21.944Z"
+      "title": "從線上數據到線下熱血 台灣大哥大用科技讓同仁運動玩出新花樣",
+      "url": "https://www.gvm.com.tw/article/133565",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261007/242568.jpg",
+      "publishedAt": "2026-10-13T16:00:00.000Z",
+      "fetchedAt": "2026-10-14T01:07:02.430Z"
     },
     {
-      "id": "843f732aa8404d9d",
+      "id": "8fb9fb6eec387820",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "中國爆紅的《高性價比人生指南》是什麼？680多條建議適合台灣人？",
-      "url": "https://www.gvm.com.tw/article/133688",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260330/228168.jpg",
-      "publishedAt": "2026-10-13T02:36:00.000Z",
-      "fetchedAt": "2026-10-13T02:58:21.944Z"
+      "title": "當專業邊界消失，未來人才如何養成？雲科大從人文與科學找答案！",
+      "url": "https://www.gvm.com.tw/article/133561",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261008/242625.jpg",
+      "publishedAt": "2026-10-13T16:00:00.000Z",
+      "fetchedAt": "2026-10-14T01:07:02.430Z"
     },
     {
-      "id": "b3790ba2542a77cb",
+      "id": "66524593d8de658a",
       "source": "壹蘋",
       "category": "國際",
-      "title": "萬聖節「南瓜王」誕生？美國男子種出1431公斤巨無霸　有望刷新金氏紀錄",
-      "url": "https://news.nextapple.com/international/20261013/846D54C00597D01C57BB6B548DF95D36",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/846D54C00597D01C57BB6B548DF95D36/2d3b5312127ccf6c3ca3973fe46c70d7_1280.webp",
-      "publishedAt": "2026-10-13T02:56:49.000Z",
-      "fetchedAt": "2026-10-13T02:58:21.944Z"
+      "title": "壹蘋派生活美語　BookTok：分享書籍的新方式",
+      "url": "https://news.nextapple.com/international/20261014/FC9614DBE1F98D5FDE08ABA9EF0A31C4",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/FC9614DBE1F98D5FDE08ABA9EF0A31C4/adb1985de94663fe0a2c212f7693c574_1280.webp",
+      "publishedAt": "2026-10-14T00:00:00.000Z",
+      "fetchedAt": "2026-10-14T01:07:02.430Z"
     },
     {
-      "id": "91968070a20c7f69",
+      "id": "922d256a926a1472",
       "source": "壹蘋",
       "category": "生活",
-      "title": "Grab收購foodpanda變「服貿2.0」？官方提6項聲明反擊",
-      "url": "https://news.nextapple.com/life/20261013/16F2EF93CFDE9302C98305A6118E5A0E",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/16F2EF93CFDE9302C98305A6118E5A0E/0447b6d055cafa7b0419945275fbc9e3_1280.webp",
-      "publishedAt": "2026-10-13T02:00:32.000Z",
-      "fetchedAt": "2026-10-13T02:58:21.944Z"
+      "title": "上班族崩潰！三鶯線清晨電力異常　8日才故障、不到一週再出狀況",
+      "url": "https://news.nextapple.com/life/20261014/80C2540ABD4A93536CA0667A297464DE",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/80C2540ABD4A93536CA0667A297464DE/a8bcdfd038e0c478b4afcfd87bc514bc_1280.webp",
+      "publishedAt": "2026-10-14T00:57:52.000Z",
+      "fetchedAt": "2026-10-14T01:07:02.430Z"
     },
     {
-      "id": "2ac806bb392c2833",
+      "id": "3bc29ba0766a327c",
       "source": "壹蘋",
       "category": "社會",
-      "title": "高雄55歲水電工騎車自撞分隔島身亡！車速不快死因待相驗",
-      "url": "https://news.nextapple.com/local/20261013/4ABE1A46948FEFBA68DB37A5F8635E3C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/4ABE1A46948FEFBA68DB37A5F8635E3C/f68cecba0043567ba35964ef43ec8a33_1280.webp",
-      "publishedAt": "2026-10-13T02:52:05.000Z",
-      "fetchedAt": "2026-10-13T02:58:21.944Z"
+      "title": "圳溝旁留下一部機車！台中騎士不明原因落水　下游尋獲已身亡",
+      "url": "https://news.nextapple.com/local/20261014/D8925E3E45EE0111159D26CCABCE63B4",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/D8925E3E45EE0111159D26CCABCE63B4/8d6b546d0b3b9000ce39ac91a17d6cf1_1280.webp",
+      "publishedAt": "2026-10-14T00:55:17.000Z",
+      "fetchedAt": "2026-10-14T01:07:02.430Z"
     },
     {
-      "id": "a5a6129fa1b2d99a",
+      "id": "3c9f30f0f4bea1b2",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "喝粉絲喜酒　李多慧灑淚：我也想在台灣結婚",
-      "url": "https://news.nextapple.com/entertainment/20261013/B001951FDB4577B947BEE0CDEDCC442A",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/B001951FDB4577B947BEE0CDEDCC442A/e4b10239d05e38edb16c5dbcdff1e9f5_1280.webp",
-      "publishedAt": "2026-10-13T02:53:27.000Z",
-      "fetchedAt": "2026-10-13T02:58:21.944Z"
+      "title": "楊千霈「約會建材小開」遭直擊！被喊大嫂認愛了？大方回應",
+      "url": "https://news.nextapple.com/entertainment/20261014/D64B4FBE24132DFBF6B898687596A673",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/D64B4FBE24132DFBF6B898687596A673/7a40bfca6b35489e250806526a7a4821_1280.webp",
+      "publishedAt": "2026-10-14T00:51:39.000Z",
+      "fetchedAt": "2026-10-14T01:07:02.430Z"
     },
     {
-      "id": "b0b703fb5ad124b9",
+      "id": "6ede8a48d95cc492",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "Fitbit Air變身時尚配件　Google推金銀雙色金屬錶帶",
-      "url": "https://news.nextapple.com/aitech/20261013/F5418C96D1C1D45AEB1EB70D12E2B26D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/F5418C96D1C1D45AEB1EB70D12E2B26D/cf2cf2a8eb422074bb094199d019c0a1_1280.webp",
-      "publishedAt": "2026-10-13T01:10:33.000Z",
-      "fetchedAt": "2026-10-13T02:58:21.944Z"
+      "title": "iPhone Duo搶預購當心　3類假網站連點開都藏風險",
+      "url": "https://news.nextapple.com/aitech/20261014/1DFBA89642CEB0DCC43BF03764894860",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/1DFBA89642CEB0DCC43BF03764894860/8ddf0b3245d43e93efc167aa9952188f_1280.webp",
+      "publishedAt": "2026-10-13T16:05:00.000Z",
+      "fetchedAt": "2026-10-14T01:07:02.430Z"
     },
     {
-      "id": "d4c061ed1409cfa4",
+      "id": "fa61ad703e9c7cc3",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "DIGITIMES今登興櫃！最高漲近4成　AI決策平台成新動能",
-      "url": "https://news.nextapple.com/finance/20261013/867520ABF26A66F625A1D278E09BAA00",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/867520ABF26A66F625A1D278E09BAA00/1fea0aaa8de1d5ccd11e7390c6994df1_1280.webp",
-      "publishedAt": "2026-10-13T02:34:18.000Z",
-      "fetchedAt": "2026-10-13T02:58:21.944Z"
+      "title": "不甩美股下跌！台股開盤上漲逾350點　台積電漲20元報2510",
+      "url": "https://news.nextapple.com/finance/20261014/602B1DB6519E8B368184E925F2E4B64B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/602B1DB6519E8B368184E925F2E4B64B/8e01a56dc2671b68345f88327cd4ce50_1280.webp",
+      "publishedAt": "2026-10-14T01:02:46.000Z",
+      "fetchedAt": "2026-10-14T01:07:02.430Z"
     },
     {
-      "id": "b65440430612fb3b",
+      "id": "cb104e536d994bf0",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "驚悚！男甩出雲霄飛車「3連撞」墜地亡　最後身影曝光",
-      "url": "https://news.nextapple.com/international/20261013/3FA2E6BB2EB3E1EA84F4EF389767DAD9",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/3FA2E6BB2EB3E1EA84F4EF389767DAD9/c40527f3913422f5dc9649c7eb9753d9_1280.webp",
-      "publishedAt": "2026-10-13T02:31:45.000Z",
-      "fetchedAt": "2026-10-13T02:58:21.944Z"
+      "title": "藍2028人選出爐？媒體人：只有「這人」能和賴清德平起平坐",
+      "url": "https://news.nextapple.com/politics/20261014/FC2C08480CAB3C6B908F3A1021C80426",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/FC2C08480CAB3C6B908F3A1021C80426/2b6d0040debba09c7f914a94eb40633e_1280.webp",
+      "publishedAt": "2026-10-14T00:38:13.000Z",
+      "fetchedAt": "2026-10-14T01:07:02.430Z"
     },
     {
-      "id": "a57b41a53ac7a57f",
+      "id": "604fc748ea1dd8c0",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "大漏洞！外交部資安系統竟用中國軟體　3廠商4人全交保",
-      "url": "https://news.nextapple.com/local/20261013/90AFF801C58A7967E31BD4F681697C0D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/90AFF801C58A7967E31BD4F681697C0D/333bb58e364a4d6ea5981fe744de7125_1280.webp",
-      "publishedAt": "2026-10-13T02:26:34.000Z",
-      "fetchedAt": "2026-10-13T02:58:21.944Z"
+      "title": "桃園驚悚焚屍案！分租套房必做1件事　網勸：別拿命賭",
+      "url": "https://news.nextapple.com/local/20261014/B975BF53A91E0D4D6702D0350F60D772",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/B975BF53A91E0D4D6702D0350F60D772/50111225c2011f1aaa54bb66f6f874fc_1280.webp",
+      "publishedAt": "2026-10-14T00:34:08.000Z",
+      "fetchedAt": "2026-10-14T01:07:02.430Z"
     }
   ]
 }
