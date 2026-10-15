@@ -122,9 +122,42 @@ var pnDragSrc=null;
 var pnDragPreview=null;
 var pnDragLayout=null;
 var pnPointerHeld=false;
+var pnDragScrollHost=null,pnDragScrollInset=0,pnDragScrollPoint=null,pnDragScrollFrame=0,pnDragScrollTime=0;
+function pnStopDragAutoScroll(){
+  if(pnDragScrollFrame)cancelAnimationFrame(pnDragScrollFrame);
+  pnDragScrollFrame=0;pnDragScrollTime=0;pnDragScrollPoint=null;
+}
+function pnDragScrollVelocity(){
+  if(!pnDragSrc||!pnDragScrollHost?.isConnected||!pnDragScrollPoint||activePanel!=='progress'||calMode!=='month')return 0;
+  var rect=pnDragScrollHost.getBoundingClientRect(),point=pnDragScrollPoint;
+  var left=Math.max(0,rect.left)+pnDragScrollInset,right=Math.min(window.innerWidth,rect.right);
+  if(point.y<Math.max(0,rect.top)||point.y>Math.min(window.innerHeight,rect.bottom)||point.x<Math.max(0,rect.left)||point.x>right||right<=left)return 0;
+  var edge=Math.min(80,(right-left)/3);
+  if(point.x<left+edge)return -1.4*Math.min(1,(left+edge-point.x)/edge);
+  if(point.x>right-edge)return 1.4*Math.min(1,(point.x-right+edge)/edge);
+  return 0;
+}
+function pnRunDragAutoScroll(now){
+  pnDragScrollFrame=0;
+  var velocity=pnDragScrollVelocity();
+  if(!velocity){pnDragScrollTime=0;return;}
+  var elapsed=pnDragScrollTime?Math.min(32,Math.max(1,now-pnDragScrollTime)):16;
+  pnDragScrollTime=now;
+  // 原生模塊拖曳時也持續捲動，並沿用既有日期／各區表格的即時同步。
+  var before=pnDragScrollHost.scrollLeft;
+  var after=setHorizontalScrollPosition(pnDragScrollHost,before+velocity*elapsed);
+  if(Math.abs(after-before)<.5){pnDragScrollTime=0;return;}
+  pnDragScrollFrame=requestAnimationFrame(pnRunDragAutoScroll);
+}
+function pnUpdateDragAutoScroll(e){
+  pnDragScrollPoint={x:e.clientX,y:e.clientY};
+  if(!pnDragScrollVelocity()){pnStopDragAutoScroll();return;}
+  if(!pnDragScrollFrame)pnDragScrollFrame=requestAnimationFrame(pnRunDragAutoScroll);
+}
 function pnCaptureDropContext(e){
   // 原生拖曳資料只能在 drop 當下讀取；撤銷記錄可能先等待遠端資料。
   e.preventDefault();e.stopPropagation();
+  pnStopDragAutoScroll();
   if(e.pnDropContext)return e.pnDropContext;
   var raw=e.dataTransfer?.getData('text/plain')||'',from=null;
   if(raw){var parts=raw.split('|');if(parts.length===3&&(parts[0]==='work'||parts[0]==='personal')&&Number.isInteger(Number(parts[2])))from={type:parts[0],ds:parts[1],idx:Number(parts[2])};}
@@ -151,7 +184,7 @@ document.addEventListener('mouseup',function(){
   pnPointerHeld=false;
   setTimeout(pnResumeProgressRender,0);
 },true);
-window.addEventListener('blur',function(){pnPointerHeld=false;setTimeout(pnResumeProgressRender,0);});
+window.addEventListener('blur',function(){pnStopDragAutoScroll();pnPointerHeld=false;setTimeout(pnResumeProgressRender,0);});
 function pnClearDragPreview(){
   document.querySelectorAll('.pn-chip.pn-dragging').forEach(function(el){el.classList.remove('pn-dragging');});
   document.querySelectorAll('[data-pn-cell] .pn-chip[draggable="true"]').forEach(function(el){el.style.transform='';});
@@ -206,12 +239,17 @@ function pnAllowNativeDrop(e){
 document.addEventListener('dragenter',function(e){pnAllowNativeDrop(e);},true);
 document.addEventListener('dragover',function(e){
   if(!pnAllowNativeDrop(e))return;
+  pnUpdateDragAutoScroll(e);
   var cell=document.querySelector('[data-pn-cell="'+pnDragSrc.type+'|'+pnDragSrc.ds+'"]');
   var targetCell=e.target.closest?.('[data-pn-cell]');
   if(!cell||(targetCell&&targetCell!==cell))return;
   var rect=cell.getBoundingClientRect();
   if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top-96||e.clientY>rect.bottom+20)return;
   pnPreviewAtY(e,pnDragSrc.type,pnDragSrc.ds);
+},true);
+document.addEventListener('drop',pnStopDragAutoScroll,true);
+document.addEventListener('dragleave',function(e){
+  if(!e.relatedTarget&&(e.target===document.documentElement||e.target===document))pnStopDragAutoScroll();
 },true);
 document.addEventListener('drop',function(e){
   if(!pnDragSrc||e.target.closest?.('[data-pn-cell]'))return;
@@ -609,10 +647,15 @@ window.pnDelete=async function(type,ds,idx){
   setSynced();
 }
 window.pnDragStart=function(e,type,ds,idx){
+  pnStopDragAutoScroll();
   pnDragSrc={type:type,ds:ds,idx:idx};
   pnDragPreview={type:type,ds:ds,index:idx};
   var dragEl=e.currentTarget;
   var dragCell=dragEl.closest('[data-pn-cell]');
+  var mobileViewport=document.getElementById('progress-horizontal-viewport');
+  pnDragScrollHost=mobileViewport&&mobileViewport.clientWidth>0&&mobileViewport.scrollWidth>mobileViewport.clientWidth?mobileViewport:dragEl.closest('.hscroll-sync');
+  pnDragScrollInset=dragCell?.parentElement.querySelector('td')?.getBoundingClientRect().width||0;
+  stopHorizontalInertia();
   pnDragLayout=dragCell?[...dragCell.querySelectorAll('.pn-chip[draggable="true"]')].map(function(el){var r=el.getBoundingClientRect();return{center:r.top+r.height/2};}):null;
   e.dataTransfer.effectAllowed='copyMove';
   e.dataTransfer.setData('text/plain',type+'|'+ds+'|'+idx);
@@ -624,7 +667,7 @@ window.pnDragStart=function(e,type,ds,idx){
   requestAnimationFrame(function(){dragEl.classList.add('pn-dragging');});
   setTimeout(function(){ghost.remove();},0);
 }
-window.pnDragEnd=function(){pnClearDragPreview();pnDragSrc=null;pnPointerHeld=false;setTimeout(pnResumeProgressRender,0);}
+window.pnDragEnd=function(){pnStopDragAutoScroll();pnDragScrollHost=null;pnClearDragPreview();pnDragSrc=null;pnPointerHeld=false;setTimeout(pnResumeProgressRender,0);}
 window.pnDrop=async function(e,toType,toDs,insertAt){
   var context=pnCaptureDropContext(e),from=context.from;
   if(!from||!currentUser){pnFinishDropPreview(context);return;}
