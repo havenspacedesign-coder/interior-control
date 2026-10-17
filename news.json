@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-17",
-  "updatedAt": "2026-10-17T00:18:55.263Z",
+  "date": "2026-10-18",
+  "updatedAt": "2026-10-17T23:56:25.408Z",
   "news": [
     {
       "id": "b1cd16f08cc6d79b",
@@ -10,7 +10,7 @@
       "url": "https://www.gvm.com.tw/article/124732",
       "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20251001/215333.jpg",
       "publishedAt": "2026-10-16T07:27:00.000Z",
-      "fetchedAt": "2026-10-17T00:18:55.263Z"
+      "fetchedAt": "2026-10-17T23:56:25.408Z"
     },
     {
       "id": "2be162b2e28fbb16",
@@ -20,107 +20,107 @@
       "url": "https://www.gvm.com.tw/article/133833",
       "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261016/243172.jpg",
       "publishedAt": "2026-10-16T06:12:00.000Z",
-      "fetchedAt": "2026-10-17T00:18:55.263Z"
+      "fetchedAt": "2026-10-17T23:56:25.408Z"
     },
     {
-      "id": "a31de6cbb6c27e0b",
+      "id": "818b932c4f93cd03",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "算力競爭背後是電力！東元迎70週年，董座利明献：集團未來2至3年營收達千億目標",
-      "url": "https://www.gvm.com.tw/article/133851",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260929/241924.jpg",
-      "publishedAt": "2026-10-16T18:12:00.000Z",
-      "fetchedAt": "2026-10-17T00:18:55.263Z"
+      "title": "極端長壽的遺傳線索！194歲巨龜還活蹦亂跳，研究：基因開關宛如5歲幼龜",
+      "url": "https://www.gvm.com.tw/article/133834",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261016/243181.jpg",
+      "publishedAt": "2026-10-17T23:20:00.000Z",
+      "fetchedAt": "2026-10-17T23:56:25.408Z"
     },
     {
-      "id": "597f5fb26bc5ee5f",
+      "id": "700ef6d35e0fdb6e",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "失智天氣變化症狀加劇？醫解析4大問題加重原因：這件事容易被忽略",
-      "url": "https://www.gvm.com.tw/article/133819",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20200311/71436_01.jpg",
-      "publishedAt": "2026-10-16T23:00:00.000Z",
-      "fetchedAt": "2026-10-17T00:18:55.263Z"
+      "title": "日本專家指出：週末愛補眠的人，星期一早起恐有這個後果",
+      "url": "https://www.gvm.com.tw/article/133723",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261006/242453.jpg",
+      "publishedAt": "2026-10-17T10:00:00.000Z",
+      "fetchedAt": "2026-10-17T23:56:25.408Z"
     },
     {
-      "id": "17f52583701bbfae",
+      "id": "8298ec68aa21c5a4",
       "source": "壹蘋",
       "category": "國際",
-      "title": "最短命發言人！白宮美女上任5天「被離職」　川普說話了",
-      "url": "https://news.nextapple.com/international/20261017/73751736AE9B77461A6D178E2CD69236",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/73751736AE9B77461A6D178E2CD69236/8263fbeb150d1de041bd1bccd5a7c3dc_1280.webp",
-      "publishedAt": "2026-10-16T22:39:26.000Z",
-      "fetchedAt": "2026-10-17T00:18:55.263Z"
+      "title": "影｜精品店被砸、市政廳火海！法國反通膨示威失控　歐洲5國大暴動狂抓近千人",
+      "url": "https://news.nextapple.com/international/20261018/4756BD06F45095A99E7353911B0D7751",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/4756BD06F45095A99E7353911B0D7751/ab49fc650bb7d3dfdb3ec4b88d410868_1280.webp",
+      "publishedAt": "2026-10-17T23:48:44.000Z",
+      "fetchedAt": "2026-10-17T23:56:25.408Z"
     },
     {
-      "id": "b95f04e8d8f2284e",
+      "id": "b995590999d9fd72",
       "source": "壹蘋",
       "category": "生活",
-      "title": "以為只是火氣大！ 抽血正常竟罹「癌王」 　醫示警2大警訊別拖",
-      "url": "https://news.nextapple.com/life/20261017/48F0E2FE54C1A9B24E7F251770B229C1",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/48F0E2FE54C1A9B24E7F251770B229C1/334e367cd4426addd17eaa8df677ca3b_1280.webp",
-      "publishedAt": "2026-10-17T00:09:52.000Z",
-      "fetchedAt": "2026-10-17T00:18:55.263Z"
+      "title": "強颱薔琵直衝台灣！最快周四發警報　光復節連假要變天了",
+      "url": "https://news.nextapple.com/life/20261018/66B41EF208D0345054FC9087AE44A460",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/66B41EF208D0345054FC9087AE44A460/8c7ca5d738f70fedce1ce05f9b77ad35_1280.webp",
+      "publishedAt": "2026-10-17T23:40:00.000Z",
+      "fetchedAt": "2026-10-17T23:56:25.408Z"
     },
     {
-      "id": "d2d211207ddf1914",
+      "id": "9ab17f32b0b53af2",
       "source": "壹蘋",
       "category": "社會",
-      "title": "人妻離婚12天秒生子！驗DNA竟是小王種　前夫心碎獲賠40萬",
-      "url": "https://news.nextapple.com/local/20261017/315CA51710E6622C3D2CF72D8E452FCE",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/315CA51710E6622C3D2CF72D8E452FCE/b30d2d617b995f9d510ad7bee52f0021_1280.webp",
-      "publishedAt": "2026-10-16T23:00:00.000Z",
-      "fetchedAt": "2026-10-17T00:18:55.263Z"
+      "title": "警解送詐欺車手　他竟暴走「搶方向盤」失控撞車",
+      "url": "https://news.nextapple.com/local/20261018/570631F61A065EA22804E2F53EAAAF3B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/570631F61A065EA22804E2F53EAAAF3B/703a50820cb1485396c11109e9214033_1280.webp",
+      "publishedAt": "2026-10-17T23:22:10.000Z",
+      "fetchedAt": "2026-10-17T23:56:25.408Z"
     },
     {
-      "id": "14c2809ca1cdfdd1",
+      "id": "1c1082ab3cb02061",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "劉雨柔深夜嘆：「爛老公」女兒看在眼裡　長大也會被外人摧殘",
-      "url": "https://news.nextapple.com/entertainment/20261017/11775FD1EF00DA064808A13FD487F637",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/11775FD1EF00DA064808A13FD487F637/f7441601635be7d3e5a5cad32ebd2f07_1280.webp",
-      "publishedAt": "2026-10-16T23:43:52.000Z",
-      "fetchedAt": "2026-10-17T00:18:55.263Z"
+      "title": "樂天女孩宣傳寫真「誤洩內部辣照」　道歉哭求：別再外流",
+      "url": "https://news.nextapple.com/entertainment/20261018/442533065C0135AAC2977C7E080168B6",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/442533065C0135AAC2977C7E080168B6/1d7d785bcfc9dbdcb95b5c92cc994a5a_1280.webp",
+      "publishedAt": "2026-10-17T23:48:26.000Z",
+      "fetchedAt": "2026-10-17T23:56:25.408Z"
     },
     {
-      "id": "e0965ed1adf3f675",
+      "id": "e9f46c868713a014",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "NVIDIA新筆電11.9萬元起　跑AI、玩3A遊戲一台搞定",
-      "url": "https://news.nextapple.com/aitech/20261017/3C15BE8D6E74FF0CCDE973E658CDFC5D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/3C15BE8D6E74FF0CCDE973E658CDFC5D/e34bfdfe48a74f2a06aafaf1a8249e2a_1280.webp",
-      "publishedAt": "2026-10-16T16:05:00.000Z",
-      "fetchedAt": "2026-10-17T00:18:55.263Z"
+      "title": "日月潭花火音樂會湧3.5萬人　台灣大三點同步花火點亮湖畔",
+      "url": "https://news.nextapple.com/aitech/20261018/16EF81F409DDFC48787C3029655FC685",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/16EF81F409DDFC48787C3029655FC685/649f90b8e19f67ee142184c8a5f6cb2f_1280.webp",
+      "publishedAt": "2026-10-17T16:05:00.000Z",
+      "fetchedAt": "2026-10-17T23:56:25.408Z"
     },
     {
-      "id": "21da73e20ebe2a01",
+      "id": "033b42cb103e087e",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "科技股遭拋售！台積電ADR續跌　費半連8黑「單周狂瀉11%」",
-      "url": "https://news.nextapple.com/finance/20261017/8FEDE95FFDAE5BE1EDE3DF42B0EC20C6",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/8FEDE95FFDAE5BE1EDE3DF42B0EC20C6/240a89ac1f7748b8658bbab700b708f0_1280.webp",
-      "publishedAt": "2026-10-16T23:18:22.000Z",
-      "fetchedAt": "2026-10-17T00:18:55.263Z"
+      "title": "否認75萬筆個資外洩　LINE Pay：已向調查局報案",
+      "url": "https://news.nextapple.com/finance/20261017/C07C81BA6852486E7C61DACEA25B6D5B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/C07C81BA6852486E7C61DACEA25B6D5B/214ac096b69f60cb1a83d546f64d67d0_1280.webp",
+      "publishedAt": "2026-10-17T14:10:17.000Z",
+      "fetchedAt": "2026-10-17T23:56:25.408Z"
     },
     {
-      "id": "27b8f2f15ed799b5",
+      "id": "b3439b55b34c5248",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "前女團成員隆乳升級E罩杯！老公把持不住了　天天摸愛不釋手",
-      "url": "https://news.nextapple.com/entertainment/20261017/E4B4ACF3F04A62CD9733DE0FE2FBECA1",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/E4B4ACF3F04A62CD9733DE0FE2FBECA1/16cadcd5c4648ceb692ae80074e62d92_1280.webp",
-      "publishedAt": "2026-10-16T23:30:00.000Z",
-      "fetchedAt": "2026-10-17T00:18:55.263Z"
+      "title": "薔琵猛爆增強「有眼睛那坨才是本尊」　鄭明典：登陸機率很高",
+      "url": "https://news.nextapple.com/life/20261018/E504AD106692823BCFE417FB277E6195",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/E504AD106692823BCFE417FB277E6195/f22706241964cbf47f0e428731f4b465_1280.webp",
+      "publishedAt": "2026-10-17T23:35:10.000Z",
+      "fetchedAt": "2026-10-17T23:56:25.408Z"
     },
     {
-      "id": "c52565173fc0e058",
+      "id": "3d0dc81e9f4cd3cd",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "蔡康永78字藏隱喻？　2小時50萬人次朝聖解秘「京都人」",
-      "url": "https://news.nextapple.com/entertainment/20261017/4E4914468B77EDF19AC46AD01B6BA229",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/4E4914468B77EDF19AC46AD01B6BA229/75e620ede078cf3f813949a654f8589d_1280.webp",
-      "publishedAt": "2026-10-16T23:10:00.000Z",
-      "fetchedAt": "2026-10-17T00:18:55.263Z"
+      "title": "道奇3連霸失利將「大清洗」！8人恐離隊　賽揚強投也留不住？",
+      "url": "https://news.nextapple.com/sports/20261018/B501E7066346696ADBBED75AE11EBD3E",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/B501E7066346696ADBBED75AE11EBD3E/551082d130da8354e7f2592a9a8514fb_1280.webp",
+      "publishedAt": "2026-10-17T22:58:48.000Z",
+      "fetchedAt": "2026-10-17T23:56:25.408Z"
     }
   ]
 }
