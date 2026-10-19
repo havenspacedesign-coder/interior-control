@@ -26,10 +26,10 @@
 .design-tbl td{border:1px solid var(--border);padding:0;vertical-align:top}
 .design-tbl td input{border:none;padding:6px 8px;font-size:12px;width:100%;background:transparent;font-family:inherit}
 .design-tbl td input:focus{outline:none;background:var(--pl)}
-.design-tbl td.empty-cell{background:#fff8f8}
 .design-tbl .design-freeze{position:sticky!important;z-index:4;background:var(--surface);box-shadow:1px 0 0 var(--border)}
 .design-tbl thead .design-freeze{z-index:6;background:var(--bg)}
-.design-tbl td.design-freeze.empty-cell{background:#fff8f8}
+/* 疊加底色而非覆蓋元件，讓固定欄及第 1～20 欄在捲動時維持同一整列聚焦。 */
+#design-table tr.design-row-focused>td{background-image:linear-gradient(rgba(200,201,201,.35),rgba(200,201,201,.35))}
 #design-bottom-hscroll{position:fixed;bottom:0;height:14px;overflow-x:auto;overflow-y:hidden;background:var(--surface);border-top:1px solid var(--border);z-index:40}
 @media(max-width:768px){
   .design-tbl .design-freeze:not(.design-freeze-name){position:relative!important;left:auto!important;z-index:auto;box-shadow:none}

@@ -18,6 +18,15 @@ function sortDesignProjs(projs){
   });
 }
 let designDateEditing=false;
+let designFocusedProjectId=null;
+window.toggleDesignRowFocus=function(event,projId){
+  // 只接受案名欄下方空白處；案名連結、狀態及其他元件維持原有操作。
+  if(event.target!==event.currentTarget||event.defaultPrevented||designRowDragInProgress)return;
+  designFocusedProjectId=designFocusedProjectId===projId?null:projId;
+  document.querySelectorAll('#design-table tbody tr[data-proj]').forEach(function(row){
+    row.classList.toggle('design-row-focused',row.dataset.proj===designFocusedProjectId);
+  });
+};
 function renderDesign(){
   if(designRowDragInProgress||designDateEditing){pendingDesignRender=true;return;}
   const el=$('panel-design');
@@ -60,9 +69,9 @@ function renderDesign(){
     </tr></thead>
     <tbody>
     ${allProjs.map(p=>{
-      return`<tr data-proj="${p.id}"${editing?` draggable="true" ondragstart="designRowDragStart(event,'${p.id}')" ondragover="designRowDragOver(event,'${p.id}')" ondrop="designRowDrop(event,'${p.id}')" ondragend="designRowDragEnd()"`:''}>
+      return`<tr data-proj="${p.id}" class="${designFocusedProjectId===p.id?'design-row-focused':''}"${editing?` draggable="true" ondragstart="designRowDragStart(event,'${p.id}')" ondragover="designRowDragOver(event,'${p.id}')" ondrop="designRowDrop(event,'${p.id}')" ondragend="designRowDragEnd()"`:''}>
         ${editing?`<td ${freeze(0,22,'text-align:center;cursor:grab;color:var(--text3)')}>⠿</td>`:''}
-        <td ${freeze(dragW,nameW,'text-align:left;white-space:nowrap',true)}>
+        <td ${freeze(dragW,nameW,'text-align:left;white-space:nowrap',true)} onclick="toggleDesignRowFocus(event,'${p.id}')" title="點擊案名下方空白處，聚焦／取消聚焦此案件">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
             <span class="design-project-link" onclick="event.stopPropagation();showProjectDetail('${p.id}')" title="點擊查看案件詳細資料">${p.name}</span>
             <span class="badge" style="font-size:11px;background:${statusInfo(p.status).bg};color:${statusInfo(p.status).color};margin-left:auto;text-align:right">${statusInfo(p.status).l}</span>
