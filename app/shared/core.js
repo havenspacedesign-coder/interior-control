@@ -23,7 +23,7 @@ function localClone(v){return v===undefined?v:JSON.parse(JSON.stringify(v));}
 const LOCAL_PREVIEW_STATE_KEY='localPreviewStateV1';
 function saveLocalPreviewState(){
   if(!localTestMode)return;
-  try{localStorage.setItem(LOCAL_PREVIEW_STATE_KEY,JSON.stringify({version:1,state:localClone(S),userPrefs:localClone(userPrefs)}));}
+  try{localStorage.setItem(LOCAL_PREVIEW_STATE_KEY,JSON.stringify({version:1,state:localClone(S),userPrefs:localClone(userPrefs),companyDuty:localClone(companyDutyConfig)}));}
   catch(error){console.warn('本機測試資料無法保存',error);}
 }
 function restoreLocalPreviewState(){
@@ -31,6 +31,7 @@ function restoreLocalPreviewState(){
     const saved=JSON.parse(localStorage.getItem(LOCAL_PREVIEW_STATE_KEY)||'null');
     if(!saved||saved.version!==1||!saved.state||typeof saved.state!=='object')return;
     Object.keys(S).forEach(key=>{if(Object.prototype.hasOwnProperty.call(saved.state,key))S[key]=localClone(saved.state[key]);});
+    if(Object.prototype.hasOwnProperty.call(saved,'companyDuty'))companyDutyConfig=normalizeCompanyDutyConfig(saved.companyDuty);
     if(saved.userPrefs&&typeof saved.userPrefs==='object')userPrefs={...userPrefs,...localClone(saved.userPrefs)};
   }catch(error){console.warn('本機測試資料無法讀取',error);}
 }
