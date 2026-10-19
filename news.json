@@ -1,86 +1,86 @@
 {
-  "date": "2026-10-18",
-  "updatedAt": "2026-10-17T23:56:25.408Z",
+  "date": "2026-10-19",
+  "updatedAt": "2026-10-19T00:07:27.630Z",
   "news": [
     {
-      "id": "b1cd16f08cc6d79b",
-      "source": "遠見",
-      "category": "國際",
-      "title": "日本媽媽在台灣人身上學到的事：勇於給人「添麻煩」吧！",
-      "url": "https://www.gvm.com.tw/article/124732",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20251001/215333.jpg",
-      "publishedAt": "2026-10-16T07:27:00.000Z",
-      "fetchedAt": "2026-10-17T23:56:25.408Z"
-    },
-    {
-      "id": "2be162b2e28fbb16",
-      "source": "遠見",
-      "category": "AI／科技",
-      "title": "特斯拉飛天車橫空出世！「把火箭裝進特斯拉」全新Roadster台灣預購先付755萬",
-      "url": "https://www.gvm.com.tw/article/133833",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261016/243172.jpg",
-      "publishedAt": "2026-10-16T06:12:00.000Z",
-      "fetchedAt": "2026-10-17T23:56:25.408Z"
-    },
-    {
-      "id": "818b932c4f93cd03",
-      "source": "遠見",
-      "category": "金融／產經",
-      "title": "極端長壽的遺傳線索！194歲巨龜還活蹦亂跳，研究：基因開關宛如5歲幼龜",
-      "url": "https://www.gvm.com.tw/article/133834",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261016/243181.jpg",
-      "publishedAt": "2026-10-17T23:20:00.000Z",
-      "fetchedAt": "2026-10-17T23:56:25.408Z"
-    },
-    {
-      "id": "700ef6d35e0fdb6e",
+      "id": "ad3c0a11d69e1d91",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "日本專家指出：週末愛補眠的人，星期一早起恐有這個後果",
-      "url": "https://www.gvm.com.tw/article/133723",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261006/242453.jpg",
-      "publishedAt": "2026-10-17T10:00:00.000Z",
-      "fetchedAt": "2026-10-17T23:56:25.408Z"
+      "title": "詐騙，離我們比想像中更近",
+      "url": "https://www.gvm.com.tw/article/133637",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261016/243165.jpg",
+      "publishedAt": "2026-10-18T16:00:00.000Z",
+      "fetchedAt": "2026-10-19T00:07:27.630Z"
     },
     {
-      "id": "8298ec68aa21c5a4",
+      "id": "85d30fa2ca5f8f87",
+      "source": "遠見",
+      "category": "好享生活／教育／話題",
+      "title": "2026職安法修法：職場霸凌納入防護，企業如何從源頭守護員工身心健康？",
+      "url": "https://www.gvm.com.tw/article/132968",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260911/240780.jpg",
+      "publishedAt": "2026-10-18T16:00:00.000Z",
+      "fetchedAt": "2026-10-19T00:07:27.630Z"
+    },
+    {
+      "id": "58205083d26050a3",
+      "source": "遠見",
+      "category": "金融／產經",
+      "title": "10年代步革命！大眾運輸愈發達，共享機車愈吃香、取代私人機車？調查揭近8成用戶這樣搭",
+      "url": "https://www.gvm.com.tw/article/133835",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261008/242695.jpg",
+      "publishedAt": "2026-10-18T01:00:00.000Z",
+      "fetchedAt": "2026-10-19T00:07:27.630Z"
+    },
+    {
+      "id": "900e228708e690da",
+      "source": "遠見",
+      "category": "好享生活／教育／話題",
+      "title": "有制度，真的就安全？《企業職安衛治理與永續韌性調查報告》揭台灣職場安全真實現況",
+      "url": "https://www.gvm.com.tw/article/132954",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260910/240715.jpg",
+      "publishedAt": "2026-10-18T16:00:00.000Z",
+      "fetchedAt": "2026-10-19T00:07:27.630Z"
+    },
+    {
+      "id": "7eed269304f4278c",
       "source": "壹蘋",
       "category": "國際",
-      "title": "影｜精品店被砸、市政廳火海！法國反通膨示威失控　歐洲5國大暴動狂抓近千人",
-      "url": "https://news.nextapple.com/international/20261018/4756BD06F45095A99E7353911B0D7751",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/4756BD06F45095A99E7353911B0D7751/ab49fc650bb7d3dfdb3ec4b88d410868_1280.webp",
-      "publishedAt": "2026-10-17T23:48:44.000Z",
-      "fetchedAt": "2026-10-17T23:56:25.408Z"
+      "title": "空中驚魂！突遭炸彈威脅　奧航57人班機緊急轉降保加利亞",
+      "url": "https://news.nextapple.com/international/20261019/1B8A95D77D9A8992372B5EE88506D158",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/1B8A95D77D9A8992372B5EE88506D158/d04ee9a040b184882ce9be774d423b0f_1280.webp",
+      "publishedAt": "2026-10-19T00:07:06.000Z",
+      "fetchedAt": "2026-10-19T00:07:27.630Z"
     },
     {
-      "id": "b995590999d9fd72",
+      "id": "a6f1efa53867e721",
       "source": "壹蘋",
       "category": "生活",
-      "title": "強颱薔琵直衝台灣！最快周四發警報　光復節連假要變天了",
-      "url": "https://news.nextapple.com/life/20261018/66B41EF208D0345054FC9087AE44A460",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/66B41EF208D0345054FC9087AE44A460/8c7ca5d738f70fedce1ce05f9b77ad35_1280.webp",
-      "publishedAt": "2026-10-17T23:40:00.000Z",
-      "fetchedAt": "2026-10-17T23:56:25.408Z"
+      "title": "唐綺陽星座｜水逆來了！天蠍工作受阻　射手別急破圈　天秤爭執多",
+      "url": "https://news.nextapple.com/life/20261019/F12862B774F47B584CBC7E58F73A0EB8",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/F12862B774F47B584CBC7E58F73A0EB8/1e37896b9ff1474fecea1b70c86230a1_1280.webp",
+      "publishedAt": "2026-10-19T00:03:59.000Z",
+      "fetchedAt": "2026-10-19T00:07:27.630Z"
     },
     {
-      "id": "9ab17f32b0b53af2",
+      "id": "d807a65361486fe9",
       "source": "壹蘋",
       "category": "社會",
-      "title": "警解送詐欺車手　他竟暴走「搶方向盤」失控撞車",
-      "url": "https://news.nextapple.com/local/20261018/570631F61A065EA22804E2F53EAAAF3B",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/570631F61A065EA22804E2F53EAAAF3B/703a50820cb1485396c11109e9214033_1280.webp",
-      "publishedAt": "2026-10-17T23:22:10.000Z",
-      "fetchedAt": "2026-10-17T23:56:25.408Z"
+      "title": "宮廟廣場少年遭拖行踹踢哭號　單親媽淚訴：女兒在場拉不開",
+      "url": "https://news.nextapple.com/local/20261019/48F74013358BADDEC449236811E4DD26",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/48F74013358BADDEC449236811E4DD26/11605b39ab9da147dbce73b09fcb1aa4_1280.webp",
+      "publishedAt": "2026-10-18T23:45:39.000Z",
+      "fetchedAt": "2026-10-19T00:07:27.630Z"
     },
     {
-      "id": "1c1082ab3cb02061",
+      "id": "77ff5d24a7f5a7e8",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "樂天女孩宣傳寫真「誤洩內部辣照」　道歉哭求：別再外流",
-      "url": "https://news.nextapple.com/entertainment/20261018/442533065C0135AAC2977C7E080168B6",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/442533065C0135AAC2977C7E080168B6/1d7d785bcfc9dbdcb95b5c92cc994a5a_1280.webp",
-      "publishedAt": "2026-10-17T23:48:26.000Z",
-      "fetchedAt": "2026-10-17T23:56:25.408Z"
+      "title": "37歲Angelababy竟被嫌有眼紋顯老！她怨鏡頭太高清「好想哭」",
+      "url": "https://news.nextapple.com/entertainment/20261018/19EDFCB87403C31C095C0CED873E70C3",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/19EDFCB87403C31C095C0CED873E70C3/bf9b6047c020c0f2703c2e7c4528f3f1_1280.webp",
+      "publishedAt": "2026-10-18T13:48:12.000Z",
+      "fetchedAt": "2026-10-19T00:07:27.630Z"
     },
     {
       "id": "e9f46c868713a014",
@@ -90,37 +90,37 @@
       "url": "https://news.nextapple.com/aitech/20261018/16EF81F409DDFC48787C3029655FC685",
       "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/16EF81F409DDFC48787C3029655FC685/649f90b8e19f67ee142184c8a5f6cb2f_1280.webp",
       "publishedAt": "2026-10-17T16:05:00.000Z",
-      "fetchedAt": "2026-10-17T23:56:25.408Z"
+      "fetchedAt": "2026-10-19T00:07:27.630Z"
     },
     {
-      "id": "033b42cb103e087e",
+      "id": "84cb429dd7933af6",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "否認75萬筆個資外洩　LINE Pay：已向調查局報案",
-      "url": "https://news.nextapple.com/finance/20261017/C07C81BA6852486E7C61DACEA25B6D5B",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/C07C81BA6852486E7C61DACEA25B6D5B/214ac096b69f60cb1a83d546f64d67d0_1280.webp",
-      "publishedAt": "2026-10-17T14:10:17.000Z",
-      "fetchedAt": "2026-10-17T23:56:25.408Z"
+      "title": "外資提款5862億！投顧：台股本週續震盪　季線面臨考驗、慎防急殺",
+      "url": "https://news.nextapple.com/finance/20261019/8E1B43DD51BD633597D8375509D552FF",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/8E1B43DD51BD633597D8375509D552FF/d9a91a25cfaf61d5fc95fb0d477be2fb_1280.webp",
+      "publishedAt": "2026-10-18T17:00:00.000Z",
+      "fetchedAt": "2026-10-19T00:07:27.630Z"
     },
     {
-      "id": "b3439b55b34c5248",
+      "id": "69f57b8c326c2a26",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "薔琵猛爆增強「有眼睛那坨才是本尊」　鄭明典：登陸機率很高",
-      "url": "https://news.nextapple.com/life/20261018/E504AD106692823BCFE417FB277E6195",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/E504AD106692823BCFE417FB277E6195/f22706241964cbf47f0e428731f4b465_1280.webp",
-      "publishedAt": "2026-10-17T23:35:10.000Z",
-      "fetchedAt": "2026-10-17T23:56:25.408Z"
+      "title": "台大名醫到場追洋流　「沈伯洋像米老鼠」猶如一場嘉年華",
+      "url": "https://news.nextapple.com/politics/20261019/4834B6D2F1E3BEA74517F56B0FED6195",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/4834B6D2F1E3BEA74517F56B0FED6195/03be8e26e899ba6992da5beae5d752f2_1280.webp",
+      "publishedAt": "2026-10-18T23:46:21.000Z",
+      "fetchedAt": "2026-10-19T00:07:27.630Z"
     },
     {
-      "id": "3d0dc81e9f4cd3cd",
+      "id": "c6ce68c786dfd20c",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "道奇3連霸失利將「大清洗」！8人恐離隊　賽揚強投也留不住？",
-      "url": "https://news.nextapple.com/sports/20261018/B501E7066346696ADBBED75AE11EBD3E",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/B501E7066346696ADBBED75AE11EBD3E/551082d130da8354e7f2592a9a8514fb_1280.webp",
-      "publishedAt": "2026-10-17T22:58:48.000Z",
-      "fetchedAt": "2026-10-17T23:56:25.408Z"
+      "title": "法國示威延燒歐洲！米蘭精品店爆「0元購」　阿爾巴尼亞總理拒下台",
+      "url": "https://news.nextapple.com/international/20261019/D1A6DBC96864946221CFD6F87FDE5B34",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/D1A6DBC96864946221CFD6F87FDE5B34/364ed8bd2be6b4238710f164a0e55d5a_1280.webp",
+      "publishedAt": "2026-10-18T23:27:42.000Z",
+      "fetchedAt": "2026-10-19T00:07:27.630Z"
     }
   ]
 }
