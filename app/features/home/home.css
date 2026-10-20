@@ -40,6 +40,10 @@
 .home-module[data-home-type="company-duty"] .company-duty-list{overflow:visible;flex-shrink:0;padding-bottom:6px}
 .home-module[data-home-type="company-duty"] .company-duty-top{flex-wrap:wrap}
 .home-module[data-home-type="company-duty"] .company-duty-settings-button{position:static;flex-shrink:0;margin-left:auto}
+.company-duty-section{flex-shrink:0;min-width:0;padding:8px 0}
+.company-duty-section+.company-duty-section{margin-top:8px;padding-top:14px;border-top:1px solid var(--border)}
+.company-duty-section h4{margin:0 0 7px;font-size:inherit;color:var(--text);font-weight:600}
+.company-duty-section .company-duty-task,.company-duty-section .company-duty-schedule-note{overflow-wrap:anywhere;white-space:pre-wrap}
 .company-duty-schedule-note{font-size:11px;line-height:1.5;color:var(--text3);margin-bottom:7px}
 .duty-monthly-tasks{margin:5px 0 0;padding-left:20px;line-height:1.5;overflow-wrap:anywhere}
 .duty-monthly-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
