@@ -1,126 +1,126 @@
 {
-  "date": "2026-10-19",
-  "updatedAt": "2026-10-19T00:07:27.630Z",
+  "date": "2026-10-20",
+  "updatedAt": "2026-10-20T01:01:49.121Z",
   "news": [
     {
-      "id": "ad3c0a11d69e1d91",
+      "id": "a475c96ab0c1947b",
       "source": "遠見",
-      "category": "好享生活／教育／話題",
-      "title": "詐騙，離我們比想像中更近",
-      "url": "https://www.gvm.com.tw/article/133637",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261016/243165.jpg",
-      "publishedAt": "2026-10-18T16:00:00.000Z",
-      "fetchedAt": "2026-10-19T00:07:27.630Z"
+      "category": "國際",
+      "title": "法國抗議演變成失控暴動！愛馬仕、蘋果遭洗劫，馬克宏執政危機升溫",
+      "url": "https://www.gvm.com.tw/article/133878",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261019/243357.jpg",
+      "publishedAt": "2026-10-19T10:13:00.000Z",
+      "fetchedAt": "2026-10-20T01:01:49.121Z"
     },
     {
-      "id": "85d30fa2ca5f8f87",
+      "id": "3779b2ff69f8432b",
       "source": "遠見",
-      "category": "好享生活／教育／話題",
-      "title": "2026職安法修法：職場霸凌納入防護，企業如何從源頭守護員工身心健康？",
-      "url": "https://www.gvm.com.tw/article/132968",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260911/240780.jpg",
-      "publishedAt": "2026-10-18T16:00:00.000Z",
-      "fetchedAt": "2026-10-19T00:07:27.630Z"
+      "category": "AI／科技",
+      "title": "AI不只學更要修！人機協作，找回人類價值",
+      "url": "https://www.gvm.com.tw/article/133861",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261019/243292.jpg",
+      "publishedAt": "2026-10-19T04:07:00.000Z",
+      "fetchedAt": "2026-10-20T01:01:49.121Z"
     },
     {
-      "id": "58205083d26050a3",
+      "id": "f79075d1e3612f6a",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "10年代步革命！大眾運輸愈發達，共享機車愈吃香、取代私人機車？調查揭近8成用戶這樣搭",
-      "url": "https://www.gvm.com.tw/article/133835",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261008/242695.jpg",
-      "publishedAt": "2026-10-18T01:00:00.000Z",
-      "fetchedAt": "2026-10-19T00:07:27.630Z"
+      "title": "65歲以上免健保費醫界為何反對？洪子仁：健保非社會福利，地方擴中央「一錯再錯」",
+      "url": "https://www.gvm.com.tw/article/133869",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20251110/218504.jpg",
+      "publishedAt": "2026-10-19T06:35:00.000Z",
+      "fetchedAt": "2026-10-20T01:01:49.121Z"
     },
     {
-      "id": "900e228708e690da",
+      "id": "1895b932b1c2e002",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "有制度，真的就安全？《企業職安衛治理與永續韌性調查報告》揭台灣職場安全真實現況",
-      "url": "https://www.gvm.com.tw/article/132954",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260910/240715.jpg",
-      "publishedAt": "2026-10-18T16:00:00.000Z",
-      "fetchedAt": "2026-10-19T00:07:27.630Z"
+      "title": "薔琵颱風動態》颱風假停班停課 ？最新路徑「加速轉彎」週五、六最接近台灣（不斷更新）",
+      "url": "https://www.gvm.com.tw/article/133864",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261020/243376.jpg",
+      "publishedAt": "2026-10-19T16:10:00.000Z",
+      "fetchedAt": "2026-10-20T01:01:49.121Z"
     },
     {
-      "id": "7eed269304f4278c",
+      "id": "aa43181da67f909f",
       "source": "壹蘋",
       "category": "國際",
-      "title": "空中驚魂！突遭炸彈威脅　奧航57人班機緊急轉降保加利亞",
-      "url": "https://news.nextapple.com/international/20261019/1B8A95D77D9A8992372B5EE88506D158",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/1B8A95D77D9A8992372B5EE88506D158/d04ee9a040b184882ce9be774d423b0f_1280.webp",
-      "publishedAt": "2026-10-19T00:07:06.000Z",
-      "fetchedAt": "2026-10-19T00:07:27.630Z"
+      "title": "壹蘋派生活美語　好茶不怕火煉　苦盡甘來的溫潤焙茶",
+      "url": "https://news.nextapple.com/international/20261020/DA3689612760FD5E7E3FC60BD074742B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/DA3689612760FD5E7E3FC60BD074742B/723c27e0659ad499ef3c5b5aa12e30a9_1280.webp",
+      "publishedAt": "2026-10-20T00:00:00.000Z",
+      "fetchedAt": "2026-10-20T01:01:49.121Z"
     },
     {
-      "id": "a6f1efa53867e721",
+      "id": "81c34b5606aa8bb6",
       "source": "壹蘋",
       "category": "生活",
-      "title": "唐綺陽星座｜水逆來了！天蠍工作受阻　射手別急破圈　天秤爭執多",
-      "url": "https://news.nextapple.com/life/20261019/F12862B774F47B584CBC7E58F73A0EB8",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/F12862B774F47B584CBC7E58F73A0EB8/1e37896b9ff1474fecea1b70c86230a1_1280.webp",
-      "publishedAt": "2026-10-19T00:03:59.000Z",
-      "fetchedAt": "2026-10-19T00:07:27.630Z"
+      "title": "薔琵暴風侵襲率　雙北等6縣市破50%！基隆宜蘭最高",
+      "url": "https://news.nextapple.com/life/20261020/607BD9E1F23B31FEAA4A014AEEEC0E06",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/607BD9E1F23B31FEAA4A014AEEEC0E06/b851bed3cb9e291e84887ab6d0172d5a_1280.webp",
+      "publishedAt": "2026-10-19T23:36:34.000Z",
+      "fetchedAt": "2026-10-20T01:01:49.121Z"
     },
     {
-      "id": "d807a65361486fe9",
+      "id": "7625b8ef5286f74b",
       "source": "壹蘋",
       "category": "社會",
-      "title": "宮廟廣場少年遭拖行踹踢哭號　單親媽淚訴：女兒在場拉不開",
-      "url": "https://news.nextapple.com/local/20261019/48F74013358BADDEC449236811E4DD26",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/48F74013358BADDEC449236811E4DD26/11605b39ab9da147dbce73b09fcb1aa4_1280.webp",
-      "publishedAt": "2026-10-18T23:45:39.000Z",
-      "fetchedAt": "2026-10-19T00:07:27.630Z"
+      "title": "國中生遭8人拖行狂踹　600人包圍武和宮嗆「霸凌去死」！警方回應了",
+      "url": "https://news.nextapple.com/local/20261020/9EA78A9A6DE9E453908B759966566B66",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/9EA78A9A6DE9E453908B759966566B66/25c3944c989254ba04922adbc2a62adb_1280.webp",
+      "publishedAt": "2026-10-19T22:43:16.000Z",
+      "fetchedAt": "2026-10-20T01:01:49.121Z"
     },
     {
-      "id": "77ff5d24a7f5a7e8",
+      "id": "17cfe9c5c8b7f7f2",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "37歲Angelababy竟被嫌有眼紋顯老！她怨鏡頭太高清「好想哭」",
-      "url": "https://news.nextapple.com/entertainment/20261018/19EDFCB87403C31C095C0CED873E70C3",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/19EDFCB87403C31C095C0CED873E70C3/bf9b6047c020c0f2703c2e7c4528f3f1_1280.webp",
-      "publishedAt": "2026-10-18T13:48:12.000Z",
-      "fetchedAt": "2026-10-19T00:07:27.630Z"
+      "title": "陳建州近百歲奶奶留下最美回憶　范瑋琪唱詩歌淚送最後一程",
+      "url": "https://news.nextapple.com/entertainment/20261020/20371FB688ADFA595CDCFE99761B1E33",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/20371FB688ADFA595CDCFE99761B1E33/3130bd2af3696fc59125b11933012de7_1280.webp",
+      "publishedAt": "2026-10-20T00:38:06.000Z",
+      "fetchedAt": "2026-10-20T01:01:49.121Z"
     },
     {
-      "id": "e9f46c868713a014",
+      "id": "88fe5845f0ca64c2",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "日月潭花火音樂會湧3.5萬人　台灣大三點同步花火點亮湖畔",
-      "url": "https://news.nextapple.com/aitech/20261018/16EF81F409DDFC48787C3029655FC685",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/16EF81F409DDFC48787C3029655FC685/649f90b8e19f67ee142184c8a5f6cb2f_1280.webp",
-      "publishedAt": "2026-10-17T16:05:00.000Z",
-      "fetchedAt": "2026-10-19T00:07:27.630Z"
+      "title": "蘋果發表會又來了！首款觸控MacBook Pro有望登場",
+      "url": "https://news.nextapple.com/aitech/20261020/8C76D32FBAE97F25C92E8BE13F24C896",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/8C76D32FBAE97F25C92E8BE13F24C896/a6b13f8e0f453815a8330e0badaf7d15_1280.webp",
+      "publishedAt": "2026-10-20T00:06:16.000Z",
+      "fetchedAt": "2026-10-20T01:01:49.121Z"
     },
     {
-      "id": "84cb429dd7933af6",
+      "id": "6c1a763c675846b8",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "外資提款5862億！投顧：台股本週續震盪　季線面臨考驗、慎防急殺",
-      "url": "https://news.nextapple.com/finance/20261019/8E1B43DD51BD633597D8375509D552FF",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/8E1B43DD51BD633597D8375509D552FF/d9a91a25cfaf61d5fc95fb0d477be2fb_1280.webp",
-      "publishedAt": "2026-10-18T17:00:00.000Z",
-      "fetchedAt": "2026-10-19T00:07:27.630Z"
+      "title": "美光勞資爭議22日再交鋒！台中二度調解　桃園工會同步聲援式罷工",
+      "url": "https://news.nextapple.com/finance/20261020/4F3CC89161F29DA148FEF161CA6CC28E",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/4F3CC89161F29DA148FEF161CA6CC28E/bd78c1c938748e40bc535f641f481123_1280.webp",
+      "publishedAt": "2026-10-20T00:47:56.000Z",
+      "fetchedAt": "2026-10-20T01:01:49.121Z"
     },
     {
-      "id": "69f57b8c326c2a26",
+      "id": "06daf02f939c4396",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "台大名醫到場追洋流　「沈伯洋像米老鼠」猶如一場嘉年華",
-      "url": "https://news.nextapple.com/politics/20261019/4834B6D2F1E3BEA74517F56B0FED6195",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/4834B6D2F1E3BEA74517F56B0FED6195/03be8e26e899ba6992da5beae5d752f2_1280.webp",
-      "publishedAt": "2026-10-18T23:46:21.000Z",
-      "fetchedAt": "2026-10-19T00:07:27.630Z"
+      "title": "好心扶人惹官司！退休教授被索50萬　律師：別讓善良的人不敢伸手",
+      "url": "https://news.nextapple.com/life/20261020/91A19CBFE1E306A3D78992EE5BC79AED",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/91A19CBFE1E306A3D78992EE5BC79AED/a8266abe230203edefe68c2596ffea33_1280.webp",
+      "publishedAt": "2026-10-20T01:00:00.000Z",
+      "fetchedAt": "2026-10-20T01:01:49.121Z"
     },
     {
-      "id": "c6ce68c786dfd20c",
+      "id": "88fe51e9e7123901",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "法國示威延燒歐洲！米蘭精品店爆「0元購」　阿爾巴尼亞總理拒下台",
-      "url": "https://news.nextapple.com/international/20261019/D1A6DBC96864946221CFD6F87FDE5B34",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/D1A6DBC96864946221CFD6F87FDE5B34/364ed8bd2be6b4238710f164a0e55d5a_1280.webp",
-      "publishedAt": "2026-10-18T23:27:42.000Z",
-      "fetchedAt": "2026-10-19T00:07:27.630Z"
+      "title": "「屏東人沒資格在台北滾回去死」　KIMIKO：這十年官司接連非常疲憊",
+      "url": "https://news.nextapple.com/entertainment/20261020/9735DE84B09A07AC9C7DBF290A9DC78A",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/9735DE84B09A07AC9C7DBF290A9DC78A/c9e936f3bdeb6d4141703feca86b895f_1280.webp",
+      "publishedAt": "2026-10-20T00:22:53.000Z",
+      "fetchedAt": "2026-10-20T01:01:49.121Z"
     }
   ]
 }
