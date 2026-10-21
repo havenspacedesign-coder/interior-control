@@ -1,126 +1,126 @@
 {
-  "date": "2026-10-20",
-  "updatedAt": "2026-10-20T01:01:49.121Z",
+  "date": "2026-10-21",
+  "updatedAt": "2026-10-21T00:31:52.603Z",
   "news": [
     {
-      "id": "a475c96ab0c1947b",
+      "id": "222a210bf1db40c9",
       "source": "遠見",
       "category": "國際",
-      "title": "法國抗議演變成失控暴動！愛馬仕、蘋果遭洗劫，馬克宏執政危機升溫",
-      "url": "https://www.gvm.com.tw/article/133878",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261019/243357.jpg",
-      "publishedAt": "2026-10-19T10:13:00.000Z",
-      "fetchedAt": "2026-10-20T01:01:49.121Z"
+      "title": "期中選舉前，川普支持率跌至31％！共和黨七州告急，民主黨可望奪回參議院？",
+      "url": "https://www.gvm.com.tw/article/133909",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261015/243042.jpg",
+      "publishedAt": "2026-10-20T10:38:00.000Z",
+      "fetchedAt": "2026-10-21T00:31:52.603Z"
     },
     {
-      "id": "3779b2ff69f8432b",
+      "id": "777d60c9e77c5b4b",
       "source": "遠見",
       "category": "AI／科技",
-      "title": "AI不只學更要修！人機協作，找回人類價值",
-      "url": "https://www.gvm.com.tw/article/133861",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261019/243292.jpg",
-      "publishedAt": "2026-10-19T04:07:00.000Z",
-      "fetchedAt": "2026-10-20T01:01:49.121Z"
+      "title": "蘋果又有發表會！「Pro and tell」活動傳推首款觸控MacBook Pro",
+      "url": "https://www.gvm.com.tw/article/133885",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261020/243397.jpg",
+      "publishedAt": "2026-10-20T02:10:00.000Z",
+      "fetchedAt": "2026-10-21T00:31:52.603Z"
     },
     {
-      "id": "f79075d1e3612f6a",
+      "id": "202e0dccfce645bd",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "65歲以上免健保費醫界為何反對？洪子仁：健保非社會福利，地方擴中央「一錯再錯」",
-      "url": "https://www.gvm.com.tw/article/133869",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20251110/218504.jpg",
-      "publishedAt": "2026-10-19T06:35:00.000Z",
-      "fetchedAt": "2026-10-20T01:01:49.121Z"
+      "title": "台股衝5萬點，台積電領漲？「多頭總司令」張錫：靠「這兩點」挑出強股",
+      "url": "https://www.gvm.com.tw/article/133911",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20251211/221059.jpg",
+      "publishedAt": "2026-10-20T10:46:00.000Z",
+      "fetchedAt": "2026-10-21T00:31:52.603Z"
     },
     {
       "id": "1895b932b1c2e002",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "薔琵颱風動態》颱風假停班停課 ？最新路徑「加速轉彎」週五、六最接近台灣（不斷更新）",
+      "title": "薔琵颱風動態》颱風假停班停課 ？最新路徑「不排除陸警」週五、六起風雨明顯（不斷更新）",
       "url": "https://www.gvm.com.tw/article/133864",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261020/243376.jpg",
-      "publishedAt": "2026-10-19T16:10:00.000Z",
-      "fetchedAt": "2026-10-20T01:01:49.121Z"
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261020/243474.jpg",
+      "publishedAt": "2026-10-20T16:00:00.000Z",
+      "fetchedAt": "2026-10-21T00:31:52.603Z"
     },
     {
-      "id": "aa43181da67f909f",
+      "id": "9309eb9702d0a31b",
       "source": "壹蘋",
       "category": "國際",
-      "title": "壹蘋派生活美語　好茶不怕火煉　苦盡甘來的溫潤焙茶",
-      "url": "https://news.nextapple.com/international/20261020/DA3689612760FD5E7E3FC60BD074742B",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/DA3689612760FD5E7E3FC60BD074742B/723c27e0659ad499ef3c5b5aa12e30a9_1280.webp",
-      "publishedAt": "2026-10-20T00:00:00.000Z",
-      "fetchedAt": "2026-10-20T01:01:49.121Z"
+      "title": "壹蘋派生活美語　藏不住的私房景點",
+      "url": "https://news.nextapple.com/international/20261021/E419C402D47244F65C93B923D087AA69",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/E419C402D47244F65C93B923D087AA69/f8606d9e88215055915cac1db8d6d95c_1280.webp",
+      "publishedAt": "2026-10-21T00:00:00.000Z",
+      "fetchedAt": "2026-10-21T00:31:52.603Z"
     },
     {
-      "id": "81c34b5606aa8bb6",
+      "id": "09f84f166b019508",
       "source": "壹蘋",
       "category": "生活",
-      "title": "薔琵暴風侵襲率　雙北等6縣市破50%！基隆宜蘭最高",
-      "url": "https://news.nextapple.com/life/20261020/607BD9E1F23B31FEAA4A014AEEEC0E06",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/607BD9E1F23B31FEAA4A014AEEEC0E06/b851bed3cb9e291e84887ab6d0172d5a_1280.webp",
-      "publishedAt": "2026-10-19T23:36:34.000Z",
-      "fetchedAt": "2026-10-20T01:01:49.121Z"
+      "title": "強颱薔琵逼近！2縣市「暴風侵襲率」破70%",
+      "url": "https://news.nextapple.com/life/20261021/F0F089C81841ABE6A6A5C2F591EF2019",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/F0F089C81841ABE6A6A5C2F591EF2019/efbc276c84db1f87f9374189aeb19146_1280.webp",
+      "publishedAt": "2026-10-21T00:05:04.000Z",
+      "fetchedAt": "2026-10-21T00:31:52.603Z"
     },
     {
-      "id": "7625b8ef5286f74b",
+      "id": "941ba767713e2ab3",
       "source": "壹蘋",
       "category": "社會",
-      "title": "國中生遭8人拖行狂踹　600人包圍武和宮嗆「霸凌去死」！警方回應了",
-      "url": "https://news.nextapple.com/local/20261020/9EA78A9A6DE9E453908B759966566B66",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/9EA78A9A6DE9E453908B759966566B66/25c3944c989254ba04922adbc2a62adb_1280.webp",
-      "publishedAt": "2026-10-19T22:43:16.000Z",
-      "fetchedAt": "2026-10-20T01:01:49.121Z"
+      "title": "國3新化段驚悚車禍！BMW休旅車猛撞大貨車！　「車頂消失」兩人當場喪命",
+      "url": "https://news.nextapple.com/local/20261021/507023EE107A9D9CB8B570C13DBE268C",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/507023EE107A9D9CB8B570C13DBE268C/94e5a7ec863178075ab7e5ea63f8478f_1280.webp",
+      "publishedAt": "2026-10-21T00:22:51.000Z",
+      "fetchedAt": "2026-10-21T00:31:52.603Z"
     },
     {
-      "id": "17cfe9c5c8b7f7f2",
+      "id": "7a6d6b701f4bca08",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "陳建州近百歲奶奶留下最美回憶　范瑋琪唱詩歌淚送最後一程",
-      "url": "https://news.nextapple.com/entertainment/20261020/20371FB688ADFA595CDCFE99761B1E33",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/20371FB688ADFA595CDCFE99761B1E33/3130bd2af3696fc59125b11933012de7_1280.webp",
-      "publishedAt": "2026-10-20T00:38:06.000Z",
-      "fetchedAt": "2026-10-20T01:01:49.121Z"
+      "title": "五月天冠佑正妹女兒20歲了！拒老爸喊「寶貝」　他急改口神回笑翻",
+      "url": "https://news.nextapple.com/entertainment/20261021/A5DC124F0060B930477AF014F41F86B5",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/A5DC124F0060B930477AF014F41F86B5/c094348d6b8bbdd08534b950ad4fc0d6_1280.webp",
+      "publishedAt": "2026-10-21T00:28:31.000Z",
+      "fetchedAt": "2026-10-21T00:31:52.603Z"
     },
     {
-      "id": "88fe5845f0ca64c2",
+      "id": "ffe1d19447385ac0",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "蘋果發表會又來了！首款觸控MacBook Pro有望登場",
-      "url": "https://news.nextapple.com/aitech/20261020/8C76D32FBAE97F25C92E8BE13F24C896",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/8C76D32FBAE97F25C92E8BE13F24C896/a6b13f8e0f453815a8330e0badaf7d15_1280.webp",
-      "publishedAt": "2026-10-20T00:06:16.000Z",
-      "fetchedAt": "2026-10-20T01:01:49.121Z"
+      "title": "免解凍免顧火一鍵開煮　新萬用鍋還能做優格果醬",
+      "url": "https://news.nextapple.com/aitech/20261021/5D81ED11E1494B14E6E9E3FBD089D539",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/5D81ED11E1494B14E6E9E3FBD089D539/382757427ba8f38dd333ed705ffef7f0_1280.webp",
+      "publishedAt": "2026-10-20T16:05:00.000Z",
+      "fetchedAt": "2026-10-21T00:31:52.603Z"
     },
     {
-      "id": "6c1a763c675846b8",
+      "id": "0ad77041f1da4003",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "美光勞資爭議22日再交鋒！台中二度調解　桃園工會同步聲援式罷工",
-      "url": "https://news.nextapple.com/finance/20261020/4F3CC89161F29DA148FEF161CA6CC28E",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/4F3CC89161F29DA148FEF161CA6CC28E/bd78c1c938748e40bc535f641f481123_1280.webp",
-      "publishedAt": "2026-10-20T00:47:56.000Z",
-      "fetchedAt": "2026-10-20T01:01:49.121Z"
+      "title": "美股大洗牌！資金撤離AI類股　費半跌、台積電ADR逆勢上揚",
+      "url": "https://news.nextapple.com/finance/20261021/DD56A601D7F374245B1683960A2DAA01",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/DD56A601D7F374245B1683960A2DAA01/d7e7d6bb900e357fc7364d92b54b7b91_1280.webp",
+      "publishedAt": "2026-10-20T23:27:52.000Z",
+      "fetchedAt": "2026-10-21T00:31:52.603Z"
     },
     {
-      "id": "06daf02f939c4396",
+      "id": "e857a134ca605bb1",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "好心扶人惹官司！退休教授被索50萬　律師：別讓善良的人不敢伸手",
-      "url": "https://news.nextapple.com/life/20261020/91A19CBFE1E306A3D78992EE5BC79AED",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/91A19CBFE1E306A3D78992EE5BC79AED/a8266abe230203edefe68c2596ffea33_1280.webp",
-      "publishedAt": "2026-10-20T01:00:00.000Z",
-      "fetchedAt": "2026-10-20T01:01:49.121Z"
+      "title": "魏平政嘲蔣萬安民調「輸比我還多」　網笑：被選輸鄉長的臭",
+      "url": "https://news.nextapple.com/politics/20261021/A01AC653E325C03328E38F045E909F51",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/A01AC653E325C03328E38F045E909F51/d186a766e34a9b8ab88c4450a8bc8827_1280.webp",
+      "publishedAt": "2026-10-20T23:41:23.000Z",
+      "fetchedAt": "2026-10-21T00:31:52.603Z"
     },
     {
-      "id": "88fe51e9e7123901",
+      "id": "57e63dd1db730d63",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "「屏東人沒資格在台北滾回去死」　KIMIKO：這十年官司接連非常疲憊",
-      "url": "https://news.nextapple.com/entertainment/20261020/9735DE84B09A07AC9C7DBF290A9DC78A",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/9735DE84B09A07AC9C7DBF290A9DC78A/c9e936f3bdeb6d4141703feca86b895f_1280.webp",
-      "publishedAt": "2026-10-20T00:22:53.000Z",
-      "fetchedAt": "2026-10-20T01:01:49.121Z"
+      "title": "中信兄弟怎麼了？台灣大賽3戰只得1分　寫2大糗紀錄",
+      "url": "https://news.nextapple.com/sports/20261021/9F5E3B7348EC72D61CFBB6EE45229B5C",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/9F5E3B7348EC72D61CFBB6EE45229B5C/a25fab6bc62fe5d35d813c58eeecc4a4_1280.webp",
+      "publishedAt": "2026-10-20T23:38:00.000Z",
+      "fetchedAt": "2026-10-21T00:31:52.603Z"
     }
   ]
 }
