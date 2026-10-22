@@ -1,126 +1,126 @@
 {
-  "date": "2026-10-21",
-  "updatedAt": "2026-10-21T00:31:52.603Z",
+  "date": "2026-10-22",
+  "updatedAt": "2026-10-22T00:35:37.034Z",
   "news": [
     {
-      "id": "222a210bf1db40c9",
+      "id": "be9d4823a8d9dc3d",
       "source": "遠見",
       "category": "國際",
-      "title": "期中選舉前，川普支持率跌至31％！共和黨七州告急，民主黨可望奪回參議院？",
-      "url": "https://www.gvm.com.tw/article/133909",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261015/243042.jpg",
-      "publishedAt": "2026-10-20T10:38:00.000Z",
-      "fetchedAt": "2026-10-21T00:31:52.603Z"
+      "title": "中國涉跨境鎮壓！黃逸豪相聲「辱習」竟遭車撞，新北檢起訴5人",
+      "url": "https://www.gvm.com.tw/article/133931",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261021/243506.jpg",
+      "publishedAt": "2026-10-21T06:48:00.000Z",
+      "fetchedAt": "2026-10-22T00:35:37.034Z"
     },
     {
-      "id": "777d60c9e77c5b4b",
+      "id": "6f39d06175bcb691",
       "source": "遠見",
       "category": "AI／科技",
-      "title": "蘋果又有發表會！「Pro and tell」活動傳推首款觸控MacBook Pro",
-      "url": "https://www.gvm.com.tw/article/133885",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261020/243397.jpg",
-      "publishedAt": "2026-10-20T02:10:00.000Z",
-      "fetchedAt": "2026-10-21T00:31:52.603Z"
+      "title": "把工作交給AI愈做愈錯？專家揭盲點：最不該外包的3件事失守，人會被淘汰",
+      "url": "https://www.gvm.com.tw/article/133929",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261021/243504.jpg",
+      "publishedAt": "2026-10-21T16:00:00.000Z",
+      "fetchedAt": "2026-10-22T00:35:37.034Z"
     },
     {
-      "id": "202e0dccfce645bd",
+      "id": "6692ea224f947800",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "台股衝5萬點，台積電領漲？「多頭總司令」張錫：靠「這兩點」挑出強股",
-      "url": "https://www.gvm.com.tw/article/133911",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20251211/221059.jpg",
-      "publishedAt": "2026-10-20T10:46:00.000Z",
-      "fetchedAt": "2026-10-21T00:31:52.603Z"
+      "title": "駁回Grab、foodpanda結合案！公平會點出「4大理由」",
+      "url": "https://www.gvm.com.tw/article/133932",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260609/233654.jpg",
+      "publishedAt": "2026-10-21T07:50:00.000Z",
+      "fetchedAt": "2026-10-22T00:35:37.034Z"
     },
     {
-      "id": "1895b932b1c2e002",
+      "id": "e61d9a355a14c24b",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "薔琵颱風動態》颱風假停班停課 ？最新路徑「不排除陸警」週五、六起風雨明顯（不斷更新）",
-      "url": "https://www.gvm.com.tw/article/133864",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261020/243474.jpg",
-      "publishedAt": "2026-10-20T16:00:00.000Z",
-      "fetchedAt": "2026-10-21T00:31:52.603Z"
+      "title": "看懂企業、看見市場！iKala用AI打通內外資料、助攻智慧轉型",
+      "url": "https://www.gvm.com.tw/article/133884",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261020/243388.jpg",
+      "publishedAt": "2026-10-21T16:00:00.000Z",
+      "fetchedAt": "2026-10-22T00:35:37.034Z"
     },
     {
-      "id": "9309eb9702d0a31b",
+      "id": "8c5921079926c71a",
       "source": "壹蘋",
       "category": "國際",
-      "title": "壹蘋派生活美語　藏不住的私房景點",
-      "url": "https://news.nextapple.com/international/20261021/E419C402D47244F65C93B923D087AA69",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/E419C402D47244F65C93B923D087AA69/f8606d9e88215055915cac1db8d6d95c_1280.webp",
-      "publishedAt": "2026-10-21T00:00:00.000Z",
-      "fetchedAt": "2026-10-21T00:31:52.603Z"
+      "title": "美中俄「3巨頭峰會」籌備中！川普喊最接近終戰　澤連斯基冷回",
+      "url": "https://news.nextapple.com/international/20261022/F8D63116DF9A409BB38F97999714745C",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/F8D63116DF9A409BB38F97999714745C/edead9e89a6a4599db147e99be114999_1280.webp",
+      "publishedAt": "2026-10-22T00:18:02.000Z",
+      "fetchedAt": "2026-10-22T00:35:37.034Z"
     },
     {
-      "id": "09f84f166b019508",
+      "id": "c9c08eff787dfcbe",
       "source": "壹蘋",
       "category": "生活",
-      "title": "強颱薔琵逼近！2縣市「暴風侵襲率」破70%",
-      "url": "https://news.nextapple.com/life/20261021/F0F089C81841ABE6A6A5C2F591EF2019",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/F0F089C81841ABE6A6A5C2F591EF2019/efbc276c84db1f87f9374189aeb19146_1280.webp",
-      "publishedAt": "2026-10-21T00:05:04.000Z",
-      "fetchedAt": "2026-10-21T00:31:52.603Z"
+      "title": "5縣市警報響！強颱薔琵逼近「巨浪告警」　高風險區曝光",
+      "url": "https://news.nextapple.com/life/20261022/B1CAF9D08097A5570C5EEE90A7334FDB",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/B1CAF9D08097A5570C5EEE90A7334FDB/16f2b75fb138cb9b318d0bde66e81c0f_1280.webp",
+      "publishedAt": "2026-10-22T00:08:06.000Z",
+      "fetchedAt": "2026-10-22T00:35:37.034Z"
     },
     {
-      "id": "941ba767713e2ab3",
+      "id": "200224f888e3e23e",
       "source": "壹蘋",
       "category": "社會",
-      "title": "國3新化段驚悚車禍！BMW休旅車猛撞大貨車！　「車頂消失」兩人當場喪命",
-      "url": "https://news.nextapple.com/local/20261021/507023EE107A9D9CB8B570C13DBE268C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/507023EE107A9D9CB8B570C13DBE268C/94e5a7ec863178075ab7e5ea63f8478f_1280.webp",
-      "publishedAt": "2026-10-21T00:22:51.000Z",
-      "fetchedAt": "2026-10-21T00:31:52.603Z"
+      "title": "林杏兒諷阿嬤下跪沈伯洋「高薪臨演」　社子島自救會今提告",
+      "url": "https://news.nextapple.com/local/20261022/5878036FA5DB119F3A2030C623EEE2B7",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/5878036FA5DB119F3A2030C623EEE2B7/c967619a1ef61590d0686836a8a75a15_1280.webp",
+      "publishedAt": "2026-10-21T22:54:00.000Z",
+      "fetchedAt": "2026-10-22T00:35:37.034Z"
     },
     {
-      "id": "7a6d6b701f4bca08",
+      "id": "99dfc41d0d1e07e0",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "五月天冠佑正妹女兒20歲了！拒老爸喊「寶貝」　他急改口神回笑翻",
-      "url": "https://news.nextapple.com/entertainment/20261021/A5DC124F0060B930477AF014F41F86B5",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/A5DC124F0060B930477AF014F41F86B5/c094348d6b8bbdd08534b950ad4fc0d6_1280.webp",
-      "publishedAt": "2026-10-21T00:28:31.000Z",
-      "fetchedAt": "2026-10-21T00:31:52.603Z"
+      "title": "霜降吹不熄賺錢熱情　這群人年底前荷包滿到笑出來",
+      "url": "https://news.nextapple.com/entertainment/20261022/F7208399652293F8644A7EF3F89C0301",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/F7208399652293F8644A7EF3F89C0301/bd987809901f6baf20f21de27aeec1a0_1280.webp",
+      "publishedAt": "2026-10-21T16:04:00.000Z",
+      "fetchedAt": "2026-10-22T00:35:37.034Z"
     },
     {
-      "id": "ffe1d19447385ac0",
+      "id": "d0d5895434e3ac75",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "免解凍免顧火一鍵開煮　新萬用鍋還能做優格果醬",
-      "url": "https://news.nextapple.com/aitech/20261021/5D81ED11E1494B14E6E9E3FBD089D539",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/5D81ED11E1494B14E6E9E3FBD089D539/382757427ba8f38dd333ed705ffef7f0_1280.webp",
-      "publishedAt": "2026-10-20T16:05:00.000Z",
-      "fetchedAt": "2026-10-21T00:31:52.603Z"
+      "title": "OPPO新旗艦搭三顆2億畫素鏡頭　10元預約享容量免費升級",
+      "url": "https://news.nextapple.com/aitech/20261022/B7D132198C3B6D2B1D6DED118E39ADC4",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/B7D132198C3B6D2B1D6DED118E39ADC4/0bc7ed563d17db10cbb3a68ab3e62bc2_1280.webp",
+      "publishedAt": "2026-10-22T00:02:41.000Z",
+      "fetchedAt": "2026-10-22T00:35:37.034Z"
     },
     {
-      "id": "0ad77041f1da4003",
+      "id": "79cda1cf8adbb790",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "美股大洗牌！資金撤離AI類股　費半跌、台積電ADR逆勢上揚",
-      "url": "https://news.nextapple.com/finance/20261021/DD56A601D7F374245B1683960A2DAA01",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/DD56A601D7F374245B1683960A2DAA01/d7e7d6bb900e357fc7364d92b54b7b91_1280.webp",
-      "publishedAt": "2026-10-20T23:27:52.000Z",
-      "fetchedAt": "2026-10-21T00:31:52.603Z"
+      "title": "台灣之光報喜！半導體反攻美股翻紅　台積電ADR漲1.6%",
+      "url": "https://news.nextapple.com/finance/20261022/365F54AE43B67C347C82C8A8DE647862",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/365F54AE43B67C347C82C8A8DE647862/0eb3a4569034e21c2cd851fc5bd6fcd3_1280.webp",
+      "publishedAt": "2026-10-21T23:18:43.000Z",
+      "fetchedAt": "2026-10-22T00:35:37.034Z"
     },
     {
-      "id": "e857a134ca605bb1",
+      "id": "a67d1a607ee1b54f",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "魏平政嘲蔣萬安民調「輸比我還多」　網笑：被選輸鄉長的臭",
-      "url": "https://news.nextapple.com/politics/20261021/A01AC653E325C03328E38F045E909F51",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/A01AC653E325C03328E38F045E909F51/d186a766e34a9b8ab88c4450a8bc8827_1280.webp",
-      "publishedAt": "2026-10-20T23:41:23.000Z",
-      "fetchedAt": "2026-10-21T00:31:52.603Z"
+      "title": "傅崐萁慷慨激昂...相聲演員反問「You do啥咪？」：快把跨境鎮壓法生出來",
+      "url": "https://news.nextapple.com/politics/20261022/8F928ABA6BD628A9B038C2D23EF70855",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/8F928ABA6BD628A9B038C2D23EF70855/c8a065d042dcc5ceed9a99f3997f9d63_1280.webp",
+      "publishedAt": "2026-10-21T23:57:00.000Z",
+      "fetchedAt": "2026-10-22T00:35:37.034Z"
     },
     {
-      "id": "57e63dd1db730d63",
+      "id": "08eec8af9d481352",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "中信兄弟怎麼了？台灣大賽3戰只得1分　寫2大糗紀錄",
-      "url": "https://news.nextapple.com/sports/20261021/9F5E3B7348EC72D61CFBB6EE45229B5C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/9F5E3B7348EC72D61CFBB6EE45229B5C/a25fab6bc62fe5d35d813c58eeecc4a4_1280.webp",
-      "publishedAt": "2026-10-20T23:38:00.000Z",
-      "fetchedAt": "2026-10-21T00:31:52.603Z"
+      "title": "颱風假？最新風力預測　12縣市今晚達停班課標準",
+      "url": "https://news.nextapple.com/life/20261022/E0B1A3B5B65F0A4676350400CAC08B23",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/E0B1A3B5B65F0A4676350400CAC08B23/372013cddca5fd92ae9df8c393645ba8_1280.webp",
+      "publishedAt": "2026-10-21T23:45:52.000Z",
+      "fetchedAt": "2026-10-22T00:35:37.034Z"
     }
   ]
 }
