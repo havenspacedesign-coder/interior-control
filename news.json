@@ -1,126 +1,126 @@
 {
-  "date": "2026-10-23",
-  "updatedAt": "2026-10-23T00:33:19.848Z",
+  "date": "2026-10-24",
+  "updatedAt": "2026-10-24T00:29:27.245Z",
   "news": [
     {
-      "id": "07d5bd4108446f92",
+      "id": "963578ed46a91369",
       "source": "遠見",
       "category": "國際",
-      "title": "美國期中選舉，民主黨贏定了？不能只靠反川普情緒，分析師警告有六大變數",
-      "url": "https://www.gvm.com.tw/article/133972",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261015/243042.jpg",
-      "publishedAt": "2026-10-22T11:00:00.000Z",
-      "fetchedAt": "2026-10-23T00:33:19.848Z"
+      "title": "日本退稅新制！免稅改「退款制」11/1上路，先付含稅價出境再退稅",
+      "url": "https://www.gvm.com.tw/article/133993",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260511/231034.jpg",
+      "publishedAt": "2026-10-23T08:09:00.000Z",
+      "fetchedAt": "2026-10-24T00:29:27.245Z"
     },
     {
-      "id": "a3a8a2eff90cfb3e",
+      "id": "95dceb943695f759",
       "source": "遠見",
       "category": "AI／科技",
-      "title": "台灣半導體業首場合法罷工！美光勞資戰，台中、桃園兩樣情",
-      "url": "https://www.gvm.com.tw/article/133974",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261022/243619.jpg",
-      "publishedAt": "2026-10-22T11:47:00.000Z",
-      "fetchedAt": "2026-10-23T00:33:19.848Z"
+      "title": "資安風暴》91APP公布調查報告被AI攻擊，還有其他品牌個資外洩？",
+      "url": "https://www.gvm.com.tw/article/134004",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20231129/156680.jpg",
+      "publishedAt": "2026-10-23T11:12:00.000Z",
+      "fetchedAt": "2026-10-24T00:29:27.245Z"
     },
     {
-      "id": "c4be49ad017f0034",
+      "id": "9461e797d16fde16",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "投信業史無前例「四合一」！四大公股投信2028年合併，可望打造資產管理國家隊",
-      "url": "https://www.gvm.com.tw/article/133971",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261022/243593.jpg",
-      "publishedAt": "2026-10-22T11:02:00.000Z",
-      "fetchedAt": "2026-10-23T00:33:19.848Z"
+      "title": "鼎泰豐炒飯漲破300元消費者埋單、星巴克多收15元卻被炎上？餐飲業的定價心理學",
+      "url": "https://www.gvm.com.tw/article/133994",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261015/243059.jpg",
+      "publishedAt": "2026-10-23T08:37:00.000Z",
+      "fetchedAt": "2026-10-24T00:29:27.245Z"
     },
     {
-      "id": "001d1944176faa95",
+      "id": "c16df1789f25f115",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "2026金鐘獎》金鐘61戲劇類完整得獎名單！節目類因颱風延至週日，典禮異動時間、轉播平台、表演節目、主持陣容一次看",
-      "url": "https://www.gvm.com.tw/article/133916",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260910/240714.jpg",
-      "publishedAt": "2026-10-22T12:55:00.000Z",
-      "fetchedAt": "2026-10-23T00:33:19.848Z"
+      "title": "各住各的卻像家人！日本熟齡女性刻意「近居」，如何守護失智的她？",
+      "url": "https://www.gvm.com.tw/article/133925",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20250523/204724.jpg",
+      "publishedAt": "2026-10-23T23:00:00.000Z",
+      "fetchedAt": "2026-10-24T00:29:27.245Z"
     },
     {
-      "id": "df7f76cb59a3f736",
+      "id": "df541a95ad6b16e5",
       "source": "壹蘋",
       "category": "國際",
-      "title": "AI會毀滅人類？黃仁勳開嗆：別拿末日論搏版面",
-      "url": "https://news.nextapple.com/international/20261023/35201DE80CE14B8614ED7F49319BE380",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/35201DE80CE14B8614ED7F49319BE380/fae2fd1a3195cb97effdfebb6e076b79_1280.webp",
-      "publishedAt": "2026-10-23T00:00:59.000Z",
-      "fetchedAt": "2026-10-23T00:33:19.848Z"
+      "title": "惡夢重演！法國示威將再起　巴黎商家「釘木板」全面戒備",
+      "url": "https://news.nextapple.com/international/20261024/CADB497A70ACE05D05D6413C3CCF8765",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/CADB497A70ACE05D05D6413C3CCF8765/96957c56df7651b44154e3b6ace5fe83_1280.webp",
+      "publishedAt": "2026-10-24T00:09:41.000Z",
+      "fetchedAt": "2026-10-24T00:29:27.245Z"
     },
     {
-      "id": "148fee53a0e0685f",
+      "id": "7f0451067e9457cc",
       "source": "壹蘋",
       "category": "生活",
-      "title": "台東急轉彎停班課　業者逆轉勝！請吃100隻烤雞沒了？",
-      "url": "https://news.nextapple.com/life/20261023/CC416B64C4C48A9A6354B498D6C3CA00",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/CC416B64C4C48A9A6354B498D6C3CA00/9f82e772f2facf5bfeb70cc7ad67c284_1280.webp",
-      "publishedAt": "2026-10-23T00:31:53.000Z",
-      "fetchedAt": "2026-10-23T00:33:19.848Z"
+      "title": "薔琵還在轉…新颱風「煙花」已生成！最新路徑曝光",
+      "url": "https://news.nextapple.com/life/20261024/64CAFB3F30F21B889216FE479F1744A2",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/64CAFB3F30F21B889216FE479F1744A2/7d582400914b3fddb9e6d184cc659e14_1280.webp",
+      "publishedAt": "2026-10-24T00:15:05.000Z",
+      "fetchedAt": "2026-10-24T00:29:27.245Z"
     },
     {
-      "id": "ba5bca10a7d59dec",
+      "id": "97a7b62378eba3dd",
       "source": "壹蘋",
       "category": "社會",
-      "title": "這位印尼女看護有一套！賣墮胎藥撈千萬　炫富家鄉買20房！判2年半",
-      "url": "https://news.nextapple.com/local/20261023/BA4A88D465186427CE91781B05918D81",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/BA4A88D465186427CE91781B05918D81/d4a543d62f73f80bdad15372a5696258_1280.webp",
-      "publishedAt": "2026-10-22T16:05:00.000Z",
-      "fetchedAt": "2026-10-23T00:33:19.848Z"
+      "title": "醫學中心神鬼女牙助盜蓋醫師章開收據　向26名病患詐286萬醫療費",
+      "url": "https://news.nextapple.com/local/20261024/67C6DEA3E84CEEEF156438556D741EB2",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/67C6DEA3E84CEEEF156438556D741EB2/c1475511b92cfb0ad077f46a78752cd1_1280.webp",
+      "publishedAt": "2026-10-23T16:01:00.000Z",
+      "fetchedAt": "2026-10-24T00:29:27.245Z"
     },
     {
-      "id": "e556f7cb6f42390d",
+      "id": "461993588a62f346",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "台一線東諺再扛公益舞台劇！自掏腰包補足虧損　張峰奇力挺演出",
-      "url": "https://news.nextapple.com/entertainment/20261023/1A22D592ADDD009B28EE07DB21575157",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/1A22D592ADDD009B28EE07DB21575157/e817f1342cce775b6a2375a65e7316e2_1280.webp",
-      "publishedAt": "2026-10-22T23:00:00.000Z",
-      "fetchedAt": "2026-10-23T00:33:19.848Z"
+      "title": "劉若英用iPhone Duo追《忘了我記得》！網友驚呼螢幕好小：追劇不辛苦？",
+      "url": "https://news.nextapple.com/entertainment/20261024/86E80A09B3C3C64008F4FFF4F492667F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/86E80A09B3C3C64008F4FFF4F492667F/360855f5236c9f51cb14193ad38bf967_1280.webp",
+      "publishedAt": "2026-10-24T00:21:08.000Z",
+      "fetchedAt": "2026-10-24T00:29:27.245Z"
     },
     {
-      "id": "b5f014a8c054f386",
+      "id": "a433472547995201",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "PHP漏洞別亂點更新　資安業者提醒慎防假通知釣魚",
-      "url": "https://news.nextapple.com/aitech/20261022/A77EA635EB47E9D7DA7E8A13E524FC4C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/A77EA635EB47E9D7DA7E8A13E524FC4C/2f700852b94bc30ab8945b070d03d996_1280.webp",
-      "publishedAt": "2026-10-22T07:39:08.000Z",
-      "fetchedAt": "2026-10-23T00:33:19.848Z"
+      "title": "YouTube訂閱分頁搬家　用了近10年的底部按鈕移到上方",
+      "url": "https://news.nextapple.com/aitech/20261023/DE6DE52846AFD93B76D1E5BA75499694",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/DE6DE52846AFD93B76D1E5BA75499694/0a4d4bed874f1a11e40b17c3e2abdd2c_1280.webp",
+      "publishedAt": "2026-10-23T09:57:00.000Z",
+      "fetchedAt": "2026-10-24T00:29:27.245Z"
     },
     {
-      "id": "422b9090a4b32e5d",
+      "id": "e219751c152efe3f",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "費半崩近7%！美半導體類股全倒　台積電ADR重挫",
-      "url": "https://news.nextapple.com/finance/20261023/18CE843F36D8C0070EE2FB28FCFDB028",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/18CE843F36D8C0070EE2FB28FCFDB028/ba17fa5dedacf597ce0ae100c397d4f0_1280.webp",
-      "publishedAt": "2026-10-22T23:32:57.000Z",
-      "fetchedAt": "2026-10-23T00:33:19.848Z"
+      "title": "道瓊大跌652點！美股走弱　台積電ADR逆勢翻紅",
+      "url": "https://news.nextapple.com/finance/20261024/73C4E96B92168FAC1A72C7B6B86F1BDA",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/73C4E96B92168FAC1A72C7B6B86F1BDA/3acc29d88cc6f8df817d5d7b05f21a7a_1280.webp",
+      "publishedAt": "2026-10-23T23:34:30.000Z",
+      "fetchedAt": "2026-10-24T00:29:27.245Z"
     },
     {
-      "id": "52f7450abb69eadf",
+      "id": "430f69ce6ef68161",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "薔琵來襲！新光三越、SOGO、微風今停業　信義區百貨全喊卡",
-      "url": "https://news.nextapple.com/life/20261023/A6A33C022A44E7909C43476255F4B876",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/A6A33C022A44E7909C43476255F4B876/e038a76b205dd0e895105ef725816484_1280.webp",
-      "publishedAt": "2026-10-23T00:06:03.000Z",
-      "fetchedAt": "2026-10-23T00:33:19.848Z"
+      "title": "蔡阿嘎hahababy再爆抄襲　網曝對比圖批「死性不改」",
+      "url": "https://news.nextapple.com/entertainment/20261024/DF3E8378226F477D1FFA8BC45DF3C758",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/DF3E8378226F477D1FFA8BC45DF3C758/a49ded9044636adf38828f2a604156ab_1280.webp",
+      "publishedAt": "2026-10-23T23:59:12.000Z",
+      "fetchedAt": "2026-10-24T00:29:27.245Z"
     },
     {
-      "id": "3220fe6f5832acbf",
+      "id": "b4b172e8736afe20",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "薔琵太大顆「雷達只掃到一半」　這三地風雨最猛烈",
-      "url": "https://news.nextapple.com/life/20261023/5E215E2A81888889FC4B5178BC0E5361",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/5E215E2A81888889FC4B5178BC0E5361/554231f4d4a98d53a271378c6a57640c_1280.webp",
-      "publishedAt": "2026-10-22T23:42:06.000Z",
-      "fetchedAt": "2026-10-23T00:33:19.848Z"
+      "title": "陳智菡爆：僑委會砸千萬「辦徐佳青壽宴」　嗨唱媽媽請妳也保重",
+      "url": "https://news.nextapple.com/politics/20261024/7F65567B711CB5EEEC876474D88AA814",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/7F65567B711CB5EEEC876474D88AA814/b6345eca27fa139952b539af1a46bdf7_1280.webp",
+      "publishedAt": "2026-10-23T23:40:48.000Z",
+      "fetchedAt": "2026-10-24T00:29:27.245Z"
     }
   ]
 }
