@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-24",
-  "updatedAt": "2026-10-24T00:29:27.245Z",
+  "date": "2026-10-25",
+  "updatedAt": "2026-10-25T00:13:27.940Z",
   "news": [
     {
       "id": "963578ed46a91369",
@@ -10,7 +10,7 @@
       "url": "https://www.gvm.com.tw/article/133993",
       "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260511/231034.jpg",
       "publishedAt": "2026-10-23T08:09:00.000Z",
-      "fetchedAt": "2026-10-24T00:29:27.245Z"
+      "fetchedAt": "2026-10-25T00:13:27.940Z"
     },
     {
       "id": "95dceb943695f759",
@@ -20,107 +20,107 @@
       "url": "https://www.gvm.com.tw/article/134004",
       "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20231129/156680.jpg",
       "publishedAt": "2026-10-23T11:12:00.000Z",
-      "fetchedAt": "2026-10-24T00:29:27.245Z"
+      "fetchedAt": "2026-10-25T00:13:27.940Z"
     },
     {
-      "id": "9461e797d16fde16",
+      "id": "347b49dd5b8f5eaa",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "鼎泰豐炒飯漲破300元消費者埋單、星巴克多收15元卻被炎上？餐飲業的定價心理學",
-      "url": "https://www.gvm.com.tw/article/133994",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261015/243059.jpg",
-      "publishedAt": "2026-10-23T08:37:00.000Z",
-      "fetchedAt": "2026-10-24T00:29:27.245Z"
+      "title": "「東方底特律」的轉型考驗！向中國電動車開大門，泰國汽車業付出代價",
+      "url": "https://www.gvm.com.tw/article/133998",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20241020/185249.jpg",
+      "publishedAt": "2026-10-24T08:00:00.000Z",
+      "fetchedAt": "2026-10-25T00:13:27.940Z"
     },
     {
-      "id": "c16df1789f25f115",
+      "id": "af3d54081a1aac80",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "各住各的卻像家人！日本熟齡女性刻意「近居」，如何守護失智的她？",
-      "url": "https://www.gvm.com.tw/article/133925",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20250523/204724.jpg",
-      "publishedAt": "2026-10-23T23:00:00.000Z",
-      "fetchedAt": "2026-10-24T00:29:27.245Z"
+      "title": "連3週只上4天班！國外週休三日不減薪、企業還能賺，台灣為何不敢推？",
+      "url": "https://www.gvm.com.tw/article/133724",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20250623/207149.jpg",
+      "publishedAt": "2026-10-24T23:00:00.000Z",
+      "fetchedAt": "2026-10-25T00:13:27.940Z"
     },
     {
-      "id": "df541a95ad6b16e5",
+      "id": "4c097d35bbdb0f05",
       "source": "壹蘋",
       "category": "國際",
-      "title": "惡夢重演！法國示威將再起　巴黎商家「釘木板」全面戒備",
-      "url": "https://news.nextapple.com/international/20261024/CADB497A70ACE05D05D6413C3CCF8765",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/CADB497A70ACE05D05D6413C3CCF8765/96957c56df7651b44154e3b6ace5fe83_1280.webp",
-      "publishedAt": "2026-10-24T00:09:41.000Z",
-      "fetchedAt": "2026-10-24T00:29:27.245Z"
+      "title": "川普帶老婆提前投票　被問這題秒回「當然是」！",
+      "url": "https://news.nextapple.com/international/20261025/D4913B87799A0BE174D12BFD8511C4FD",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/D4913B87799A0BE174D12BFD8511C4FD/eff76d88e2caa0c411b81ef69d9d86ad_1280.webp",
+      "publishedAt": "2026-10-24T23:38:27.000Z",
+      "fetchedAt": "2026-10-25T00:13:27.940Z"
     },
     {
-      "id": "7f0451067e9457cc",
+      "id": "5a11bf542cb4fe4e",
       "source": "壹蘋",
       "category": "生活",
-      "title": "薔琵還在轉…新颱風「煙花」已生成！最新路徑曝光",
-      "url": "https://news.nextapple.com/life/20261024/64CAFB3F30F21B889216FE479F1744A2",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/64CAFB3F30F21B889216FE479F1744A2/7d582400914b3fddb9e6d184cc659e14_1280.webp",
-      "publishedAt": "2026-10-24T00:15:05.000Z",
-      "fetchedAt": "2026-10-24T00:29:27.245Z"
+      "title": "「煙花」巔峰可飆強颱！大迴轉路徑曝光　專家揭侵台機率",
+      "url": "https://news.nextapple.com/life/20261025/D594610D5D809EB92749E1EE3BB327F9",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/D594610D5D809EB92749E1EE3BB327F9/1e24b04d2c10c066e50b792fa5d1a83d_1280.webp",
+      "publishedAt": "2026-10-24T23:50:32.000Z",
+      "fetchedAt": "2026-10-25T00:13:27.940Z"
     },
     {
-      "id": "97a7b62378eba3dd",
+      "id": "b0d1cdbc664f5c9c",
       "source": "壹蘋",
       "category": "社會",
-      "title": "醫學中心神鬼女牙助盜蓋醫師章開收據　向26名病患詐286萬醫療費",
-      "url": "https://news.nextapple.com/local/20261024/67C6DEA3E84CEEEF156438556D741EB2",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/67C6DEA3E84CEEEF156438556D741EB2/c1475511b92cfb0ad077f46a78752cd1_1280.webp",
-      "publishedAt": "2026-10-23T16:01:00.000Z",
-      "fetchedAt": "2026-10-24T00:29:27.245Z"
+      "title": "竹市東區透天厝大火　警消急動員救出11受困民眾",
+      "url": "https://news.nextapple.com/local/20261025/36DBA74AB4E2BA5BDB7E8733E49C3144",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/36DBA74AB4E2BA5BDB7E8733E49C3144/edea38e122866d6b09f4965c772fef11_1280.webp",
+      "publishedAt": "2026-10-24T20:05:36.000Z",
+      "fetchedAt": "2026-10-25T00:13:27.940Z"
     },
     {
-      "id": "461993588a62f346",
+      "id": "490aeb35689ddd86",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "劉若英用iPhone Duo追《忘了我記得》！網友驚呼螢幕好小：追劇不辛苦？",
-      "url": "https://news.nextapple.com/entertainment/20261024/86E80A09B3C3C64008F4FFF4F492667F",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/86E80A09B3C3C64008F4FFF4F492667F/360855f5236c9f51cb14193ad38bf967_1280.webp",
-      "publishedAt": "2026-10-24T00:21:08.000Z",
-      "fetchedAt": "2026-10-24T00:29:27.245Z"
+      "title": "銀河紅月年淪淘汰年！命理師揭秘：只有「2族群」能暴賺",
+      "url": "https://news.nextapple.com/entertainment/20261025/DB1D1767B17390B5843F0C7877EB872A",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/DB1D1767B17390B5843F0C7877EB872A/be3f27996736af5d0a5a0877c8ba2c73_1280.webp",
+      "publishedAt": "2026-10-24T16:03:00.000Z",
+      "fetchedAt": "2026-10-25T00:13:27.940Z"
     },
     {
-      "id": "a433472547995201",
+      "id": "55c028ded015061b",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "YouTube訂閱分頁搬家　用了近10年的底部按鈕移到上方",
-      "url": "https://news.nextapple.com/aitech/20261023/DE6DE52846AFD93B76D1E5BA75499694",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/DE6DE52846AFD93B76D1E5BA75499694/0a4d4bed874f1a11e40b17c3e2abdd2c_1280.webp",
-      "publishedAt": "2026-10-23T09:57:00.000Z",
-      "fetchedAt": "2026-10-24T00:29:27.245Z"
+      "title": "iPhone Duo才開賣就傳二代升級　蘋果測試螢幕下Face ID",
+      "url": "https://news.nextapple.com/aitech/20261025/EC0F8A453C25812FFF0D74E0AB549973",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/EC0F8A453C25812FFF0D74E0AB549973/ffe7ee235bf802dbeef875f62ef221d6_1280.webp",
+      "publishedAt": "2026-10-24T16:05:00.000Z",
+      "fetchedAt": "2026-10-25T00:13:27.940Z"
     },
     {
-      "id": "e219751c152efe3f",
+      "id": "121e274df2da5b31",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "道瓊大跌652點！美股走弱　台積電ADR逆勢翻紅",
-      "url": "https://news.nextapple.com/finance/20261024/73C4E96B92168FAC1A72C7B6B86F1BDA",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/73C4E96B92168FAC1A72C7B6B86F1BDA/3acc29d88cc6f8df817d5d7b05f21a7a_1280.webp",
-      "publishedAt": "2026-10-23T23:34:30.000Z",
-      "fetchedAt": "2026-10-24T00:29:27.245Z"
+      "title": "下週油價凍漲　95無鉛每公升32.7元、柴油29.9元",
+      "url": "https://news.nextapple.com/finance/20261024/6334A37C451E38BFD9B1EE8CB097879C",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/6334A37C451E38BFD9B1EE8CB097879C/ef53135e136a7edb7f2bcb1165251fb2_1280.webp",
+      "publishedAt": "2026-10-24T09:23:58.000Z",
+      "fetchedAt": "2026-10-25T00:13:27.940Z"
     },
     {
-      "id": "430f69ce6ef68161",
+      "id": "4bc9a96715e84ee0",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "蔡阿嘎hahababy再爆抄襲　網曝對比圖批「死性不改」",
-      "url": "https://news.nextapple.com/entertainment/20261024/DF3E8378226F477D1FFA8BC45DF3C758",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/DF3E8378226F477D1FFA8BC45DF3C758/a49ded9044636adf38828f2a604156ab_1280.webp",
-      "publishedAt": "2026-10-23T23:59:12.000Z",
-      "fetchedAt": "2026-10-24T00:29:27.245Z"
+      "title": "徐佳青「生日趴」掀波！僑務委員發文怒駁「回台吃香喝辣」：47名委員捐回補助",
+      "url": "https://news.nextapple.com/politics/20261025/6FA806E97D54487692276D9D95B2C15E",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/6FA806E97D54487692276D9D95B2C15E/48100ca3c06a9aa37e2a3b2f4e250ed3_1280.webp",
+      "publishedAt": "2026-10-25T00:00:09.000Z",
+      "fetchedAt": "2026-10-25T00:13:27.940Z"
     },
     {
-      "id": "b4b172e8736afe20",
+      "id": "fe72b56de571fda8",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "陳智菡爆：僑委會砸千萬「辦徐佳青壽宴」　嗨唱媽媽請妳也保重",
-      "url": "https://news.nextapple.com/politics/20261024/7F65567B711CB5EEEC876474D88AA814",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/7F65567B711CB5EEEC876474D88AA814/b6345eca27fa139952b539af1a46bdf7_1280.webp",
-      "publishedAt": "2026-10-23T23:40:48.000Z",
-      "fetchedAt": "2026-10-24T00:29:27.245Z"
+      "title": "「警察一直打過來...」法國41萬人抗議！千人被捕羅浮宮急關閉",
+      "url": "https://news.nextapple.com/international/20261025/39EC933DBA1BC84FCF1E9B5A21CF4442",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/39EC933DBA1BC84FCF1E9B5A21CF4442/7c2f02135886d815c77b10cbe6d2795f_1280.webp",
+      "publishedAt": "2026-10-24T22:46:41.000Z",
+      "fetchedAt": "2026-10-25T00:13:27.940Z"
     }
   ]
 }
