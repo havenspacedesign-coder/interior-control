@@ -1,86 +1,86 @@
 {
-  "date": "2026-10-25",
-  "updatedAt": "2026-10-25T00:13:27.940Z",
+  "date": "2026-10-26",
+  "updatedAt": "2026-10-26T00:07:06.606Z",
   "news": [
     {
-      "id": "963578ed46a91369",
-      "source": "遠見",
-      "category": "國際",
-      "title": "日本退稅新制！免稅改「退款制」11/1上路，先付含稅價出境再退稅",
-      "url": "https://www.gvm.com.tw/article/133993",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260511/231034.jpg",
-      "publishedAt": "2026-10-23T08:09:00.000Z",
-      "fetchedAt": "2026-10-25T00:13:27.940Z"
-    },
-    {
-      "id": "95dceb943695f759",
-      "source": "遠見",
-      "category": "AI／科技",
-      "title": "資安風暴》91APP公布調查報告被AI攻擊，還有其他品牌個資外洩？",
-      "url": "https://www.gvm.com.tw/article/134004",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20231129/156680.jpg",
-      "publishedAt": "2026-10-23T11:12:00.000Z",
-      "fetchedAt": "2026-10-25T00:13:27.940Z"
-    },
-    {
-      "id": "347b49dd5b8f5eaa",
-      "source": "遠見",
-      "category": "金融／產經",
-      "title": "「東方底特律」的轉型考驗！向中國電動車開大門，泰國汽車業付出代價",
-      "url": "https://www.gvm.com.tw/article/133998",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20241020/185249.jpg",
-      "publishedAt": "2026-10-24T08:00:00.000Z",
-      "fetchedAt": "2026-10-25T00:13:27.940Z"
-    },
-    {
-      "id": "af3d54081a1aac80",
+      "id": "7d4eecc7f598d232",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "連3週只上4天班！國外週休三日不減薪、企業還能賺，台灣為何不敢推？",
-      "url": "https://www.gvm.com.tw/article/133724",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20250623/207149.jpg",
-      "publishedAt": "2026-10-24T23:00:00.000Z",
-      "fetchedAt": "2026-10-25T00:13:27.940Z"
+      "title": "賈永婕外套「脫太冷穿太熱」曝更年期心聲！中醫教3招滋陰調養",
+      "url": "https://www.gvm.com.tw/article/134002",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261019/243281.jpg",
+      "publishedAt": "2026-10-25T23:20:00.000Z",
+      "fetchedAt": "2026-10-26T00:07:06.606Z"
     },
     {
-      "id": "4c097d35bbdb0f05",
+      "id": "b205b883e4f2c9e9",
+      "source": "遠見",
+      "category": "AI／科技",
+      "title": "不為AI而AI！中醫大附醫從臨床痛點出發，把科技變成真正的醫療價值",
+      "url": "https://www.gvm.com.tw/article/133903",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261020/243442.jpg",
+      "publishedAt": "2026-10-25T16:00:00.000Z",
+      "fetchedAt": "2026-10-26T00:07:06.606Z"
+    },
+    {
+      "id": "9e34fe9182bdd826",
+      "source": "遠見",
+      "category": "金融／產經",
+      "title": "房市買氣回溫，房貸利率卻逼3％？理財專家解析：現在買房跟租屋哪個划算",
+      "url": "https://www.gvm.com.tw/article/134011",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261025/243714.jpg",
+      "publishedAt": "2026-10-25T13:00:00.000Z",
+      "fetchedAt": "2026-10-26T00:07:06.606Z"
+    },
+    {
+      "id": "5db7c7a6014465af",
+      "source": "遠見",
+      "category": "好享生活／教育／話題",
+      "title": "體重沒變也別氣餒！沒變瘦還是有用，研究：持續8週運動全身器官出現變化",
+      "url": "https://www.gvm.com.tw/article/134001",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260602/233076.jpg",
+      "publishedAt": "2026-10-25T23:00:00.000Z",
+      "fetchedAt": "2026-10-26T00:07:06.606Z"
+    },
+    {
+      "id": "09402f45495acb16",
       "source": "壹蘋",
       "category": "國際",
-      "title": "川普帶老婆提前投票　被問這題秒回「當然是」！",
-      "url": "https://news.nextapple.com/international/20261025/D4913B87799A0BE174D12BFD8511C4FD",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/D4913B87799A0BE174D12BFD8511C4FD/eff76d88e2caa0c411b81ef69d9d86ad_1280.webp",
-      "publishedAt": "2026-10-24T23:38:27.000Z",
-      "fetchedAt": "2026-10-25T00:13:27.940Z"
+      "title": "壹蘋派生活美語　芬蘭的深偽防衛戰",
+      "url": "https://news.nextapple.com/international/20261026/B6C4E1F48E07A6C6396E251BC0BD8291",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/B6C4E1F48E07A6C6396E251BC0BD8291/7eacb13fea10f458e95da2bb924e3810_1280.webp",
+      "publishedAt": "2026-10-26T00:00:00.000Z",
+      "fetchedAt": "2026-10-26T00:07:06.606Z"
     },
     {
-      "id": "5a11bf542cb4fe4e",
+      "id": "4ce7993a720f3b0e",
       "source": "壹蘋",
       "category": "生活",
-      "title": "「煙花」巔峰可飆強颱！大迴轉路徑曝光　專家揭侵台機率",
-      "url": "https://news.nextapple.com/life/20261025/D594610D5D809EB92749E1EE3BB327F9",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/D594610D5D809EB92749E1EE3BB327F9/1e24b04d2c10c066e50b792fa5d1a83d_1280.webp",
-      "publishedAt": "2026-10-24T23:50:32.000Z",
-      "fetchedAt": "2026-10-25T00:13:27.940Z"
+      "title": "10年內不再去沖繩　一票台灣人點頭！原因哭笑不得",
+      "url": "https://news.nextapple.com/life/20261026/1C1A14A7D8D6FE7112E28B5EE6CB7B6F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/1C1A14A7D8D6FE7112E28B5EE6CB7B6F/218f05ae9de048284b982d7c643f3bdf_1280.webp",
+      "publishedAt": "2026-10-25T23:30:00.000Z",
+      "fetchedAt": "2026-10-26T00:07:06.606Z"
     },
     {
-      "id": "b0d1cdbc664f5c9c",
+      "id": "7c6ab08ba3d4d68a",
       "source": "壹蘋",
       "category": "社會",
-      "title": "竹市東區透天厝大火　警消急動員救出11受困民眾",
-      "url": "https://news.nextapple.com/local/20261025/36DBA74AB4E2BA5BDB7E8733E49C3144",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/36DBA74AB4E2BA5BDB7E8733E49C3144/edea38e122866d6b09f4965c772fef11_1280.webp",
-      "publishedAt": "2026-10-24T20:05:36.000Z",
-      "fetchedAt": "2026-10-25T00:13:27.940Z"
+      "title": "苗栗男砍死郵局司機！原因全說了　「有反覆殺人可能」延押2月",
+      "url": "https://news.nextapple.com/local/20261026/F1D321EF61287910B124B8CBD78138C0",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/F1D321EF61287910B124B8CBD78138C0/871476bdff1e123dd3509f72a812e219_1280.webp",
+      "publishedAt": "2026-10-25T16:01:00.000Z",
+      "fetchedAt": "2026-10-26T00:07:06.606Z"
     },
     {
-      "id": "490aeb35689ddd86",
+      "id": "fb69b1d9609f0c96",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "銀河紅月年淪淘汰年！命理師揭秘：只有「2族群」能暴賺",
-      "url": "https://news.nextapple.com/entertainment/20261025/DB1D1767B17390B5843F0C7877EB872A",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/DB1D1767B17390B5843F0C7877EB872A/be3f27996736af5d0a5a0877c8ba2c73_1280.webp",
-      "publishedAt": "2026-10-24T16:03:00.000Z",
-      "fetchedAt": "2026-10-25T00:13:27.940Z"
+      "title": "蔡康永喊「沒支持台獨」　Cheap酸《說話之道》變求生之道",
+      "url": "https://news.nextapple.com/entertainment/20261026/3944F444E9335C4CCA9F3E761ADA960B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/3944F444E9335C4CCA9F3E761ADA960B/278cfdbd916e7a461e64142f894f9124_1280.webp",
+      "publishedAt": "2026-10-26T00:00:38.000Z",
+      "fetchedAt": "2026-10-26T00:07:06.606Z"
     },
     {
       "id": "55c028ded015061b",
@@ -90,37 +90,37 @@
       "url": "https://news.nextapple.com/aitech/20261025/EC0F8A453C25812FFF0D74E0AB549973",
       "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/EC0F8A453C25812FFF0D74E0AB549973/ffe7ee235bf802dbeef875f62ef221d6_1280.webp",
       "publishedAt": "2026-10-24T16:05:00.000Z",
-      "fetchedAt": "2026-10-25T00:13:27.940Z"
+      "fetchedAt": "2026-10-26T00:07:06.606Z"
     },
     {
-      "id": "121e274df2da5b31",
+      "id": "ef3327ea5b8fa2bc",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "下週油價凍漲　95無鉛每公升32.7元、柴油29.9元",
-      "url": "https://news.nextapple.com/finance/20261024/6334A37C451E38BFD9B1EE8CB097879C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/6334A37C451E38BFD9B1EE8CB097879C/ef53135e136a7edb7f2bcb1165251fb2_1280.webp",
-      "publishedAt": "2026-10-24T09:23:58.000Z",
-      "fetchedAt": "2026-10-25T00:13:27.940Z"
+      "title": "台股上週重挫逾千點！外資狂賣2357億　投顧籲降槓桿待市場明朗",
+      "url": "https://news.nextapple.com/finance/20261026/5BB41BCEE1FD3EF414DC1C1F54460C3E",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/5BB41BCEE1FD3EF414DC1C1F54460C3E/ca055861cef6ff438ead5391496c3be1_1280.webp",
+      "publishedAt": "2026-10-25T17:00:00.000Z",
+      "fetchedAt": "2026-10-26T00:07:06.606Z"
     },
     {
-      "id": "4bc9a96715e84ee0",
+      "id": "f2e02760bd18712d",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "徐佳青「生日趴」掀波！僑務委員發文怒駁「回台吃香喝辣」：47名委員捐回補助",
-      "url": "https://news.nextapple.com/politics/20261025/6FA806E97D54487692276D9D95B2C15E",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/6FA806E97D54487692276D9D95B2C15E/48100ca3c06a9aa37e2a3b2f4e250ed3_1280.webp",
-      "publishedAt": "2026-10-25T00:00:09.000Z",
-      "fetchedAt": "2026-10-25T00:13:27.940Z"
+      "title": "跌倒了？80歲川普臉上突現神祕瘀青！貼文耐人尋味",
+      "url": "https://news.nextapple.com/international/20261026/E361270B40665AAE9B9639D31E75FF06",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/E361270B40665AAE9B9639D31E75FF06/af535afa8742597d2a3e306e93a8d7f6_1280.webp",
+      "publishedAt": "2026-10-25T23:21:11.000Z",
+      "fetchedAt": "2026-10-26T00:07:06.606Z"
     },
     {
-      "id": "fe72b56de571fda8",
+      "id": "c129ef6a534d36b0",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "「警察一直打過來...」法國41萬人抗議！千人被捕羅浮宮急關閉",
-      "url": "https://news.nextapple.com/international/20261025/39EC933DBA1BC84FCF1E9B5A21CF4442",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/39EC933DBA1BC84FCF1E9B5A21CF4442/7c2f02135886d815c77b10cbe6d2795f_1280.webp",
-      "publishedAt": "2026-10-24T22:46:41.000Z",
-      "fetchedAt": "2026-10-25T00:13:27.940Z"
+      "title": "蔡康永表態否認台獨！沈玉琳發聲了「蠻符合他的立場」",
+      "url": "https://news.nextapple.com/entertainment/20261026/DEDDFB6E4107497D2294EF9BD272E620",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/DEDDFB6E4107497D2294EF9BD272E620/998933a54cf6e6757e582132399d6faf_1280.webp",
+      "publishedAt": "2026-10-25T23:01:00.000Z",
+      "fetchedAt": "2026-10-26T00:07:06.606Z"
     }
   ]
 }
