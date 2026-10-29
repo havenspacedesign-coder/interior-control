@@ -1,126 +1,126 @@
 {
-  "date": "2026-10-28",
-  "updatedAt": "2026-10-28T01:09:55.123Z",
+  "date": "2026-10-29",
+  "updatedAt": "2026-10-29T01:43:00.236Z",
   "news": [
     {
-      "id": "cc802027d55cb004",
+      "id": "303748e23b9c0b3a",
       "source": "遠見",
       "category": "國際",
-      "title": "期中大選前，Fed利率按兵不動？100位經濟學家預期這個月才升",
-      "url": "https://www.gvm.com.tw/article/134061",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261027/243843.jpg",
-      "publishedAt": "2026-10-27T08:03:00.000Z",
-      "fetchedAt": "2026-10-28T01:09:55.123Z"
+      "title": "西班牙重大事故！兩列火車追撞致車廂出軌，至少10死",
+      "url": "https://www.gvm.com.tw/article/134119",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261028/244023.jpg",
+      "publishedAt": "2026-10-28T10:26:00.000Z",
+      "fetchedAt": "2026-10-29T01:43:00.236Z"
     },
     {
-      "id": "42f9c01c02ddafb7",
+      "id": "2eb53b0a6f2a5cbf",
       "source": "遠見",
       "category": "AI／科技",
-      "title": "AI股回檔別怕？前Intel執行長：小地震是好事，大地震才是壞事",
-      "url": "https://www.gvm.com.tw/article/134064",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261027/243828.jpg",
-      "publishedAt": "2026-10-27T08:18:00.000Z",
-      "fetchedAt": "2026-10-28T01:09:55.123Z"
+      "title": "矽光子是穩懋下個引擎？漲停排隊逾4千張、獲利創六年新高",
+      "url": "https://www.gvm.com.tw/article/134109",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261028/243995.jpg",
+      "publishedAt": "2026-10-28T09:34:00.000Z",
+      "fetchedAt": "2026-10-29T01:43:00.236Z"
     },
     {
-      "id": "3b76e43a7e7d8736",
+      "id": "969e5eb5b29f6975",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "投書／國際能源轉型、儲能瓶頸與前沿電力科技的終極出路",
-      "url": "https://www.gvm.com.tw/article/134063",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20251029/217441.jpg",
-      "publishedAt": "2026-10-27T08:13:00.000Z",
-      "fetchedAt": "2026-10-28T01:09:55.123Z"
+      "title": "「這世代」健康習慣最差！南山人壽：台灣人長照金缺口達345萬元",
+      "url": "https://www.gvm.com.tw/article/134120",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261028/244022.jpg",
+      "publishedAt": "2026-10-28T10:47:00.000Z",
+      "fetchedAt": "2026-10-29T01:43:00.236Z"
     },
     {
-      "id": "6a02ccf0a0a5ffc3",
+      "id": "4010f9c4c1b38c20",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "LG將智慧科技藏於空間，將價值留給時間",
-      "url": "https://www.gvm.com.tw/article/133942",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261022/243546.jpg",
-      "publishedAt": "2026-10-27T16:00:00.000Z",
-      "fetchedAt": "2026-10-28T01:09:55.123Z"
+      "title": "壽司郎「引爆語」看板爆紅！13句惹怒客人的話，職場其他行業適用？",
+      "url": "https://www.gvm.com.tw/article/134117",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261028/244021.jpg",
+      "publishedAt": "2026-10-28T10:15:00.000Z",
+      "fetchedAt": "2026-10-29T01:43:00.236Z"
     },
     {
-      "id": "63f5e74a7f7f06f6",
+      "id": "c49a6b7ceed84b2d",
       "source": "壹蘋",
       "category": "國際",
-      "title": "尼坦雅胡拉警報！以色列大選出口民調揭曉　反對派居上風",
-      "url": "https://news.nextapple.com/international/20261028/8F856305950C43181A1770A3F90312CB",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/8F856305950C43181A1770A3F90312CB/71c41d156648c77b92e7209a949eef86_1280.webp",
-      "publishedAt": "2026-10-28T00:14:18.000Z",
-      "fetchedAt": "2026-10-28T01:09:55.123Z"
+      "title": "巴基斯坦禁台灣班機惹議　世仇開酸：不會因一中政策就禁",
+      "url": "https://news.nextapple.com/international/20261029/8476149A6C0B0DB15895B75A1F709795",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/8476149A6C0B0DB15895B75A1F709795/c91b994451590b0cf11a27cc12352a19_1280.webp",
+      "publishedAt": "2026-10-29T01:00:22.000Z",
+      "fetchedAt": "2026-10-29T01:43:00.236Z"
     },
     {
-      "id": "3715d3e6bbad48cc",
+      "id": "a301be37673011fa",
       "source": "壹蘋",
       "category": "生活",
-      "title": "今晨下探17.8℃　下波濕冷這天又來！煙花恐轉強颱",
-      "url": "https://news.nextapple.com/life/20261028/204CD9C7A84D7C23D236263EC3281171",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/204CD9C7A84D7C23D236263EC3281171/e8e4f3295c2aed26f11cf6a0f94fcd81_1280.webp",
-      "publishedAt": "2026-10-27T22:45:18.000Z",
-      "fetchedAt": "2026-10-28T01:09:55.123Z"
+      "title": "同志大遊行將登場！北市府再為萬華分局搜酒吧道歉　調查進度曝",
+      "url": "https://news.nextapple.com/life/20261029/28C0F8E2767F19616466C11BAC4298E3",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/28C0F8E2767F19616466C11BAC4298E3/e5e4bf8c80131554a053449f868769f5_1280.webp",
+      "publishedAt": "2026-10-29T01:11:16.000Z",
+      "fetchedAt": "2026-10-29T01:43:00.236Z"
     },
     {
-      "id": "370a9a5d4fc8ec14",
+      "id": "41d4000128faee19",
       "source": "壹蘋",
       "category": "社會",
-      "title": "檳榔攤聚眾鬥毆釀1死！新竹檢警拘提14人到案　主嫌聲押",
-      "url": "https://news.nextapple.com/local/20261028/774972A57E090064DCB0C33E15ED61BF",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/774972A57E090064DCB0C33E15ED61BF/a64b833617f3737f31c5847283c3f314_1280.webp",
-      "publishedAt": "2026-10-27T16:07:46.000Z",
-      "fetchedAt": "2026-10-28T01:09:55.123Z"
+      "title": "免費磨菜刀涉賄選「價值曝光」　新北議員廖宜琨遭聲押",
+      "url": "https://news.nextapple.com/local/20261029/648457C2718DE1DC6101B1E196E2B676",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/648457C2718DE1DC6101B1E196E2B676/8cef05c4ce88f3af82c0f8fce8511b15_1280.webp",
+      "publishedAt": "2026-10-29T01:37:35.000Z",
+      "fetchedAt": "2026-10-29T01:43:00.236Z"
     },
     {
-      "id": "0e602553ec2eef43",
+      "id": "9c5d70cda9dff8cf",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "BIGBANG前成員勝利結婚了！明年1月當爸抱兒子",
-      "url": "https://news.nextapple.com/entertainment/20261028/72FDD3E51E6A4AC8B693E1A5EC74C540",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/72FDD3E51E6A4AC8B693E1A5EC74C540/8c53b8dc1a5cabac28df001cf9fff7de_1280.webp",
-      "publishedAt": "2026-10-28T00:55:03.000Z",
-      "fetchedAt": "2026-10-28T01:09:55.123Z"
+      "title": "Toyz傳假釋回香港　篠崎泫發文了",
+      "url": "https://news.nextapple.com/entertainment/20261029/B4D6201E6E85B07A9B62E4F2F8D595FD",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/B4D6201E6E85B07A9B62E4F2F8D595FD/9da43c26292020cd99ef956965b93355_1280.webp",
+      "publishedAt": "2026-10-28T23:35:56.000Z",
+      "fetchedAt": "2026-10-29T01:43:00.236Z"
     },
     {
-      "id": "d74440c792c8502a",
+      "id": "ed9c158612d849ac",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "M6版MacBook Pro突發　14吋新機11月6日開賣",
-      "url": "https://news.nextapple.com/aitech/20261028/F45E506F45761D2F80ED3A4A5A34FB61",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/F45E506F45761D2F80ED3A4A5A34FB61/ba970d424fd866aa37409e13e9c8aa94_1280.webp",
-      "publishedAt": "2026-10-27T16:05:00.000Z",
-      "fetchedAt": "2026-10-28T01:09:55.123Z"
+      "title": "MacBook Neo再漲　蘋果平價筆電4個月調漲兩次",
+      "url": "https://news.nextapple.com/aitech/20261029/A8139E7488840DF6819A5CE21EA01A92",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/A8139E7488840DF6819A5CE21EA01A92/8bdc45a00ae81d5270432f0a5130f3cd_1280.webp",
+      "publishedAt": "2026-10-29T00:33:53.000Z",
+      "fetchedAt": "2026-10-29T01:43:00.236Z"
     },
     {
-      "id": "32aab6728794a4ce",
+      "id": "5b1375d26305f03d",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "汎銓攜國研院搶先進製程商機　導入類FAB技術跨足量產前驗證",
-      "url": "https://news.nextapple.com/finance/20261028/2E5D032BEB332565F84A4CE796AC06B3",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/2E5D032BEB332565F84A4CE796AC06B3/fe5a0d38b4e5c498b9db5493c941f253_1280.webp",
-      "publishedAt": "2026-10-28T00:59:10.000Z",
-      "fetchedAt": "2026-10-28T01:09:55.123Z"
+      "title": "聯電法說會後重挫近9%！砸千億擴產難擋賣壓　未來3年毛利率承壓",
+      "url": "https://news.nextapple.com/finance/20261029/0A85391881E467D3C477CFD66AED8F69",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/0A85391881E467D3C477CFD66AED8F69/50ffe901ef6d25bc5b57f730829e964a_1280.webp",
+      "publishedAt": "2026-10-29T01:38:28.000Z",
+      "fetchedAt": "2026-10-29T01:43:00.236Z"
     },
     {
-      "id": "18631e414ed2df4f",
+      "id": "bf56abafef6ff143",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "32年前衝上台找陳水扁！「小男孩沈伯洋」問1句全場大笑",
-      "url": "https://news.nextapple.com/politics/20261028/4DBA2A1D8CC46544255393B19CA72757",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/4DBA2A1D8CC46544255393B19CA72757/38bc6a12972d9f9a1faf4b037fd3da5d_1280.webp",
-      "publishedAt": "2026-10-28T00:40:39.000Z",
-      "fetchedAt": "2026-10-28T01:09:55.123Z"
+      "title": "「萬安除三害」舉槍海報遭罵爆　蔣萬安競辦報警",
+      "url": "https://news.nextapple.com/politics/20261029/5DAB12772EC49FA13740588E577512FB",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/5DAB12772EC49FA13740588E577512FB/1f46ae3f395c4f93fa29e1045bcce1d2_1280.webp",
+      "publishedAt": "2026-10-29T01:27:00.000Z",
+      "fetchedAt": "2026-10-29T01:43:00.236Z"
     },
     {
-      "id": "3979fb05c9675aea",
+      "id": "f7738d8110713d6f",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "周子瑜被疑交男友　媽媽親揭兩人關係「我也認識多年」",
-      "url": "https://news.nextapple.com/entertainment/20261028/1D6BDAEA1CCAFC41923FC4E8A71F056D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/1D6BDAEA1CCAFC41923FC4E8A71F056D/efc260958d7603daa1f645e111aa9e57_1280.webp",
-      "publishedAt": "2026-10-28T00:38:31.000Z",
-      "fetchedAt": "2026-10-28T01:09:55.123Z"
+      "title": "夫人石舫亘上前線　「蔣萬安生病了」行程全喊卡！羅智強曝近況",
+      "url": "https://news.nextapple.com/politics/20261029/638C396ABD3FCF76BF482537B29189DA",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/638C396ABD3FCF76BF482537B29189DA/1c2c5d7e7a3887fee0fb1b37bc229b10_1280.webp",
+      "publishedAt": "2026-10-29T01:20:00.000Z",
+      "fetchedAt": "2026-10-29T01:43:00.236Z"
     }
   ]
 }
