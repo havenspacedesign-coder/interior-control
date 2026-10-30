@@ -39,7 +39,7 @@ function renderOverview(){
     </div>
     ${shown.length===0?`<div class="empty">尚無案件</div>`:`
     <div style="overflow-x:auto"><table>
-      <thead><tr>${isAdmin()&&overviewEditMode?'<th style="width:34px"></th>':''}<th>案件名稱</th><th>狀態</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>合約完工日</th>${canEditShown&&overviewEditMode?'<th>操作</th>':''}</tr></thead>
+      <thead><tr>${isAdmin()&&overviewEditMode?'<th style="width:34px"></th>':''}<th>案件名稱</th><th>狀態</th><th style="text-align:center;white-space:nowrap">階段天數</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>合約完工日</th>${canEditShown&&overviewEditMode?'<th>操作</th>':''}</tr></thead>
       <tbody>${shown.map(p=>{
         const si=statusInfo(p.status);
         return`<tr ${isAdmin()&&overviewEditMode?`draggable="true" ondragstart="overviewRowDragStart(event,'${p.id}')" ondragover="overviewRowDragOver(event)" ondrop="overviewRowDrop(event,'${p.id}')"`:''}>${isAdmin()&&overviewEditMode?'<td style="text-align:center;cursor:grab;color:var(--text3)">⠿</td>':''}
@@ -47,7 +47,7 @@ function renderOverview(){
           <td>${isAdmin()&&(p.status!=='done'||currentRole==='manager')?`<select class="status-sel" style="background:${si.bg};color:${si.color}" onchange="handleStatusChange('${p.id}',this)">
             ${STATUS_OPTS.map(o=>`<option value="${o.v}" ${p.status===o.v?'selected':''}>${o.l}</option>`).join('')}
           </select>`:`<span class="badge" style="background:${si.bg};color:${si.color}">${si.l}</span>`}</td>
-          <td>${p.owner||''}</td><td style="color:var(--text2)">${p.type||''}</td>
+          ${projectStageCell(p)}<td>${p.owner||''}</td><td style="color:var(--text2)">${p.type||''}</td>
           <td>${p.designer||''}</td><td>${p.budget||''}</td>
           <td style="color:var(--text2)">${p.contractEnd||p.finish||''}</td>
           ${canEditShown&&overviewEditMode?`<td>${p.status!=='done'||currentRole==='manager'?`<button class="btn btn-sm" onclick="showEditProject('${p.id}')">編輯</button>${canDeleteProjects()?` <button class="btn btn-sm" onclick="deleteProject('${p.id}')">刪除</button>`:''}`:''}</td>`:''}
@@ -142,7 +142,12 @@ function getMeetingEntriesForProject(projName){
 }
 window.updateStatus=async function(projId,v,completionTypes,inspDate){
   const existing=S.projects.find(p=>p.id===projId);
+  if(!existing||existing.status===v||projectStageBusy.has(projId))return;
   if(existing?.status==='done'&&currentRole!=='manager')return alert('已完工案件僅限管理員變更狀態。');
+  projectStageBusy.add(projId);
+  try{
+  const history=await prepareProjectStageChange(existing,v);
+  if(history===false){renderOverview();return;}
   setSyncing();
   const patch={status:v};
   if(v==='done'){
@@ -158,8 +163,10 @@ window.updateStatus=async function(projId,v,completionTypes,inspDate){
       patch.bibleSnapshot=snap;
     }
   }
-  await updateDoc(doc(db,'projects',projId),patch);
+  await writeProjectStageChange(existing,patch,history);
   setSynced();
+  }catch(error){console.error('project status save failed',error);alert('案件狀態未儲存：'+error.message);renderOverview();}
+  finally{projectStageBusy.delete(projId);}
 }
 function projectLinkedConstructionManualStages(proj){
   const progress=proj?.designProgress||{};

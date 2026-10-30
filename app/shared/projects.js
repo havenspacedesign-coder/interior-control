@@ -1,5 +1,113 @@
 // Runtime-composed source module. Keep declarations in shared application scope.
 // ── Project CRUD ──
+// Stage intervals use Taipei calendar dates; end is exclusive (the next stage owns that day).
+const PROJECT_STAGE_KEYS=['contact','cv','design','prog'];
+const projectStageBusy=new Set();
+function projectStageToday(now=new Date()){
+  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
+  const part=type=>parts.find(p=>p.type===type).value;
+  return `${part('year')}-${part('month')}-${part('day')}`;
+}
+function projectStageDayNumber(day){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(day||''))throw new Error('階段日期格式不正確');
+  const value=Date.parse(day+'T00:00:00Z');
+  if(!Number.isFinite(value)||new Date(value).toISOString().slice(0,10)!==day)throw new Error('階段日期不正確');
+  return value/86400000;
+}
+function projectStageInitial(status,day=projectStageToday(),partial=false){
+  projectStageDayNumber(day);
+  return {version:1,revision:1,partial,segments:[{status,start:day,end:null}]};
+}
+function projectStageHistory(project){
+  const raw=project?.stageHistory;
+  if(!raw)return null;
+  if(raw.version!==1||!Array.isArray(raw.segments)||!raw.segments.length)throw new Error('階段歷程格式不正確，未儲存任何變更');
+  const history=JSON.parse(JSON.stringify(raw));
+  history.segments.forEach((segment,i)=>{
+    if(![...PROJECT_STAGE_KEYS,'done'].includes(segment.status))throw new Error('階段狀態不正確');
+    const start=projectStageDayNumber(segment.start),last=i===history.segments.length-1;
+    if(last?segment.end!==null:projectStageDayNumber(segment.end)<start)throw new Error('階段日期順序不正確');
+    if(!last&&segment.end!==history.segments[i+1].start)throw new Error('階段日期不連續');
+  });
+  if(history.segments.at(-1).status!==project.status)throw new Error('案件狀態與階段歷程不一致，請先確認資料');
+  return history;
+}
+function projectStageTotals(history,day=projectStageToday()){
+  const totals=Object.fromEntries(PROJECT_STAGE_KEYS.map(key=>[key,0])),today=projectStageDayNumber(day);
+  for(const segment of history?.segments||[]){
+    if(!PROJECT_STAGE_KEYS.includes(segment.status))continue;
+    const start=projectStageDayNumber(segment.start),end=segment.end?projectStageDayNumber(segment.end):today+1;
+    totals[segment.status]+=Math.max(0,Math.min(end,today+1)-start);
+  }
+  return totals;
+}
+function projectStageReturnInfo(project,target,day=projectStageToday()){
+  const history=projectStageHistory(project);
+  if(!history||target===project.status)return null;
+  const index=history.segments.findLastIndex(segment=>segment.status===target);
+  if(index<0)return null;
+  const removed=history.segments.slice(index+1).map(segment=>({...segment,end:segment.end||day}));
+  return {index,removed,totals:projectStageTotals({segments:removed},day)};
+}
+function projectStageTransition(project,target,choice='keep',day=projectStageToday()){
+  if(![...PROJECT_STAGE_KEYS,'done'].includes(target))throw new Error('案件狀態不正確');
+  const history=projectStageHistory(project)||projectStageInitial(project.status,day,true);
+  if(target===project.status)return history;
+  const tail=history.segments.at(-1);
+  if(projectStageDayNumber(day)<projectStageDayNumber(tail.start))throw new Error('目前日期早於已儲存的階段紀錄，未儲存變更');
+  const back=projectStageReturnInfo(project,target,day);
+  if(choice==='delete'&&back){
+    history.segments=history.segments.slice(0,back.index+1);
+    history.segments.at(-1).end=null;
+  }else{
+    tail.end=day;
+    history.segments.push({status:target,start:day,end:null});
+  }
+  history.revision=(Number(history.revision)||0)+1;
+  return history;
+}
+function projectStageCell(project){
+  try{
+    const history=projectStageHistory(project);
+    if(!history)return '<td style="text-align:center;white-space:nowrap" title="缺乏可靠的狀態歷程，無法推算過去天數；從下次狀態變更起記錄。">—</td>';
+    const totals=projectStageTotals(history),summary=PROJECT_STAGE_KEYS.map(key=>`${statusInfo(key).l}：${totals[key]} 天`).join('；');
+    const label=PROJECT_STAGE_KEYS.includes(project.status)?`第 ${totals[project.status]} 天`:'—';
+    return `<td style="text-align:center;white-space:nowrap" title="${escAttr((history.partial?'僅含開始記錄後的天數；':'')+summary+(project.status==='done'?'；已完工，停止累計':''))}">${label}</td>`;
+  }catch(error){return `<td style="text-align:center" title="${escAttr(error.message)}">—</td>`;}
+}
+function projectStageConfirmReturn(project,target,info){
+  return new Promise(resolve=>{
+    const dialog=document.createElement('dialog');
+    dialog.className='mo-box';dialog.style.cssText='position:fixed;inset:0;margin:auto;width:min(520px,calc(100vw - 32px));height:fit-content;max-height:85vh;box-sizing:border-box;overflow:auto;border:1px solid var(--border);border-radius:12px;padding:22px;color:var(--text);background:var(--surface,#fff)';
+    const lines=[...new Set(info.removed.map(s=>s.status))].map(key=>key==='done'?'已完工期間已停止計時。':`${statusInfo(key).l}已累計 ${info.totals[key]||0} 天。`);
+    dialog.innerHTML=`<div class="mo-title">階段紀錄確認</div><div style="line-height:1.8;margin:14px 0">${lines.map(escAttr).join('<br>')}<br>是否刪除這段階段紀錄？<br><span style="font-size:12px;color:var(--text2)">刪除紀錄：將返回「${escAttr(statusInfo(target).l)}」之後的中間紀錄移除，期間日期歸回該階段。<br>保留紀錄：保留各階段天數，返回後接續累計。</span></div><div class="mo-footer"><button class="btn" data-phase-choice="cancel">取消</button><button class="btn" data-phase-choice="keep">保留紀錄</button><button class="btn btn-danger" data-phase-choice="delete">刪除紀錄</button></div>`;
+    const finish=value=>{dialog.remove();resolve(value);};
+    dialog.addEventListener('cancel',event=>{event.preventDefault();finish('cancel');},{once:true});
+    dialog.querySelectorAll('[data-phase-choice]').forEach(button=>button.addEventListener('click',()=>finish(button.dataset.phaseChoice),{once:true}));
+    document.body.appendChild(dialog);dialog.showModal();
+  });
+}
+async function prepareProjectStageChange(project,target){
+  if(project.status===target)return null;
+  const day=projectStageToday(),info=projectStageReturnInfo(project,target,day);
+  const choice=info?await projectStageConfirmReturn(project,target,info):'keep';
+  if(choice==='cancel')return false;
+  if(day!==projectStageToday())throw new Error('日期已更新，請重新操作狀態切換');
+  return projectStageTransition(project,target,choice,day);
+}
+async function writeProjectStageChange(project,patch,history){
+  const ref=doc(db,'projects',project.id),expected=JSON.stringify(project.stageHistory||null);
+  const check=fresh=>{
+    if(!fresh||fresh.status!==project.status||JSON.stringify(fresh.stageHistory||null)!==expected)throw new Error('此案件狀態或階段紀錄已被更新，請重新整理後再試');
+  };
+  const data={...patch,...(history?{stageHistory:history}:{})};
+  if(localTestMode){const snapshot=await getDoc(ref);check(snapshot.exists()?snapshot.data():null);await updateDoc(ref,data);}
+  else await fbRunTransaction(db,async transaction=>{const snapshot=await transaction.get(ref);check(snapshot.exists()?snapshot.data():null);transaction.update(ref,data);});
+}
+let projectStageRenderedDay=projectStageToday();
+function refreshProjectStageDay(){const day=projectStageToday();if(day!==projectStageRenderedDay){projectStageRenderedDay=day;if(activePanel==='overview'&&typeof renderOverview==='function')renderOverview();}}
+setInterval(refreshProjectStageDay,60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshProjectStageDay();});
 function ymdInputs(prefix,label){
   return`<div>
     <div style="font-size:11px;color:var(--text2);margin-bottom:2px">${label}</div>
@@ -129,15 +237,23 @@ window.saveProjectForm=async function(projId){
     finish:contractEnd,
     process:$('np-process').value.trim(),
     status:$('np-status').value};
+  if(projectStageBusy.has(projId))return;
+  projectStageBusy.add(projId);
+  try{
+  const existing=projId?S.projects.find(p=>p.id===projId):null;
+  const history=existing&&existing.status!==data.status?await prepareProjectStageChange(existing,data.status):null;
+  if(history===false)return;
   setSyncing();
   if(projId){
-    await updateDoc(doc(db,'projects',projId),data);
+    await writeProjectStageChange(existing,data,history);
   }else{
-    const created=await addDoc(collection(db,'projects'),Object.assign({},data,{schedule:[],designProgress:{},createdAt:serverTimestamp()}));
+    const created=await addDoc(collection(db,'projects'),Object.assign({},data,{schedule:[],designProgress:{},createdAt:serverTimestamp(),stageHistory:projectStageInitial(data.status)}));
     const order=[created.id,...sortDesignProjs(S.projects).map(p=>p.id).filter(id=>id!==created.id)];designProjectOrder=order;
     await setDoc(doc(db,'settings','designProjectOrder'),{order});
   }
   closeMo();setSynced();
+  }catch(error){console.error('project form save failed',error);alert('案件未儲存：'+error.message);}
+  finally{projectStageBusy.delete(projId);}
 }
 window.deleteProject=async function(id){
   if(!canDeleteProjects())return;if(!confirm('確定刪除？'))return;
@@ -216,6 +332,17 @@ async function copyTextForLine(text){
   try{await navigator.clipboard.writeText(text);alert('文字已複製，可直接到 LINE 貼上。');}
   catch(error){prompt('請複製以下文字，再貼到 LINE：',text);}
 }
+window.copyProjectDetailText=async function(button){
+  const text=button.textContent;
+  if(!text.trim()||button.disabled)return;
+  button.disabled=true;
+  try{
+    await navigator.clipboard.writeText(text);
+    const status=button.parentElement.querySelector('[role="status"]');
+    if(status){status.textContent='已複製';clearTimeout(button.copyFeedbackTimer);button.copyFeedbackTimer=setTimeout(()=>{status.textContent='';},1600);}
+  }catch(error){prompt('無法自動複製，請複製以下文字：',text);}
+  finally{button.disabled=false;}
+};
 function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight,maxLines){
   const chars=Array.from(String(text||''));let line='';let lines=[];
   for(const ch of chars){if(ch==='\n'){lines.push(line);line='';continue;}const trial=line+ch;if(ctx.measureText(trial).width>maxWidth&&line){lines.push(line);line=ch;}else line=trial;}
@@ -316,10 +443,11 @@ window.showProjectDetail=function(projId){
       ${photos.length?`<div class="project-photo-grid">${photos.map(photo=>`<div class="project-photo-card"><input class="project-photo-select" type="checkbox" aria-label="選取 ${escAttr(photo.name||'案件照片')}" ${selectedProjectDetailPhotoId===photo.id?'checked':''} ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoId!==photo.id?'disabled':''} onchange="setProjectDetailPhoto('${p.id}','${photo.id}',this.checked)"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
       <div class="project-share-row"><div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotoCollage('${p.id}')">分享照片（合成）</button><button class="btn btn-sm" onclick="copySelectedProjectPhoto('${p.id}')" ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoBlob?'':'disabled'}>單張複製</button></div><div class="project-detail-actions">${canEditProjects()?`<button class="btn" onclick="showEditProject('${p.id}')">編輯</button>`:''}<button class="btn" onclick="closeMo()">關閉</button></div></div>
     </section>`;};
-  function row(label,val){
+  function row(label,val,copyable=false){
+    const content=copyable&&String(val||'').trim()?`<button type="button" aria-label="複製${label}" title="按一下複製完整文字" onclick="copyProjectDetailText(this)" style="border:0;background:none;padding:0;font:inherit;color:inherit;text-align:left;white-space:pre-wrap;word-break:break-word;max-width:100%;cursor:copy">${escAttr(val)}</button><span role="status" aria-live="polite" style="font-size:11px;color:var(--purple);margin-left:0"></span>`:copyable?escAttr(val||'—'):val||'—';
     return`<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
       <div style="width:110px;flex-shrink:0;color:var(--text2)">${label}</div>
-      <div style="flex:1;white-space:pre-wrap;word-break:break-word">${val||'—'}</div>
+      <div style="flex:1;white-space:pre-wrap;word-break:break-word">${content}</div>
     </div>`;
   }
   $('mo-content').classList.add('project-detail-modal');
@@ -329,7 +457,7 @@ window.showProjectDetail=function(projId){
       ${row('業主姓名',p.owner)}
       ${row('介紹人',p.referrer)}
       ${row('電話',p.phone)}
-      ${row('案件地址',p.address)}
+      ${row('案件地址',p.address,true)}
       ${row('類型',p.type)}
       ${row('設計師',p.designer)}
       ${row('預算',p.budget?`${p.budget}萬${p.budgetIncludeFurniture||p.budgetIncludeAC?'（'+[p.budgetIncludeFurniture?'含家具':'',p.budgetIncludeAC?'含空調':''].filter(Boolean).join('、')+'）':''}`:'')}
@@ -342,7 +470,7 @@ window.showProjectDetail=function(projId){
       ${row('初驗日',p.initialInspectionDate)}
       ${row('狀態',`<span class="badge" style="background:${si.bg};color:${si.color}">${si.l}</span>`)}
       ${p.completionTypes&&p.completionTypes.length?row('完工類型',p.completionTypes.join('、')):''}
-      ${row('廠商施工流程',p.process)}
+      ${row('廠商施工流程',p.process,true)}
       <div class="project-detail-mobile-photo">${photoPanel('mobile')}</div>
       </div>
       <section class="project-detail-design">
