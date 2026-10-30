@@ -524,6 +524,7 @@ window.showProjectDetail=function(projId){
       <div style="flex:1;white-space:pre-wrap;word-break:break-word">${content}</div>
     </div>`;
   }
+  $('mo-content').classList.remove('project-form-modal');
   $('mo-content').classList.add('project-detail-modal');
   $('mo-content').innerHTML=`<div class="mo-title" style="display:flex;align-items:center;gap:12px"><span>${p.name}</span>${p.panoramaUrl?`<a class="project-panorama-link" href="${escAttr(p.panoramaUrl)}" target="_blank" rel="noopener noreferrer">◉ 3D現場環景</a>`:''}${p.renderUrl?`<a class="project-panorama-link" href="${escAttr(p.renderUrl)}" target="_blank" rel="noopener noreferrer">◉ 3D渲染圖</a>`:''}</div>
     <div class="project-detail-grid has-design-progress">
