@@ -18,9 +18,33 @@ function projectStageInitial(status,day=projectStageToday(),partial=false){
   projectStageDayNumber(day);
   return {version:1,revision:1,partial,segments:[{status,start:day,end:null}]};
 }
-function projectStageHistory(project){
+function projectStageCreatedDay(project,day=projectStageToday()){
+  const value=project?.createdAt;
+  if(value===null||value===undefined)return null;
+  try{
+    let result;
+    if(typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value))result=value;
+    else{
+      let date;
+      if(typeof value?.toDate==='function')date=value.toDate();
+      else if(typeof value?.getTime==='function')date=value;
+      else if(typeof value?.seconds==='number')date=new Date(value.seconds*1000+(Number(value.nanoseconds)||0)/1000000);
+      else if(typeof value==='string'&&/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/i.test(value))date=new Date(value);
+      else return null;
+      if(!Number.isFinite(date.getTime()))return null;
+      result=projectStageToday(date);
+    }
+    return projectStageDayNumber(result)<=projectStageDayNumber(day)?result:null;
+  }catch(error){return null;}
+}
+function projectStageHistory(project,day=projectStageToday()){
   const raw=project?.stageHistory;
-  if(!raw)return null;
+  if(!raw){
+    // Only legacy active projects use creation as an explicitly labelled baseline.
+    // Existing stage histories always take precedence; merely viewing never writes data.
+    const created=PROJECT_STAGE_KEYS.includes(project?.status)?projectStageCreatedDay(project,day):null;
+    return created?{...projectStageInitial(project.status,created),baselineSource:'createdAt'}:null;
+  }
   if(raw.version!==1||!Array.isArray(raw.segments)||!raw.segments.length)throw new Error('階段歷程格式不正確，未儲存任何變更');
   const history=JSON.parse(JSON.stringify(raw));
   history.segments.forEach((segment,i)=>{
@@ -28,6 +52,11 @@ function projectStageHistory(project){
     const start=projectStageDayNumber(segment.start),last=i===history.segments.length-1;
     if(last?segment.end!==null:projectStageDayNumber(segment.end)<start)throw new Error('階段日期順序不正確');
     if(!last&&segment.end!==history.segments[i+1].start)throw new Error('階段日期不連續');
+    if(segment.adjustments!==undefined&&!Array.isArray(segment.adjustments))throw new Error('天數校正紀錄格式不正確');
+    for(const correction of segment.adjustments||[]){
+      const on=projectStageDayNumber(correction.on);
+      if(!Number.isSafeInteger(correction.delta)||on<start||(!last&&on>projectStageDayNumber(segment.end)))throw new Error('天數校正紀錄不正確');
+    }
   });
   if(history.segments.at(-1).status!==project.status)throw new Error('案件狀態與階段歷程不一致，請先確認資料');
   return history;
@@ -38,11 +67,24 @@ function projectStageTotals(history,day=projectStageToday()){
     if(!PROJECT_STAGE_KEYS.includes(segment.status))continue;
     const start=projectStageDayNumber(segment.start),end=segment.end?projectStageDayNumber(segment.end):today+1;
     totals[segment.status]+=Math.max(0,Math.min(end,today+1)-start);
+    for(const correction of segment.adjustments||[])if(projectStageDayNumber(correction.on)<=today)totals[segment.status]+=correction.delta;
   }
+  PROJECT_STAGE_KEYS.forEach(key=>{totals[key]=Math.max(0,totals[key]);});
   return totals;
 }
+function projectStageAdjust(project,value,by,day=projectStageToday()){
+  const days=Number(value);
+  if(!/^\d+$/.test(String(value).trim())||!Number.isSafeInteger(days)||days<1||days>1000000)throw new Error('請輸入 1～1000000 的整數天數');
+  if(!PROJECT_STAGE_KEYS.includes(project.status))throw new Error('已完工案件已停止計時，不能修改目前階段天數');
+  const history=projectStageHistory(project,day)||projectStageInitial(project.status,day,true),tail=history.segments.at(-1);
+  if(projectStageDayNumber(day)<projectStageDayNumber(tail.start))throw new Error('目前日期早於階段紀錄，不能修改');
+  const delta=days-projectStageTotals(history,day)[project.status];
+  tail.adjustments=[...(tail.adjustments||[]),{on:day,delta,by:String(by||'')}];
+  history.revision=(Number(history.revision)||0)+1;
+  return history;
+}
 function projectStageReturnInfo(project,target,day=projectStageToday()){
-  const history=projectStageHistory(project);
+  const history=projectStageHistory(project,day);
   if(!history||target===project.status)return null;
   const index=history.segments.findLastIndex(segment=>segment.status===target);
   if(index<0)return null;
@@ -51,7 +93,7 @@ function projectStageReturnInfo(project,target,day=projectStageToday()){
 }
 function projectStageTransition(project,target,choice='keep',day=projectStageToday()){
   if(![...PROJECT_STAGE_KEYS,'done'].includes(target))throw new Error('案件狀態不正確');
-  const history=projectStageHistory(project)||projectStageInitial(project.status,day,true);
+  const history=projectStageHistory(project,day)||projectStageInitial(project.status,day,true);
   if(target===project.status)return history;
   const tail=history.segments.at(-1);
   if(projectStageDayNumber(day)<projectStageDayNumber(tail.start))throw new Error('目前日期早於已儲存的階段紀錄，未儲存變更');
@@ -67,14 +109,46 @@ function projectStageTransition(project,target,choice='keep',day=projectStageTod
   return history;
 }
 function projectStageCell(project){
+  const editable=typeof isAdmin==='function'&&isAdmin()&&PROJECT_STAGE_KEYS.includes(project.status);
+  const editAttrs=editable?` data-stage-project="${escAttr(project.id)}" ondblclick="editProjectStageDays(this.dataset.stageProject)"`:'';
+  const editHint=editable?'；管理員可點兩下修改天數':'';
   try{
     const history=projectStageHistory(project);
-    if(!history)return '<td style="text-align:center;white-space:nowrap" title="缺乏可靠的狀態歷程，無法推算過去天數；從下次狀態變更起記錄。">—</td>';
+    if(!history)return `<td${editAttrs} style="text-align:center;white-space:nowrap" title="缺乏可用的建立日期或階段歷程，無法推算天數；既有已完工案件不從建立日持續累計。${editHint}">—</td>`;
     const totals=projectStageTotals(history),summary=PROJECT_STAGE_KEYS.map(key=>`${statusInfo(key).l}：${totals[key]} 天`).join('；');
     const label=PROJECT_STAGE_KEYS.includes(project.status)?`第 ${totals[project.status]} 天`:'—';
-    return `<td style="text-align:center;white-space:nowrap" title="${escAttr((history.partial?'僅含開始記錄後的天數；':'')+summary+(project.status==='done'?'；已完工，停止累計':''))}">${label}</td>`;
+    const corrected=history.segments.some(segment=>segment.adjustments?.length)?'含管理員手動校正；':'';
+    return `<td${editAttrs} style="text-align:center;white-space:nowrap" title="${escAttr(corrected+(history.baselineSource==='createdAt'?'舊資料以建立日作初始基準，非過去實際切換日期；':history.partial?'僅含開始記錄後的天數；':'')+summary+(project.status==='done'?'；已完工，停止累計':'')+editHint)}">${label}</td>`;
   }catch(error){return `<td style="text-align:center" title="${escAttr(error.message)}">—</td>`;}
 }
+window.editProjectStageDays=function(projectId){
+  if(!isAdmin())return;
+  const project=S.projects.find(item=>item.id===projectId);
+  if(!project||!PROJECT_STAGE_KEYS.includes(project.status)||projectStageBusy.has(projectId))return;
+  let current;
+  try{const history=projectStageHistory(project);current=history?projectStageTotals(history)[project.status]:'';}
+  catch(error){alert(error.message);return;}
+  const day=projectStageToday(),dialog=document.createElement('dialog');let saving=false;
+  dialog.className='mo-box';dialog.style.cssText='position:fixed;inset:0;margin:auto;width:min(440px,calc(100vw - 32px));height:fit-content;max-height:85vh;box-sizing:border-box;overflow:auto;border:1px solid var(--border);border-radius:12px;padding:22px;color:var(--text);background:var(--surface,#fff)';
+  dialog.innerHTML=`<div class="mo-title">修改階段天數</div><div class="mo-sub">${escAttr(project.name)}｜${escAttr(statusInfo(project.status).l)}</div><label style="display:block;margin:16px 0">目前階段累計天數 <input type="number" min="1" max="1000000" step="1" aria-label="階段天數" value="${current}" style="width:100%;box-sizing:border-box;margin-top:6px;padding:9px;border:1px solid var(--border);border-radius:6px;font:inherit"></label><div style="font-size:12px;color:var(--text2)">僅校正目前階段；原始日期與其他階段保留，明天起繼續自動加一天。</div><div role="alert" style="color:var(--red);font-size:12px;margin-top:8px"></div><div class="mo-footer"><button class="btn" data-stage-cancel>取消</button><button class="btn btn-p" data-stage-save>儲存</button></div>`;
+  const cancel=dialog.querySelector('[data-stage-cancel]'),save=dialog.querySelector('[data-stage-save]'),input=dialog.querySelector('input'),errorBox=dialog.querySelector('[role="alert"]');
+  cancel.addEventListener('click',()=>{if(!saving)dialog.remove();});
+  dialog.addEventListener('cancel',event=>{if(saving)event.preventDefault();else dialog.remove();});
+  save.addEventListener('click',async()=>{
+    if(saving||projectStageBusy.has(projectId))return;
+    errorBox.textContent='';
+    try{
+      if(!isAdmin())throw new Error('僅限管理員修改');
+      if(day!==projectStageToday())throw new Error('日期已更新，請關閉視窗後重新修改');
+      const history=projectStageAdjust(project,input.value,currentUser.uid,day);
+      saving=true;projectStageBusy.add(projectId);save.disabled=true;cancel.disabled=true;
+      await writeProjectStageChange(project,{},history);
+      dialog.remove();if(typeof renderActive==='function')renderActive();
+    }catch(error){errorBox.textContent=error.message;}
+    finally{saving=false;projectStageBusy.delete(projectId);save.disabled=false;cancel.disabled=false;}
+  });
+  document.body.appendChild(dialog);dialog.showModal();input.focus();
+};
 function projectStageConfirmReturn(project,target,info){
   return new Promise(resolve=>{
     const dialog=document.createElement('dialog');
