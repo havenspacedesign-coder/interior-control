@@ -1,126 +1,126 @@
 {
-  "date": "2026-10-30",
-  "updatedAt": "2026-10-30T01:51:25.999Z",
+  "date": "2026-10-31",
+  "updatedAt": "2026-10-31T01:29:56.818Z",
   "news": [
     {
-      "id": "b56ca95c658fb73e",
+      "id": "8a1e6bf208d30714",
       "source": "遠見",
       "category": "國際",
-      "title": "美國期中選舉影響什麼？川普施政、台灣軍購與關稅，國會3結局一次看",
-      "url": "https://www.gvm.com.tw/article/134150",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261027/243746.jpg",
-      "publishedAt": "2026-10-29T10:08:00.000Z",
-      "fetchedAt": "2026-10-30T01:51:25.999Z"
+      "title": "美國期中選舉震撼彈！堪薩斯94年紅州恐翻藍，川普票倉為何鬆動？",
+      "url": "https://www.gvm.com.tw/article/134185",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261030/244247.jpg",
+      "publishedAt": "2026-10-30T11:02:00.000Z",
+      "fetchedAt": "2026-10-31T01:29:56.818Z"
     },
     {
-      "id": "e9dadedd2c32e1b0",
+      "id": "8add062e6fe7689d",
       "source": "遠見",
       "category": "AI／科技",
-      "title": "AI訂單看得到，出貨時點難抓？台達電鄭平說明庫存增加原因",
-      "url": "https://www.gvm.com.tw/article/134148",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261015/243041.jpg",
-      "publishedAt": "2026-10-29T09:38:00.000Z",
-      "fetchedAt": "2026-10-30T01:51:25.999Z"
+      "title": "聯發科股價暴跌破四千元，大摩卻喊過六千！蔡力行：輝達、台積電是關鍵",
+      "url": "https://www.gvm.com.tw/article/134182",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20250520/204295.jpg",
+      "publishedAt": "2026-10-30T10:00:00.000Z",
+      "fetchedAt": "2026-10-31T01:29:56.818Z"
     },
     {
-      "id": "77055193e9ff3f00",
+      "id": "7ec447dbc8f719ce",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "若有100萬元，買股票該投入多少？投資教練：用「2%規則」算出能買幾張",
-      "url": "https://www.gvm.com.tw/article/134149",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261029/244070.jpg",
-      "publishedAt": "2026-10-29T09:46:00.000Z",
-      "fetchedAt": "2026-10-30T01:51:25.999Z"
+      "title": "買下一座舊廠，人生從此不一樣！ jpp-KY為何能接下AI機櫃大單？",
+      "url": "https://www.gvm.com.tw/article/134188",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261030/244244.jpg",
+      "publishedAt": "2026-10-30T16:48:00.000Z",
+      "fetchedAt": "2026-10-31T01:29:56.818Z"
     },
     {
-      "id": "57b1fe7e47c5dbd9",
+      "id": "447f4200ca236d74",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "用智慧科技克服資源逆境！張麗善《躍上雲端》為地方治理樹立全球典範",
-      "url": "https://www.gvm.com.tw/article/134111",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261028/244002.jpg",
-      "publishedAt": "2026-10-29T16:00:00.000Z",
-      "fetchedAt": "2026-10-30T01:51:25.999Z"
+      "title": "社宅會跳票還是繼續蓋？六都市長政見比一比，誰喊5萬戶、誰未提具體目標？",
+      "url": "https://www.gvm.com.tw/article/134159",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260812/238362.jpg",
+      "publishedAt": "2026-10-31T01:00:00.000Z",
+      "fetchedAt": "2026-10-31T01:29:56.818Z"
     },
     {
-      "id": "21b2f365b11bd667",
+      "id": "10074065fb700728",
       "source": "壹蘋",
       "category": "國際",
-      "title": "河口湖再傳命案！外籍男命喪樹海　89歲老婦被捕",
-      "url": "https://news.nextapple.com/international/20261030/C91132576EE9F38BC036680BA623BAFF",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/C91132576EE9F38BC036680BA623BAFF/ff69b1cfd0778aa601241e23b0284766_1280.webp",
-      "publishedAt": "2026-10-30T01:49:41.000Z",
-      "fetchedAt": "2026-10-30T01:51:25.999Z"
+      "title": "「賭爛票」發威！美期中選舉提前投票　4800萬人破紀錄",
+      "url": "https://news.nextapple.com/international/20261031/C7B40B306AFF141D7A3D4AB3BD6D8AB7",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/C7B40B306AFF141D7A3D4AB3BD6D8AB7/401fb72c6ebddd6207609e9b3ba0a041_1280.webp",
+      "publishedAt": "2026-10-31T00:23:47.000Z",
+      "fetchedAt": "2026-10-31T01:29:56.818Z"
     },
     {
-      "id": "92452a0fe96f1706",
+      "id": "97eaf9320d7ae2a2",
       "source": "壹蘋",
       "category": "生活",
-      "title": "不只「洋流飄帶」被P掉！台北設計獎配樂也出包　北市府連道歉",
-      "url": "https://news.nextapple.com/life/20261030/0CC144E0D3CCAFCFE884DD271A0631AD",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/0CC144E0D3CCAFCFE884DD271A0631AD/72ea10e274a052ee8357d771e082aca3_1280.webp",
-      "publishedAt": "2026-10-30T01:42:12.000Z",
-      "fetchedAt": "2026-10-30T01:51:25.999Z"
+      "title": "「廢墟風公寓」開價破千萬！仲介幽默自嘲：萬聖節派對聖地",
+      "url": "https://news.nextapple.com/life/20261031/CA2B96F15BFA807E86DC2DDD9FA7021E",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/CA2B96F15BFA807E86DC2DDD9FA7021E/30c686cd589d6c0515510041d18c2465_1280.webp",
+      "publishedAt": "2026-10-31T01:00:00.000Z",
+      "fetchedAt": "2026-10-31T01:29:56.818Z"
     },
     {
-      "id": "2f407a48adabcc7b",
+      "id": "af59946e89297f42",
       "source": "壹蘋",
       "category": "社會",
-      "title": "高雄左營分租套房深夜惡火　77歲婦人葬身火窟",
-      "url": "https://news.nextapple.com/local/20261030/1392373F6C13B42BA5AA2E3281E5C50D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/1392373F6C13B42BA5AA2E3281E5C50D/81ca17e4bc31b1c52ee49e5c0b81a90f_1280.webp",
-      "publishedAt": "2026-10-30T01:41:18.000Z",
-      "fetchedAt": "2026-10-30T01:51:25.999Z"
+      "title": "散布AI音檔造謠沈伯洋「收回扣」　中壢男遭拘提10萬交保",
+      "url": "https://news.nextapple.com/local/20261031/F752A51AC03E29F0A223EDBD2ABE3CBF",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/F752A51AC03E29F0A223EDBD2ABE3CBF/078976cbcb57a727a1eaaccf7b872307_1280.webp",
+      "publishedAt": "2026-10-30T22:42:00.000Z",
+      "fetchedAt": "2026-10-31T01:29:56.818Z"
     },
     {
-      "id": "9c4365761113c1e5",
+      "id": "3272ba1da66c10cb",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "狗仔直擊｜林依晨與遠距婚老公恩愛同框破婚變謠言！一家八口團聚　愛女扮南瓜公主（壹蘋10點強打）",
-      "url": "https://news.nextapple.com/entertainment/20261030/3AC882F300E5CAB7FE743FDE38B16087",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/3AC882F300E5CAB7FE743FDE38B16087/8520b3c76405d87315381df01de1aca3_1280.webp",
-      "publishedAt": "2026-10-30T01:50:00.000Z",
-      "fetchedAt": "2026-10-30T01:51:25.999Z"
+      "title": "同志大遊行今登場！蔡康永、炎亞綸都不去",
+      "url": "https://news.nextapple.com/entertainment/20261031/61A94B380183188201C44B4D53225084",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/61A94B380183188201C44B4D53225084/4728d64e747ea92418dd5d0611bb7606_1280.webp",
+      "publishedAt": "2026-10-31T01:08:30.000Z",
+      "fetchedAt": "2026-10-31T01:29:56.818Z"
     },
     {
-      "id": "8eb7c3d32483b7cc",
+      "id": "ef3f829361490393",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "LINE通話終於能錄音！最長1小時、開啟設定一次看",
-      "url": "https://news.nextapple.com/aitech/20261030/6411B96F9B4F7CFAF52313D53B291E19",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/6411B96F9B4F7CFAF52313D53B291E19/cecb27060f22b60db3da14ceeba3000a_1280.webp",
-      "publishedAt": "2026-10-29T23:29:14.000Z",
-      "fetchedAt": "2026-10-30T01:51:25.999Z"
+      "title": "台北市長辯論直播線上看！蔣萬安、沈伯洋今交鋒　時間、平台一次看",
+      "url": "https://news.nextapple.com/aitech/20261031/901F008BD1407C2A318BE1B530A2B82D",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/901F008BD1407C2A318BE1B530A2B82D/80985c5528974bd83f4ac90dff86fc31_1280.webp",
+      "publishedAt": "2026-10-31T00:48:26.000Z",
+      "fetchedAt": "2026-10-31T01:29:56.818Z"
     },
     {
-      "id": "1dce827688afadc1",
+      "id": "16062d266738b856",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "存貨跌價損失拖累毛利率！台達電股價開盤一度跌停",
-      "url": "https://news.nextapple.com/finance/20261030/B3447563CCC7B1B9AF0BE547799866EE",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/B3447563CCC7B1B9AF0BE547799866EE/f01486ecc114b21a8956a33b7d3feeeb_1280.webp",
-      "publishedAt": "2026-10-30T01:29:09.000Z",
-      "fetchedAt": "2026-10-30T01:51:25.999Z"
+      "title": "台股周一剉咧等？英特爾崩近30%拖累費半狂瀉！台積電ADR跳水",
+      "url": "https://news.nextapple.com/finance/20261031/50BBDA7274A87D2326068376671411E2",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/50BBDA7274A87D2326068376671411E2/f4ae2590cf7b10567119fc8b651bd047_1280.webp",
+      "publishedAt": "2026-10-30T23:20:12.000Z",
+      "fetchedAt": "2026-10-31T01:29:56.818Z"
     },
     {
-      "id": "a4a1028d424735c8",
+      "id": "377b6bed87109169",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "台股大逃殺！早盤崩跌1277點　台積電跌35元開出",
-      "url": "https://news.nextapple.com/finance/20261030/C7ECDA045626805B0BF24515783277EF",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/C7ECDA045626805B0BF24515783277EF/72e939c158675ebe67421ee54447267e_1280.webp",
-      "publishedAt": "2026-10-30T01:06:17.000Z",
-      "fetchedAt": "2026-10-30T01:51:25.999Z"
+      "title": "辯論前9小時...沈伯洋凌晨宣布這計畫喊卡！網驚：求你快去睡",
+      "url": "https://news.nextapple.com/politics/20261031/38CFBCDB6A84DCD28D8CD796812CBE53",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/38CFBCDB6A84DCD28D8CD796812CBE53/c02a1597b3698d074d91b14b9d215453_1280.webp",
+      "publishedAt": "2026-10-31T01:19:17.000Z",
+      "fetchedAt": "2026-10-31T01:29:56.818Z"
     },
     {
-      "id": "06494b6112b877ab",
+      "id": "3a122bbb536ef587",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "他忍半年聽不見　耳朵竟夾出4個耳塞！驚人畫面曝光",
-      "url": "https://news.nextapple.com/life/20261030/05E7C6E54524A789C3F9F4ECA1355B72",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/05E7C6E54524A789C3F9F4ECA1355B72/262cf1a6a61333bed4ff85c147a5de09_1280.webp",
-      "publishedAt": "2026-10-30T00:36:59.000Z",
-      "fetchedAt": "2026-10-30T01:51:25.999Z"
+      "title": "蔣萬安、沈伯洋今中午正面交鋒！ 電視辯論攻防流程曝光",
+      "url": "https://news.nextapple.com/politics/20261031/D68F1D2EB0313A00AA068884E55D005B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/D68F1D2EB0313A00AA068884E55D005B/0b8766b38e58bedc3f132d3091b5d825_1280.webp",
+      "publishedAt": "2026-10-31T00:56:00.000Z",
+      "fetchedAt": "2026-10-31T01:29:56.818Z"
     }
   ]
 }
