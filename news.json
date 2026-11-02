@@ -1,16 +1,16 @@
 {
-  "date": "2026-11-01",
-  "updatedAt": "2026-11-01T00:58:21.334Z",
+  "date": "2026-11-02",
+  "updatedAt": "2026-11-02T01:26:48.440Z",
   "news": [
     {
-      "id": "cada4f4919f8041f",
+      "id": "cb430ce1fea0b339",
       "source": "遠見",
       "category": "國際",
-      "title": "中國「人造古鎮」太氾濫！巨額資金打水漂，2800座近半數人去樓空淪空城",
-      "url": "https://www.gvm.com.tw/article/134161",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20241031/186647.jpg",
-      "publishedAt": "2026-10-31T09:00:00.000Z",
-      "fetchedAt": "2026-11-01T00:58:21.334Z"
+      "title": "烏鴉聰明是真的！大腦判斷決策速度比人類快兩倍，研究：複雜智慧不一定需要人腦",
+      "url": "https://www.gvm.com.tw/article/134167",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261030/244100.jpg",
+      "publishedAt": "2026-11-01T03:05:00.000Z",
+      "fetchedAt": "2026-11-02T01:26:48.440Z"
     },
     {
       "id": "f26c53a5360ec32e",
@@ -20,107 +20,107 @@
       "url": "https://www.gvm.com.tw/article/133441",
       "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261002/242245.jpg",
       "publishedAt": "2026-10-31T16:00:00.000Z",
-      "fetchedAt": "2026-11-01T00:58:21.334Z"
+      "fetchedAt": "2026-11-02T01:26:48.440Z"
     },
     {
-      "id": "ff3c6b7bad808098",
+      "id": "64f876aebb1a7d39",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "住戶全同意卻苦等不到開工？胡偉良：從1159件都更案揭老屋重建「時間成本」",
-      "url": "https://www.gvm.com.tw/article/132382",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20260818/238802.jpg",
-      "publishedAt": "2026-10-31T14:26:00.000Z",
-      "fetchedAt": "2026-11-01T00:58:21.334Z"
+      "title": "醫師的獸醫夢：在生命的重量裡，尋找專業的韌性與社會的諒解",
+      "url": "https://www.gvm.com.tw/article/134200",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261102/244321.jpg",
+      "publishedAt": "2026-11-02T01:19:00.000Z",
+      "fetchedAt": "2026-11-02T01:26:48.440Z"
     },
     {
-      "id": "89014be79a85f5e1",
+      "id": "02c4b8e4d2473274",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "膝關節退化非得換人工關節？有機會真正修復，史丹佛大學找到軟骨再生的新契機",
-      "url": "https://www.gvm.com.tw/article/134166",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261030/244099.jpg",
-      "publishedAt": "2026-10-31T23:20:00.000Z",
-      "fetchedAt": "2026-11-01T00:58:21.334Z"
+      "title": "從賽道到腕間：RICHARD MILLE × Ferrari 如何以工程突破性能極限",
+      "url": "https://www.gvm.com.tw/article/133862",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261019/243288.jpg",
+      "publishedAt": "2026-11-01T16:00:00.000Z",
+      "fetchedAt": "2026-11-02T01:26:48.440Z"
     },
     {
-      "id": "d6ee4092c8d7d9f5",
+      "id": "a25e07ba0a854a6e",
       "source": "壹蘋",
       "category": "國際",
-      "title": "終究是惹不起？日本不敢把中國列「威脅」！安保戰略修訂傳放軟　顧慮曝光",
-      "url": "https://news.nextapple.com/international/20261101/5FBA4D44B762ADA91A4EEF214AB57613",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/5FBA4D44B762ADA91A4EEF214AB57613/e377dd95cd0f5f1394bd5ff6edd803d0_1280.webp",
-      "publishedAt": "2026-11-01T00:20:10.000Z",
-      "fetchedAt": "2026-11-01T00:58:21.334Z"
+      "title": "看壞選情？川普預告「選輸放大絕」　再提普發16萬元",
+      "url": "https://news.nextapple.com/international/20261102/11995619EA1356C4ED320598F1472682",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/11995619EA1356C4ED320598F1472682/3590834531a14da2ce8eddd77f1ec052_1280.webp",
+      "publishedAt": "2026-11-02T00:28:47.000Z",
+      "fetchedAt": "2026-11-02T01:26:48.440Z"
     },
     {
-      "id": "975cd3a308b9b0ab",
+      "id": "adae076828797e6f",
       "source": "壹蘋",
       "category": "生活",
-      "title": "今好天氣熱飆34℃　明起東北季風接力！2波濕涼時間曝光",
-      "url": "https://news.nextapple.com/life/20261101/85AF903C5F404E0F02B7A044C334D00B",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/85AF903C5F404E0F02B7A044C334D00B/9468bb0c9ce62736ae7d516d2084fda4_1280.webp",
-      "publishedAt": "2026-10-31T22:57:00.000Z",
-      "fetchedAt": "2026-11-01T00:58:21.334Z"
+      "title": "東北季風增強！北台降溫「越晚雨越大」　週四還有第2波",
+      "url": "https://news.nextapple.com/life/20261102/84394C2194B914560732C67B4D272E01",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/84394C2194B914560732C67B4D272E01/fa2c30ae1ef889dfbc39e056340958e3_1280.webp",
+      "publishedAt": "2026-11-01T22:29:03.000Z",
+      "fetchedAt": "2026-11-02T01:26:48.440Z"
     },
     {
-      "id": "22a1854fec993a6f",
+      "id": "b8d966b29b13d595",
       "source": "壹蘋",
       "category": "社會",
-      "title": "台南15歲少女逛美妝店遭偷拍　噁男二審加重判10月",
-      "url": "https://news.nextapple.com/local/20261101/B45420A782FC3922A79CD80146E0748A",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/B45420A782FC3922A79CD80146E0748A/751cf9b467ed8e2bc5d98a2b81565059_1280.webp",
-      "publishedAt": "2026-10-31T16:01:00.000Z",
-      "fetchedAt": "2026-11-01T00:58:21.334Z"
+      "title": "高雄毒駕新制上路首日取締10件！汽機車全數沒入　拒測最高罰27萬",
+      "url": "https://news.nextapple.com/local/20261102/351A80B359B3676D6BDCDF2D9C00BA50",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/351A80B359B3676D6BDCDF2D9C00BA50/c26e46edd84cbd0b9ae0631cf53a14af_1280.webp",
+      "publishedAt": "2026-11-01T16:01:00.000Z",
+      "fetchedAt": "2026-11-02T01:26:48.440Z"
     },
     {
-      "id": "5bbff631bdf8fdcc",
+      "id": "3fb82dffe2193475",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "攜手老公將《歌劇魅影》搬上101手扶梯！賈永婕自封「最瘋狂董事長」　網笑：只有妳能超越妳",
-      "url": "https://news.nextapple.com/entertainment/20261101/7747164734FA59FB42C9E02DA59412A4",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/7747164734FA59FB42C9E02DA59412A4/77d406e5d5c426ab9fbd272ccd18883d_1280.webp",
-      "publishedAt": "2026-11-01T00:51:16.000Z",
-      "fetchedAt": "2026-11-01T00:58:21.334Z"
+      "title": "孫芸芸、廖鎮漢傳分居27年婚變？遭爆「幾乎不在台灣」回應了",
+      "url": "https://news.nextapple.com/entertainment/20261102/9DAC64E39E7982B510FA7F769C09285F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/9DAC64E39E7982B510FA7F769C09285F/ca75b77a20babd16d99984a5bd928799_1280.webp",
+      "publishedAt": "2026-11-02T01:10:47.000Z",
+      "fetchedAt": "2026-11-02T01:26:48.440Z"
     },
     {
-      "id": "d933236e16b98e53",
+      "id": "1dfff3c2e9b15726",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "中油10月天然氣電業用戶漲9.68%　民生、工業凍漲",
-      "url": "https://news.nextapple.com/aitech/20261031/68C4BB646D4A9376F31D3C38ABACC0E5",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/68C4BB646D4A9376F31D3C38ABACC0E5/62492f5c34ff63cc2cd5c405a89baf8c_1280.webp",
-      "publishedAt": "2026-10-31T10:22:19.000Z",
-      "fetchedAt": "2026-11-01T00:58:21.334Z"
+      "title": "LINE無法傳訊通話！11/4起4類裝置不能用　iPhone 6也中招",
+      "url": "https://news.nextapple.com/aitech/20261102/F11E095F57814483B93C3942D677DC42",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/F11E095F57814483B93C3942D677DC42/23553e96674030ea154424e807f705c4_1280.webp",
+      "publishedAt": "2026-11-01T16:01:00.000Z",
+      "fetchedAt": "2026-11-02T01:26:48.440Z"
     },
     {
-      "id": "11dad3a20ef4824a",
+      "id": "c2938142ddb8e4fb",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "台股重挫散戶收手！ 郭哲榮：年底沒5萬點「雞排+珍奶」各5千份",
-      "url": "https://news.nextapple.com/finance/20261031/188D8E3877A69C2143B00678583CAB78",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-10/188D8E3877A69C2143B00678583CAB78/54a30b55852def6ce1e06f7b50350014_1280.webp",
-      "publishedAt": "2026-10-31T13:00:06.000Z",
-      "fetchedAt": "2026-11-01T00:58:21.334Z"
+      "title": "台股跌逾700點摜破4萬5大關　台積電跌40元",
+      "url": "https://news.nextapple.com/finance/20261102/C2BDE9607A71804291C4A6144C939696",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/C2BDE9607A71804291C4A6144C939696/72e939c158675ebe67421ee54447267e_1280.webp",
+      "publishedAt": "2026-11-02T01:13:04.000Z",
+      "fetchedAt": "2026-11-02T01:26:48.440Z"
     },
     {
-      "id": "6c2ff9f5cf4c9af7",
+      "id": "c489462d3804c9d9",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "台大醫院前院長表態！北市長挺「他」　長文讓一票人看哭了",
-      "url": "https://news.nextapple.com/politics/20261101/1F3330188BAB6A7D7DC857F27A3018BB",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/1F3330188BAB6A7D7DC857F27A3018BB/7777458e67c5af2cbfbb555c6c6b9a97_1280.webp",
-      "publishedAt": "2026-11-01T00:30:00.000Z",
-      "fetchedAt": "2026-11-01T00:58:21.334Z"
+      "title": "蔣萬安母親「獨自勇闖洋流」拉票！一票人喊：不要罵她以免中計",
+      "url": "https://news.nextapple.com/politics/20261102/4081060BD04D25D83EA9B07D0C194047",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/4081060BD04D25D83EA9B07D0C194047/165cf5e456f9b5a354c08ab60a3c348e_1280.webp",
+      "publishedAt": "2026-11-02T00:42:44.000Z",
+      "fetchedAt": "2026-11-02T01:26:48.440Z"
     },
     {
-      "id": "61e858b27dded53e",
+      "id": "1bfcc9e19bb863db",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "蔣萬安「松機限高才是內湖都更難題」遭網酸1句！9.3萬人也打臉",
-      "url": "https://news.nextapple.com/politics/20261101/1904C332E9343F4736D5DDC645174B6E",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/1904C332E9343F4736D5DDC645174B6E/c1cacaaa012a198c88defafa164e7869_1280.webp",
-      "publishedAt": "2026-11-01T00:17:32.000Z",
-      "fetchedAt": "2026-11-01T00:58:21.334Z"
+      "title": "賈永婕萬聖節想穿ＸＸ　竟跑去黃仁勳愛店借！糗被老闆回1句",
+      "url": "https://news.nextapple.com/entertainment/20261102/625087B9141814FC6C73DC033489D181",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/625087B9141814FC6C73DC033489D181/a293f52d01b2d51ae87c3301f6f6df96_1280.webp",
+      "publishedAt": "2026-11-02T00:18:17.000Z",
+      "fetchedAt": "2026-11-02T01:26:48.440Z"
     }
   ]
 }
