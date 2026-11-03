@@ -1,126 +1,126 @@
 {
-  "date": "2026-11-02",
-  "updatedAt": "2026-11-02T01:26:48.440Z",
+  "date": "2026-11-03",
+  "updatedAt": "2026-11-03T03:25:48.097Z",
   "news": [
     {
-      "id": "cb430ce1fea0b339",
+      "id": "d41f4f4dc1cbcbe9",
       "source": "遠見",
       "category": "國際",
-      "title": "烏鴉聰明是真的！大腦判斷決策速度比人類快兩倍，研究：複雜智慧不一定需要人腦",
-      "url": "https://www.gvm.com.tw/article/134167",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261030/244100.jpg",
-      "publishedAt": "2026-11-01T03:05:00.000Z",
-      "fetchedAt": "2026-11-02T01:26:48.440Z"
+      "title": "美軍秘密攻擊伊朗格什姆島！為何刻意保持低調？",
+      "url": "https://www.gvm.com.tw/article/134227",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261015/243043.jpg",
+      "publishedAt": "2026-11-03T02:48:00.000Z",
+      "fetchedAt": "2026-11-03T03:25:48.097Z"
     },
     {
-      "id": "f26c53a5360ec32e",
+      "id": "1599aa7472eea6b1",
       "source": "遠見",
       "category": "AI／科技",
-      "title": "AI用得快也要守得住！Fortinet：CEO應從企業治理看待資安與成長雙軌並進",
-      "url": "https://www.gvm.com.tw/article/133441",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261002/242245.jpg",
-      "publishedAt": "2026-10-31T16:00:00.000Z",
-      "fetchedAt": "2026-11-02T01:26:48.440Z"
+      "title": "耐特11月19日掛牌，38歲老牌材料廠如何切入BBU風潮？",
+      "url": "https://www.gvm.com.tw/article/134217",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261102/244334.jpg",
+      "publishedAt": "2026-11-02T09:13:00.000Z",
+      "fetchedAt": "2026-11-03T03:25:48.097Z"
     },
     {
-      "id": "64f876aebb1a7d39",
+      "id": "66bb64bdf5d98191",
       "source": "遠見",
       "category": "金融／產經",
-      "title": "醫師的獸醫夢：在生命的重量裡，尋找專業的韌性與社會的諒解",
-      "url": "https://www.gvm.com.tw/article/134200",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261102/244321.jpg",
-      "publishedAt": "2026-11-02T01:19:00.000Z",
-      "fetchedAt": "2026-11-02T01:26:48.440Z"
+      "title": "月薪3萬8、生活費剩7千？名家公開「I人」專屬理財法：領薪先做「這件事」",
+      "url": "https://www.gvm.com.tw/article/134226",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261103/244361.jpg",
+      "publishedAt": "2026-11-03T02:42:00.000Z",
+      "fetchedAt": "2026-11-03T03:25:48.097Z"
     },
     {
-      "id": "02c4b8e4d2473274",
+      "id": "fa8ff844fcc17528",
       "source": "遠見",
       "category": "好享生活／教育／話題",
-      "title": "從賽道到腕間：RICHARD MILLE × Ferrari 如何以工程突破性能極限",
-      "url": "https://www.gvm.com.tw/article/133862",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261019/243288.jpg",
-      "publishedAt": "2026-11-01T16:00:00.000Z",
-      "fetchedAt": "2026-11-02T01:26:48.440Z"
+      "title": "皮克敏路跑2027懶人包：早鳥送限定周邊，北中南3場日期地點、報名費、三色物資怎麼選一次看",
+      "url": "https://www.gvm.com.tw/article/134231",
+      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261103/244356.jpg",
+      "publishedAt": "2026-11-03T03:07:00.000Z",
+      "fetchedAt": "2026-11-03T03:25:48.097Z"
     },
     {
-      "id": "a25e07ba0a854a6e",
+      "id": "4e99ad38e22766eb",
       "source": "壹蘋",
       "category": "國際",
-      "title": "看壞選情？川普預告「選輸放大絕」　再提普發16萬元",
-      "url": "https://news.nextapple.com/international/20261102/11995619EA1356C4ED320598F1472682",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/11995619EA1356C4ED320598F1472682/3590834531a14da2ce8eddd77f1ec052_1280.webp",
-      "publishedAt": "2026-11-02T00:28:47.000Z",
-      "fetchedAt": "2026-11-02T01:26:48.440Z"
+      "title": "一個人生轉折讓他走了28年！「真人版阿甘」徒步5萬公里　今天終於走到家",
+      "url": "https://news.nextapple.com/international/20261103/976C61B0E4524AACE39DA778BEA5292F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/976C61B0E4524AACE39DA778BEA5292F/fab6115840eadb75796e750be1053693_1280.webp",
+      "publishedAt": "2026-11-03T02:38:32.000Z",
+      "fetchedAt": "2026-11-03T03:25:48.097Z"
     },
     {
-      "id": "adae076828797e6f",
+      "id": "d9a0ab952c5ed87e",
       "source": "壹蘋",
       "category": "生活",
-      "title": "東北季風增強！北台降溫「越晚雨越大」　週四還有第2波",
-      "url": "https://news.nextapple.com/life/20261102/84394C2194B914560732C67B4D272E01",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/84394C2194B914560732C67B4D272E01/fa2c30ae1ef889dfbc39e056340958e3_1280.webp",
-      "publishedAt": "2026-11-01T22:29:03.000Z",
-      "fetchedAt": "2026-11-02T01:26:48.440Z"
+      "title": "沈伯洋遭疑說謊「媽媽是老師 又變清潔工？」　張雅琴曝真相",
+      "url": "https://news.nextapple.com/life/20261103/448FF85A0844C0071F19A26285FBB357",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/448FF85A0844C0071F19A26285FBB357/00a6b420143cff58b942ccdd20cf8235_1280.webp",
+      "publishedAt": "2026-11-03T03:18:00.000Z",
+      "fetchedAt": "2026-11-03T03:25:48.097Z"
     },
     {
-      "id": "b8d966b29b13d595",
+      "id": "4a6cbc6525d67ed2",
       "source": "壹蘋",
       "category": "社會",
-      "title": "高雄毒駕新制上路首日取締10件！汽機車全數沒入　拒測最高罰27萬",
-      "url": "https://news.nextapple.com/local/20261102/351A80B359B3676D6BDCDF2D9C00BA50",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/351A80B359B3676D6BDCDF2D9C00BA50/c26e46edd84cbd0b9ae0631cf53a14af_1280.webp",
-      "publishedAt": "2026-11-01T16:01:00.000Z",
-      "fetchedAt": "2026-11-02T01:26:48.440Z"
+      "title": "橋檢雙喜臨門！勇奪環保犯罪查緝績優團隊、金環獎　全國唯一獲雙獎檢察機關",
+      "url": "https://news.nextapple.com/local/20261103/A3AD6EAC36532291B11848BCA50FC92B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A3AD6EAC36532291B11848BCA50FC92B/5dfe8a1883fcd46f91cce0dec5ef82b9_1280.webp",
+      "publishedAt": "2026-11-03T03:05:40.000Z",
+      "fetchedAt": "2026-11-03T03:25:48.097Z"
     },
     {
-      "id": "3fb82dffe2193475",
+      "id": "e03db23d4274a378",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "孫芸芸、廖鎮漢傳分居27年婚變？遭爆「幾乎不在台灣」回應了",
-      "url": "https://news.nextapple.com/entertainment/20261102/9DAC64E39E7982B510FA7F769C09285F",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/9DAC64E39E7982B510FA7F769C09285F/ca75b77a20babd16d99984a5bd928799_1280.webp",
-      "publishedAt": "2026-11-02T01:10:47.000Z",
-      "fetchedAt": "2026-11-02T01:26:48.440Z"
+      "title": "小S火辣提問「新生代比較差的是誰？」　霍建華語塞甩鍋老婆林心如",
+      "url": "https://news.nextapple.com/entertainment/20261103/646CA2476A09FD20A3024D371589B5B4",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/646CA2476A09FD20A3024D371589B5B4/b18fd3b6e5452de186a269315795bdc8_1280.webp",
+      "publishedAt": "2026-11-03T03:00:19.000Z",
+      "fetchedAt": "2026-11-03T03:25:48.097Z"
     },
     {
-      "id": "1dfff3c2e9b15726",
+      "id": "6478c7cd1f92a1e9",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "LINE無法傳訊通話！11/4起4類裝置不能用　iPhone 6也中招",
-      "url": "https://news.nextapple.com/aitech/20261102/F11E095F57814483B93C3942D677DC42",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/F11E095F57814483B93C3942D677DC42/23553e96674030ea154424e807f705c4_1280.webp",
-      "publishedAt": "2026-11-01T16:01:00.000Z",
-      "fetchedAt": "2026-11-02T01:26:48.440Z"
+      "title": "皮克敏攜手CoCo送咖啡金盆　走2000步再拿限定獎勵",
+      "url": "https://news.nextapple.com/aitech/20261103/A4EC700C8C52DB7AD7C11C60FE84A1C3",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A4EC700C8C52DB7AD7C11C60FE84A1C3/a5385de7d5b4faa83f1b696f1846fe95_1280.webp",
+      "publishedAt": "2026-11-03T02:24:10.000Z",
+      "fetchedAt": "2026-11-03T03:25:48.097Z"
     },
     {
-      "id": "c2938142ddb8e4fb",
+      "id": "553dcf852c20a7dc",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "台股跌逾700點摜破4萬5大關　台積電跌40元",
-      "url": "https://news.nextapple.com/finance/20261102/C2BDE9607A71804291C4A6144C939696",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/C2BDE9607A71804291C4A6144C939696/72e939c158675ebe67421ee54447267e_1280.webp",
-      "publishedAt": "2026-11-02T01:13:04.000Z",
-      "fetchedAt": "2026-11-02T01:26:48.440Z"
+      "title": "「被動員」第2彈？石油工會今也發3點聲明挺增資中油",
+      "url": "https://news.nextapple.com/finance/20261103/2E1BB78FB8ABFFA23634E6549EC3EB2D",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/2E1BB78FB8ABFFA23634E6549EC3EB2D/596b02b3b282be676b19a4489031aeda_1280.webp",
+      "publishedAt": "2026-11-03T03:19:12.000Z",
+      "fetchedAt": "2026-11-03T03:25:48.097Z"
     },
     {
-      "id": "c489462d3804c9d9",
+      "id": "499037a7e9fd3060",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "蔣萬安母親「獨自勇闖洋流」拉票！一票人喊：不要罵她以免中計",
-      "url": "https://news.nextapple.com/politics/20261102/4081060BD04D25D83EA9B07D0C194047",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/4081060BD04D25D83EA9B07D0C194047/165cf5e456f9b5a354c08ab60a3c348e_1280.webp",
-      "publishedAt": "2026-11-02T00:42:44.000Z",
-      "fetchedAt": "2026-11-02T01:26:48.440Z"
+      "title": "當選後換掉「這位局長」？　沈伯洋：當然！",
+      "url": "https://news.nextapple.com/politics/20261103/9F629F45C631BDF3951EFE75E4072C37",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/9F629F45C631BDF3951EFE75E4072C37/c3b9da75fbf5801309a05df917be4789_1280.webp",
+      "publishedAt": "2026-11-03T03:16:00.000Z",
+      "fetchedAt": "2026-11-03T03:25:48.097Z"
     },
     {
-      "id": "1bfcc9e19bb863db",
+      "id": "a95da20be6ed475e",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "賈永婕萬聖節想穿ＸＸ　竟跑去黃仁勳愛店借！糗被老闆回1句",
-      "url": "https://news.nextapple.com/entertainment/20261102/625087B9141814FC6C73DC033489D181",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/625087B9141814FC6C73DC033489D181/a293f52d01b2d51ae87c3301f6f6df96_1280.webp",
-      "publishedAt": "2026-11-02T00:18:17.000Z",
-      "fetchedAt": "2026-11-02T01:26:48.440Z"
+      "title": "91APP遭駭近480萬人個資恐外洩！1329品牌受波及　沒被騙也能申請補償",
+      "url": "https://news.nextapple.com/life/20261103/5AB394033805266E659C9D35E82C0477",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/5AB394033805266E659C9D35E82C0477/e99e69fb96753d2550bbc0193763c605_1280.webp",
+      "publishedAt": "2026-11-03T02:54:18.000Z",
+      "fetchedAt": "2026-11-03T03:25:48.097Z"
     }
   ]
 }
