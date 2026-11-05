@@ -1,4 +1,5 @@
 /* B1F 手機版：將原本橫向表格改成可直接閱讀與操作的卡片。 */
+.b1f-product-footer{display:contents}
 @media(max-width:760px){
   #panel-b1f .b1f-head{display:block}#panel-b1f .b1f-head>div:first-child p{line-height:1.55}
   #panel-b1f .b1f-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}#panel-b1f .b1f-tabs button{min-width:0;padding:8px 4px;font-size:12px;white-space:nowrap}
@@ -22,17 +23,17 @@
   #panel-b1f .b1f-head-controls .b1f-tabs{order:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));width:100%;gap:2px;margin-top:8px;padding:3px;box-sizing:border-box}
   #panel-b1f .b1f-head-controls .b1f-tabs button{padding:8px 1px;font-size:11px;min-height:36px;letter-spacing:0}
   #panel-b1f .b1f-material-entry{order:1;align-self:flex-start}
-  #panel-b1f .b1f-row.b1f-product-grid{grid-template-columns:56px repeat(3,minmax(0,1fr))!important;gap:6px 8px;padding:10px;margin-bottom:8px}
+  #panel-b1f .b1f-row.b1f-product-grid{grid-template-columns:56px repeat(3,minmax(0,1fr))!important;gap:5px 8px;padding:8px 10px;margin-bottom:8px}
   #panel-b1f .b1f-row.b1f-product-grid>*::before{display:none}
-  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(1){grid-area:1/1/2/4;font-size:14px;overflow-wrap:anywhere}
-  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(5){grid-area:1/4/2/5;align-self:center;white-space:nowrap;font-size:12px}
-  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(2){grid-area:2/1/3/3;font-size:11px}
-  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(6){grid-area:2/3/3/5;font-size:12px;align-items:flex-end}
-  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(3){grid-area:3/1/4/3}
-  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(4){grid-area:3/3/4/5}
+  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(1){grid-area:1/1/2/3;font-size:14px;overflow-wrap:anywhere}
+  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(5){grid-area:1/3/2/4;align-self:center;align-items:flex-end;white-space:nowrap;font-size:12px}
+  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(2){grid-area:2/1/3/2;font-size:11px}
+  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(6){grid-area:1/4/2/5;font-size:12px;align-self:center;align-items:flex-end}
+  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(3){grid-area:2/2/3/3}
+  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(4){grid-area:2/3/3/5}
   #panel-b1f .b1f-row.b1f-product-grid>.b1f-cell-muted{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;font-size:11px;line-height:1.4}
-  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(7){grid-area:4/1/5/2;align-self:center}
-  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(8){grid-area:4/2/5/5;display:flex;flex-direction:row;flex-wrap:wrap;gap:4px;white-space:normal;align-self:center}
-  #panel-b1f .b1f-row.b1f-product-grid .b1f-row-qty{min-height:34px;width:100%;box-sizing:border-box}
+  #panel-b1f .b1f-row.b1f-product-grid>.b1f-product-footer{grid-area:3/1/4/5;display:flex;flex-direction:row;justify-content:flex-end;align-items:center;gap:5px;flex-wrap:wrap}
+  #panel-b1f .b1f-product-footer>.b1f-actions{display:flex;flex-direction:row;justify-content:flex-end;flex-wrap:wrap;gap:4px;white-space:normal}
+  #panel-b1f .b1f-row.b1f-product-grid .b1f-row-qty{min-height:34px;width:52px;box-sizing:border-box}
   #panel-b1f .b1f-row.b1f-product-grid .b1f-actions button{font-size:11px;padding:5px;min-height:34px}
 }
