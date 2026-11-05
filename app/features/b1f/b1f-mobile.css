@@ -1,5 +1,8 @@
 /* B1F 手機版：將原本橫向表格改成可直接閱讀與操作的卡片。 */
 .b1f-product-footer{display:contents}
+.b1f-cart-icon{display:none}
+.b1f-category-edit{display:inline-flex;max-width:100%;border:0;background:transparent;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.b1f-category-edit:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:4px}
 @media(max-width:760px){
   #panel-b1f .b1f-head{display:block}#panel-b1f .b1f-head>div:first-child p{line-height:1.55}
   #panel-b1f .b1f-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}#panel-b1f .b1f-tabs button{min-width:0;padding:8px 4px;font-size:12px;white-space:nowrap}
@@ -23,17 +26,29 @@
   #panel-b1f .b1f-head-controls .b1f-tabs{order:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));width:100%;gap:2px;margin-top:8px;padding:3px;box-sizing:border-box}
   #panel-b1f .b1f-head-controls .b1f-tabs button{padding:8px 1px;font-size:11px;min-height:36px;letter-spacing:0}
   #panel-b1f .b1f-material-entry{order:1;align-self:flex-start}
-  #panel-b1f .b1f-row.b1f-product-grid{grid-template-columns:56px repeat(3,minmax(0,1fr))!important;gap:5px 8px;padding:8px 10px;margin-bottom:8px}
+  #panel-b1f .b1f-row.b1f-product-grid{grid-template-columns:minmax(0,1fr) max-content max-content 44px 36px 40px 40px!important;gap:3px 4px;padding:8px 10px;margin-bottom:8px}
   #panel-b1f .b1f-row.b1f-product-grid>*::before{display:none}
-  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(1){grid-area:1/1/2/3;font-size:14px;overflow-wrap:anywhere}
-  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(5){grid-area:1/3/2/4;align-self:center;align-items:flex-end;white-space:nowrap;font-size:12px}
-  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(2){grid-area:2/1/3/2;font-size:11px}
-  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(6){grid-area:1/4/2/5;font-size:12px;align-self:center;align-items:flex-end}
-  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(3){grid-area:2/2/3/3}
-  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(4){grid-area:2/3/3/5}
+  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(1){grid-area:1/1/2/2;font-size:14px;overflow-wrap:anywhere}
+  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(5){grid-area:1/2/2/3;align-self:start;white-space:nowrap;font-size:12px;line-height:20px}
+  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(2){grid-area:2/1/3/4;font-size:11px}
+  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(6){grid-area:1/3/2/4;font-size:12px;align-self:start;white-space:nowrap;line-height:20px}
+  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(3){grid-area:2/4/3/6}
+  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(4){grid-area:2/6/3/8}
   #panel-b1f .b1f-row.b1f-product-grid>.b1f-cell-muted{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;font-size:11px;line-height:1.4}
-  #panel-b1f .b1f-row.b1f-product-grid>.b1f-product-footer{grid-area:3/1/4/5;display:flex;flex-direction:row;justify-content:flex-end;align-items:center;gap:5px;flex-wrap:wrap}
-  #panel-b1f .b1f-product-footer>.b1f-actions{display:flex;flex-direction:row;justify-content:flex-end;flex-wrap:wrap;gap:4px;white-space:normal}
-  #panel-b1f .b1f-row.b1f-product-grid .b1f-row-qty{min-height:34px;width:52px;box-sizing:border-box}
-  #panel-b1f .b1f-row.b1f-product-grid .b1f-actions button{font-size:11px;padding:5px;min-height:34px}
+  #panel-b1f .b1f-row.b1f-product-grid>:nth-child(4){display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;max-width:100%}
+  #panel-b1f .b1f-row.b1f-product-grid>.b1f-product-footer{display:contents}
+  #panel-b1f .b1f-product-footer>div:first-child{grid-area:1/4/2/5;min-width:0}
+  #panel-b1f .b1f-product-footer>.b1f-actions{display:contents;white-space:normal}
+  #panel-b1f .b1f-product-footer .b1f-actions button[onclick^="addB1FToCart"]{grid-area:1/5/2/6}
+  #panel-b1f .b1f-product-footer .b1f-actions button[onclick^="deleteB1FProduct"]{grid-area:1/6/2/7}
+  #panel-b1f .b1f-product-footer .b1f-actions button[onclick^="showB1FInventoryDispose"]{grid-area:1/7/2/8}
+  #panel-b1f .b1f-row.b1f-product-grid .b1f-row-qty{height:20px;min-height:20px;width:44px;box-sizing:border-box;padding:0 3px;font-size:12px;line-height:18px}
+  #panel-b1f .b1f-row.b1f-product-grid .b1f-item-name{line-height:20px}
+  #panel-b1f .b1f-row.b1f-product-grid .b1f-actions button{height:20px;box-sizing:border-box;font-size:11px;padding:0 2px;min-height:20px;line-height:18px}
+  #panel-b1f .b1f-product-footer .b1f-cart-icon{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;line-height:1}
+  #panel-b1f .b1f-product-footer .b1f-actions button[onclick^="addB1FToCart"]{background:#f1eff5;border:1px solid #ded9e7;color:#6e637d;padding:0 2px}
+  #panel-b1f .b1f-product-footer .b1f-cart-icon svg{width:16px;height:16px}
+  #panel-b1f .b1f-product-footer .b1f-actions button[onclick^="addB1FToCart"]:hover{background:#e9e5ee}
+  #panel-b1f .b1f-product-footer .b1f-cart-label{display:none}
+  #panel-b1f .b1f-product-footer .b1f-actions button[onclick^="deleteB1FProduct"],#panel-b1f .b1f-product-footer .b1f-actions button[onclick^="showB1FInventoryDispose"]{width:36px;justify-self:end;padding:0 2px}
 }
