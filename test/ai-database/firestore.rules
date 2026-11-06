@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function manager() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role in ['manager', 'admin']
+        && get(/databases/$(database)/documents/members/$(request.auth.uid)).data.status == 'active';
+    }
+    match /members/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list, create, update, delete: if false;
+    }
+    match /aiDbTestMeta/state {
+      allow read: if manager();
+      allow delete: if false;
+      allow create, update: if manager() && request.resource.data.schemaVersion == 1
+        && request.resource.data.revision is int && request.resource.data.revision > 0
+        && ((!exists(/databases/$(database)/documents/aiDbTestMeta/state) && request.resource.data.revision == 1)
+          || (exists(/databases/$(database)/documents/aiDbTestMeta/state) && request.resource.data.revision == resource.data.revision + 1))
+        && request.resource.data.cleanupPaths is list && request.resource.data.updatedBy == request.auth.uid;
+    }
+    match /aiDbTestCategories/{id} {
+      allow read, delete: if manager();
+      allow create, update: if manager() && request.resource.data.id == id
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 80
+        && request.resource.data.moduleType in ['cases','blank'] && request.resource.data.sortOrder is number;
+    }
+    match /aiDbTestCases/{id} {
+      allow read, delete: if manager();
+      allow create, update: if manager() && request.resource.data.id == id
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
+        && (request.resource.data.area == null || (request.resource.data.area is number && request.resource.data.area >= 0))
+        && (request.resource.data.amount == null || (request.resource.data.amount is number && request.resource.data.amount >= 0))
+        && request.resource.data.contentRevision is int && request.resource.data.contentRevision > 0
+        && getAfter(/databases/$(database)/documents/aiDbTestCategories/$(request.resource.data.categoryId)).data.moduleType == 'cases';
+    }
+    match /aiDbTestFiles/{id} {
+      allow read, delete: if manager();
+      allow create, update: if manager() && request.resource.data.id == id
+        && request.resource.data.kind in ['quote','drawing','change','photo']
+        && request.resource.data.storagePath == 'aiDatabaseTest/cases/' + request.resource.data.caseId + '/' + id
+        && request.resource.data.size is number && request.resource.data.size > 0
+        && existsAfter(/databases/$(database)/documents/aiDbTestCases/$(request.resource.data.caseId));
+    }
+    // Phase two containers may be read by administrators, but no client can
+    // forge AI analysis, confirmed knowledge or original answer audit records.
+    match /{collection}/{id} {
+      allow read: if manager() && collection in ['aiDbTestKnowledge','aiDbTestAnalysisRuns','aiDbTestQuestions','aiDbTestAnswerRevisions'];
+      allow write: if false;
+    }
+  }
+}

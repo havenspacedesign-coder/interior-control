@@ -1,0 +1,22 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function manager() {
+      return request.auth != null
+        && firestore.get(/databases/(default)/documents/members/$(request.auth.uid)).data.role in ['manager','admin']
+        && firestore.get(/databases/(default)/documents/members/$(request.auth.uid)).data.status == 'active';
+    }
+    match /aiDatabaseTest/cases/{caseId}/{fileId} {
+      allow read: if manager() && firestore.exists(/databases/(default)/documents/aiDbTestCases/$(caseId));
+      // Some emulator versions classify re-uploads as create, so explicitly
+      // require an absent resource instead of relying on method splitting.
+      allow create: if manager() && resource == null && firestore.exists(/databases/(default)/documents/aiDbTestCases/$(caseId))
+        && request.resource.size > 0
+        && ((request.resource.contentType == 'application/pdf' && request.resource.size <= 50 * 1024 * 1024)
+          || (request.resource.contentType.matches('image/(jpeg|png|webp)') && request.resource.size <= 20 * 1024 * 1024));
+      allow update: if false;
+      allow delete: if manager();
+    }
+    match /{allPaths=**} { allow read, write: if false; }
+  }
+}

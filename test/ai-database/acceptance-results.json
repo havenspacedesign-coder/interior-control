@@ -1,0 +1,104 @@
+{
+  "startedAt": "2026-11-06T09:43:56.897Z",
+  "project": "demo-haven-ai",
+  "results": [
+    {
+      "name": "分類新增、改名、排序及跨管理員重新讀取",
+      "status": "PASS",
+      "evidence": "名稱、順序及 blank 模組類型均由 Firestore 讀回確認"
+    },
+    {
+      "name": "案件新增、修改、全部基本欄位及排序保存",
+      "status": "PASS",
+      "evidence": "第二管理員讀回坪數、金額、年份、房型、複選範圍、網址及備註"
+    },
+    {
+      "name": "quote：上傳、下載內容與替換",
+      "status": "PASS",
+      "evidence": "原始位元組一致；新檔生效後才刪除舊檔；名稱、大小、上傳人員與時間均保存"
+    },
+    {
+      "name": "drawing：上傳、下載內容與替換",
+      "status": "PASS",
+      "evidence": "原始位元組一致；新檔生效後才刪除舊檔；名稱、大小、上傳人員與時間均保存"
+    },
+    {
+      "name": "change：上傳、下載內容與替換",
+      "status": "PASS",
+      "evidence": "原始位元組一致；新檔生效後才刪除舊檔；名稱、大小、上傳人員與時間均保存"
+    },
+    {
+      "name": "photo：上傳、下載內容與替換",
+      "status": "PASS",
+      "evidence": "原始位元組一致；新檔生效後才刪除舊檔；名稱、大小、上傳人員與時間均保存"
+    },
+    {
+      "name": "替換失敗：格式驗證失敗保留舊檔",
+      "status": "PASS",
+      "evidence": "舊 metadata、path 與原始 bytes 完整保留"
+    },
+    {
+      "name": "替換失敗：Storage 上傳失敗保留舊檔",
+      "status": "PASS",
+      "evidence": "故障注入只影響驗收呼叫；未修改真實規則或停止服務"
+    },
+    {
+      "name": "替換失敗：上傳成功但 metadata 寫入失敗",
+      "status": "PASS",
+      "evidence": "舊檔保持有效，新上傳未掛載物件已清理"
+    },
+    {
+      "name": "替換失敗：另一管理員先修改造成版本衝突",
+      "status": "PASS",
+      "evidence": "拒絕舊版本寫入並保留舊檔；未重設或覆蓋他人資料"
+    },
+    {
+      "name": "兩位管理員真正並行儲存",
+      "status": "PASS",
+      "evidence": "同版本同時送出兩筆交易，恰好一筆成功、一筆遭拒，沒有靜默覆蓋"
+    },
+    {
+      "name": "關閉並重建 Firebase 連線後重新讀取",
+      "status": "PASS",
+      "evidence": "案件、排序、檔案原始 bytes 與照片備註保持"
+    },
+    {
+      "name": "替換後清理失敗與重試",
+      "status": "PASS",
+      "evidence": "新檔仍可用，舊路徑持久列入待清理，重試後清除"
+    },
+    {
+      "name": "quote：刪除 metadata 與 Storage 原檔",
+      "status": "PASS",
+      "evidence": "僅刪除程式自行建立的驗收檔案"
+    },
+    {
+      "name": "drawing：刪除 metadata 與 Storage 原檔",
+      "status": "PASS",
+      "evidence": "僅刪除程式自行建立的驗收檔案"
+    },
+    {
+      "name": "change：刪除 metadata 與 Storage 原檔",
+      "status": "PASS",
+      "evidence": "僅刪除程式自行建立的驗收檔案"
+    },
+    {
+      "name": "photo：刪除 metadata 與 Storage 原檔",
+      "status": "PASS",
+      "evidence": "僅刪除程式自行建立的驗收檔案"
+    },
+    {
+      "name": "案件與分類刪除",
+      "status": "PASS",
+      "evidence": "兩個驗收分類及兩筆驗收案件已移除，原有資料不受影響"
+    },
+    {
+      "name": "原有操作畫面資料完整保留",
+      "status": "PASS",
+      "evidence": "比較驗收前後所有原有分類、案件、檔案、知識及待清理資料，逐欄完全相同；只有全域 revision 正常推進"
+    }
+  ],
+  "productionAccess": false,
+  "status": "PASS",
+  "completedAt": "2026-11-06T09:44:05.090Z"
+}

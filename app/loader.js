@@ -4,7 +4,7 @@ import { MODULE_ORDER, FEATURE_MODULES, SHARED_MODULES } from './module-manifest
 const pageFeature = document.documentElement.dataset.appFeature || '';
 const unifiedTestMode = pageFeature === 'test';
 const requestedTestFeature = location.hash.replace(/^#/, '');
-const feature = unifiedTestMode && FEATURE_MODULES[requestedTestFeature] ? requestedTestFeature : (unifiedTestMode ? 'home' : pageFeature);
+const feature = unifiedTestMode && (FEATURE_MODULES[requestedTestFeature] || requestedTestFeature === 'ai-database') ? requestedTestFeature : (unifiedTestMode ? 'home' : pageFeature);
 window.__APP_FEATURE_TEST__ = feature;
 window.__APP_UNIFIED_TEST__ = unifiedTestMode;
 mountAppShell(unifiedTestMode ? '' : feature);
@@ -51,6 +51,8 @@ const [firebaseApp, firestore, firebaseAuth, firebaseStorage] = unifiedTestMode
 
 const requested = unifiedTestMode || !feature ? new Set(MODULE_ORDER) : new Set([...SHARED_MODULES, ...(FEATURE_MODULES[feature] || [])]);
 const modulePaths = MODULE_ORDER.filter(path => requested.has(path));
+// The new knowledge module is intentionally absent from production manifests.
+if (unifiedTestMode) modulePaths.push('app/features/ai-database/test-integration.js');
 if (unifiedTestMode || feature) modulePaths.push('app/test-bootstrap.js');
 
 const sources = await Promise.all(modulePaths.map(async path => {

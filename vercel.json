@@ -1,5 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "feature/ai-database-phase1": false
+    }
+  },
   "rewrites": [
     {
       "source": "/__/auth/:path*",
