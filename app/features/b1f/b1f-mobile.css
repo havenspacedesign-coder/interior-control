@@ -3,6 +3,12 @@
 .b1f-cart-icon{display:none}
 .b1f-category-edit{display:inline-flex;max-width:100%;border:0;background:transparent;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
 .b1f-category-edit:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:4px}
+.b1f-inventory-details{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding-top:6px;font-size:12px;line-height:1.5;color:var(--text2);text-align:left;font-weight:400;white-space:normal}
+.b1f-inventory-sites{display:flex;flex-wrap:wrap;gap:4px 14px;width:100%;color:var(--text)}
+.b1f-in-use-status{color:#75634b;background:#f6f0e7;border-radius:4px;padding:1px 5px}
+.b1f-inventory-trigger{cursor:pointer;white-space:nowrap}
+.b1f-inventory-trigger:focus-visible{outline:1px solid var(--purple);outline-offset:2px;border-radius:3px}
+.b1f-inventory-tooltip{background:#fff;max-height:calc(100vh - 16px);overflow-y:auto;pointer-events:auto}
 @media(max-width:760px){
   #panel-b1f .b1f-head{display:block}#panel-b1f .b1f-head>div:first-child p{line-height:1.55}
   #panel-b1f .b1f-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}#panel-b1f .b1f-tabs button{min-width:0;padding:8px 4px;font-size:12px;white-space:nowrap}
@@ -13,7 +19,7 @@
   #panel-b1f .b1f-row.b1f-product-grid>*::before,#panel-b1f .b1f-row.b1f-cart-grid>*::before,#panel-b1f .b1f-row.b1f-history-grid>*::before,#panel-b1f .b1f-pending-row>*:not(.b1f-used-check)::before{font-size:11px;font-weight:600;color:var(--text2)}
   #panel-b1f .b1f-row .b1f-item-name{grid-column:1/-1;font-size:15px;font-weight:700}#panel-b1f .b1f-row .b1f-item-name::before{content:"商品"}
   #panel-b1f .b1f-product-grid>:nth-child(2)::before{content:"適用分類"}#panel-b1f .b1f-product-grid>:nth-child(3)::before{content:"來源"}#panel-b1f .b1f-product-grid>:nth-child(4)::before{content:"備註"}#panel-b1f .b1f-product-grid>:nth-child(5)::before{content:"庫存數量"}#panel-b1f .b1f-product-grid>:nth-child(6)::before{content:"單價"}#panel-b1f .b1f-product-grid>:nth-child(7)::before{content:"本次數量"}#panel-b1f .b1f-product-grid>:nth-child(8)::before{content:"操作"}
-  #panel-b1f .b1f-cart-grid>:nth-child(2)::before{content:"庫存"}#panel-b1f .b1f-cart-grid>:nth-child(3)::before{content:"領用數量"}#panel-b1f .b1f-cart-grid>:nth-child(4)::before{content:"單價"}#panel-b1f .b1f-cart-grid>:nth-child(5)::before{content:"小計"}#panel-b1f .b1f-cart-grid>:nth-child(6)::before{content:"操作"}
+  #panel-b1f .b1f-cart-grid>:nth-child(2)::before{content:"可領用"}#panel-b1f .b1f-cart-grid>:nth-child(3)::before{content:"領用數量"}#panel-b1f .b1f-cart-grid>:nth-child(4)::before{content:"單價"}#panel-b1f .b1f-cart-grid>:nth-child(5)::before{content:"小計"}#panel-b1f .b1f-cart-grid>:nth-child(6)::before{content:"操作"}
   #panel-b1f .b1f-history-grid>:nth-child(1)::before{content:"日期"}#panel-b1f .b1f-history-grid>:nth-child(2)::before{content:"類型"}#panel-b1f .b1f-history-grid>:nth-child(4)::before{content:"數量"}#panel-b1f .b1f-history-grid>:nth-child(5)::before{content:"案件／來源"}#panel-b1f .b1f-history-grid>:nth-child(6)::before{content:"金額"}
   #panel-b1f .b1f-pending-row{grid-template-columns:24px repeat(2,minmax(0,1fr))}#panel-b1f .b1f-pending-row .b1f-used-check{grid-column:1;grid-row:1;align-self:center}#panel-b1f .b1f-pending-row .b1f-item-name{grid-column:2/-1}#panel-b1f .b1f-pending-row>:nth-child(3)::before{content:"待結案數量"}#panel-b1f .b1f-pending-row>:nth-child(4)::before{content:"單價"}#panel-b1f .b1f-pending-row>:nth-child(5){grid-column:2/-1}#panel-b1f .b1f-pending-row>:nth-child(5)::before{content:"計價資訊"}#panel-b1f .b1f-pending-row .b1f-actions{grid-column:2/-1}
   #panel-b1f .b1f-actions{align-items:flex-start;justify-content:flex-start;flex-wrap:wrap}#panel-b1f .b1f-actions button{min-height:34px}#panel-b1f .b1f-stepper{display:flex!important;flex-direction:row!important;align-items:center;flex-wrap:wrap}#panel-b1f .b1f-stepper::before{display:none}#panel-b1f .b1f-row-qty{width:100%;min-height:36px}#panel-b1f .b1f-cell-muted{white-space:normal;overflow:visible;text-overflow:clip}
@@ -36,6 +42,8 @@
   #panel-b1f .b1f-row.b1f-product-grid>:nth-child(4){grid-area:2/6/3/8}
   #panel-b1f .b1f-row.b1f-product-grid>.b1f-cell-muted{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;font-size:11px;line-height:1.4}
   #panel-b1f .b1f-row.b1f-product-grid>:nth-child(4){display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;max-width:100%}
+  #panel-b1f .b1f-row.b1f-product-grid>.b1f-inventory-details{grid-area:3/1/4/8;display:flex;flex-direction:row;flex-wrap:wrap;gap:3px 10px;padding-top:3px;font-size:11px}
+  #panel-b1f .b1f-row.b1f-product-grid>.b1f-inventory-details::before{display:none}
   #panel-b1f .b1f-row.b1f-product-grid>.b1f-product-footer{display:contents}
   #panel-b1f .b1f-product-footer>div:first-child{grid-area:1/4/2/5;min-width:0}
   #panel-b1f .b1f-product-footer>.b1f-actions{display:contents;white-space:normal}
