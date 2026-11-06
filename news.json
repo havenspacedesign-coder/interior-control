@@ -1,126 +1,126 @@
 {
-  "date": "2026-11-05",
-  "updatedAt": "2026-11-05T02:15:04.714Z",
+  "date": "2026-11-06",
+  "updatedAt": "2026-11-06T02:14:43.362Z",
   "news": [
     {
-      "id": "4a99c803097bc647",
-      "source": "遠見",
-      "category": "國際",
-      "title": "重掌眾院逼宮川普？美眾院民主黨團：無人提彈劾總統，新會期聚焦民生法案",
-      "url": "https://www.gvm.com.tw/article/134290",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20251110/218488.jpg",
-      "publishedAt": "2026-11-05T02:11:00.000Z",
-      "fetchedAt": "2026-11-05T02:15:04.714Z"
-    },
-    {
-      "id": "bdff1f672237babe",
-      "source": "遠見",
-      "category": "AI／科技",
-      "title": "Gemini怎麼用？免費與付費方案、學生優惠、工具教學一次看",
-      "url": "https://www.gvm.com.tw/article/134287",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261104/244539.jpg",
-      "publishedAt": "2026-11-05T01:53:00.000Z",
-      "fetchedAt": "2026-11-05T02:15:04.714Z"
-    },
-    {
-      "id": "44bf44129d750a3b",
-      "source": "遠見",
-      "category": "金融／產經",
-      "title": "台股一個月內重挫7000點，還會再摔？陶冬示警：2027還有2大未爆彈",
-      "url": "https://www.gvm.com.tw/article/134286",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261104/244526.jpg",
-      "publishedAt": "2026-11-05T01:27:00.000Z",
-      "fetchedAt": "2026-11-05T02:15:04.714Z"
-    },
-    {
-      "id": "8dff7bde6c24c378",
-      "source": "遠見",
-      "category": "好享生活／教育／話題",
-      "title": "搖擺州台中怎麼選？何欣純提台中版航空城、松菸，拚城市大晉級",
-      "url": "https://www.gvm.com.tw/article/134282",
-      "imageUrl": "https://imgs.gvm.com.tw/upload/gallery/20261104/244538.jpg",
-      "publishedAt": "2026-11-04T10:03:00.000Z",
-      "fetchedAt": "2026-11-05T02:15:04.714Z"
-    },
-    {
-      "id": "c32c0e99239bb32a",
+      "id": "1f88225c547afaa4",
       "source": "壹蘋",
       "category": "國際",
-      "title": "民主黨贏了、加拿大笑了！省長開心到翻筋斗　川普關稅面臨變數",
-      "url": "https://news.nextapple.com/international/20261105/406314352C93170C693E7C95D12C66C6",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/406314352C93170C693E7C95D12C66C6/fb821591e6c52da0ee4f443f6bc76ff9_1280.webp",
-      "publishedAt": "2026-11-05T01:13:27.000Z",
-      "fetchedAt": "2026-11-05T02:15:04.714Z"
+      "title": "共和黨慘敗「4625億對台軍售可望解凍」？前中國官員坦言：北京頭號風險",
+      "url": "https://news.nextapple.com/international/20261106/D141783DC18E00AA94B4824BF568C676",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/D141783DC18E00AA94B4824BF568C676/05a3db759b70cd6a45ed9700a37ff1a3_1280.webp",
+      "publishedAt": "2026-11-06T01:32:50.000Z",
+      "fetchedAt": "2026-11-06T02:14:43.362Z"
     },
     {
-      "id": "46c952d0fcf1b211",
+      "id": "d24777c18b226bc7",
       "source": "壹蘋",
       "category": "生活",
-      "title": "王品集團發重訊！委外系統爆資安事件　資料異常存取",
-      "url": "https://news.nextapple.com/life/20261105/3AA7C72460520E15B48C20AE5691B552",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/3AA7C72460520E15B48C20AE5691B552/41d2563074728e745fdd6b294a26db09_1280.webp",
-      "publishedAt": "2026-11-05T01:58:53.000Z",
-      "fetchedAt": "2026-11-05T02:15:04.714Z"
+      "title": "咖啡買11送11！超商飲品優惠開搶　一次送38顆茶葉蛋",
+      "url": "https://news.nextapple.com/life/20261106/53B0A9FF7AFD85FDAB29BE2217900242",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/53B0A9FF7AFD85FDAB29BE2217900242/eaf905e003eee2f01befc88e6ee156f5_1280.webp",
+      "publishedAt": "2026-11-06T01:19:00.000Z",
+      "fetchedAt": "2026-11-06T02:14:43.362Z"
     },
     {
-      "id": "635e331eaaa0e442",
+      "id": "6812bc8672de045f",
       "source": "壹蘋",
       "category": "社會",
-      "title": "涉嫌圖利業者211萬餘元！高雄動保處前處長葉坤松涉貪瀆、洩密遭起訴",
-      "url": "https://news.nextapple.com/local/20261105/4EA4E65812F61D64CE9ACAD165EE4249",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/4EA4E65812F61D64CE9ACAD165EE4249/032d33588b0dd432928b4d60a09f3d8d_1280.webp",
-      "publishedAt": "2026-11-05T02:02:31.000Z",
-      "fetchedAt": "2026-11-05T02:15:04.714Z"
+      "title": "「滿瑞富6號」疑載張俊傑偷渡　中國籍「地下船長」陳華亭遭聲押禁見",
+      "url": "https://news.nextapple.com/local/20261106/CB2D426A2027642294D9ABD71E06F9BD",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/CB2D426A2027642294D9ABD71E06F9BD/443c3d0d6da9cfdf8d1f80e7db92cdb9_1280.webp",
+      "publishedAt": "2026-11-06T01:57:35.000Z",
+      "fetchedAt": "2026-11-06T02:14:43.362Z"
     },
     {
-      "id": "5e21056608fae9b3",
+      "id": "4107e1dcab4270cf",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "何如芸深陷悲傷！恍惚開錯路　想探望媽媽才驚覺：她已不在...",
-      "url": "https://news.nextapple.com/entertainment/20261105/4FDD2912ABA93E205A3C5C851F7900B4",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/4FDD2912ABA93E205A3C5C851F7900B4/398ccffe885c2b2529a614f88ad608b5_1280.webp",
-      "publishedAt": "2026-11-05T01:50:56.000Z",
-      "fetchedAt": "2026-11-05T02:15:04.714Z"
+      "title": "狗仔直擊｜鍾漢良被爆隱婚造型師！甜蜜晚餐被捕獲　同框照曝光（壹蘋10點強打）",
+      "url": "https://news.nextapple.com/entertainment/20261106/D76BD56D5DAA28A97C92DC43481B6631",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/D76BD56D5DAA28A97C92DC43481B6631/2ece2d30b99b1c5a7730a46201302b88_1280.webp",
+      "publishedAt": "2026-11-06T01:50:00.000Z",
+      "fetchedAt": "2026-11-06T02:14:43.362Z"
     },
     {
-      "id": "8b8003e71e08943e",
+      "id": "62d034865fd5b47d",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "iPhone也能用Siri AI繁中版　支援機型、3步驟開啟教學一次看",
-      "url": "https://news.nextapple.com/aitech/20261105/004CA21DBF732C8951D2AF19582C1BD4",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/004CA21DBF732C8951D2AF19582C1BD4/e33beb5942e40c1a93de5231c93d8000_1280.webp",
-      "publishedAt": "2026-11-04T16:05:00.000Z",
-      "fetchedAt": "2026-11-05T02:15:04.714Z"
+      "title": "雙11買iPhone Duo省2千　Pixel摺疊機半價有找",
+      "url": "https://news.nextapple.com/aitech/20261105/92BCA78029783AE3D6B036BF0BCA4F24",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/92BCA78029783AE3D6B036BF0BCA4F24/6cee8b1e3a4e949bd4dc54c295ad6074_1280.webp",
+      "publishedAt": "2026-11-05T08:33:01.000Z",
+      "fetchedAt": "2026-11-06T02:14:43.362Z"
     },
     {
-      "id": "8ff2fa1560507bbb",
+      "id": "745f87a3b23400be",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "費半重挫逾3%！台股開盤跌逾400點　台積電平盤震盪報2260",
-      "url": "https://news.nextapple.com/finance/20261105/E5B37004FC4D5FDF8BD02147C67CB511",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/E5B37004FC4D5FDF8BD02147C67CB511/e63bafd4aa817a7da55107827bdad597_1280.webp",
-      "publishedAt": "2026-11-05T01:03:32.000Z",
-      "fetchedAt": "2026-11-05T02:15:04.714Z"
+      "title": "台股崩跌3737點史上最大！千金股慘遭血洗跌停　僅6檔未亮燈",
+      "url": "https://news.nextapple.com/finance/20261106/3C7D3B7DD7444907EFCC79DD220925DF",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/3C7D3B7DD7444907EFCC79DD220925DF/ca055861cef6ff438ead5391496c3be1_1280.webp",
+      "publishedAt": "2026-11-06T01:38:49.000Z",
+      "fetchedAt": "2026-11-06T02:14:43.362Z"
     },
     {
-      "id": "cc7a858e76ca5bb2",
+      "id": "f7c68ef704a5e596",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "ITF旅展暗藏8大陷阱！別被買1送1沖昏頭　專家教「聰明簽約術」（壹蘋10點強打）",
-      "url": "https://news.nextapple.com/life/20261105/204CBCFF6B0FA1D3939FD9BDE0067760",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/204CBCFF6B0FA1D3939FD9BDE0067760/e0cfd4fbb218e21b23275298716cf27e_1280.webp",
-      "publishedAt": "2026-11-05T01:50:00.000Z",
-      "fetchedAt": "2026-11-05T02:15:04.714Z"
+      "title": "台股慘崩！高凌風前妻哀號：股海喝到吐膽汁了",
+      "url": "https://news.nextapple.com/entertainment/20261106/C37C395DB223A3B69B8767540EBF745F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/C37C395DB223A3B69B8767540EBF745F/34fdc86effc21b381be91a68a76628d5_1280.webp",
+      "publishedAt": "2026-11-06T01:47:00.000Z",
+      "fetchedAt": "2026-11-06T02:14:43.362Z"
     },
     {
-      "id": "2b05b04f99be22c9",
+      "id": "28b10d72036437df",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "張俊傑疑聲東擊西跳船偷渡　「滿瑞富」曾運史上最大宗K毒",
-      "url": "https://news.nextapple.com/local/20261105/2ACA53B8B31DA0E26FD1DD8842663DB6",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/2ACA53B8B31DA0E26FD1DD8842663DB6/1394f428b5a4b7b60b3be6e043741caf_1280.webp",
-      "publishedAt": "2026-11-05T01:49:41.000Z",
-      "fetchedAt": "2026-11-05T02:15:04.714Z"
+      "title": "河口湖命案｜兇嫌疑徵聘24人　女助理憂心：死了多少人",
+      "url": "https://news.nextapple.com/local/20261106/5C241F01F92E33BEEB3798202D1ADDE4",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/5C241F01F92E33BEEB3798202D1ADDE4/1151c17c1a2eb6661dcbb2caaa7ee97c_1280.webp",
+      "publishedAt": "2026-11-06T01:40:13.000Z",
+      "fetchedAt": "2026-11-06T02:14:43.362Z"
+    },
+    {
+      "id": "1cb9b27fe002c6fb",
+      "source": "壹蘋",
+      "category": "社會",
+      "title": "酒駕慣犯撞死19歲男大生　淚！阿嬤自備的殯葬契約提前讓孫用",
+      "url": "https://news.nextapple.com/local/20261106/698C7955B3E6497CE81FD45BA88C4520",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/698C7955B3E6497CE81FD45BA88C4520/56885884629ec3b7c1e968df0866926e_1280.webp",
+      "publishedAt": "2026-11-06T01:52:06.000Z",
+      "fetchedAt": "2026-11-06T02:14:43.362Z"
+    },
+    {
+      "id": "b6f14b468e36afbc",
+      "source": "壹蘋",
+      "category": "社會",
+      "title": "堆高機倒車闖車道　嬤載孫上學遭撞身亡",
+      "url": "https://news.nextapple.com/local/20261106/D061970B95ECD4D2B259316677D64600",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/D061970B95ECD4D2B259316677D64600/c70f689c32f4d8143863ea691b25912b_1280.webp",
+      "publishedAt": "2026-11-06T01:51:05.000Z",
+      "fetchedAt": "2026-11-06T02:14:43.362Z"
+    },
+    {
+      "id": "855576a1e35464bd",
+      "source": "壹蘋",
+      "category": "娛樂時尚",
+      "title": "陳文茜憶罹癌住院生活！半夜偷跑買甜點、分送護理師　如今卻嘆：她走了",
+      "url": "https://news.nextapple.com/entertainment/20261106/74A8855AC85236AF38C3001A146E8859",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/74A8855AC85236AF38C3001A146E8859/efad3442fb0d9cb3d4d4092c4d5fedb1_1280.webp",
+      "publishedAt": "2026-11-06T01:35:44.000Z",
+      "fetchedAt": "2026-11-06T02:14:43.362Z"
+    },
+    {
+      "id": "3352dce6d3f82a0a",
+      "source": "壹蘋",
+      "category": "推薦／熱門",
+      "title": "台股崩3737點創紀錄！卓榮泰急令金管會穩市「必要時出手」",
+      "url": "https://news.nextapple.com/politics/20261106/82CBAF05CA5DD6B2AA8D7257358E41F2",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/82CBAF05CA5DD6B2AA8D7257358E41F2/414b1ec08d523863ba28aeb276dbc846_1280.webp",
+      "publishedAt": "2026-11-06T01:31:54.000Z",
+      "fetchedAt": "2026-11-06T02:14:43.362Z"
     }
   ]
 }
