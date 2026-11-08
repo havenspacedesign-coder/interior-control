@@ -1,126 +1,126 @@
 {
-  "date": "2026-11-07",
-  "updatedAt": "2026-11-07T01:47:06.446Z",
+  "date": "2026-11-08",
+  "updatedAt": "2026-11-08T01:16:48.883Z",
   "news": [
     {
-      "id": "534bf418744823ac",
+      "id": "0f4b01856ead2499",
       "source": "壹蘋",
       "category": "國際",
-      "title": "下個裴洛西？他被看好接美眾院議長　「友台、曾晤蔡英文」",
-      "url": "https://news.nextapple.com/international/20261107/B79FF5B7769C40DCD78C272831170936",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/B79FF5B7769C40DCD78C272831170936/c1704e6632e721a2e9d49d6fce3399b9_1280.webp",
-      "publishedAt": "2026-11-07T00:19:30.000Z",
-      "fetchedAt": "2026-11-07T01:47:06.446Z"
+      "title": "巴紐迫台灣撤代表處　美國務院轟北京「威脅國際和平」",
+      "url": "https://news.nextapple.com/international/20261108/536C21BFF9BC130F2DF15134AF450F4B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/536C21BFF9BC130F2DF15134AF450F4B/66e02cd013b5f432c7715fa7ea6e6884_1280.webp",
+      "publishedAt": "2026-11-08T00:24:00.000Z",
+      "fetchedAt": "2026-11-08T01:16:48.883Z"
     },
     {
-      "id": "f0c11636dfa9dce5",
+      "id": "8465cba18e394d0c",
       "source": "壹蘋",
       "category": "生活",
-      "title": "天母麵店「一堆人吃到蟑螂」　他這隻震驚全網：沒見過這麼大…",
-      "url": "https://news.nextapple.com/life/20261107/DE2606BF5F58F9188D20EF61A2B75001",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/DE2606BF5F58F9188D20EF61A2B75001/127050eb53f50541dc25f53235eaf98d_1280.webp",
-      "publishedAt": "2026-11-07T00:18:12.000Z",
-      "fetchedAt": "2026-11-07T01:47:06.446Z"
+      "title": "病人牙齒佈滿牙菌斑　醫問「你用超軟毛牙刷？」1句話戳中核心",
+      "url": "https://news.nextapple.com/life/20261108/A47F10F1E4636425351590E290C698EE",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A47F10F1E4636425351590E290C698EE/576a0eb77d0c4b237f0b0a19b3cd8d28_1280.webp",
+      "publishedAt": "2026-11-08T01:00:00.000Z",
+      "fetchedAt": "2026-11-08T01:16:48.883Z"
     },
     {
-      "id": "550a50c134f9385e",
+      "id": "7846286b27cc349c",
       "source": "壹蘋",
       "category": "社會",
-      "title": "轎車版閃身步！前車轉彎自撞庇護島翻覆　後車「一個MOVE」驚險閃過",
-      "url": "https://news.nextapple.com/local/20261107/EDD3EAC39B2785154CA8C91BBCB694B6",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/EDD3EAC39B2785154CA8C91BBCB694B6/8c5a304b0f99f596fcceb486ca4fc9cf_1280.webp",
-      "publishedAt": "2026-11-07T01:27:03.000Z",
-      "fetchedAt": "2026-11-07T01:47:06.446Z"
+      "title": "男按摩師突襲抓鳥問「要射嗎」　男客崩潰怒告養生會館",
+      "url": "https://news.nextapple.com/local/20261108/69FDF5462653E85B68F426BBF3596E6E",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/69FDF5462653E85B68F426BBF3596E6E/7b5f88040b745bacc961f93e1f784383_1280.webp",
+      "publishedAt": "2026-11-07T16:01:00.000Z",
+      "fetchedAt": "2026-11-08T01:16:48.883Z"
     },
     {
-      "id": "a7afee106b34829f",
+      "id": "011b6bad6ef2bf8f",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "「情色教主」雪碧重摔昏迷倒臥家中　血流滿面畫面曝光",
-      "url": "https://news.nextapple.com/entertainment/20261107/2EC38E886754139228F092B19EF4A887",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/2EC38E886754139228F092B19EF4A887/75e38ba90b263fce85a8a4839722f445_1280.webp",
-      "publishedAt": "2026-11-07T01:33:25.000Z",
-      "fetchedAt": "2026-11-07T01:47:06.446Z"
+      "title": "29歲模特兒癌逝！男友連發文淚崩曝「摸額照」　Lena拿下面罩氣音說「我愛你」成永別",
+      "url": "https://news.nextapple.com/entertainment/20261108/B8274F3C44FF18A7391B0AEB9DCDEC6A",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/B8274F3C44FF18A7391B0AEB9DCDEC6A/fd12b08b1dc8eb394dd63c08f330b07c_1280.webp",
+      "publishedAt": "2026-11-08T01:15:14.000Z",
+      "fetchedAt": "2026-11-08T01:16:48.883Z"
     },
     {
-      "id": "f0e71e39607759e6",
+      "id": "852298e1072a9c06",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "台灣大雙11追劇優惠　Netflix雙享組399元起",
-      "url": "https://news.nextapple.com/aitech/20261106/40E9B4D773B82F3BFA7F78A64462DA45",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/40E9B4D773B82F3BFA7F78A64462DA45/f9694965945ab1c5c9d830b4b5e8bb5f_1280.webp",
-      "publishedAt": "2026-11-06T09:15:35.000Z",
-      "fetchedAt": "2026-11-07T01:47:06.446Z"
+      "title": "Apple Watch幫記聊天重點　新功能限2款手錶",
+      "url": "https://news.nextapple.com/aitech/20261107/9A23816F15DF758BC61AA835959DA1DA",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/9A23816F15DF758BC61AA835959DA1DA/ed3de55e4ea761c0c03075f71f253e4d_1280.webp",
+      "publishedAt": "2026-11-07T10:16:42.000Z",
+      "fetchedAt": "2026-11-08T01:16:48.883Z"
     },
     {
-      "id": "03e4a18fd358f66a",
+      "id": "33c4abb62cefff00",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "美股反攻！費半回神大漲　台積電ADR飆逾6%",
-      "url": "https://news.nextapple.com/finance/20261107/BF992E17EF90A43C7A5907F2B9E974F1",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/BF992E17EF90A43C7A5907F2B9E974F1/72f92916ab0ab89e562e55d5b100df7a_1280.webp",
-      "publishedAt": "2026-11-06T23:15:46.000Z",
-      "fetchedAt": "2026-11-07T01:47:06.446Z"
+      "title": "科技股重挫！前立委直言「黃仁勳都說謊」　揭AI投資黑洞",
+      "url": "https://news.nextapple.com/finance/20261108/BDB38109B49A87D344B0B48F9E8E7B4D",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/BDB38109B49A87D344B0B48F9E8E7B4D/4d50f9244e6def13979e30679c4cb458_1280.webp",
+      "publishedAt": "2026-11-08T00:59:00.000Z",
+      "fetchedAt": "2026-11-08T01:16:48.883Z"
     },
     {
-      "id": "e65ef051ed538323",
+      "id": "f2eaf7cdac6d2b92",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "蔣萬安支持者陷入「沉默螺旋」？　唐湘龍急吼：見不得人嗎",
-      "url": "https://news.nextapple.com/politics/20261107/647DFE4F80D4EAE12D832FF660AD0245",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/647DFE4F80D4EAE12D832FF660AD0245/2353320c91a2bb7b7aa01c33aa75fd76_1280.webp",
-      "publishedAt": "2026-11-07T01:32:00.000Z",
-      "fetchedAt": "2026-11-07T01:47:06.446Z"
+      "title": "29歲模特兒驚傳離世！死前1週吐「時間不多了」　男友悲痛證實",
+      "url": "https://news.nextapple.com/entertainment/20261108/90DDC2195AF9E403D3486F7E03678A5A",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/90DDC2195AF9E403D3486F7E03678A5A/9537097f087ad5159e7fb7dc75aa54c4_1280.webp",
+      "publishedAt": "2026-11-08T00:16:28.000Z",
+      "fetchedAt": "2026-11-08T01:16:48.883Z"
     },
     {
-      "id": "dc9c699f437e289c",
+      "id": "69c0d270fc49080e",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "載張俊傑偷渡6人收押　「中國人一通電話」給數十萬買通船家",
-      "url": "https://news.nextapple.com/local/20261107/A067B448667726A7D9633E8EC1AE83EC",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A067B448667726A7D9633E8EC1AE83EC/443c3d0d6da9cfdf8d1f80e7db92cdb9_1280.webp",
-      "publishedAt": "2026-11-07T01:27:00.000Z",
-      "fetchedAt": "2026-11-07T01:47:06.446Z"
+      "title": "黃仁勳捲「美女共諜」風波害的？黃敏珊突砍訪韓行",
+      "url": "https://news.nextapple.com/international/20261108/810B340034646356EE871C292484AB60",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/810B340034646356EE871C292484AB60/d6c07d57086f7199aa1f67c8cae13d5b_1280.webp",
+      "publishedAt": "2026-11-07T23:52:59.000Z",
+      "fetchedAt": "2026-11-08T01:16:48.883Z"
     },
     {
-      "id": "53875f3cd35a4a7b",
-      "source": "壹蘋",
-      "category": "推薦／熱門",
-      "title": "疑「學」沈伯洋急訪陳健治　媒體人：蔣萬安敗象已露",
-      "url": "https://news.nextapple.com/politics/20261107/1BC32C48B014CE8950C7E2CD73ED85DF",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/1BC32C48B014CE8950C7E2CD73ED85DF/66c60a099ef3aaf32d3a6dc5104030f2_1280.webp",
-      "publishedAt": "2026-11-07T01:24:57.000Z",
-      "fetchedAt": "2026-11-07T01:47:06.446Z"
-    },
-    {
-      "id": "8d1a9d3dcfcd727c",
+      "id": "522991f963d84158",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "鬼鬼甜曬女兒萌照　感嘆「妹子已是我的一半大」",
-      "url": "https://news.nextapple.com/entertainment/20261107/FFC48B840F2CA63F42F8F54344B29966",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/FFC48B840F2CA63F42F8F54344B29966/3dd9b61002adc2f1f4fb47ebc358cf68_1280.webp",
-      "publishedAt": "2026-11-07T01:19:45.000Z",
-      "fetchedAt": "2026-11-07T01:47:06.446Z"
+      "title": "傅子純遺孀驚失骨灰手鍊　陳謙文演唱會留座「暖心細節」曝",
+      "url": "https://news.nextapple.com/entertainment/20261108/070A9C9E35EEFF3E617A7C6FDEF5444F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/070A9C9E35EEFF3E617A7C6FDEF5444F/85f69789e5d1f00bd07aecc2c9cff6ed_1280.webp",
+      "publishedAt": "2026-11-08T01:06:42.000Z",
+      "fetchedAt": "2026-11-08T01:16:48.883Z"
     },
     {
-      "id": "5f3384dd7bae0e42",
+      "id": "622dab296b67d5a8",
       "source": "壹蘋",
-      "category": "社會",
-      "title": "熱狗遭起訴！朱德庸等了3年大嘆：根本不必走到這一步",
-      "url": "https://news.nextapple.com/local/20261107/A38F41912DB8F4D368F88AC271BBDB88",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A38F41912DB8F4D368F88AC271BBDB88/84cbae7920131795f15fce75a6b87dfc_1280.webp",
-      "publishedAt": "2026-11-07T01:00:00.000Z",
-      "fetchedAt": "2026-11-07T01:47:06.446Z"
+      "category": "推薦／熱門",
+      "title": "又一村還原拜票過程　蔣萬安1行為「你說這是一般掃街？」",
+      "url": "https://news.nextapple.com/politics/20261108/E96D58167FF7FEF404D5E3880DB9D634",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/E96D58167FF7FEF404D5E3880DB9D634/abfa42ba864462c22b7622b9003adc10_1280.webp",
+      "publishedAt": "2026-11-07T23:47:11.000Z",
+      "fetchedAt": "2026-11-08T01:16:48.883Z"
     },
     {
-      "id": "abb3c9a651ad0bf6",
+      "id": "876e58606fd85657",
+      "source": "壹蘋",
+      "category": "國際",
+      "title": "影｜血染波蘭古城！24歲男長槍掃射奪6命　家中再驚見3屍「疑為近親」",
+      "url": "https://news.nextapple.com/international/20261108/6B92FB7C16CCBB3642D3F004B4C9BF62",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/6B92FB7C16CCBB3642D3F004B4C9BF62/74e32051afa5657bbf927f16cd398d47_1280.webp",
+      "publishedAt": "2026-11-07T23:14:49.000Z",
+      "fetchedAt": "2026-11-08T01:16:48.883Z"
+    },
+    {
+      "id": "0d4b423317b7b035",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "Toyz獄中早預言台股暴跌　篠崎泫不聽勸「股票慘賠」",
-      "url": "https://news.nextapple.com/entertainment/20261107/0DD1C8D8DCB4BEB7A76A7A4A37ED96B5",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/0DD1C8D8DCB4BEB7A76A7A4A37ED96B5/342cf912bb883e41ec3524a38a4772d6_1280.webp",
-      "publishedAt": "2026-11-07T00:28:34.000Z",
-      "fetchedAt": "2026-11-07T01:47:06.446Z"
+      "title": "直擊｜蘇志燮不排斥來台拍戲！重現「防空洞歐巴」中文甜喊：老婆",
+      "url": "https://news.nextapple.com/entertainment/20261107/D87213851DBC289652A2B770E5031C2D",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/D87213851DBC289652A2B770E5031C2D/d186a6dd27a205a78eca65681267cd94_1280.webp",
+      "publishedAt": "2026-11-07T23:04:33.000Z",
+      "fetchedAt": "2026-11-08T01:16:48.883Z"
     }
   ]
 }
