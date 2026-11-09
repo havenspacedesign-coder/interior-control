@@ -1,0 +1,65 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function myMember() {
+      return get(
+        /databases/$(database)/documents/members/$(request.auth.uid)
+      ).data;
+    }
+
+    function isActiveMember() {
+      return isSignedIn()
+        && exists(
+          /databases/$(database)/documents/members/$(request.auth.uid)
+        )
+        && myMember().role in ['admin', 'manager', 'supervisor', 'staff']
+        && myMember().get('status', 'active') != 'resigned';
+    }
+
+    function isAdmin() {
+      return isActiveMember() && myMember().role in ['admin', 'manager'];
+    }
+
+    function isAiCollection(collection) {
+      return collection in [
+        'aiDbCategories', 'aiDbCases', 'aiDbFiles', 'aiDbMeta',
+        'aiDbKnowledge', 'aiDbAnalysisRuns', 'aiDbQuestions',
+        'aiDbAnswerRevisions'
+      ];
+    }
+
+    match /members/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+
+      allow create: if isSignedIn()
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.role == 'pending'
+        && request.resource.data.status == 'active';
+
+      allow update: if isAdmin()
+        || (isActiveMember()
+          && !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['role', 'status', 'uid']));
+
+      allow delete: if isAdmin();
+    }
+
+    // Preserve existing access to any documents below a member document.
+    match /members/{uid}/{subcollection}/{document=**} {
+      allow write: if isActiveMember();
+    }
+
+    // Keep legacy access except for AI paths and the role-bearing member documents.
+    match /{collection}/{document=**} {
+      allow read: if isAiCollection(collection) ? isAdmin() : isActiveMember();
+      allow write: if collection != 'members'
+        && (isAiCollection(collection) ? isAdmin() : isActiveMember());
+    }
+  }
+}

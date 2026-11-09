@@ -1,0 +1,61 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function memberExists() {
+      return isSignedIn()
+        && firestore.exists(
+          /databases/(default)/documents/members/$(request.auth.uid)
+        );
+    }
+
+    function memberData() {
+      return firestore.get(
+        /databases/(default)/documents/members/$(request.auth.uid)
+      ).data;
+    }
+
+    function isActiveMember() {
+      return memberExists()
+        && memberData().role in ['admin', 'manager', 'supervisor', 'staff']
+        && memberData().get('status', 'active') != 'resigned';
+    }
+
+    function isAdmin() {
+      return memberExists() && isActiveAdmin(memberData());
+    }
+
+    function isActiveAdmin(member) {
+      return member.role in ['admin', 'manager']
+        && member.get('status', 'active') != 'resigned';
+    }
+
+    match /projectPhotos/{projectId}/{fileName} {
+      allow read: if isActiveMember();
+
+      allow create: if isActiveMember()
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+
+      allow delete: if isActiveMember();
+    }
+
+    match /aiDatabase/cases/{caseId}/{fileId} {
+      allow read, delete: if isAdmin();
+
+      allow create: if isAdmin()
+        && resource == null
+        && request.resource.size > 0
+        && (
+          (request.resource.contentType == 'application/pdf'
+            && request.resource.size <= 50 * 1024 * 1024)
+          || (request.resource.contentType.matches('image/(jpeg|png|webp)')
+            && request.resource.size <= 20 * 1024 * 1024)
+        );
+    }
+  }
+}
