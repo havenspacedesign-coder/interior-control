@@ -349,16 +349,23 @@ function projectTradeSummary(projectId){
   return lines.join('<br>');
 }
 function projectPhotos(p){return Array.isArray(p?.photos)?p.photos.filter(x=>x&&x.url):[];}
+function canUploadProjectPhotos(){
+  const uid=currentUser?.uid;
+  if(!uid)return false;
+  const member=S.members.find(item=>item.id===uid);
+  return !!member&&member.status!=='resigned'
+    && ['admin','manager','supervisor','staff'].includes(member.role);
+}
 const photoBlobCache=new Map();
 function photoId(){return`photo-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;}
 function fileAsDataUrl(file){return new Promise(function(resolve,reject){const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});}
 function safePhotoFileName(name){return String(name||'photo').replace(/[^a-zA-Z0-9._-]/g,'_').slice(-80)||'photo';}
 window.uploadProjectPhotos=async function(projectId,files,returnToForm){
-  if(!isAdmin()||!files?.length)return;
+  if(!canUploadProjectPhotos()||!files?.length)return;
   const p=S.projects.find(x=>x.id===projectId);if(!p)return;
   const selected=Array.from(files);
-  const invalid=selected.find(file=>!String(file.type||'').startsWith('image/')||file.size>10*1024*1024);
-  if(invalid){alert('只能上傳圖片，且單張不可超過 10 MB。');return;}
+  const invalid=selected.find(file=>!String(file.type||'').startsWith('image/')||file.size>=10*1024*1024);
+  if(invalid){alert('只能上傳圖片，且單張須小於 10 MB。');return;}
   try{
     setSyncing();
     const added=[];
@@ -375,10 +382,29 @@ window.uploadProjectPhotos=async function(projectId,files,returnToForm){
       }
       added.push({id,name:file.name||'照片',size:file.size||0,path,url,uploadedAt:new Date().toISOString(),uploadedBy:currentUser?.uid||''});
     }
-    await updateDoc(doc(db,'projects',projectId),{photos:[...projectPhotos(p),...added]});
+    const projectRef=doc(db,'projects',projectId);
+    if(localTestMode){
+      const latest=S.projects.find(project=>project.id===projectId);
+      await updateDoc(projectRef,{photos:[...projectPhotos(latest),...added]});
+    }else{
+      await fbRunTransaction(db,async transaction=>{
+        const snapshot=await transaction.get(projectRef);
+        if(!snapshot.exists())throw new Error('案件已不存在。');
+        const existing=snapshot.data().photos;
+        transaction.update(projectRef,{photos:[...(Array.isArray(existing)?existing:[]),...added]});
+      });
+    }
+    const latest=S.projects.find(project=>project.id===projectId);
+    if(latest){
+      const photos=Array.isArray(latest.photos)?latest.photos:[];
+      const ids=new Set(photos.map(photo=>photo?.id));
+      latest.photos=[...photos,...added.filter(photo=>!ids.has(photo.id))];
+    }
     setSynced();
     if(returnToForm){const draft=projectFormDraft;projectFormDraft=null;showProjectForm(projectId,draft);}
-    else if(localTestMode)showProjectDetail(projectId);
+    else if(localTestMode||(selectedProjectDetailId===projectId
+      && $('modal').style.display==='flex'
+      && $('mo-content').classList.contains('project-detail-modal')))showProjectDetail(projectId);
   }catch(error){
     console.error(error);setOffline();
     alert('照片上傳失敗。請確認已登入，並確認 Firebase Storage 安全規則已設定。');
@@ -512,8 +538,14 @@ window.showProjectDetail=function(projId){
   const tradeSummary=projectTradeSummary(p.id);
   const designProgressMarkup=renderProjectDesignReadOnly(p);
   const photos=projectPhotos(p);
+  // Members who cannot enter the project editor still have a photo-only entry.
+  const showPhotoUpload=canUploadProjectPhotos()
+    && (!canEditProjects()||(p.status==='done'&&currentRole!=='manager'));
+  const photoUpload=showPhotoUpload?`<label class="btn btn-sm" style="cursor:pointer">＋ 上傳照片
+    <input type="file" accept="image/*" multiple hidden onchange="uploadProjectPhotos(${escAttr(JSON.stringify(p.id))},this.files,false);this.value=''">
+    </label>`:'';
   const photoPanel=function(placement){const helpId=`project-photo-help-${placement}`;return`<section class="project-photo-panel">
-      <div class="project-photo-head"><span>📷 案件照片 <span class="help-wrap project-photo-help"><button class="help-btn" type="button" aria-label="案件照片操作說明" onclick="toggleHelpPop(event,'${helpId}')">?</button><span class="help-pop" id="${helpId}" onclick="event.stopPropagation()"><ul><li>勾選一張照片後，才能使用單張複製。</li><li>一次僅能選取一張照片。</li><li>分享照片（合成）會將全部照片排成一張。</li></ul></span></span>（${photos.length}）</span></div>
+      <div class="project-photo-head"><span>📷 案件照片 <span class="help-wrap project-photo-help"><button class="help-btn" type="button" aria-label="案件照片操作說明" onclick="toggleHelpPop(event,'${helpId}')">?</button><span class="help-pop" id="${helpId}" onclick="event.stopPropagation()"><ul><li>勾選一張照片後，才能使用單張複製。</li><li>一次僅能選取一張照片。</li><li>分享照片（合成）會將全部照片排成一張。</li></ul></span></span>（${photos.length}）</span>${photoUpload}</div>
       ${photos.length?`<div class="project-photo-grid">${photos.map(photo=>`<div class="project-photo-card"><input class="project-photo-select" type="checkbox" aria-label="選取 ${escAttr(photo.name||'案件照片')}" ${selectedProjectDetailPhotoId===photo.id?'checked':''} ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoId!==photo.id?'disabled':''} onchange="setProjectDetailPhoto('${p.id}','${photo.id}',this.checked)"><img src="${escAttr(photo.url)}" alt="${escAttr(photo.name||'案件照片')}" onclick="window.open(this.src,'_blank','noopener')"><div class="project-photo-name" title="${escAttr(photo.name||'案件照片')}">${escAttr(photo.name||'案件照片')}</div></div>`).join('')}</div>`:'<div class="project-photo-empty">尚未上傳照片</div>'}
       <div class="project-share-row"><div class="project-share-actions"><button class="btn btn-sm" onclick="shareProjectText('${p.id}')">分享文字</button><button class="btn btn-sm btn-p" onclick="shareProjectPhotoCollage('${p.id}')">分享照片（合成）</button><button class="btn btn-sm" onclick="copySelectedProjectPhoto('${p.id}')" ${selectedProjectDetailPhotoId&&selectedProjectDetailPhotoBlob?'':'disabled'}>單張複製</button></div><div class="project-detail-actions">${canEditProjects()?`<button class="btn" onclick="showEditProject('${p.id}')">編輯</button>`:''}<button class="btn" onclick="closeMo()">關閉</button></div></div>
     </section>`;};
