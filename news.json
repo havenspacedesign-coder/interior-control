@@ -1,126 +1,126 @@
 {
-  "date": "2026-11-09",
-  "updatedAt": "2026-11-09T01:37:42.697Z",
+  "date": "2026-11-10",
+  "updatedAt": "2026-11-10T04:03:02.284Z",
   "news": [
     {
-      "id": "75031e8e796f537f",
+      "id": "a75a69b64b48b943",
       "source": "壹蘋",
       "category": "國際",
-      "title": "黃仁勳認了婚外情！馬斯克一句話表態",
-      "url": "https://news.nextapple.com/international/20261109/7A3C5F64C25263F3AAF397CAD43CD0AF",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/7A3C5F64C25263F3AAF397CAD43CD0AF/955ab2330d31ddf3d96090f1f9bfae4f_1280.webp",
-      "publishedAt": "2026-11-09T01:26:40.000Z",
-      "fetchedAt": "2026-11-09T01:37:42.697Z"
+      "title": "黃仁勳臨老入「草」叢恐賠一半身家！妻若離婚　秒躍第4女富豪",
+      "url": "https://news.nextapple.com/international/20261110/A450544B6E52BB2094736050C32EAA9E",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A450544B6E52BB2094736050C32EAA9E/55181365d4e55076a3533a9ff592ce50_1280.webp",
+      "publishedAt": "2026-11-10T03:32:59.000Z",
+      "fetchedAt": "2026-11-10T04:03:02.284Z"
     },
     {
-      "id": "a50ce91cb8f586e1",
+      "id": "4d0bc28ef7e20e11",
       "source": "壹蘋",
       "category": "生活",
-      "title": "黃仁勳認了「對妻子不忠」！一生只愛她太諷刺　純愛戰士大翻車",
-      "url": "https://news.nextapple.com/life/20261109/07FBE08F751C631EFA47647D0B7CE5AE",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/07FBE08F751C631EFA47647D0B7CE5AE/10d93f3fd0c2f4151a39af01f1a3df8b_1280.webp",
-      "publishedAt": "2026-11-09T00:48:04.000Z",
-      "fetchedAt": "2026-11-09T01:37:42.697Z"
+      "title": "中國大閘蟹戴奧辛超標　金車印尼進口咖啡豆驗出農藥",
+      "url": "https://news.nextapple.com/life/20261110/6D640583578876E9551605C044BDD1FD",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/6D640583578876E9551605C044BDD1FD/5c59e8bbb750ccfcfdf3773e746ff4e6_1280.webp",
+      "publishedAt": "2026-11-10T03:13:18.000Z",
+      "fetchedAt": "2026-11-10T04:03:02.284Z"
     },
     {
-      "id": "2cd0d9e7370ab161",
+      "id": "9de481546e562319",
       "source": "壹蘋",
       "category": "社會",
-      "title": "知名舞團朱姓團長涉性侵猥褻3女團員　逼脫衣硬上噁喊「胸部很好吃」",
-      "url": "https://news.nextapple.com/local/20261109/959DF93A3C46DFD2B0BFF8363F18DE4E",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/959DF93A3C46DFD2B0BFF8363F18DE4E/3597631ec28f3185f24999d7420f1ae0_1280.webp",
-      "publishedAt": "2026-11-08T23:26:52.000Z",
-      "fetchedAt": "2026-11-09T01:37:42.697Z"
+      "title": "變速箱故障！　2噸重無障礙小黃拋錨卡路中",
+      "url": "https://news.nextapple.com/local/20261110/AAF5ED8CCE7E049538AB0CEAEAA57C5D",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/AAF5ED8CCE7E049538AB0CEAEAA57C5D/9a00778314f781f38c89e90308a2964b_1280.webp",
+      "publishedAt": "2026-11-10T03:50:54.000Z",
+      "fetchedAt": "2026-11-10T04:03:02.284Z"
     },
     {
-      "id": "ff76e2c08be4c4fc",
+      "id": "af4096b6e3607c57",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "蔡詩萍正妹女兒「深V黑蕾絲」罕見性感　網看傻了：美到無法無天",
-      "url": "https://news.nextapple.com/entertainment/20261109/18E15FAA4896FE67DB398FEB7801C94B",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/18E15FAA4896FE67DB398FEB7801C94B/d1badb3653874232314905826586b0dd_1280.webp",
-      "publishedAt": "2026-11-09T00:35:00.000Z",
-      "fetchedAt": "2026-11-09T01:37:42.697Z"
+      "title": "李國毅男女通殺！才與男友甜蜜共眠　突殺出前未婚妻獻吻陷三角戀",
+      "url": "https://news.nextapple.com/entertainment/20261110/A2B544955C6E23C15F03F06EE15F898C",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A2B544955C6E23C15F03F06EE15F898C/2a94590511ccae82e9bd12505d0e2643_1280.webp",
+      "publishedAt": "2026-11-10T03:46:57.000Z",
+      "fetchedAt": "2026-11-10T04:03:02.284Z"
     },
     {
-      "id": "852298e1072a9c06",
+      "id": "b587715d3a9492b2",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "Apple Watch幫記聊天重點　新功能限2款手錶",
-      "url": "https://news.nextapple.com/aitech/20261107/9A23816F15DF758BC61AA835959DA1DA",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/9A23816F15DF758BC61AA835959DA1DA/ed3de55e4ea761c0c03075f71f253e4d_1280.webp",
-      "publishedAt": "2026-11-07T10:16:42.000Z",
-      "fetchedAt": "2026-11-09T01:37:42.697Z"
+      "title": "LINE換手機免輸入密碼　新增臉部、指紋辨識登入",
+      "url": "https://news.nextapple.com/aitech/20261110/1FDE102DF6E19CEB03EA9466E1D87289",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/1FDE102DF6E19CEB03EA9466E1D87289/d246c33f5ad00d2478065211d03a2c96_1280.webp",
+      "publishedAt": "2026-11-10T03:18:56.000Z",
+      "fetchedAt": "2026-11-10T04:03:02.284Z"
     },
     {
-      "id": "554bbca4e5d2f06c",
+      "id": "13f69916abf7079e",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "台股漲逾千點站上4萬大關　台積電大漲70元",
-      "url": "https://news.nextapple.com/finance/20261109/4B99BCCA06E1A21A0BAF9DB91E250F19",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/4B99BCCA06E1A21A0BAF9DB91E250F19/625ad0d7bdb3e5c95ae58937c0ca5fae_1280.webp",
-      "publishedAt": "2026-11-09T01:05:49.000Z",
-      "fetchedAt": "2026-11-09T01:37:42.697Z"
+      "title": "首家導入「押金全額信託」機制　台灣金聯攜一銀重建包租代管信心",
+      "url": "https://news.nextapple.com/finance/20261110/F72D100D90540DDE71A3863B638AE129",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/F72D100D90540DDE71A3863B638AE129/7b86d25f302333d72b71f35f93bf144e_1280.webp",
+      "publishedAt": "2026-11-10T03:44:08.000Z",
+      "fetchedAt": "2026-11-10T04:03:02.284Z"
     },
     {
-      "id": "a33173d5cba873aa",
+      "id": "4e5cde9c79d5a6fc",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "黃仁勳認了婚外情！川普力挺這樣說",
-      "url": "https://news.nextapple.com/international/20261109/E4CAE86FEB81EA5003940F00A31EDA8D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/E4CAE86FEB81EA5003940F00A31EDA8D/9a58f9a057004ee0ef6c6615f21a7c08_1280.webp",
-      "publishedAt": "2026-11-09T00:53:01.000Z",
-      "fetchedAt": "2026-11-09T01:37:42.697Z"
+      "title": "高金素梅諜報曝光　中共讚她是「鯁在台灣民主的一根魚刺」",
+      "url": "https://news.nextapple.com/politics/20261110/A3E9E004E0479172E0B073ADDC85FB44",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A3E9E004E0479172E0B073ADDC85FB44/6d8e604d58d176652107451c36704934_1280.webp",
+      "publishedAt": "2026-11-10T03:12:58.000Z",
+      "fetchedAt": "2026-11-10T04:03:02.284Z"
     },
     {
-      "id": "86a33fb77722930f",
+      "id": "414ac4ad1a1f1b13",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "黃仁勳認了婚外情！輝達董事會最新聲明",
-      "url": "https://news.nextapple.com/international/20261109/A7E71B355B7045D6E2D10909FB1DDF3D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A7E71B355B7045D6E2D10909FB1DDF3D/021152f5566f10be7d3d430b115e694a_1280.webp",
-      "publishedAt": "2026-11-09T00:49:05.000Z",
-      "fetchedAt": "2026-11-09T01:37:42.697Z"
+      "title": "戴立安民調｜張善政贏黃世杰4.1個百分點　媒體人：他沒敗選可能",
+      "url": "https://news.nextapple.com/politics/20261110/18371CCDA98B4836445D3DF726AC9111",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/18371CCDA98B4836445D3DF726AC9111/10631fcb1c1d7902d6d4a90cfcc57382_1280.webp",
+      "publishedAt": "2026-11-10T03:02:50.000Z",
+      "fetchedAt": "2026-11-10T04:03:02.284Z"
     },
     {
-      "id": "821fc3d8be043621",
+      "id": "1b4e8083897bbc64",
       "source": "壹蘋",
-      "category": "國際",
-      "title": "黃仁勳認了婚外情！網友開酸「升級記憶體」",
-      "url": "https://news.nextapple.com/international/20261109/FA34A33C9FF5F9BA9F6E56DEAE4B13BB",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/FA34A33C9FF5F9BA9F6E56DEAE4B13BB/83c3a57a630a277377a7d998b66a865d_1280.webp",
-      "publishedAt": "2026-11-09T00:38:01.000Z",
-      "fetchedAt": "2026-11-09T01:37:42.697Z"
+      "category": "社會",
+      "title": "苗栗1歲小黑熊誤中索套陷阱截肢　取名「芭甘」重返山林",
+      "url": "https://news.nextapple.com/local/20261110/1D9C41D119AD589F26D9840DF1A81940",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/1D9C41D119AD589F26D9840DF1A81940/8bc529a0fb99a77597159537f2e36f4d_1280.webp",
+      "publishedAt": "2026-11-10T03:40:38.000Z",
+      "fetchedAt": "2026-11-10T04:03:02.284Z"
     },
     {
-      "id": "d32f71652defcee4",
+      "id": "f64ae67a7fce2771",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "黃仁勳被女共諜毁了！名醫：台股慘了護盤也沒用",
-      "url": "https://news.nextapple.com/finance/20261109/F45CD2944FBB8D9DDBA2987F9491FA66",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/F45CD2944FBB8D9DDBA2987F9491FA66/9ae16e7c465d86f0a105a6be02eb6172_1280.webp",
-      "publishedAt": "2026-11-09T00:32:00.000Z",
-      "fetchedAt": "2026-11-09T01:37:42.697Z"
+      "title": "民主黨勝選難撼川普！富達揭AI投資隱憂　美股再跌10%恐打亂升息",
+      "url": "https://news.nextapple.com/finance/20261110/C28B44573C1999C0B9AFC7E0B24313CD",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/C28B44573C1999C0B9AFC7E0B24313CD/4417a7c5860b90c543abba20a4ac913c_1280.webp",
+      "publishedAt": "2026-11-10T03:31:36.000Z",
+      "fetchedAt": "2026-11-10T04:03:02.284Z"
     },
     {
-      "id": "2e719f3fc6cbccce",
+      "id": "478f3aa6a4c7e14f",
       "source": "壹蘋",
-      "category": "生活",
-      "title": "黃仁勳認外遇「有錢多作怪」　女律師：給了一票闆娘安慰劑",
-      "url": "https://news.nextapple.com/life/20261109/509328C8AC25C20FF5288EF36379BE80",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/509328C8AC25C20FF5288EF36379BE80/14560efd2d36eb2a5e0d8e01958a896f_1280.webp",
-      "publishedAt": "2026-11-09T00:29:16.000Z",
-      "fetchedAt": "2026-11-09T01:37:42.697Z"
+      "category": "財經股市",
+      "title": "台灣半導體續吃AI紅利！富達：央行利率按兵不動　示警通膨變數",
+      "url": "https://news.nextapple.com/finance/20261110/8B126B274CFEB607A7BC7F85CB2C7B9A",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/8B126B274CFEB607A7BC7F85CB2C7B9A/ecf9e4b69b622929c468f1a47a890c25_1280.webp",
+      "publishedAt": "2026-11-10T03:26:26.000Z",
+      "fetchedAt": "2026-11-10T04:03:02.284Z"
     },
     {
-      "id": "77cadbe14e111f02",
+      "id": "9d04487e52dbd452",
       "source": "壹蘋",
-      "category": "生活",
-      "title": "今雨最大！越晚越冷明晨剩15℃　「查帕卡」變中颱大迴轉",
-      "url": "https://news.nextapple.com/life/20261109/71AE7DF4106BCEB35E6AABBE6B21AE98",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/71AE7DF4106BCEB35E6AABBE6B21AE98/bde8bae003a8a08c1ebda77d214de809_1280.webp",
-      "publishedAt": "2026-11-09T00:29:00.000Z",
-      "fetchedAt": "2026-11-09T01:37:42.697Z"
+      "category": "娛樂時尚",
+      "title": "HOKA聯名MARNI打造精品級緩震跑鞋　黑白雙色這天開賣",
+      "url": "https://news.nextapple.com/entertainment/20261110/DC5EBC26AAB87F3009C115BF54194A1A",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/DC5EBC26AAB87F3009C115BF54194A1A/cf5f84252bea1ed81948f6347c3fbcf1_1280.webp",
+      "publishedAt": "2026-11-10T03:24:50.000Z",
+      "fetchedAt": "2026-11-10T04:03:02.284Z"
     }
   ]
 }
