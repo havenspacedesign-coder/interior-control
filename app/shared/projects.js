@@ -173,8 +173,12 @@ async function writeProjectStageChange(project,patch,history){
   const ref=doc(db,'projects',project.id),expected=JSON.stringify(project.stageHistory||null);
   const check=fresh=>{
     if(!fresh||fresh.status!==project.status||JSON.stringify(fresh.stageHistory||null)!==expected)throw new Error('此案件狀態或階段紀錄已被更新，請重新整理後再試');
+    if(Object.hasOwn(patch,'progressCompletedOn')&&(fresh.progressCompletedOn||null)!==(project.progressCompletedOn||null))throw new Error('完工日期已被更新，請重新整理後再試。');
   };
   const data={...patch,...(history?{stageHistory:history}:{})};
+  if(patch.status&&patch.status!==project.status&&[patch.status,project.status].includes('done')){
+    data.progressCompletedOn=patch.status==='done'?projectStageToday():null;
+  }
   if(localTestMode){const snapshot=await getDoc(ref);check(snapshot.exists()?snapshot.data():null);await updateDoc(ref,data);}
   else await fbRunTransaction(db,async transaction=>{const snapshot=await transaction.get(ref);check(snapshot.exists()?snapshot.data():null);transaction.update(ref,data);});
 }
@@ -321,7 +325,7 @@ window.saveProjectForm=async function(projId){
   if(projId){
     await writeProjectStageChange(existing,data,history);
   }else{
-    const created=await addDoc(collection(db,'projects'),Object.assign({},data,{schedule:[],designProgress:{},createdAt:serverTimestamp(),stageHistory:projectStageInitial(data.status)}));
+    const created=await addDoc(collection(db,'projects'),Object.assign({},data,{schedule:[],designProgress:{},createdAt:serverTimestamp(),stageHistory:projectStageInitial(data.status),...(data.status==='done'?{progressCompletedOn:projectStageToday()}:{})}));
     const order=[created.id,...sortDesignProjs(S.projects).map(p=>p.id).filter(id=>id!==created.id)];designProjectOrder=order;
     await setDoc(doc(db,'settings','designProjectOrder'),{order});
   }
@@ -779,6 +783,7 @@ window.openDateColorPicker=function(ds){
   $('modal').style.display='flex';
 }
 window.saveDateColor=async function(ds,color,note,dayType){
+  if(!isAdmin())return;
   var colors=Object.assign({},S.dateColors);
   var type=dayType==='holiday'||dayType==='work'?dayType:defaultDateDayType(ds);
   if(!color&&!note&&type===defaultDateDayType(ds)){delete colors[ds];}

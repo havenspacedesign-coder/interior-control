@@ -485,7 +485,7 @@ window.saveBibleStageTitle=async function(oldName,newName){
     });
     await batch.commit();
     for(const p of S.projects){
-      const sched=p.schedule||[];
+      const sched=progressAllSchedule(p);
       const patch={};
       if(sched.some(e=>e.stage===oldName)){
         patch.schedule=sched.map(e=>e.stage===oldName?{...e,stage:newName,label:e.label===oldName?newName:e.label}:e);
@@ -538,10 +538,15 @@ window.deleteStage=async function(stage){
     if(relinkTarget){
       const sourceLabel=displayStageName(stage),targetLabel=displayStageName(relinkTarget);
       for(const p of S.projects){
+        const relink=entries=>entries.map(e=>e.stage!==stage?e:{...e,stage:relinkTarget,label:displayStageName(e.label||e.stage)===sourceLabel?targetLabel:e.label});
         const schedule=p.schedule||[];
-        if(!schedule.some(e=>e.stage===stage))continue;
-        const updatedSchedule=schedule.map(e=>e.stage!==stage?e:{...e,stage:relinkTarget,label:displayStageName(e.label||e.stage)===sourceLabel?targetLabel:e.label});
-        await updateDoc(doc(db,'projects',p.id),{schedule:updatedSchedule});
+        if(schedule.some(e=>e.stage===stage))await updateDoc(doc(db,'projects',p.id),{schedule:relink(schedule)});
+        const changes=Object.entries(p.progressMonths||{}).flatMap(([month,data])=>{
+          if(!Array.isArray(data?.schedule))return [];
+          const before=progressMonthSchedule(p,month);
+          return before.some(e=>e.stage===stage)?[{projectId:p.id,month,field:'schedule',before,after:relink(before)}]:[];
+        });
+        if(changes.length)await writeProgressMonths(changes);
       }
     }
     activeBibleStage=null;setSynced();

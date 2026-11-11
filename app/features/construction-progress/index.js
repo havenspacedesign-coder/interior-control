@@ -30,10 +30,15 @@ function renderProgress(force){
   const preservedHScrollLeft=calMode==='month'?progressScrollLeftForMonth():captureProgressHScroll();
   const el=$('panel-progress');
   const weekDays=getWeekDates();
-  function shouldShow(p){
-    return p.status==='prog';
+  const viewMonth=fmtDay(weekDays[0]).slice(0,7);
+  const shouldShow=project=>progressProjectVisible(project,viewMonth);
+  const meeting=meetingSelectedCell();
+  if(meeting&&(!progressCanEditDate(meeting.ds)||meeting.ds.slice(0,7)!==viewMonth)){
+    meetingSelected={};meetingEditing=null;meetingPendingSelection=null;
+    if(formulaBarState?.type==='meeting')updateFormulaBar(null);
   }
-  const viewMonth=weekDays[0].getFullYear()+'-'+String(weekDays[0].getMonth()+1).padStart(2,'0');
+  if(scheduleSelected&&(!progressCanEditDate(scheduleSelected.ds)||scheduleSelected.ds.slice(0,7)!==viewMonth)){scheduleSelected=null;scheduleEditing=null;}
+  if(selectedTag&&!progressCanEditDate(selectedTag.ds))selectedTag=null;
   el.innerHTML=`
   <div class="progress-layout" style="display:flex;gap:14px;align-items:flex-start">
   ${renderGlobalNotesPanel(viewMonth)}
@@ -64,7 +69,7 @@ function renderProgress(force){
   </div>
   ${calMode==='todo'?renderTodoPanel():calMode==='notes'?renderGlobalNotesPanel(viewMonth,false):`
   ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
-  ${calMode==='month'?renderMobileProgressDateHeader(weekDays)+`<div class="progress-horizontal-viewport hide-hscrollbar" id="progress-horizontal-viewport" style="--progress-timeline-width:${mobileProgressTimelineWidth(weekDays)}px">${renderWeekView(shouldShow)}${renderDailyLogSection(weekDays)}${renderPrivateTodoSection()}</div>`:renderDayView()}
+  ${calMode==='month'?renderMobileProgressDateHeader(weekDays)+`<div class="progress-horizontal-viewport hide-hscrollbar" id="progress-horizontal-viewport" style="--progress-timeline-width:${mobileProgressTimelineWidth(weekDays)}px">${renderWeekView(shouldShow,viewMonth)}${renderDailyLogSection(weekDays)}${renderPrivateTodoSection()}</div>`:renderDayView()}
   ${calMode==='month'?'':renderPrivateTodoSection()}
   <div style="height:500px"></div>
   `}
@@ -142,7 +147,8 @@ window.saveGlobalNote=async function(viewMonth,text){
   setSynced();
 }
 
-function renderWeekView(shouldShow){
+function renderWeekView(shouldShow,viewMonth){
+  const readOnly=!progressCanEditDate(viewMonth);
   const days=getWeekDates();const td=today();
   const WD=['日','一','二','三','四','五','六'];
   const projs=sortDesignProjs(S.projects.filter(shouldShow));
@@ -150,23 +156,22 @@ function renderWeekView(shouldShow){
 
   function renderCell(p,pi,d){
     const isT=isSameDay(d,td);const ds=fmtDay(d);
-    const allEvs=(p.schedule||[]).filter(e=>e.date===ds);
-    const isDone=p.status==='done';
+    const allEvs=progressMonthSchedule(p,viewMonth).filter(e=>e.date===ds);
     const isOpen=openPicker&&openPicker.projId===p.id&&openPicker.ds===ds;
-    return`<td class="ev-cell ${isT?'tc':''}" style="min-height:88px" onclick="handleCellBg(event,'${p.id}','${ds}')" ondragover="event.preventDefault()" ondrop="evDrop(event,'${p.id}','${ds}')">
+    return`<td class="ev-cell ${isT?'tc':''}" style="min-height:88px" ${readOnly?'':`onclick="handleCellBg(event,'${p.id}','${ds}')" ondragover="event.preventDefault()" ondrop="evDrop(event,'${p.id}','${ds}')"`}>
       ${allEvs.map((ev,ei)=>{
         const resolvedStage=resolveBibleStage(ev.stage,ev.label);
         const pn=pendingCount(p.id,resolvedStage);
         const isSel=selectedTag&&selectedTag.projId===p.id&&selectedTag.ds===ds&&selectedTag.ei===ei;
         return`<div class="ev-row">
           <span class="ev-chip${isSel?' sel':''}" style="background:${ev.bg||sc(pi)};color:${ev.completed?'#E24B4A':(ev.color||tc(pi))};${ev.strike?'text-decoration:line-through;':''}"
-            draggable="true" ondragstart="evDragStart(event,'${p.id}','${ds}',${ei})"
+            ${readOnly?'':`draggable="true" ondragstart="evDragStart(event,'${p.id}','${ds}',${ei})" ondragend="evDragSrc=null"`}
             onclick="event.stopPropagation();handleChipClick(event,'${p.id}','${ds}',${ei},'${resolvedStage}')">${displayStageName(ev.label||ev.stage||'?')}${ev.completed?'<span class="progress-item-check">✓</span>':''}${pendBadge(pn)}</span>
-          <span class="ev-field excel-cell ${scheduleCellIsSelected(p.id,ds,ei)?'excel-selected':''} ${scheduleCellIsEditing(p.id,ds,ei)?'excel-editing':''}" data-proj="${p.id}" data-ds="${ds}" data-ei="${ei}" data-field="note" contenteditable="${scheduleCellIsEditing(p.id,ds,ei)?'true':'false'}"
-            style="${ev.bg?'background:'+ev.bg+';':''}${ev.completed?'color:#E24B4A;':(ev.color?'color:'+ev.color+';':'')}${ev.strike?'text-decoration:line-through;':''}" onclick="event.stopPropagation();selectScheduleCell(this)" ondblclick="event.stopPropagation();startFieldEdit(this)" onblur="saveScheduleCell(this)" onkeydown="scheduleCellKeyDown(event,this)">${escAttr(ev.note||'')}</span>
-          ${!isDone?`<button class="ev-del" onclick="event.stopPropagation();removeEv('${p.id}','${ds}',${ei})">×</button>`:''}
+          <span class="ev-field excel-cell ${!readOnly&&scheduleCellIsSelected(p.id,ds,ei)?'excel-selected':''} ${!readOnly&&scheduleCellIsEditing(p.id,ds,ei)?'excel-editing':''}" data-proj="${p.id}" data-ds="${ds}" data-ei="${ei}" data-field="note" contenteditable="${!readOnly&&scheduleCellIsEditing(p.id,ds,ei)?'true':'false'}"
+            style="${ev.bg?'background:'+ev.bg+';':''}${ev.completed?'color:#E24B4A;':(ev.color?'color:'+ev.color+';':'')}${ev.strike?'text-decoration:line-through;':''}" ${readOnly?'':`onclick="event.stopPropagation();selectScheduleCell(this)" ondblclick="event.stopPropagation();startFieldEdit(this)" onblur="saveScheduleCell(this)" onkeydown="scheduleCellKeyDown(event,this)"`}>${escAttr(ev.note||'')}</span>
+          ${!readOnly?`<button class="ev-del" onclick="event.stopPropagation();removeEv('${p.id}','${ds}',${ei})">×</button>`:''}
         </div>`;}).join('')}
-      ${!isDone?`<div class="add-ev-wrap">
+      ${!readOnly?`<div class="add-ev-wrap">
         <span class="add-ev-btn" onclick="event.stopPropagation();togglePicker(event,'${p.id}','${ds}',1)">＋ 新增</span>
         ${isOpen?`<div class="stage-search-box" onclick="event.stopPropagation()" style="top:${openPicker.top}px;left:${openPicker.left}px">
           <input type="text" class="stage-search-input" id="ssi-${p.id}-${ds}" placeholder="打關鍵字搜尋…"
@@ -216,7 +221,7 @@ function renderWeekView(shouldShow){
       +'</span>';
     var hdr='<tr><td colspan="'+(days.length+1)+'" style="height:37px;box-sizing:border-box;padding:2px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:2px solid #1a1a1a">'
       +'<div class="meeting-toolbar">'
-      +'<span class="meeting-toolbar-title">🗓 會議 / 其他事項</span>'
+      +'<span class="meeting-toolbar-title">🗓 會議 / 其他事項'+(readOnly?' <small>歷史月份唯讀</small>':'')+'</span>'
       +'<span class="meeting-toolbar-help"><span class="help-wrap"><button class="help-btn" type="button" aria-label="會議操作說明" onclick="toggleHelpPop(event,\'meeting-help\')">?</button><span class="help-pop" id="meeting-help" onclick="event.stopPropagation()"><ul><li>單擊項目後可選擇文字與底色。</li><li>雙擊項目可編輯內容。</li><li>點「＋標記」可標記人員，並同步到對方的每日施工日誌。</li><li>按住 Ctrl 拖拉可複製項目。</li><li>按 Delete 可刪除已選取的項目。</li></ul></span></span></span>'
       +'<span aria-hidden="true"></span>'+mColorBar
       +((typeof renderProgressActionToolbar==='function')?renderProgressActionToolbar():'')
@@ -231,13 +236,16 @@ function renderWeekView(shouldShow){
         var hasVisibleItem=items.length>0&&(String(items[0]?.text||'').trim()!==''||(items[0].mentions||[]).length>0);
         var selKey=row.id+'|'+ds;
         var selIdx=(meetingSelected[selKey]!=null)?meetingSelected[selKey]:-1;
-        var h='<td data-meeting-cell="'+row.id+'|'+ds+'" style="vertical-align:top;height:30px;padding:2px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'" ondragover="mDragOver(event)" ondragleave="mDragLeave(event)" ondrop="mDrop(event,\''+row.id+'\',\''+ds+'\')">';
+        var h='<td data-meeting-cell="'+row.id+'|'+ds+'" style="vertical-align:top;height:30px;padding:2px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'"'
+          +(readOnly?'':' ondragover="mDragOver(event)" ondragleave="mDragLeave(event)" ondrop="mDrop(event,\''+row.id+'\',\''+ds+'\')"')+'>';
         if(!hasVisibleItem){
           var emptyItem=items[0]||{};
           var emptyStyle=(emptyItem.color?'color:'+emptyItem.color+';':'color:var(--text3);')+(emptyItem.bg?'background:'+emptyItem.bg+';':'background:var(--surface);')+(emptyItem.strike?'text-decoration:line-through;':'');
           var emptySelected=selIdx===0;
           var emptyEditing=meetingEditing&&meetingEditing.rowId===row.id&&meetingEditing.ds===ds&&meetingEditing.idx===0;
-          if(emptyEditing){
+          if(readOnly){
+            h+='<div class="meet-chip" style="border:1.5px dashed var(--border);border-radius:5px;min-height:30px;'+emptyStyle+'"></div>';
+          }else if(emptyEditing){
             h+='<div style="border:2px solid var(--purple);padding:3px 8px;border-radius:5px;display:flex;align-items:center;min-height:30px;font-size:13px;line-height:1.3;'+emptyStyle+'">'
               +'<input type="text" class="pn-box-input meet-chip" id="meetbox-'+row.id+'-'+ds+'-0" value="" autocomplete="off" spellcheck="false"'
               +' style="flex:1;min-width:0;box-sizing:border-box;border:none;padding:0;font-size:13px;line-height:1.3;font-family:inherit;background:transparent;color:var(--text)"'
@@ -268,7 +276,7 @@ function renderWeekView(shouldShow){
             return'<span title="'+nm+'" style="width:18px;height:18px;border-radius:50%;background:var(--purple);color:#fff;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+memberTag(m)+'</span>';
           }).join('');
           var isEdit=meetingEditing&&meetingEditing.rowId===row.id&&meetingEditing.ds===ds&&meetingEditing.idx===0;
-          if(isEdit){
+          if(isEdit&&!readOnly){
             h+='<div style="border:'+border+';padding:3px 8px;border-radius:5px;display:flex;align-items:center;gap:5px;min-height:30px;font-size:13px;line-height:1.3;'+textStyle+'">'
               +'<input type="text" class="pn-box-input meet-chip" id="meetbox-'+row.id+'-'+ds+'-0" value="'+escAttr(linkedItem.text)+'" data-link-url="'+escAttr(linkedItem.link?.url||'')+'" data-link-label="'+escAttr(linkedItem.link?.label||'')+'" autocomplete="off" spellcheck="false"'
               +' style="flex:1;min-width:0;box-sizing:border-box;border:none;padding:0;font-size:13px;line-height:1.3;font-family:inherit;background:transparent;color:inherit"'
@@ -281,12 +289,12 @@ function renderWeekView(shouldShow){
               +'<span class="meet-tag-btn" title="標記成員" onmousedown="event.preventDefault()" onmouseenter="mOpenMentionPicker(event,\''+row.id+'\',\''+ds+'\',0)" onmouseleave="mScheduleCloseMention(\''+row.id+'\',\''+ds+'\')" onclick="event.stopPropagation()" style="font-size:11px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:50%;width:18px;height:18px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap">+</span>'
               +'</div></div>';
           }else{
-            h+='<div class="meet-chip '+(isSel?'excel-selected':'')+'" style="border:'+border+';padding:3px 8px;border-radius:5px;font-size:13px;cursor:pointer;user-select:none;min-height:30px;line-height:1.3;position:relative;'+textStyle+'"'
-            +' onmousedown="mPointerSelect(event,\''+row.id+'\',\''+ds+'\',0)" onclick="mSelect(\''+row.id+'\',\''+ds+'\',0)"'
+            h+='<div class="meet-chip '+(isSel?'excel-selected':'')+'" style="border:'+border+';padding:3px 8px;border-radius:5px;font-size:13px;min-height:30px;line-height:1.3;position:relative;'+textStyle+(readOnly?'':'cursor:pointer;user-select:none;')+'"'
+            +(readOnly?'':' onmousedown="mPointerSelect(event,\''+row.id+'\',\''+ds+'\',0)" onclick="mSelect(\''+row.id+'\',\''+ds+'\',0)"'
               +' ondblclick="event.stopPropagation();mStartEdit(\''+row.id+'\',\''+ds+'\',0)"'
               +' draggable="true"'
               +' ondragstart="mDragStart(event,\''+row.id+'\',\''+ds+'\',0)"'
-              +' ondragend="mDragEnd(event)"'
+              +' ondragend="mDragEnd(event)"')
               +'>'+renderItemText(item)+(item.completed?'<span class="progress-item-check">✓</span>':'')
               +(dots?'<span style="position:absolute;top:2px;right:2px;display:flex;gap:2px">'+dots+'</span>':'')
               +'</div>';
@@ -308,8 +316,8 @@ function renderWeekView(shouldShow){
   ${projs.map((p,pi)=>`
     <tr ${currentRole==='manager'?`draggable="true" ondragstart="workProjectDragStart(event,'${p.id}')" ondragover="workProjectDragOver(event)" ondrop="workProjectDragDrop(event,'${p.id}')"`:''}>
       <td class="site-hd" style="color:${tc(pi)};cursor:${currentRole==='manager'?'grab':'pointer'}" onclick="showProjectDetail('${p.id}')" title="${currentRole==='manager'?'拖曳可調整工地順序':'點擊查看案件詳細資料'}">${currentRole==='manager'?'<span style="color:var(--text3);margin-right:6px">⠿</span>':''}
-        ${p.name}${p.status==='done'?`<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">完工</span>`:''}
-        <textarea onclick="event.stopPropagation()" onblur="saveSiteNote('${p.id}',this.value)" placeholder="共用備註…" style="width:100%;box-sizing:border-box;margin-top:5px;font-size:11px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;resize:vertical;min-height:44px;cursor:text;color:var(--text)">${escAttr(p.siteNote||'')}</textarea>
+        ${p.name}${p.status==='done'?'<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">完工</span>':''}
+        <textarea onclick="event.stopPropagation()" ${readOnly?'readonly':`onblur="saveProgressSiteNote('${p.id}','${viewMonth}',this.value)"`} placeholder="共用備註…" style="width:100%;box-sizing:border-box;margin-top:5px;font-size:11px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;resize:vertical;min-height:44px;cursor:text;color:var(--text)">${escAttr(progressMonthNote(p,viewMonth))}</textarea>
       </td>
       ${days.map(d=>renderCell(p,pi,d)).join('')}
     </tr>

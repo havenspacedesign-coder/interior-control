@@ -1,0 +1,151 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function myMember() {
+      return get(
+        /databases/$(database)/documents/members/$(request.auth.uid)
+      ).data;
+    }
+
+    function isActiveMember() {
+      return isSignedIn()
+        && exists(
+          /databases/$(database)/documents/members/$(request.auth.uid)
+        )
+        && myMember().role in ['admin', 'manager', 'supervisor', 'staff']
+        && myMember().get('status', 'active') != 'resigned';
+    }
+
+    function isAdmin() {
+      return isActiveMember() && myMember().role in ['admin', 'manager'];
+    }
+
+    function isAiCollection(collection) {
+      return collection in [
+        'aiDbCategories', 'aiDbCases', 'aiDbFiles', 'aiDbMeta',
+        'aiDbKnowledge', 'aiDbAnalysisRuns', 'aiDbQuestions',
+        'aiDbAnswerRevisions'
+      ];
+    }
+
+    function taipeiTime() {
+      return request.time + duration.value(8, 'h');
+    }
+
+    function writableProgressMonth(month) {
+      return month is string && month.matches('[0-9]{4}-(0[1-9]|1[0-2])')
+        && (int(month.split('-')[0]) * 12 + int(month.split('-')[1])
+          >= taipeiTime().year() * 12 + taipeiTime().month());
+    }
+
+    function meetingDateIsWritable(id, data) {
+      let day = data.get('date', '');
+      let row = data.get('rowId', '');
+      return day is string && day.matches('[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])')
+        && row is string && id == row + '_' + day
+        && writableProgressMonth(day.split('-')[0] + '-' + day.split('-')[1]);
+    }
+
+    function validProgressBucket(data, month) {
+      let bucket = data.get(month, null);
+      return writableProgressMonth(month) && bucket is map
+        && bucket.keys().hasOnly(['schedule', 'siteNote'])
+        && bucket.get('schedule', []) is list
+        && bucket.get('siteNote', '') is string;
+    }
+
+    function onlyWritableProgressMonths(before, after, months) {
+      return before is map && after is map && months is list
+        && (months.size() == 1 || months.size() == 2)
+        && after.diff(before).affectedKeys().hasOnly(months)
+        && validProgressBucket(after, months[0])
+        && (months.size() == 1 || validProgressBucket(after, months[1]));
+    }
+
+    function todayCompletion(data) {
+      let date = data.get('progressCompletedOn', '');
+      return date is string && date.matches('[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])')
+        && int(date.split('-')[0]) == taipeiTime().year()
+        && int(date.split('-')[1]) == taipeiTime().month()
+        && int(date.split('-')[2]) == taipeiTime().day();
+    }
+
+    function projectUpdateKeepsHistory() {
+      let before = resource.data;
+      let after = request.resource.data;
+      let changed = after.diff(before).affectedKeys();
+      return !changed.hasAny(['schedule', 'siteNote'])
+        && (!changed.hasAny(['progressCompletedOn'])
+          || (before.get('status', '') != 'done' && after.get('status', '') == 'done' && todayCompletion(after)))
+        && (before.get('status', '') != 'done' || !changed.hasAny(['status', 'stageHistory']))
+        && (after.get('status', '') != 'done' || before.get('status', '') == 'done' || todayCompletion(after))
+        && (!changed.hasAny(['progressMonths'])
+          || onlyWritableProgressMonths(before.get('progressMonths', {}), after.get('progressMonths', {}),
+            after.get('progressWriteMonths', [])));
+    }
+
+    match /meetingLogs/{id} {
+      allow create: if isAdmin() || (isActiveMember() && meetingDateIsWritable(id, request.resource.data));
+      allow update: if isAdmin() || (isActiveMember() && meetingDateIsWritable(id, resource.data)
+        && meetingDateIsWritable(id, request.resource.data));
+      allow delete: if isAdmin() || (isActiveMember() && meetingDateIsWritable(id, resource.data));
+    }
+
+    match /projects/{id} {
+      allow create: if isAdmin() || (isActiveMember()
+        && request.resource.data.get('schedule', []) == []
+        && request.resource.data.get('siteNote', '') == ''
+        && request.resource.data.get('progressMonths', {}) == {}
+        && request.resource.data.get('progressCompletedOn', null) == null
+        && request.resource.data.get('status', '') != 'done');
+      allow update: if isAdmin() || (isActiveMember() && projectUpdateKeepsHistory());
+      allow delete: if isActiveMember() && (myMember().role == 'manager'
+        || (!(resource.data.get('status', '') in ['prog', 'done'])
+          && resource.data.get('schedule', []) == []
+          && resource.data.get('siteNote', '') == ''
+          && resource.data.get('progressMonths', {}) == {}));
+    }
+
+    match /settings/{id} {
+      allow write: if id == 'dateColors' ? isAdmin() : isActiveMember();
+    }
+
+    match /members/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+
+      allow create: if isSignedIn()
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.role == 'pending'
+        && request.resource.data.status == 'active';
+
+      allow update: if isAdmin()
+        || (isActiveMember()
+          && !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['role', 'status', 'uid']));
+
+      allow delete: if isAdmin();
+    }
+
+    // Preserve existing access to any documents below a member document.
+    match /members/{uid}/{subcollection}/{document=**} {
+      allow write: if isActiveMember();
+    }
+
+    // Keep legacy access except for AI paths and the role-bearing member documents.
+    match /{collection}/{document=**} {
+      allow read: if isAiCollection(collection) ? isAdmin() : isActiveMember();
+      allow write: if !(collection in ['members', 'projects', 'meetingLogs', 'settings'])
+        && (isAiCollection(collection) ? isAdmin() : isActiveMember());
+    }
+
+    match /{collection}/{id}/{subcollection}/{document=**} {
+      allow write: if collection in ['projects', 'meetingLogs', 'settings'] && isActiveMember();
+    }
+  }
+}

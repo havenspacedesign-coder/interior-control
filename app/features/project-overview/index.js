@@ -68,12 +68,26 @@ window.workProjectDragOver=function(e){if(currentRole==='manager'&&workProjectDr
 window.workProjectDragDrop=async function(e,targetId){e.preventDefault();if(currentRole!=='manager'||!workProjectDragSrc||workProjectDragSrc===targetId)return;const ids=sortDesignProjs(S.projects).map(p=>p.id),from=ids.indexOf(workProjectDragSrc),to=ids.indexOf(targetId);if(from<0||to<0)return;ids.splice(from,1);ids.splice(to,0,workProjectDragSrc);designProjectOrder=ids;workProjectDragSrc=null;renderProgress();await setDoc(doc(db,'settings','designProjectOrder'),{order:ids});}
 window.showSiteReport=function(id){overviewReportProjId=id;renderOverview();}
 window.closeSiteReport=function(){overviewReportProjId=null;renderOverview();}
+window.saveOverviewCompletionDate=async function(event){
+  event.preventDefault();
+  const project=S.projects.find(item=>item.id===overviewReportProjId);
+  if(activePanel!=='overview'||!isAdmin()||project?.status!=='done')return;
+  const date=new FormData(event.currentTarget).get('completionDate');
+  if(!progressValidDate(date)||date>projectStageToday())return alert('請輸入今天或更早的實際完工日期。');
+  try{
+    setSyncing();
+    await writeProjectStageChange(project,{progressCompletedOn:date},null);
+    if(activePanel==='overview'&&overviewReportProjId===project.id)renderOverview();
+  }catch(error){alert(error.message);}
+  finally{setSynced();}
+};
 function renderSiteReport(projId){
   const p=S.projects.find(x=>x.id===projId);
   if(!p)return`<div class="empty">找不到這個案件</div><button class="btn" onclick="closeSiteReport()">← 返回</button>`;
   const stages=getBibleStages();
-  const schedule=[...(p.schedule||[])].sort((a,b)=>(a.date<b.date?-1:a.date>b.date?1:0));
+  const schedule=progressAllSchedule(p).sort((a,b)=>(a.date<b.date?-1:a.date>b.date?1:0));
   const meetingEntries=getMeetingEntriesForProject(p.name);
+  const completedOn=progressCompletedOn(p);
   return`
   <button class="btn btn-sm" onclick="closeSiteReport()">← 返回案件總覽</button>
   <div class="card" style="margin-top:12px">
@@ -82,7 +96,16 @@ function renderSiteReport(projId){
       業主姓名：${p.owner||'—'}　類型：${p.type||'—'}　設計師：${p.designer||'—'}<br>
       預算：${p.budget||'—'}　合約完工日：${p.contractEnd||p.finish||'—'}　初驗日：${p.initialInspectionDate||'—'}<br>
       完工類型：${p.completionTypes&&p.completionTypes.length?p.completionTypes.join('、'):'—'}
+        ${p.status==='done'?`<br>實際完工日：${completedOn||'待補'}`:''}
     </div>
+      ${p.status==='done'&&isAdmin()?`<details style="margin-top:8px">
+        <summary style="cursor:pointer;color:var(--purple)">更改完工日期</summary>
+        <form style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px" onsubmit="saveOverviewCompletionDate(event)">
+          <label for="overview-completion-date">實際完工日</label>
+          <input id="overview-completion-date" name="completionDate" type="date" value="${completedOn}" max="${projectStageToday()}" required>
+          <button type="submit" class="btn btn-sm btn-p">儲存完工日期</button>
+        </form>
+      </details>`:''}
   </div>
   <div class="card">
     <div class="card-hdr"><span class="card-title">📖 施工寶典勾選結果</span></div>

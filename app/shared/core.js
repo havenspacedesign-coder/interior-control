@@ -202,7 +202,9 @@ function activeMembersList(){return S.members.filter(m=>(m.role==='admin'||m.rol
 function markableMembersList(){return activeMembersList().filter(m=>m.role!=='manager');}
 // Daily work log rows exclude the "管理員" (company/manager account) role —
 // that role doesn't do site work, so it shouldn't be asked to log it.
-function dailyLogMembersList(){return markableMembersList();}
+function dailyLogMembersList(){
+  return S.members.filter(member=>['admin','supervisor','staff'].includes(member.role)&&member.status!=='resigned');
+}
 function orderedDailyLogMembers(){
   const members=dailyLogMembersList();
   const saved=dailyLogMemberOrder;
@@ -423,7 +425,7 @@ function pendBadge(n){
 // Shared row renderer for a bible checklist item — ✓ means done, ✗ means
 // "seen but not applicable to this site". Both count as resolved. Sub-items
 // (item.isSub) render indented under their parent.
-function renderCheckItemRow(projId,stage,idx,item,isEstimate){
+function renderCheckItemRow(projId,stage,idx,item,isEstimate,readOnly=false){
   const emoji=normalizeBibleItem(item).emoji;
   const cls=emoji?'':item.done?'done':(item.skip?'skip':'');
   const depth=item.depth||(item.isSub?1:0);
@@ -432,14 +434,15 @@ function renderCheckItemRow(projId,stage,idx,item,isEstimate){
   return`<div class="ws-cl-item ${cls}"${depth>0?` style="padding-left:${depth*26}px"`:''}>
     ${emoji?`<span class="ck-emoji" role="img" aria-label="分類圖示" style="display:inline-flex;align-items:center;justify-content:center;width:62px;flex:0 0 62px;font-size:18px;line-height:22px">${escAttr(emoji)}</span>`:`<div class="ck-btns">
       <span class="ck-pending-marker ${showPending?'show':''}" aria-hidden="true"></span>
-      <button type="button" class="ck-btn ${item.done?'on-done':''}" title="完成" onclick="setCheckStatus('${projId}','${stage}',${idx},'done')">✓</button>
-      <button type="button" class="ck-btn ${item.skip?'on-skip':''}" title="不適用" onclick="setCheckStatus('${projId}','${stage}',${idx},'skip')">✗</button>
+      <button type="button" class="ck-btn ${item.done?'on-done':''}" title="完成" ${readOnly?'disabled':''} onclick="setCheckStatus('${projId}','${stage}',${idx},'done')">✓</button>
+      <button type="button" class="ck-btn ${item.skip?'on-skip':''}" title="不適用" ${readOnly?'disabled':''} onclick="setCheckStatus('${projId}','${stage}',${idx},'skip')">✗</button>
     </div>`}
     <label>${depth>0?'└ ':''}${item.text}</label>
-    ${isEstimate?`<input type="number" class="ck-amount" placeholder="金額" value="${item.amount||''}" onclick="event.stopPropagation()" onchange="setCheckAmount('${projId}','${stage}',${idx},this.value)">`:''}
+    ${isEstimate?`<input type="number" class="ck-amount" ${readOnly?'readonly':''} placeholder="金額" value="${item.amount||''}" onclick="event.stopPropagation()" onchange="setCheckAmount('${projId}','${stage}',${idx},this.value)">`:''}
   </div>`;
 }
 window.setCheckStatus=async function(projId,stage,idx,status){
+  if(typeof openCheckMoArgs!=='undefined'&&openCheckMoArgs?.ds&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage&&!progressCanEditDate(openCheckMoArgs.ds))return;
   const proj=S.projects.find(p=>p.id===projId);
   const meta=projectBibleItemsMeta(proj,stage);
   if(!meta[idx]||!bibleItemNeedsCheck(meta[idx]))return;
@@ -451,7 +454,7 @@ window.setCheckStatus=async function(projId,stage,idx,status){
   stored[idx]={...cur,done:status==='done'?!cur.done:false,skip:status==='skip'?!cur.skip:false};
   S.checks=Object.assign({},S.checks,{[key]:stored});
   if(typeof openCheckMoArgs!=='undefined'&&openCheckMoArgs&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage){
-    openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName);
+    openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName,openCheckMoArgs.ds);
   }
   if(activePanel==='progress'&&typeof renderProgress==='function')renderProgress();
   else if(activePanel==='bible'&&(typeof isBibleInlineEditing!=='function'||!isBibleInlineEditing())){
@@ -462,6 +465,7 @@ window.setCheckStatus=async function(projId,stage,idx,status){
   try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}
 }
 window.setCheckAmount=async function(projId,stage,idx,value){
+  if(typeof openCheckMoArgs!=='undefined'&&openCheckMoArgs?.ds&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage&&!progressCanEditDate(openCheckMoArgs.ds))return;
   const proj=S.projects.find(p=>p.id===projId);
   const allItems=projectBibleItems(proj,stage);
   const key=`${projId}_${stage}`;
@@ -471,7 +475,7 @@ window.setCheckAmount=async function(projId,stage,idx,value){
   stored[idx]={...cur,amount:value};
   S.checks=Object.assign({},S.checks,{[key]:stored});
   if(typeof openCheckMoArgs!=='undefined'&&openCheckMoArgs&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage){
-    openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName);
+    openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName,openCheckMoArgs.ds);
   }
   setSyncing();
   try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}

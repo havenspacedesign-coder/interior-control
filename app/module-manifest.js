@@ -43,6 +43,7 @@ export const MODULE_ORDER = [
   'app/features/vendors/index.js',
   'app/features/members/index.js',
   'app/shared/projects.js',
+  'app/shared/project-progress.js',
   HOME_MODULES.at(-1)
 ];
 
@@ -62,5 +63,6 @@ export const SHARED_MODULES = [
   'app/shared/core.js',
   'app/shared/auth-shell.js',
   'app/shared/render-router.js',
-  'app/shared/projects.js'
+  'app/shared/projects.js',
+  'app/shared/project-progress.js'
 ];

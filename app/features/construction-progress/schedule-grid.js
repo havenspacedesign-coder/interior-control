@@ -416,6 +416,7 @@ window.handleStageKey=function(e,projId,ds){
   }else if(e.key==='Escape'){openPicker=null;renderProgress();}
 }
 window.togglePicker=function(e,projId,ds,row){
+  if(!progressCanEditDate(ds))return;
   if(row===undefined)row=1;
   if(openPicker&&openPicker.projId===projId&&openPicker.ds===ds&&openPicker.row===row){
     openPicker=null;renderProgress();return;
@@ -428,14 +429,27 @@ window.togglePicker=function(e,projId,ds,row){
     if(inp){inp.focus();inp.select();}
   },80);
 }
+function progressScheduleChange(projId,ds,edit){
+  const project=S.projects.find(item=>item.id===projId);
+  const month=ds.slice(0,7);
+  if(!project||!progressProjectVisible(project,month)||!progressCanEditDate(ds))return null;
+  const before=progressMonthSchedule(project,month);
+  const after=edit(before);
+  return after?{projectId:projId,month,field:'schedule',before,after}:null;
+}
+async function saveProgressSchedule(changes){
+  if(!changes.length)return;
+  setSyncing();
+  try{await writeProgressMonths(changes);}
+  finally{setSynced();}
+}
 window.addEvFromStage=async function(projId,ds,stage){
   openPicker=null;
-  const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
-  const schedule=[...(proj.schedule||[]),{date:ds,stage,label:displayStageName(stage),time:'',note:'',_progressItemId:progressItemId()}];
-  if(localTestMode){proj.schedule=schedule;setSynced();renderProgress();return;}
-  setSyncing();await updateDoc(doc(db,'projects',projId),{schedule});setSynced();
+  const change=progressScheduleChange(projId,ds,items=>[...items,{date:ds,stage,label:displayStageName(stage),time:'',note:'',_progressItemId:progressItemId()}]);
+  if(change)await saveProgressSchedule([change]);
 }
 window.handleCellBg=function(e,projId,ds){
+  if(!progressCanEditDate(ds))return;
   if(e.ctrlKey&&selectedTag){copyTagToCell(projId,ds);return;}
   selectedTag=null;openPicker=null;renderProgress();
 }
@@ -446,87 +460,70 @@ document.addEventListener('click',function(e){
   }
 });
 window.handleChipClick=function(e,projId,ds,ei,stage){
-  if(e.ctrlKey){selectedTag={projId,ds,ei,stage};renderProgress();return;}
+  if(e.ctrlKey){if(progressCanEditDate(ds)){selectedTag={projId,ds,ei,stage};renderProgress();}return;}
   if(selectedTag){selectedTag=null;renderProgress();return;}
   if(stage&&getBibleStages().includes(stage)){
     const proj=S.projects.find(p=>p.id===projId);
-    openCheckMo(projId,stage,stage,proj?.name||'');
+    openCheckMo(projId,stage,stage,proj?.name||'',ds);
   }
 }
 window.copyTagToCell=async function(toProjId,toDs){
-  if(!selectedTag)return;
-  const srcProj=S.projects.find(p=>p.id===selectedTag.projId);if(!srcProj)return;
-  const ev=(srcProj.schedule||[]).filter(e=>e.date===selectedTag.ds)[selectedTag.ei];if(!ev)return;
-  const toProj=S.projects.find(p=>p.id===toProjId);if(!toProj)return;
-  const schedule=[...(toProj.schedule||[]),{...ev,date:toDs,_progressItemId:progressItemId()}];
-  if(localTestMode){toProj.schedule=schedule;setSynced();selectedTag=null;renderProgress();return;}
-  setSyncing();await updateDoc(doc(db,'projects',toProjId),{schedule});setSynced();selectedTag=null;
+  const from=selectedTag;
+  if(!from||!progressCanEditDate(from.ds))return;
+  const project=S.projects.find(p=>p.id===from.projId);
+  const event=project&&progressMonthSchedule(project,from.ds.slice(0,7)).filter(item=>item.date===from.ds)[from.ei];
+  if(!event)return;
+  const change=progressScheduleChange(toProjId,toDs,items=>[...items,{...event,date:toDs,_progressItemId:progressItemId()}]);
+  if(change){await saveProgressSchedule([change]);selectedTag=null;}
 }
 var evDragSrc=null;
 window.evDragStart=function(e,projId,ds,ei){
+  if(!progressCanEditDate(ds)){e.preventDefault();return;}
   evDragSrc={projId,ds,ei};
   e.dataTransfer.effectAllowed='copyMove';
   e.dataTransfer.setData('text/plain','ev|'+projId+'|'+ds+'|'+ei);
 }
+function captureScheduleDrop(event){
+  if(event.progressScheduleDrop)return event.progressScheduleDrop;
+  event.preventDefault();event.stopPropagation();
+  const parts=(event.dataTransfer?.getData('text/plain')||'').split('|');
+  const from=parts.length===4&&parts[0]==='ev'?{projId:parts[1],ds:parts[2],ei:Number(parts[3])}:evDragSrc;
+  return event.progressScheduleDrop={from,copy:event.ctrlKey};
+}
 window.evDrop=async function(e,toProjId,toDs){
-  e.preventDefault();e.stopPropagation();
-  const raw=e.dataTransfer.getData('text/plain');
-  let from=null;
-  if(raw){const parts=raw.split('|');if(parts.length===4&&parts[0]==='ev')from={projId:parts[1],ds:parts[2],ei:parseInt(parts[3])};}
-  if(!from)from=evDragSrc;
-  if(!from)return;
-  const srcProj=S.projects.find(p=>p.id===from.projId);if(!srcProj)return;
-  const dayEvs=(srcProj.schedule||[]).filter(ev=>ev.date===from.ds);
-  const ev=dayEvs[from.ei];if(!ev){evDragSrc=null;return;}
-  const toProj=S.projects.find(p=>p.id===toProjId);if(!toProj){evDragSrc=null;return;}
-  if(from.projId===toProjId&&from.ds===toDs){evDragSrc=null;return;}
-  setSyncing();
-  if(!e.ctrlKey&&from.projId===toProjId){
-    const idx=(srcProj.schedule||[]).indexOf(ev);
-    if(idx>=0){
-      const moved=[...(srcProj.schedule||[])];
-      moved.splice(idx,1);
-      moved.push({...ev,date:toDs});
-      if(localTestMode){srcProj.schedule=moved;evDragSrc=null;setSynced();renderProgress();return;}
-      await updateDoc(doc(db,'projects',toProjId),{schedule:moved});
-    }
-    evDragSrc=null;
-    setSynced();
-    return;
-  }
-  const copiedEvent={...ev,date:toDs,...(e.ctrlKey?{_progressItemId:progressItemId()}:{})};
-  const toSchedule=[...(toProj.schedule||[]),copiedEvent];
-  if(localTestMode){
-    toProj.schedule=toSchedule;
-    if(!e.ctrlKey){const idx=(srcProj.schedule||[]).indexOf(ev);if(idx>=0)srcProj.schedule=[...(srcProj.schedule||[]).slice(0,idx),...(srcProj.schedule||[]).slice(idx+1)];}
-    evDragSrc=null;setSynced();renderProgress();return;
-  }
-  await updateDoc(doc(db,'projects',toProjId),{schedule:toSchedule});
-  if(!e.ctrlKey){
-    const idx=(srcProj.schedule||[]).indexOf(ev);
-    if(idx>=0){
-      const ns=[...(srcProj.schedule||[]).slice(0,idx),...(srcProj.schedule||[]).slice(idx+1)];
-      await updateDoc(doc(db,'projects',from.projId),{schedule:ns});
-    }
-  }
+  const {from,copy}=captureScheduleDrop(e);
   evDragSrc=null;
-  setSynced();
+  if(!from||!progressCanEditDate(from.ds)||!progressCanEditDate(toDs))return;
+  if(from.projId===toProjId&&from.ds===toDs)return;
+  const project=S.projects.find(p=>p.id===from.projId);
+  if(!project)return;
+  const source=progressMonthSchedule(project,from.ds.slice(0,7));
+  const entry=source.filter(item=>item.date===from.ds)[from.ei];
+  if(!entry)return;
+  const moved={...entry,date:toDs,...(copy?{_progressItemId:progressItemId()}:{})};
+  const sameBucket=from.projId===toProjId&&from.ds.slice(0,7)===toDs.slice(0,7);
+  const target=progressScheduleChange(toProjId,toDs,items=>[
+    ...(sameBucket&&!copy?items.filter(item=>item!==entry):items),moved
+  ]);
+  if(!target)return;
+  if(copy||sameBucket){await saveProgressSchedule([target]);return;}
+  const remove=progressScheduleChange(from.projId,from.ds,items=>items.filter(item=>item!==entry));
+  if(remove)await saveProgressSchedule([target,remove]);
 }
 window.removeEv=async function(projId,ds,ei){
-  const proj=S.projects.find(p=>p.id===projId);if(!proj)return;
-  const dayEvs=(proj.schedule||[]).filter(e=>e.date===ds);
-  const toRemove=dayEvs[ei];if(!toRemove)return;
-  const eventName=toRemove.label||toRemove.stage||'此工程排程';
-  if(!window.confirm(`確定要刪除「${eventName}」嗎？\n\n按 Enter 可確認刪除，按 Esc 可取消。`))return;
-  const idx=(proj.schedule||[]).indexOf(toRemove);
-  const ns=[...(proj.schedule||[]).slice(0,idx),...(proj.schedule||[]).slice(idx+1)];
-  if(localTestMode){proj.schedule=ns;setSynced();renderProgress();return;}
-  setSyncing();await updateDoc(doc(db,'projects',projId),{schedule:ns});setSynced();
+  const change=progressScheduleChange(projId,ds,items=>{
+    const entry=items.filter(item=>item.date===ds)[ei];
+    if(!entry)return null;
+    const name=entry.label||entry.stage||'此工程排程';
+    return window.confirm('確定要刪除「'+name+'」嗎？')?items.filter(item=>item!==entry):null;
+  });
+  if(change)await saveProgressSchedule([change]);
 }
 function scheduleCellKey(projId,ds,ei){return{projId:String(projId),ds:String(ds),ei:Number(ei)};}
 function scheduleCellIsSelected(projId,ds,ei){return !!scheduleSelected&&scheduleSelected.projId===String(projId)&&scheduleSelected.ds===String(ds)&&scheduleSelected.ei===Number(ei);}
 function scheduleCellIsEditing(projId,ds,ei){return !!scheduleEditing&&scheduleEditing.projId===String(projId)&&scheduleEditing.ds===String(ds)&&scheduleEditing.ei===Number(ei);}
 window.selectScheduleCell=function(span){
+  if(!progressCanEditDate(span?.dataset.ds))return;
   const next=scheduleCellKey(span.dataset.proj,span.dataset.ds,span.dataset.ei);
   if(scheduleEditing&&!scheduleCellIsEditing(next.projId,next.ds,next.ei))window.saveScheduleCell(document.querySelector('.ev-field[contenteditable="true"]'));
   clearSpreadsheetSelections('schedule');
@@ -536,6 +533,7 @@ window.selectScheduleCell=function(span){
   refreshProgressActionToolbar();
 }
 window.startFieldEdit=function(span){
+  if(!progressCanEditDate(span?.dataset.ds))return;
   const next=scheduleCellKey(span.dataset.proj,span.dataset.ds,span.dataset.ei);
   scheduleSelected=next;scheduleEditing=next;scheduleEditOriginal=span.textContent||'';
   span.classList.add('excel-selected','excel-editing');span.contentEditable='true';span.focus();
@@ -543,19 +541,24 @@ window.startFieldEdit=function(span){
   const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
 }
 window.startScheduleEditWithText=function(text){
-  if(!scheduleSelected)return;const span=document.querySelector(`.ev-field[data-proj="${CSS.escape(scheduleSelected.projId)}"][data-ds="${CSS.escape(scheduleSelected.ds)}"][data-ei="${scheduleSelected.ei}"]`);if(!span)return;
+  if(!scheduleSelected||!progressCanEditDate(scheduleSelected.ds))return;const span=document.querySelector(`.ev-field[data-proj="${CSS.escape(scheduleSelected.projId)}"][data-ds="${CSS.escape(scheduleSelected.ds)}"][data-ei="${scheduleSelected.ei}"]`);if(!span)return;
   window.startFieldEdit(span);span.textContent=text;
   const range=document.createRange();range.selectNodeContents(span);range.collapse(false);const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
 }
-window.saveScheduleCell=async function(span){
-  if(!span||!scheduleEditing)return;
-  const state=scheduleEditing,proj=S.projects.find(p=>p.id===state.projId);if(!proj)return;
-  const ev=(proj.schedule||[]).filter(e=>e.date===state.ds)[state.ei];if(!ev)return;
-  const nextText=span.textContent.trim();scheduleEditing=null;span.contentEditable='false';span.classList.remove('excel-editing');
-  if(nextText===(ev.note||''))return;
-  const schedule=[...(proj.schedule||[])],absIdx=schedule.indexOf(ev);if(absIdx<0)return;schedule[absIdx]={...ev,note:nextText};
-  if(localTestMode){proj.schedule=schedule;setSynced();return;}
-  setSyncing();await updateDoc(doc(db,'projects',state.projId),{schedule});setSynced();
+function captureScheduleCellEdit(span){
+  if(!span||!scheduleCellIsEditing(span.dataset.proj,span.dataset.ds,span.dataset.ei))return null;
+  const edit={...scheduleEditing,note:span.textContent.trim()};
+  scheduleEditing=null;span.contentEditable='false';span.classList.remove('excel-editing');
+  return edit;
+}
+window.saveScheduleCell=async function(span,edit){
+  if(!edit)return;
+  const {projId,ds,ei,note}=edit;
+  const change=progressScheduleChange(projId,ds,items=>{
+    const entry=items.filter(item=>item.date===ds)[ei];
+    return entry&&note!==(entry.note||'')?items.map(item=>item===entry?{...item,note}:item):null;
+  });
+  if(change)await saveProgressSchedule([change]);
 }
 window.scheduleCellKeyDown=function(e,span){
   if(e.isComposing||e.keyCode===229)return;
@@ -563,7 +566,7 @@ window.scheduleCellKeyDown=function(e,span){
   if(e.key==='Enter'||e.key==='Tab'){e.preventDefault();const direction=e.key==='Enter'?'down':(e.shiftKey?'left':'right');window.saveScheduleCell(span).then(()=>moveScheduleSelection(direction));}
 }
 function moveScheduleSelection(direction){
-  if(!scheduleSelected)return;const days=getWeekDates().map(fmtDay),projects=sortDesignProjs(S.projects.filter(p=>p.status==='prog'));
+  if(!scheduleSelected)return;const days=getWeekDates().map(fmtDay),projects=sortDesignProjs(S.projects.filter(p=>progressProjectVisible(p,days[0]?.slice(0,7))));
   let pi=projects.findIndex(p=>p.id===scheduleSelected.projId),di=days.indexOf(scheduleSelected.ds);if(pi<0||di<0)return;
   if(direction==='left')di--;else if(direction==='right')di++;else if(direction==='up')pi--;else pi++;
   if(pi<0||di<0||pi>=projects.length||di>=days.length)return;
@@ -595,7 +598,7 @@ function renderDayView(){
   let html=`<div style="font-size:14px;font-weight:500;margin-bottom:12px">${td.getFullYear()}年${td.getMonth()+1}月${td.getDate()}日 工地動態</div>`;
   let hasAny=false;
   projs.forEach((p,pi)=>{
-    const evs=(p.schedule||[]).filter(e=>e.date===ds);
+    const evs=progressMonthSchedule(p,ds.slice(0,7)).filter(e=>e.date===ds);
     if(!evs.length)return;hasAny=true;
     html+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:14px 16px;margin-bottom:10px">
       <div style="font-size:13px;font-weight:500;margin-bottom:8px;color:${tc(pi)}">${p.name}</div>
@@ -614,7 +617,8 @@ function renderDayView(){
 }
 
 let openCheckMoArgs=null;
-window.openCheckMo=function(projId,stage,label,projName){
+window.openCheckMo=function(projId,stage,label,projName,ds){
+  const readOnly=ds&&!progressCanEditDate(ds);
   if(!stage)return;
   const proj=S.projects.find(p=>p.id===projId);
   const metaItems=projectBibleItemsMeta(proj,stage);
@@ -637,7 +641,7 @@ window.openCheckMo=function(projId,stage,label,projName){
     if(ph.to<=ph.from)return;
     itemsHtml+=`<div style="font-size:11px;font-weight:600;color:var(--text2);margin:10px 0 4px"><span style="background:${ph.color};padding:2px 8px;border-radius:8px">${ph.label}</span></div>`;
     for(let i=ph.from;i<ph.to;i++){
-      itemsHtml+=renderCheckItemRow(projId,stage,i,merged[i],isEstimate);
+      itemsHtml+=renderCheckItemRow(projId,stage,i,merged[i],isEstimate,readOnly);
     }
   });
   const oldScroll=$('mo-content').querySelector('.estimate-check-list')?.scrollTop||0;
@@ -651,7 +655,7 @@ window.openCheckMo=function(projId,stage,label,projName){
   if(isEstimate)$('mo-content').querySelector('.estimate-check-list').scrollTop=oldScroll;
   $('mo-content').style.maxWidth='880px';
   $('modal').style.display='flex';
-  openCheckMoArgs={projId,stage,label,projName};
+  openCheckMoArgs={projId,stage,label,projName,ds};
 }
 window.closeMo=function(){$('modal').style.display='none';delete $('mo-content').dataset.lockBackdrop;openCheckMoArgs=null;$('mo-content').style.maxWidth='';$('mo-content').classList.remove('project-detail-modal','module-manager-modal','company-duty-settings','sticky-wall-modal','estimate-check-modal','recurring-manager-modal','announcement-modal');if(typeof bibleDeleteModalScrollPosition!=='undefined'&&bibleDeleteModalScrollPosition)restoreBibleDeleteModalScrollPosition();}
 document.addEventListener('keydown',function(e){
@@ -678,7 +682,7 @@ window.progressItemId=function(){return 'pi_'+Date.now().toString(36)+'_'+Math.r
 function progressClone(value){return JSON.parse(JSON.stringify(value==null?null:value));}
 function progressSame(a,b){return JSON.stringify(a)==JSON.stringify(b);}
 function progressUniqueTargets(targets){
-  var seen={};return(targets||[]).filter(function(target){var id=target.kind+'|'+target.key;if(seen[id])return false;seen[id]=true;return true;});
+  var seen={};return(targets||[]).filter(function(target){var id=target.kind+'|'+target.key+'|'+(target.month||'');if(seen[id])return false;seen[id]=true;return true;});
 }
 async function progressReadTarget(target){
   if(target.kind==='private'){
@@ -689,17 +693,14 @@ async function progressReadTarget(target){
     if(localTestMode)return progressClone(((S.meetingLogs[target.key]||{}).items)||[]);
     var meetingSnap=await getDoc(doc(db,'meetingLogs',target.key));return meetingSnap.exists()?progressClone(meetingSnap.data().items||[]):[];
   }
-  if(target.kind==='schedule'){
-    if(localTestMode){var localProj=S.projects.find(function(project){return project.id===target.key;});return progressClone(localProj?.schedule||[]);}
-    var projectSnap=await getDoc(doc(db,'projects',target.key));return projectSnap.exists()?progressClone(projectSnap.data().schedule||[]):[];
+  if(target.kind==='schedule'||target.kind==='siteNote'){
+    const snapshot=await getDoc(doc(db,'projects',target.key));
+    const project=snapshot.exists()?snapshot.data():{};
+    return progressClone(target.kind==='schedule'?progressMonthSchedule(project,target.month):progressMonthNote(project,target.month));
   }
   if(target.kind==='checks'){
     if(localTestMode)return progressClone(S.checks[target.key]||[]);
     var checkSnap=await getDoc(doc(db,'checks',target.key));return checkSnap.exists()?progressClone(checkSnap.data().items||[]):[];
-  }
-  if(target.kind==='projectField'){
-    if(localTestMode){var fieldProject=S.projects.find(function(project){return project.id===target.key;});return progressClone(fieldProject?.[target.field]??'');}
-    var fieldSnap=await getDoc(doc(db,'projects',target.key));return fieldSnap.exists()?progressClone(fieldSnap.data()[target.field]??''):'';
   }
   if(target.kind==='userTodo'){
     if(localTestMode){var localTodo=(S.userTodos||[]).find(function(item){return String(item.id)===String(target.key);});return localTodo?progressClone(localTodo):null;}
@@ -733,18 +734,9 @@ async function progressWriteTarget(target,value,current){
     await setDoc(doc(db,'meetingLogs',target.key),{rowId:target.rowId,date:target.ds,items:restored,updatedAt:serverTimestamp()});
     await progressRestoreMeetingDailyLogs(target,current||[],restored);return;
   }
-  if(target.kind==='schedule'){
-    var project=S.projects.find(function(item){return item.id===target.key;});if(project)project.schedule=restored;
-    if(!localTestMode)await updateDoc(doc(db,'projects',target.key),{schedule:restored});return;
-  }
   if(target.kind==='checks'){
     S.checks=Object.assign({},S.checks,{[target.key]:restored});
     await setDoc(doc(db,'checks',target.key),{items:restored});
-    return;
-  }
-  if(target.kind==='projectField'){
-    var fieldProject=S.projects.find(function(item){return item.id===target.key;});if(fieldProject)fieldProject[target.field]=restored;
-    await updateDoc(doc(db,'projects',target.key),{[target.field]:restored});
     return;
   }
   if(target.kind==='userTodo'){
@@ -769,30 +761,44 @@ async function progressRecordCreatedTarget(action,label,target,before){
   progressUndoPush({action:action,label:label,targets:[Object.assign({},target,{before:progressClone(before),after:after})]});
 }
 window.progressUndo=async function(){
-  var record=progressUndoStack.pop();
-  if(!record)return;
+  const index=progressUndoStack.findLastIndex(progressCanUndoRecord);
+  if(index<0)return;
+  var [record]=progressUndoStack.splice(index,1);
   progressUndoRunning=true;
   try{
     var current=[];
     for(const target of record.targets)current.push(await progressReadTarget(target));
     var conflict=record.targets.some(function(target,index){return !progressSame(current[index],target.after);});
     if(conflict){var conflictError=new Error('此項目已被其他操作修改，無法復原。');conflictError.undoConflict=true;throw conflictError;}
-    for(var i=0;i<record.targets.length;i++)await progressWriteTarget(record.targets[i],record.targets[i].before,current[i]);
+    const projectChanges=[];
+    for(let i=0;i<record.targets.length;i++){
+      const target=record.targets[i];
+      if(target.kind==='schedule'||target.kind==='siteNote')projectChanges.push({projectId:target.key,month:target.month,field:target.kind,before:current[i],after:target.before});
+      else await progressWriteTarget(target,target.before,current[i]);
+    }
+    if(projectChanges.length)await writeProgressMonths(projectChanges);
     setSynced();
   }catch(error){
-    if(!error?.undoConflict)progressUndoStack.push(record);
+    if(!error?.undoConflict)progressUndoStack.splice(index,0,record);
     alert(error&&error.message?error.message:'無法復原這筆操作');
   }finally{
     progressUndoRunning=false;
     if(activePanel==='progress')renderProgress();
   }
 };
-function progressUndoButton(){var next=progressUndoStack[progressUndoStack.length-1],title=next?('上一步：'+next.label+'（Ctrl+Z）'):'上一步（Ctrl+Z）';return '<button type="button" class="progress-undo-button progress-icon-button" data-undo-count="'+progressUndoStack.length+'" '+(progressUndoStack.length?'':'disabled ')+'onclick="progressUndo()" title="'+escAttr(title)+'" aria-label="上一步"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 6 3.5 11.7l5.7 5.7 1.4-1.4-3.3-3.3H15a4 4 0 1 1-3.4 6.1l-1.7 1a6 6 0 1 0 5.1-9.1H7.2l3.4-3.3L9.2 6Z"/></svg></button>';}
+function progressCanWriteTargets(targets){
+  return targets.every(target=>!(target.ds||target.month)||progressCanEditDate(target.ds||target.month));
+}
+function progressCanUndoRecord(record){
+  if(!progressCanWriteTargets(record.targets))return false;
+  return calMode!=='month'||progressCanEditDate(progressMonthKey())||!record.targets.some(target=>target.ds||target.month);
+}
+function progressUndoButton(){var next=progressUndoStack.findLast(progressCanUndoRecord),title=next?('上一步：'+next.label+'（Ctrl+Z）'):'上一步（Ctrl+Z）';return '<button type="button" class="progress-undo-button progress-icon-button" data-undo-count="'+progressUndoStack.length+'" '+(next?'':'disabled ')+'onclick="progressUndo()" title="'+escAttr(title)+'" aria-label="上一步"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 6 3.5 11.7l5.7 5.7 1.4-1.4-3.3-3.3H15a4 4 0 1 1-3.4 6.1l-1.7 1a6 6 0 1 0 5.1-9.1H7.2l3.4-3.3L9.2 6Z"/></svg></button>';}
 window.progressSelectedTarget=function(){
   var p=privateSelectedCell&&privateSelectedCell(),m=meetingSelectedCell&&meetingSelectedCell(),s=scheduleSelected;
   if(p){var pItem=((((S.privateNotes||{})[p.type]||{})[p.ds]||[])[p.idx]);if(pItem)return{kind:'private',ref:p,item:pItem};}
-  if(m){var mItem=((((S.meetingLogs||{})[m.rowId+'_'+m.ds]||{}).items||[])[m.idx]);return{kind:'meeting',ref:m,item:mItem||{},empty:!mItem};}
-  if(s){var proj=S.projects.find(function(x){return x.id===s.projId;}),sItem=(proj?.schedule||[]).filter(function(x){return x.date===s.ds;})[s.ei];if(sItem)return{kind:'schedule',ref:s,item:sItem};}
+  if(m&&progressCanEditDate(m.ds)){var mItem=((((S.meetingLogs||{})[m.rowId+'_'+m.ds]||{}).items||[])[m.idx]);return{kind:'meeting',ref:m,item:mItem||{},empty:!mItem};}
+  if(s&&progressCanEditDate(s.ds)){var proj=S.projects.find(function(x){return x.id===s.projId;}),sItem=(proj?progressMonthSchedule(proj,s.ds.slice(0,7)):[]).filter(function(x){return x.date===s.ds;})[s.ei];if(sItem)return{kind:'schedule',ref:s,item:sItem};}
   return null;
 };
 window.progressApplySelectedColor=async function(kind,value,target){
@@ -823,6 +829,7 @@ window.openProgressColorPalette=function(e,kind,current){
 };
 window.renderProgressActionToolbar=function(){
   var p=privateSelectedCell&&privateSelectedCell(),m=meetingSelectedCell&&meetingSelectedCell(),s=scheduleSelected;
+  if(m&&!progressCanEditDate(m.ds))m=null;if(s&&!progressCanEditDate(s.ds))s=null;
   var active=!!(p||m||s), strikeCall='', completeCall='';
   if(p){strikeCall="pnToggleStrike('"+p.type+"','"+p.ds+"',"+p.idx+")";completeCall="pnToggleComplete('"+p.type+"','"+p.ds+"',"+p.idx+")";}
   else if(m){strikeCall="mToggleStrike('"+m.rowId+"','"+m.ds+"',"+m.idx+")";completeCall="mToggleComplete('"+m.rowId+"','"+m.ds+"',"+m.idx+")";}
@@ -849,28 +856,33 @@ window.mToggleStrike=async function(rowId,ds,idx){
   items[idx]=Object.assign({},items[idx],{strike:!items[idx].strike});
   await setDoc(doc(db,'meetingLogs',key),{rowId:rowId,date:ds,items:items,updatedAt:serverTimestamp()});
 };
-window.scheduleSetStyle=async function(projId,ds,ei,field,value){
-  var proj=S.projects.find(function(x){return x.id===projId;}),ev=(proj?.schedule||[]).filter(function(x){return x.date===ds;})[ei];if(!proj||!ev)return;
-  var at=proj.schedule.indexOf(ev),schedule=progressClone(proj.schedule);if(at<0)return;schedule[at]=Object.assign({},schedule[at],{[field]:value});
-  if(localTestMode){proj.schedule=schedule;setSynced();renderProgress();return;}
-  await updateDoc(doc(db,'projects',projId),{schedule:schedule});
+async function editProgressScheduleItem(projId,ds,ei,edit){
+  const change=progressScheduleChange(projId,ds,items=>{
+    const entry=items.filter(item=>item.date===ds)[ei];
+    return entry?items.map(item=>item===entry?edit(item):item):null;
+  });
+  if(change)await saveProgressSchedule([change]);
+}
+window.scheduleSetStyle=function(projId,ds,ei,field,value){
+  if(!['color','bg'].includes(field))return;
+  return editProgressScheduleItem(projId,ds,ei,item=>({...item,[field]:value}));
 };
-window.scheduleToggleComplete=async function(projId,ds,ei){
-  var proj=S.projects.find(function(x){return x.id===projId;}),ev=(proj?.schedule||[]).filter(function(x){return x.date===ds;})[ei];if(!proj||!ev)return;
-  var at=proj.schedule.indexOf(ev),schedule=progressClone(proj.schedule);if(at<0)return;var nowDone=!schedule[at].completed;schedule[at]=Object.assign({},schedule[at],{completed:nowDone,color:nowDone?'#E24B4A':(schedule[at].color==='#E24B4A'?'':schedule[at].color),completedBy:nowDone?currentUser.uid:null,completedAt:nowDone?new Date().toISOString():null});
-  if(localTestMode){proj.schedule=schedule;setSynced();renderProgress();return;}
-  await updateDoc(doc(db,'projects',projId),{schedule:schedule});
+window.scheduleToggleComplete=function(projId,ds,ei){
+  return editProgressScheduleItem(projId,ds,ei,item=>{
+    const completed=!item.completed;
+    return {...item,completed,color:completed?'#E24B4A':(item.color==='#E24B4A'?'':item.color),
+      completedBy:completed?currentUser.uid:null,completedAt:completed?new Date().toISOString():null};
+  });
 };
-window.scheduleToggleStrike=async function(projId,ds,ei){
-  var proj=S.projects.find(function(x){return x.id===projId;}),ev=(proj?.schedule||[]).filter(function(x){return x.date===ds;})[ei];if(!proj||!ev)return;
-  var at=proj.schedule.indexOf(ev),schedule=progressClone(proj.schedule);if(at<0)return;schedule[at]=Object.assign({},schedule[at],{strike:!schedule[at].strike});
-  if(localTestMode){proj.schedule=schedule;setSynced();renderProgress();return;}
-  await updateDoc(doc(db,'projects',projId),{schedule:schedule});
+window.scheduleToggleStrike=function(projId,ds,ei){
+  return editProgressScheduleItem(projId,ds,ei,item=>({...item,strike:!item.strike}));
 };
-window.saveSiteNote=async function(projId,value){
-  var project=S.projects.find(function(item){return item.id===projId;});if(!project)return;
-  var text=String(value||'');if(String(project.siteNote||'')===text)return;
-  project.siteNote=text;setSyncing();await updateDoc(doc(db,'projects',projId),{siteNote:text});setSynced();
+window.saveProgressSiteNote=async function(projId,month,value){
+  if(!progressCanEditDate(month))return;
+  const project=S.projects.find(item=>item.id===projId);
+  if(!project||!progressProjectVisible(project,month))return;
+  const before=progressMonthNote(project,month),after=String(value||'');
+  if(before!==after)await saveProgressSchedule([{projectId:projId,month,field:'siteNote',before,after}]);
 };
 function progressMeetingDragTargets(args){
   var event=args[0],toRowId=args[1],toDs=args[2],from=null,raw='';
@@ -883,11 +895,9 @@ function progressMeetingDragTargets(args){
   return progressUniqueTargets(targets);
 }
 function progressScheduleDragTargets(args){
-  var event=args[0],toProjId=args[1],from=null,raw='';
-  try{raw=event?.dataTransfer?.getData('text/plain')||'';}catch(error){}
-  if(raw){var parts=raw.split('|');if(parts.length===4&&parts[0]==='ev')from={projId:parts[1]};}
-  if(!from&&evDragSrc)from={projId:evDragSrc.projId};
-  return progressUniqueTargets([{kind:'schedule',key:toProjId}].concat(from?[{kind:'schedule',key:from.projId}]:[]));
+  const from=captureScheduleDrop(args[0]).from;
+  return [{kind:'schedule',key:args[1],month:args[2].slice(0,7)}]
+    .concat(from?[{kind:'schedule',key:from.projId,month:from.ds.slice(0,7)}]:[]);
 }
 function progressWrapOperation(name,targetFactory,label){
   var original=window[name];if(!original)return;
@@ -896,10 +906,23 @@ function progressWrapOperation(name,targetFactory,label){
     // 必須在第一個 await 前接住原生 drop，避免來源被 dragend 清掉或事件冒泡執行兩次。
     if(name==='pnDrop')pnCaptureDropContext(args[0]);
     if(name==='mDrop')mCaptureDropContext(args[0]);
+    if(name==='saveScheduleCell'){
+      const edit=captureScheduleCellEdit(args[0]);
+      if(!edit)return;
+      args[1]=edit;
+    }
     if(progressUndoRunning)return original.apply(this,args);
     var targets=progressUniqueTargets(targetFactory(args)||[]),before=[];
+    if(!progressCanWriteTargets(targets))return;
     for(const target of targets)before.push(await progressReadTarget(target));
-    var result=await original.apply(this,args),after=[];
+    var result,after=[];
+    try{result=await original.apply(this,args);}
+    catch(error){
+      if(!targets.some(target=>target.ds||target.month))throw error;
+      setSynced();alert(error.message);
+      if(activePanel==='progress')renderProgress(true);
+      return;
+    }
     for(const target of targets)after.push(await progressReadTarget(target));
     var changed=[];
     targets.forEach(function(target,index){if(!progressSame(before[index],after[index]))changed.push(Object.assign({},target,{before:before[index],after:after[index]}));});
@@ -913,8 +936,8 @@ function progressMeetingTarget(args,name){
   return rowId&&ds?[{kind:'meeting',key:rowId+'_'+ds,rowId:rowId,ds:ds}]:[];
 }
 function progressScheduleTarget(args,name){
-  if(name==='saveScheduleCell')return args[0]?.dataset?.proj?[{kind:'schedule',key:args[0].dataset.proj}]:[];
-  return args[0]?[{kind:'schedule',key:String(args[0])}]:[];
+  const {proj,ds}=name==='saveScheduleCell'?(args[0]?.dataset||{}):{proj:args[0],ds:args[1]};
+  return proj&&ds?[{kind:'schedule',key:String(proj),month:ds.slice(0,7)}]:[];
 }
 [
   ['pnSetCellText','修改個人記事文字'],['pnSaveBlur','修改個人記事文字'],['pnSaveBox','修改個人記事文字'],
@@ -933,9 +956,14 @@ progressWrapOperation('mDrop',progressMeetingDragTargets,'移動會議事項');
   ['scheduleToggleComplete','切換工程項目完成狀態'],['scheduleToggleStrike','切換工程項目刪除線']
 ].forEach(function(entry){progressWrapOperation(entry[0],function(args){return progressScheduleTarget(args,entry[0]);},entry[1]);});
 progressWrapOperation('evDrop',progressScheduleDragTargets,'移動工程項目');
-progressWrapOperation('saveSiteNote',function(args){return args[0]?[{kind:'projectField',key:String(args[0]),field:'siteNote'}]:[];},'修改工地共用備註');
-progressWrapOperation('setCheckStatus',function(args){return activePanel==='progress'?[{kind:'checks',key:args[0]+'_'+args[1]}]:[];},'修改工程檢核狀態');
-progressWrapOperation('setCheckAmount',function(args){return activePanel==='progress'?[{kind:'checks',key:args[0]+'_'+args[1]}]:[];},'修改工程估價金額');
+progressWrapOperation('saveProgressSiteNote',function(args){return args[0]?[{kind:'siteNote',key:String(args[0]),month:args[1]}]:[];},'修改工地共用備註');
+function progressCheckTarget([projectId,stage]){
+  if(activePanel!=='progress')return [];
+  const modal=openCheckMoArgs;
+  return [{kind:'checks',key:projectId+'_'+stage,ds:modal?.projId===projectId&&modal.stage===stage?modal.ds:undefined}];
+}
+progressWrapOperation('setCheckStatus',progressCheckTarget,'修改工程檢核狀態');
+progressWrapOperation('setCheckAmount',progressCheckTarget,'修改工程估價金額');
 progressWrapOperation('saveGlobalNote',function(args){return currentUser&&args[0]?[{kind:'globalNote',key:currentUser.uid+'_'+args[0]}]:[];},'修改我的記事本');
 progressWrapOperation('saveTodoItemEdit',function(args){return String(args[0]||'').startsWith('m:')?[{kind:'userTodo',key:String(args[0]).slice(2)}]:progressPrivateTarget();},'修改工地待辦文字');
 progressWrapOperation('toggleManualTodo',function(args){return args[0]?[{kind:'userTodo',key:String(args[0])}]:[];},'切換工地待辦完成狀態');

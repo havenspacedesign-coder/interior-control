@@ -4,6 +4,7 @@
 // background-color option, plus @member mention that auto-copies the entry
 // into that member's daily log for the same day ──
 window.mSelect=function(rowId,ds,idx){
+  if(!progressCanEditDate(ds))return;
   const activeEdit=meetingEditing;
   if(activeEdit&&!(activeEdit.rowId===rowId&&activeEdit.ds===ds&&activeEdit.idx===idx)){
     const pending=meetingPendingSelection,samePending=pending&&pending.rowId===rowId&&pending.ds===ds&&pending.idx===idx;
@@ -39,6 +40,7 @@ function mResumeProgressRender(){if(!meetingPointerHeld&&!meetingDragSrc&&pendin
 document.addEventListener('mouseup',function(){if(!meetingPointerHeld)return;meetingPointerHeld=false;setTimeout(mResumeProgressRender,0);},true);
 window.addEventListener('blur',function(){meetingPointerHeld=false;setTimeout(mResumeProgressRender,0);});
 window.mPointerSelect=function(e,rowId,ds,idx){
+  if(!progressCanEditDate(ds))return;
   if(e.button===0)meetingPointerHeld=true;
   const pointerKey=rowId+'|'+ds+'|'+idx,now=Date.now();
   const isRapidSecond=meetingRapidPointer.key===pointerKey&&now-meetingRapidPointer.time<=500;
@@ -62,6 +64,7 @@ window.mPointerSelect=function(e,rowId,ds,idx){
   refreshProgressActionToolbar();
 }
 window.mStartEdit=function(rowId,ds,idx){
+  if(!progressCanEditDate(ds))return;
   meetingPendingSelection=null;meetingRapidPointer={key:'',time:0};
   clearSpreadsheetSelections('meeting');
   meetingSelGen++;meetingSelected={};meetingSelected[rowId+'|'+ds]=idx;meetingEditing={rowId:rowId,ds:ds,idx:idx};meetingEditCanceled=false;
@@ -69,6 +72,7 @@ window.mStartEdit=function(rowId,ds,idx){
   setTimeout(function(){const input=document.getElementById('meetbox-'+rowId+'-'+ds+'-'+idx);if(input){input.focus();input.setSelectionRange(input.value.length,input.value.length);}},0);
 }
 window.mStartEditWithChar=function(rowId,ds,idx,text){
+  if(!progressCanEditDate(ds))return;
   clearSpreadsheetSelections('meeting');
   meetingSelGen++;meetingSelected={};meetingSelected[rowId+'|'+ds]=idx;meetingEditing={rowId:rowId,ds:ds,idx:idx};meetingEditCanceled=false;updateFormulaBar('meeting',ds,idx,text,rowId,null);renderProgress(true);
   setTimeout(function(){const input=document.getElementById('meetbox-'+rowId+'-'+ds+'-'+idx);if(input){input.value=text;input.focus();input.setSelectionRange(text.length,text.length);}},0);
@@ -84,6 +88,7 @@ window.mMove=function(rowId,ds,direction){
   if(ri<0||di<0||ri>=rows.length||di>=days.length)return;mSelectEmpty(rows[ri],days[di]);
 }
 window.mSetCellText=async function(rowId,ds,text){
+  if(!progressCanEditDate(ds))return;
   const key=rowId+'_'+ds,items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
   if(!String(text||'').trim()&&items.length){
     setSyncing();await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items:items.slice(1),updatedAt:serverTimestamp()});
@@ -94,6 +99,7 @@ window.mSetCellText=async function(rowId,ds,text){
   setSyncing();await setDoc(doc(db,'meetingLogs',key),{rowId:rowId,date:ds,items:items,updatedAt:serverTimestamp()});for(const uid of (items[0].mentions||[]))await mSyncDailyLog(rowId,ds,0,uid,items[0]);setSynced();meetingEditing=null;meetingSelected={};meetingSelected[rowId+'|'+ds]=0;if(activePanel==='progress')renderProgress();
 }
 window.mAdd=async function(rowId,ds){
+  if(!progressCanEditDate(ds))return;
   if(!currentUser)return;
   const key=rowId+'_'+ds;
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
@@ -139,6 +145,7 @@ window.mPreviewCustomColor=function(value){
   if(meetingColorPreview)meetingColorPreview.styles.forEach(({el,property})=>el.style.setProperty(property,value));
 };
 window.openMeetingColorPalette=function(e,rowId,ds,idx,kind,current){
+  if(!progressCanEditDate(ds))return;
   e.stopPropagation();
   closeMeetingColorPalette();
   beginMeetingColorPreview({kind:'meeting',ref:{rowId,ds,idx}},kind);
@@ -164,6 +171,7 @@ window.mPickMeetingColor=async function(rowId,ds,idx,kind,val){
   await mSetColor(rowId,ds,idx,kind,val);
 };
 window.mSetColor=async function(rowId,ds,idx,kind,val){
+  if(!progressCanEditDate(ds))return;
   if(!currentUser)return;
   const key=rowId+'_'+ds;
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
@@ -176,6 +184,7 @@ window.mSetColor=async function(rowId,ds,idx,kind,val){
   setSynced();
 }
 window.mDelete=async function(rowId,ds,idx){
+  if(!progressCanEditDate(ds))return;
   if(!currentUser)return;
   const key=rowId+'_'+ds;
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
@@ -193,6 +202,7 @@ window.mDelete=async function(rowId,ds,idx){
   setSynced();
 }
 window.mDragStart=function(e,rowId,ds,idx){
+  if(!progressCanEditDate(ds))return;
   meetingDragSrc={rowId,ds,idx};
   e.currentTarget.classList.add('meet-dragging');
   e.dataTransfer.effectAllowed='copyMove';
@@ -211,7 +221,7 @@ function mCaptureDropContext(e){
 }
 window.mDrop=async function(e,toRowId,toDs){
   const context=mCaptureDropContext(e),from=context.from;
-  if(!from||!currentUser)return;
+  if(!from||!currentUser||!progressCanEditDate(from.ds)||!progressCanEditDate(toDs))return;
   if(from.rowId===toRowId&&from.ds===toDs){meetingDragSrc=null;return;}
   const toKey=toRowId+'_'+toDs;
   const toItems=(S.meetingLogs[toKey]&&S.meetingLogs[toKey].items)?[...S.meetingLogs[toKey].items]:[];
@@ -224,12 +234,16 @@ window.mDrop=async function(e,toRowId,toDs){
   toItems.push(movedItem);
   const toIdx=toItems.length-1;
   setSyncing();
-  await setDoc(doc(db,'meetingLogs',toKey),{rowId:toRowId,date:toDs,items:toItems,updatedAt:serverTimestamp()});
+  const writes=writeBatch(db);
+  writes.set(doc(db,'meetingLogs',toKey),{rowId:toRowId,date:toDs,items:toItems,updatedAt:serverTimestamp()});
+  if(!context.copy){
+    fromItems.splice(from.idx,1);
+    writes.set(doc(db,'meetingLogs',fromKey),{rowId:from.rowId,date:from.ds,items:fromItems,updatedAt:serverTimestamp()});
+  }
+  await writes.commit();
   for(const uid of movedItem.mentions)await mSyncDailyLog(toRowId,toDs,toIdx,uid,movedItem);
   if(!context.copy){
     for(const uid of movedItem.mentions)await mRemoveFromDailyLog(from.rowId,from.ds,from.idx,uid);
-    fromItems.splice(from.idx,1);
-    await setDoc(doc(db,'meetingLogs',fromKey),{rowId:from.rowId,date:from.ds,items:fromItems,updatedAt:serverTimestamp()});
   }
   meetingSelected={};meetingSelected[toRowId+'|'+toDs]=toIdx;
   updateFormulaBar('meeting',toDs,toIdx,movedItem.text||'',toRowId,movedItem.link||null);
@@ -271,6 +285,7 @@ function mRefreshMentionMenu(rowId,ds,idx){
   });
 }
 window.mRequestMentionToggle=function(rowId,ds,idx,uid,option){
+  if(!progressCanEditDate(ds))return;
   if(!currentUser||!markableMembersList().some(m=>m.uid===uid))return;
   const key=rowId+'|'+ds+'|'+idx,queue=mMentionToggleQueues[key]||(mMentionToggleQueues[key]={pending:[],tail:Promise.resolve()});
   const input=document.getElementById('meetbox-'+rowId+'-'+ds+'-'+idx);
@@ -299,6 +314,7 @@ function mMentionMenuHTML(rowId,ds,idx){
   }).join('');
 }
 window.mOpenMentionPicker=function(e,rowId,ds,idx){
+  if(!progressCanEditDate(ds))return;
   clearTimeout(mCloseTimer);
   const menuEl=document.getElementById('meet-mention-'+rowId+'-'+ds);
   if(!menuEl)return;
@@ -307,6 +323,7 @@ window.mOpenMentionPicker=function(e,rowId,ds,idx){
   menuEl.innerHTML=mMentionMenuHTML(rowId,ds,idx);
 }
 window.mToggleMention=async function(rowId,ds,idx,uid,checked,draft){
+  if(!progressCanEditDate(ds))return;
   if(!currentUser)return;
   if(!markableMembersList().some(m=>m.uid===uid))return;
   const key=rowId+'_'+ds;
@@ -388,6 +405,7 @@ async function mRemoveFromDailyLog(rowId,ds,idx,uid){
 }
 window.mBoxBlur=function(el,rowId,ds,idx){mSaveBox(el,rowId,ds,idx);}
 window.mSaveBox=async function(el,rowId,ds,idx){
+  if(!progressCanEditDate(ds))return;
   if(!currentUser||!el)return;
   if(meetingEditCanceled){meetingEditCanceled=false;meetingEditing=null;const pending=meetingPendingSelection;meetingPendingSelection=null;if(pending){meetingSelected={};meetingSelected[pending.rowId+'|'+pending.ds]=pending.idx;const nextItem=(((S.meetingLogs||{})[pending.rowId+'_'+pending.ds]||{}).items||[])[pending.idx]||{};const nextLinked=normalizeLinkedItem(nextItem);updateFormulaBar('meeting',pending.ds,pending.idx,nextLinked.text,pending.rowId,nextLinked.link);}if(activePanel==='progress')renderProgress();if(pending?.edit)setTimeout(function(){mStartEdit(pending.rowId,pending.ds,pending.idx);},0);return;}
   const text=el.value;const link=linkFromInput(el,text);
