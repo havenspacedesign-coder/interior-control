@@ -2,8 +2,37 @@
 // ── Overview ──
 let overviewStatusFilter=null;
 let overviewCompletedMode=false;
+let overviewCompletionFilter=null;
 let overviewReportProjId=null;
 let overviewEditMode=false;
+const OVERVIEW_COMPLETION_TYPES=['未簽約','設計終止','設計完成','工程完成'];
+
+function overviewCompletionType(project){
+  // The existing form allows multiple selections. Count each case once using its first saved valid type.
+  return Array.isArray(project.completionTypes)
+    ? project.completionTypes.find(type=>OVERVIEW_COMPLETION_TYPES.includes(type))??null
+    : null;
+}
+
+function renderOverviewCompletionFilters(completedProjects){
+  const counts=Object.fromEntries(OVERVIEW_COMPLETION_TYPES.map(type=>[type,0]));
+  let unclassified=0;
+  for(const project of completedProjects){
+    const type=overviewCompletionType(project);
+    if(type)counts[type]++;
+    else unclassified++;
+  }
+  return `<div class="overview-completion-filters" role="group" aria-label="已完工結案類型">
+    <div class="overview-completion-controls">
+      <button class="btn btn-sm" type="button" data-completion-filter="" aria-pressed="${overviewCompletionFilter===null}" onclick="setOverviewCompletionFilter(null)">全部</button>
+      <span class="overview-completion-unclassified">未分類 ${unclassified} 件</span>
+    </div>
+    <div class="stats overview-completion-stats">
+      ${OVERVIEW_COMPLETION_TYPES.map(type=>`<button class="stat" type="button" data-completion-filter="${type}" aria-pressed="${overviewCompletionFilter===type}" onclick="setOverviewCompletionFilter('${type}')"><span class="stat-n">${counts[type]}</span><span class="stat-l">${type}</span></button>`).join('')}
+    </div>
+  </div>`;
+}
+
 function renderOverview(){
   const el=$('panel-overview');
   if(overviewReportProjId){el.innerHTML=renderSiteReport(overviewReportProjId);return;}
@@ -11,9 +40,9 @@ function renderOverview(){
   const inCv=S.projects.filter(p=>p.status==='cv').length;
   const inDesign=S.projects.filter(p=>p.status==='design').length;
   const inProg=S.projects.filter(p=>p.status==='prog').length;
-  const done=S.projects.filter(p=>p.status==='done').length;
+  const completedProjects=S.projects.filter(p=>p.status==='done');
   const shown=sortDesignProjs(overviewCompletedMode
-    ? S.projects.filter(p=>p.status==='done')
+    ? completedProjects.filter(p=>overviewCompletionFilter===null||overviewCompletionType(p)===overviewCompletionFilter)
     : S.projects.filter(p=>p.status!=='done'&&(!overviewStatusFilter||p.status===overviewStatusFilter)));
   const canEditShown=canEditProjects()&&shown.some(p=>p.status!=='done'||currentRole==='manager');
   function statCard(v,n,color,label){
@@ -28,8 +57,9 @@ function renderOverview(){
     ${statCard('cv',inCv,'var(--red)','客變案')}
     ${statCard('design',inDesign,'#4A3FA0','設計中')}
     ${statCard('prog',inProg,'var(--purple)','施工中')}
-    ${statCard('done',done,'var(--green)','已完工')}
+    ${statCard('done',completedProjects.length,'var(--green)','已完工')}
   </div>
+  ${overviewCompletedMode?renderOverviewCompletionFilters(completedProjects):''}
   <div class="card">
     <div class="card-hdr">
       <div style="display:flex;align-items:center;gap:10px"><span class="card-title">${overviewCompletedMode?'已完工案件':overviewStatusFilter?statusInfo(overviewStatusFilter).l+'案件':'所有案件'}</span>
@@ -39,7 +69,7 @@ function renderOverview(){
     </div>
     ${shown.length===0?`<div class="empty">尚無案件</div>`:`
     <div style="overflow-x:auto"><table>
-      <thead><tr>${isAdmin()&&overviewEditMode?'<th style="width:34px"></th>':''}<th>案件名稱</th><th>狀態</th><th style="text-align:center;white-space:nowrap">階段天數</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>合約完工日</th>${overviewCompletedMode?'<th>設定已完工日</th>':''}${canEditShown&&overviewEditMode?'<th>操作</th>':''}</tr></thead>
+      <thead><tr>${isAdmin()&&overviewEditMode?'<th style="width:34px"></th>':''}<th>案件名稱</th><th>狀態</th>${overviewCompletedMode?'<th>結案類型</th>':''}<th style="text-align:center;white-space:nowrap">階段天數</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>合約完工日</th>${overviewCompletedMode?'<th>設定已完工日</th>':''}${canEditShown&&overviewEditMode?'<th>操作</th>':''}</tr></thead>
       <tbody>${shown.map(p=>{
         const si=statusInfo(p.status);
         const closedOn=overviewCompletedMode?progressClosureLabel(p):'';
@@ -50,6 +80,7 @@ function renderOverview(){
           <td>${isAdmin()&&(p.status!=='done'||currentRole==='manager')?`<select class="status-sel" style="background:${si.bg};color:${si.color}" onchange="handleStatusChange('${p.id}',this)">
             ${STATUS_OPTS.map(o=>`<option value="${o.v}" ${p.status===o.v?'selected':''}>${o.l}</option>`).join('')}
           </select>`:`<span class="badge" style="background:${si.bg};color:${si.color}">${si.l}</span>`}</td>
+          ${overviewCompletedMode?`<td class="overview-completion-type">${overviewCompletionType(p)||'未分類'}</td>`:''}
           ${projectStageCell(p)}<td>${p.owner||''}</td><td style="color:var(--text2)">${p.type||''}</td>
           <td>${p.designer||''}</td><td>${p.budget||''}</td>
           <td style="color:var(--text2)">${p.contractEnd||p.finish||''}</td>
@@ -59,8 +90,14 @@ function renderOverview(){
     </table></div>`}
   </div>`;
 }
-window.setOverviewFilter=function(v){overviewCompletedMode=false;overviewStatusFilter=overviewStatusFilter===v?null:v;renderOverview();}
-window.toggleOverviewCompletedMode=function(){overviewCompletedMode=!overviewCompletedMode;overviewStatusFilter=null;overviewEditMode=false;renderOverview();}
+window.setOverviewFilter=function(v){overviewCompletedMode=false;overviewCompletionFilter=null;overviewStatusFilter=overviewStatusFilter===v?null:v;renderOverview();}
+window.toggleOverviewCompletedMode=function(){overviewCompletedMode=!overviewCompletedMode;overviewCompletionFilter=null;overviewStatusFilter=null;overviewEditMode=false;renderOverview();}
+window.setOverviewCompletionFilter=function(type){
+  if(!overviewCompletedMode||(type!==null&&!OVERVIEW_COMPLETION_TYPES.includes(type)))return;
+  overviewCompletionFilter=overviewCompletionFilter===type?null:type;
+  renderOverview();
+  $('panel-overview').querySelector(`[data-completion-filter="${type??''}"]`)?.focus({preventScroll:true});
+};
 window.toggleOverviewEditMode=function(){if(!canEditProjects())return;overviewEditMode=!overviewEditMode;renderOverview();}
 window.showProgressClosureBackfill=function(id){
   const project=S.projects.find(p=>p.id===id);
@@ -321,7 +358,6 @@ window.handleStatusChange=function(projId,selectEl){
     }
   }
   if(v!=='done'){updateStatus(projId,v);return;}
-  const opts=['未簽約','設計終止','設計完成','工程完成'];
   const inspRow=`<div style="margin:2px 0 4px 26px">
       <div style="font-size:11px;color:var(--text2);margin-bottom:2px">初驗日</div>
       <div style="display:flex;align-items:center;gap:3px">
@@ -334,7 +370,7 @@ window.handleStatusChange=function(projId,selectEl){
     <div class="mo-title">標記為已完工</div>
     <div class="mo-sub">可複選：這個案子屬於哪一種完工？</div>
     <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
-      ${opts.map((o,i)=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+      ${OVERVIEW_COMPLETION_TYPES.map((o,i)=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
         <input type="checkbox" id="ct-${i}" value="${o}"> ${o}
       </label>${o==='工程完成'?inspRow:''}`).join('')}
     </div>
@@ -346,8 +382,7 @@ window.cancelStatusChange=function(projId,prevStatus){
   renderOverview();
 }
 window.confirmStatusDone=function(projId){
-  const opts=['未簽約','設計終止','設計完成','工程完成'];
-  const selected=opts.filter((o,i)=>{const el=$('ct-'+i);return el&&el.checked;});
+  const selected=OVERVIEW_COMPLETION_TYPES.filter((o,i)=>{const el=$('ct-'+i);return el&&el.checked;});
   const y=$('ct-insp-y'),m=$('ct-insp-m'),d=$('ct-insp-d');
   let inspDate='';
   if(y&&y.value&&m&&m.value&&d&&d.value){

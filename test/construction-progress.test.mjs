@@ -37,6 +37,26 @@ for(let month=1;month<=11;month++)assert.equal(model.progressProjectVisible(back
 assert.equal(model.progressProjectVisible(backfilled,december),false);
 assert.equal(model.progressProjectVisible(backfilled,'2027-01'),false);
 const journal = load({serverTimestamp:()=> '2026-11-11T04:00:00Z'});
+const legacyWithNoRows={name:'只有完工類型的舊工程案',status:'done',completionTypes:['工程完成'],progressLegacyClosedMonth:november};
+const reopenedLegacy={...legacyWithNoRows,...journal.progressProjectWrite(legacyWithNoRows,{
+  status:'prog',stageHistory:{segments:[{status:'prog',start:'2026-12-11'}]}
+},december)};
+assert.equal(journal.progressProjectVisible(reopenedLegacy,november),true);
+const designOnly={name:'設計結案',status:'design'};
+const designHistory={version:1,revision:2,segments:[{status:'design',start:'2026-10-01',end:date},{status:'done',start:date,end:null}]};
+for(const type of ['未簽約','設計終止','設計完成','工程完成']){
+  const closedDesign={...designOnly,...journal.progressProjectWrite(designOnly,{status:'done',stageHistory:designHistory,completionTypes:[type]},november)};
+  assert.equal(journal.progressProjectVisible(closedDesign,november),false);
+}
+assert.equal(model.progressProjectVisible({name:'舊設計結案',status:'done',completionTypes:['設計完成']},november),false);
+assert.equal(model.progressProjectVisible({name:'舊工程結案',status:'done',completionTypes:['工程完成']},november),true);
+const designThenConstruction={...designOnly,...journal.progressProjectWrite(designOnly,{status:'prog'},november)};
+const closedSameMonth={...designThenConstruction,...journal.progressProjectWrite(designThenConstruction,{
+  status:'done',stageHistory:{firstConstructionDay:'2026-11-05',segments:designHistory.segments}
+},november)};
+assert.equal(journal.progressProjectVisible(closedSameMonth,october),false);
+assert.equal(journal.progressProjectVisible(closedSameMonth,november),true);
+assert.equal(journal.progressProjectVisible(closedSameMonth,december),false);
 const opening = {name:'十一月原名',status:'prog',initialInspectionDate:'2026-09-15'};
 const closing = {...opening,...journal.progressProjectWrite(opening,{status:'done'},november)};
 const renamed = {...closing,...journal.progressProjectWrite(closing,{status:'prog',name:'十二月新名'},december)};
@@ -234,11 +254,15 @@ try {
   await deny(updateDoc(project,{status:'done',progressCompletedOn:pastDate}));
   await deny(updateDoc(project,staffApp.progressProjectWrite(snapshot,{status:'done'})));
   await deny(updateDoc(adminProject,{status:'done',progressClosedAt:new Date('2020-01-01')}));
-  await allow(updateDoc(adminProject,adminApp.progressProjectWrite(snapshot,{status:'done',initialInspectionDate:pastDate})));
+  const closureHistory={version:1,revision:2,partial:true,firstConstructionDay:pastDate,segments:[
+    {status:'prog',start:pastDate,end:today},{status:'done',start:today,end:null}
+  ]};
+  await allow(updateDoc(adminProject,adminApp.progressProjectWrite(snapshot,{status:'done',stageHistory:closureHistory,initialInspectionDate:pastDate})));
   const saved=(await getDoc(adminProject)).data();
   assert(saved.progressClosedAt.toDate() instanceof Date);
   assert.equal(saved.progressRoster.months[thisMonth].closedAt.toMillis(),saved.progressClosedAt.toMillis());
   assert.equal(saved.initialInspectionDate,pastDate);
+  assert.deepEqual(saved.stageHistory,closureHistory);
   await deny(updateDoc(adminProject,{progressLegacyClosedMonth:pastMonth}));
   await deny(updateDoc(project,{status:'prog'}));
   await deny(updateDoc(adminProject,{progressClosedAt:new Date('2020-01-01')}));

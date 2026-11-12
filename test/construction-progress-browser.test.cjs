@@ -37,6 +37,23 @@ window.progressTestFixture = {
     S.meetingLogs['meet1_2026-11-02'].items.push({text:'[proj:月份驗收案件] 十一月報告會議',mentions:[]});
     renderActive(); saveLocalPreviewState();
   },
+  seedDesignClosures(){
+    const designProgress=Object.fromEntries(getDesignCols().filter(col=>col.collapsible).map(col=>[col.key||col.name,'已填']));
+    S.projects=['未簽約驗收案','設計終止驗收案','設計完成驗收案','工程完成驗收案'].map((name,index)=>({
+      id:'qa-design-'+index,name,status:'design',createdAt:'2026-10-01',designProgress,schedule:[]
+    }));
+    S.projectTradeSelections=Object.fromEntries(S.projects.map(project=>[project.id,{'qa-trade':{none:true}}]));
+    renderActive(); saveLocalPreviewState();
+  },
+  seedCompletedFilters(){
+    const closed=[['未簽約分類案',['未簽約']],['設計終止分類案',['設計終止']],['設計完成分類案',['設計完成']],
+      ['工程完成分類案',['工程完成']],['缺結案類型案'],['未知結案類型案',['舊類型']],
+      ['複選結案案',['舊類型','設計完成','工程完成','設計完成']]];
+    S.projects.push(...closed.map(([name,completionTypes],index)=>({
+      id:'qa-completion-filter-'+index,name,status:'done',...(completionTypes?{completionTypes}:{})
+    })));
+    renderActive(); saveLocalPreviewState();
+  },
   async order(ids,month){await writeProgressOrder(ids,month);},
   async change(id,patch){
     const project=S.projects.find(item=>item.id===id);
@@ -273,6 +290,190 @@ async function legacyCompletionDates(browser) {
   } finally { await context.close(); }
 }
 
+async function designOnlyCompletion(browser) {
+  const { page, context, errors }=await open(browser,'manager');
+  try {
+    const names=['未簽約驗收案','設計終止驗收案','設計完成驗收案','工程完成驗收案'];
+    const types=['未簽約','設計終止','設計完成','工程完成'];
+    const site=name=>page.locator('#panel-progress td.site-hd').filter({hasText:name});
+    const status=name=>page.locator('#panel-overview tr').filter({hasText:name}).locator('select.status-sel');
+    await page.evaluate(()=>window.progressTestFixture.seedDesignClosures());
+    for(const name of names)assert.equal(await site(name).count(),0);
+    await page.locator('[data-tab="overview"]').click();
+    for(const [i,name] of names.slice(0,3).entries()){
+      await status(name).selectOption('done');
+      await page.locator('#ct-'+i).check();
+      await page.locator('#mo-content').getByRole('button',{name:'確定',exact:true}).click();
+      await status(name).waitFor({state:'hidden'});
+    }
+    await status(names[3]).selectOption('prog');
+    await check(page,()=>window.progressTestFixture.read().projects.find(p=>p.id==='qa-design-3').status==='prog');
+    await page.locator('[data-tab="progress"]').click();
+    await visible(site(names[3]));
+    for(const name of names.slice(0,3))assert.equal(await site(name).count(),0);
+    await page.locator('[data-tab="overview"]').click();
+    await status(names[3]).selectOption('done');
+    await page.locator('#ct-3').check();
+    await page.locator('#ct-insp-y').fill('2026');
+    await page.locator('#ct-insp-m').fill('11');
+    await page.locator('#ct-insp-d').fill('10');
+    await page.locator('#mo-content').getByRole('button',{name:'確定',exact:true}).click();
+    await status(names[3]).waitFor({state:'hidden'});
+    assert.deepEqual((await read(page)).projects.map(p=>[p.status,p.completionTypes[0]]),types.map(type=>['done',type]));
+    await page.locator('[data-tab="progress"]').click();
+    await visible(site(names[3]).getByText('完工',{exact:true}));
+    await page.setViewportSize({width:390,height:844});
+    for(const name of names.slice(0,3))assert.equal(await site(name).count(),0);
+    await visible(site(names[3]));
+    await month(page,1,12);
+    for(const name of names)assert.equal(await site(name).count(),0);
+    assert.deepEqual(errors,[]);
+    console.log('PASS browser: design-only closures never enter the construction roster; same-month entry and construction completion retain the row until next month.');
+  } finally { await context.close(); }
+}
+
+async function completedFilters(browser) {
+  const { page, context, errors }=await open(browser,'manager');
+  try {
+    const panel=page.locator('#panel-overview');
+    const filters=panel.getByRole('group',{name:'已完工結案類型'});
+    const mainCards=panel.locator(':scope > .stats > .stat');
+    const completed=mainCards.filter({hasText:'已完工'});
+    const all=filters.getByRole('button',{name:'全部',exact:true});
+    const category=type=>filters.locator(`[data-completion-filter="${type}"]`);
+    const names=()=>panel.locator('tbody tr td strong').allTextContents().then(rows=>rows.sort());
+    const entries=[['未簽約',['未簽約分類案']],['設計終止',['設計終止分類案']],
+      ['設計完成',['設計完成分類案','複選結案案']],['工程完成',['工程完成分類案']]];
+    const allNames=[...entries.flatMap(([,rows])=>rows),'缺結案類型案','未知結案類型案'].sort();
+    await page.evaluate(()=>window.progressTestFixture.seedCompletedFilters());
+    const before=await read(page);
+    await page.locator('[data-tab="overview"]').click();
+    assert.equal(await mainCards.count(),5);
+    assert.equal(await filters.count(),0);
+    await completed.click();
+    assert.equal(await completed.locator('.stat-n').textContent(),String(allNames.length));
+    assert.equal(await filters.locator('button.stat').count(),4);
+    assert.equal(await all.getAttribute('aria-pressed'),'true');
+    assert.deepEqual(await names(),allNames);
+    assert.equal(await panel.getByRole('cell',{name:'未分類',exact:true}).count(),2);
+    const unclassified=await filters.locator('.overview-completion-unclassified').textContent();
+    assert.equal(unclassified,'未分類 2 件');
+    let counts=2;
+    for(const [type,rows] of entries){
+      const button=category(type);
+      const count=Number(await button.locator('.stat-n').textContent());
+      counts+=count;
+      assert.equal(count,rows.length);
+      await button.click();
+      assert.equal(await button.getAttribute('aria-pressed'),'true');
+      assert.deepEqual(await names(),rows.slice().sort());
+      await button.click();
+      assert.equal(await all.getAttribute('aria-pressed'),'true');
+      assert.deepEqual(await names(),allNames);
+    }
+    assert.equal(counts,Number(await completed.locator('.stat-n').textContent()));
+    await category('工程完成').click();
+    await all.click();
+    assert.deepEqual(await names(),allNames);
+    await category('工程完成').click();
+    await mainCards.filter({hasText:'施工中'}).click();
+    assert.equal(await filters.count(),0);
+    assert.deepEqual(await names(),['月份驗收案件']);
+    await completed.click();
+    assert.deepEqual(await names(),allNames);
+    assert.deepEqual(await read(page),before);
+
+    await category('工程完成').click();
+    await panel.getByText('工程完成分類案',{exact:true}).click();
+    await visible(panel.getByText('工程完成分類案 — 工地總報告表',{exact:true}));
+    await panel.getByRole('button',{name:'← 返回案件總覽',exact:true}).click();
+    assert.deepEqual(await names(),['工程完成分類案']);
+    await panel.getByRole('button',{name:'編輯',exact:true}).click();
+    await panel.getByRole('row').filter({hasText:'工程完成分類案'}).getByRole('button',{name:'編輯',exact:true}).click();
+    await page.locator('#np-name').fill('已編輯的工程完成案');
+    await page.locator('#np-save-btn').click();
+    await visible(panel.getByText('已編輯的工程完成案',{exact:true}));
+    assert.equal(await category('工程完成').getAttribute('aria-pressed'),'true');
+    assert.deepEqual((await read(page)).projects.find(project=>project.name==='已編輯的工程完成案').completionTypes,['工程完成']);
+
+    await page.setViewportSize({width:390,height:844});
+    const cards=filters.locator('button.stat');
+    const layout=await cards.evaluateAll(buttons=>buttons.map(button=>({
+      top:Math.round(button.getBoundingClientRect().top),right:button.getBoundingClientRect().right
+    })));
+    assert(new Set(layout.map(card=>card.top)).size>1);
+    assert(layout.every(card=>card.right<=390));
+    await category('設計完成').click();
+    assert.deepEqual(await names(),['複選結案案','設計完成分類案'].sort());
+    await all.click();
+    assert.equal((await names()).length,allNames.length);
+    assert.deepEqual(errors,[]);
+    console.log('PASS browser: four completed categories and total reconciliation, unclassified and multiple types, toggling, reporting, editing, and mobile wrapping.');
+  } finally { await context.close(); }
+}
+
+async function createAndCloseUnsignedProject(browser) {
+  const { page, context, errors }=await open(browser,'manager');
+  try {
+    const name='新增未簽約驗收案';
+    const panel=page.locator('#panel-overview');
+    const done=panel.locator(':scope > .stats > .stat').filter({hasText:'已完工'});
+    const filters=panel.getByRole('group',{name:'已完工結案類型'});
+    const unsigned=filters.locator('[data-completion-filter="未簽約"]');
+    const projectRow=panel.getByRole('row').filter({hasText:name});
+    await page.locator('[data-tab="overview"]').click();
+    await done.click();
+    assert.equal(await filters.locator('button.stat').count(),4);
+    assert.deepEqual(await filters.locator('button.stat .stat-n').allTextContents(),['0','0','0','0']);
+    await unsigned.click();
+    await visible(panel.getByText('尚無案件',{exact:true}));
+    await done.click();
+
+    await panel.getByRole('button',{name:/新增案件/}).click();
+    await page.locator('#np-name').fill(name);
+    await page.locator('#np-type-kind').selectOption('預售屋');
+    await page.locator('#np-type-building').selectOption('公寓');
+    await page.locator('#np-status').selectOption('contact');
+    await page.locator('#np-save-btn').click();
+    await visible(projectRow);
+
+    await page.locator('[data-tab="design"]').click();
+    await page.locator('#design-table th[title="顯示/隱藏會議人員等欄位"]').click();
+    const designRow=page.locator('#design-table tbody tr').filter({hasText:name});
+    const memberCells=designRow.locator('td').filter({has:page.locator('.task-tag-btn')});
+    assert.equal(await memberCells.count(),6);
+    for(let index=0;index<6;index++){
+      const cell=memberCells.nth(index);
+      await cell.locator('.task-tag-btn').hover();
+      await cell.getByRole('checkbox',{name:'測試 staff',exact:true}).check();
+    }
+
+    await page.locator('[data-tab="overview"]').click();
+    await projectRow.locator('select.status-sel').selectOption('done');
+    const modal=page.locator('#mo-content');
+    await modal.getByLabel('未簽約',{exact:true}).check();
+    await modal.getByRole('button',{name:'確定',exact:true}).click();
+    await projectRow.waitFor({state:'hidden'});
+    await done.click();
+    assert.deepEqual(await filters.locator('button.stat .stat-n').allTextContents(),['1','0','0','0']);
+    await unsigned.click();
+    await visible(projectRow.getByRole('cell',{name:'未簽約',exact:true}));
+    assert.deepEqual(await panel.locator('tbody td strong').allTextContents(),[name]);
+    const saved=(await read(page)).projects.find(project=>project.name===name);
+    assert.equal(saved.status,'done');
+    assert.deepEqual(saved.completionTypes,['未簽約']);
+
+    await page.reload();
+    await page.locator('[data-tab="overview"]').click();
+    await done.click();
+    await unsigned.click();
+    await visible(projectRow.getByRole('cell',{name:'未簽約',exact:true}));
+    assert.deepEqual((await read(page)).projects.find(project=>project.id===saved.id).completionTypes,['未簽約']);
+    assert.deepEqual(errors,[]);
+    console.log('PASS browser: zero-count cards, create project via form, meet existing design prerequisites, close as unsigned, filter and reload.');
+  } finally { await context.close(); }
+}
+
 async function employee(browser, role, mobile) {
   const { page, context, errors } = await open(browser, role, mobile);
   try {
@@ -385,7 +586,7 @@ async function administrator(browser) {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     for (const [label, test] of [
-      ['completion', completion], ['legacy completion dates', legacyCompletionDates], ['staff desktop', b => employee(b, 'staff', false)],
+      ['completion', completion], ['completed filters',completedFilters], ['new unsigned project',createAndCloseUnsignedProject], ['design-only completion',designOnlyCompletion], ['legacy completion dates', legacyCompletionDates], ['staff desktop', b => employee(b, 'staff', false)],
       ['staff mobile', b => employee(b, 'staff', true)],
       ['supervisor desktop', b => employee(b, 'supervisor', false)],
       ['supervisor mobile', b => employee(b, 'supervisor', true)], ['administrator', administrator]

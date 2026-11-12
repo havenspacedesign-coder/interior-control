@@ -97,6 +97,11 @@ function projectStageTransition(project,target,choice='keep',day=projectStageTod
   if(target===project.status)return history;
   const tail=history.segments.at(-1);
   if(projectStageDayNumber(day)<projectStageDayNumber(tail.start))throw new Error('目前日期早於已儲存的階段紀錄，未儲存變更');
+  const construction=history.segments.find(segment=>segment.status==='prog');
+  if(!history.firstConstructionDay&&(construction||target==='prog')){
+    const usedCreationBaseline=construction===history.segments[0]&&history.baselineSource==='createdAt';
+    history.firstConstructionDay=construction&&!usedCreationBaseline?construction.start:day;
+  }
   const back=projectStageReturnInfo(project,target,day);
   if(choice==='delete'&&back){
     history.segments=history.segments.slice(0,back.index+1);

@@ -2,6 +2,14 @@
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:1.25rem}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:14px 16px}
 .stat-n{font-size:24px;font-weight:600;line-height:1}.stat-l{font-size:12px;color:var(--text2);margin-top:4px}
+.overview-completion-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.overview-completion-unclassified{font-size:12px;color:var(--text2)}
+.overview-completion-stats .stat{font-family:inherit;text-align:left;color:var(--text);cursor:pointer;padding:10px 14px}
+.overview-completion-stats .stat-n{display:block;font-size:20px}
+.overview-completion-stats .stat-l{display:block}
+.overview-completion-filters button[aria-pressed="true"]{border-color:var(--purple);background:var(--pl);color:var(--pd)}
+.overview-completion-filters button:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
+.overview-completion-type{white-space:nowrap}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);overflow:hidden;margin-bottom:1rem}
 .card-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .card-title{font-size:14px;font-weight:500}

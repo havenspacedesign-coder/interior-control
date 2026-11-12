@@ -60,13 +60,27 @@ function progressRosterAt(project,month){
   return roster?progressVersionAt(roster.months,roster.baseline,month):progressRosterVersion(project);
 }
 
+function progressWasInConstruction(project,month,version){
+  const roster=project.progressRoster;
+  if(roster?.baseline?.status==='prog'||Object.entries(roster?.months||{}).some(([key,row])=>key<=month&&row?.status==='prog'))return true;
+  const history=project.stageHistory,segments=history?.segments;
+  const reachedByMonth=day=>typeof day==='string'&&progressValidDate(day)&&day.slice(0,7)<=month;
+  if(reachedByMonth(history?.firstConstructionDay)||
+    (Array.isArray(segments)&&segments.some(segment=>segment.status==='prog'&&reachedByMonth(segment.start))))return true;
+  if(progressMonthSchedule(project,month).length||project.progressMonths?.[month]?.siteNote||project.siteNote)return true;
+  // Old completed sites may predate status tracking. Keep them unless their only recorded outcomes were design closures.
+  const types=Array.isArray(project.completionTypes)?project.completionTypes:[];
+  const hasTrackedStage=Array.isArray(segments)&&segments.some(segment=>reachedByMonth(segment.start));
+  return !version.closedAt&&!version.recordedDay&&!hasTrackedStage&&(!types.length||types.includes('工程完成'));
+}
+
 function progressProjectVisible(project,month){
   const version=progressRosterAt(project,month);
   if(!version||version.archived)return false;
   if(version.status==='prog')return true;
   if(version.status==='done'){
     const closedOn=progressClosureLabel(project,version);
-    return !closedOn||month<=closedOn.slice(0,7);
+    return (!closedOn||month<=closedOn.slice(0,7))&&progressWasInConstruction(project,month,version);
   }
   // Before roster recording, a dated schedule is evidence the site belonged
   // to that month even if its current status is unrelated to construction.

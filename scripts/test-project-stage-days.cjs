@@ -39,9 +39,14 @@ async function main(){
     assert.equal(totals(move(same,'design','2026-10-05'),'2026-10-05').design,1);
   }
   const finished=move(design,'done','2026-10-10');
+  assert.equal(finished.stageHistory.firstConstructionDay,undefined);
   assert.deepEqual(totals(finished,'2026-10-10'),totals(finished,'2030-10-10'));
   const reopened=move(finished,'contact','2026-10-15');assert.equal(totals(reopened,'2026-10-15').contact,5);
   assert.equal(totals(reopened,'2026-10-15').design,5);
+  const entered=move(finished,'prog','2026-11-12');
+  const reclosed=move(entered,'done','2026-11-12','delete');
+  assert.equal(reclosed.stageHistory.firstConstructionDay,'2026-11-12');
+  assert.equal(reclosed.stageHistory.segments.some(segment=>segment.status==='prog'),false);
   const leap=move(initial('cv','2024-02-28'),'design','2024-03-01');assert.equal(totals(leap,'2024-03-01').cv,2);
   const legacy={id:'old',status:'prog'};
   assert.equal(call('projectStageHistory',legacy),null);assert(call('projectStageCell',legacy).includes('缺乏可用'));
