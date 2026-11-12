@@ -624,13 +624,13 @@ function renderDayView(){
     if(!evs.length)return;hasAny=true;
     html+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl2);padding:14px 16px;margin-bottom:10px">
       <div style="font-size:13px;font-weight:500;margin-bottom:8px;color:${tc(pi)}">${p.name}</div>
-      ${evs.map(ev=>{const resolvedStage=resolveBibleStage(ev.stage,ev.label),pn=pendingCount(p.id,resolvedStage);
+      ${evs.map(ev=>{const resolvedStage=resolveBibleStage(ev.stage,ev.label);
         return`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
           ${ev.time?`<span style="font-size:11px;color:var(--text2)">${ev.time}</span>`:''}
           <span style="background:${sc(pi)};color:${tc(pi)};padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer"
             onclick="openCheckMo('${p.id}','${resolvedStage}','${ev.label||ev.stage}','${p.name}')">${ev.label||ev.stage}</span>
           ${ev.note?`<span style="font-size:11px;color:var(--text2)">${ev.note}</span>`:''}
-          ${pendBadge(pn)}
+          ${pendBadge(p.id,resolvedStage)}
         </div>`;}).join('')}
     </div>`;
   });
@@ -639,20 +639,15 @@ function renderDayView(){
 }
 
 let openCheckMoArgs=null;
-function progressCheckModalMonth(projId,stage){
-  const modal=openCheckMoArgs;
-  const month=modal?.projId===projId&&modal.stage===stage?modal.ds?.slice(0,7):'';
-  return month&&month<projectStageToday().slice(0,7)?month:'';
-}
 window.openCheckMo=function(projId,stage,label,projName,ds){
   const readOnly=ds&&!progressCanEditDate(ds);
-  const month=ds?.slice(0,7);
+  const month=ds?.slice(0,7)||'';
   if(!stage)return;
   const proj=findProgressProject(projId);
   const metaItems=projectBibleItemsMeta(proj,stage);
   if(!metaItems.length){alert('此階段尚無項目');return;}
   const isEstimate=!!(S.bible[stage]&&S.bible[stage].isEstimate);
-  const key=`${projId}_${stage}`;const stored=progressCheckItems(key,month);
+  const key=`${projId}_${stage}`;const stored=visibleProgressCheckItems(key,month);
   const merged=metaItems.map((m,i)=>({...m,done:stored[i]?.done||false,skip:stored[i]?.skip||false,amount:stored[i]?.amount||''}));
   const required=merged.filter(bibleItemNeedsCheck);
   const done=required.filter(x=>x.done||x.skip).length;const pct=required.length?Math.round(done/required.length*100):100;
@@ -669,14 +664,16 @@ window.openCheckMo=function(projId,stage,label,projName,ds){
     if(ph.to<=ph.from)return;
     itemsHtml+=`<div style="font-size:11px;font-weight:600;color:var(--text2);margin:10px 0 4px"><span style="background:${ph.color};padding:2px 8px;border-radius:8px">${ph.label}</span></div>`;
     for(let i=ph.from;i<ph.to;i++){
-      itemsHtml+=renderCheckItemRow(projId,stage,i,merged[i],isEstimate,readOnly,month);
+      itemsHtml+=renderCheckItemRow(projId,stage,i,merged[i],isEstimate,readOnly,done>0);
     }
   });
   const oldScroll=$('mo-content').querySelector('.estimate-check-list')?.scrollTop||0;
   $('mo-content').classList.toggle('estimate-check-modal',isEstimate);
-  const summary=`<div class="mo-title">${label}</div>
-    <div class="mo-sub">${projName} — ${done}/${required.length} 完成${isEstimate?`　｜　粗估總金額：<strong>${totalAmount.toLocaleString()}</strong>`:''}</div>
-    <div class="pb-wrap"><div class="pb-fill" style="width:${pct}%;background:${pct===100?'var(--teal)':'var(--purple)'}"></div></div>`;
+  const summary=`<div data-check-list="${escAttr(key)}" data-check-month="${month}" data-check-modal>
+    <div class="mo-title">${label}</div>
+    <div class="mo-sub">${projName} — <span data-check-count>${done}/${required.length} 完成</span>${isEstimate?`　｜　粗估總金額：<strong data-check-total>${totalAmount.toLocaleString()}</strong>`:''}</div>
+    <div class="pb-wrap"><div class="pb-fill" style="width:${pct}%;background:${pct===100?'var(--teal)':'var(--purple)'}"></div></div></div>
+    <div class="check-save-status" data-check-status role="status" hidden></div>`;
   $('mo-content').innerHTML=isEstimate
     ?`<div class="estimate-check-head">${summary}</div><div class="estimate-check-list">${itemsHtml}<div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div></div>`
     :`${summary}${itemsHtml}<div class="mo-footer"><button class="btn" onclick="closeMo()">關閉</button></div>`;
@@ -684,6 +681,7 @@ window.openCheckMo=function(projId,stage,label,projName,ds){
   $('mo-content').style.maxWidth='880px';
   $('modal').style.display='flex';
   openCheckMoArgs={projId,stage,label,projName,ds};
+  refreshProgressCheckViews(key);
 }
 window.closeMo=function(){$('modal').style.display='none';delete $('mo-content').dataset.lockBackdrop;openCheckMoArgs=null;$('mo-content').style.maxWidth='';$('mo-content').classList.remove('project-detail-modal','module-manager-modal','company-duty-settings','sticky-wall-modal','estimate-check-modal','recurring-manager-modal','announcement-modal');if(typeof bibleDeleteModalScrollPosition!=='undefined'&&bibleDeleteModalScrollPosition)restoreBibleDeleteModalScrollPosition();}
 document.addEventListener('keydown',function(e){
@@ -692,13 +690,6 @@ document.addEventListener('keydown',function(e){
     closeMo();
   }
 });
-function isBibleInlineEditing(){
-  const focused=document.activeElement;
-  return activePanel==='bible'&&bibleView==='edit'&&!!focused?.matches('#panel-bible input, #panel-bible textarea');
-}
-function renderAfterCheckSync(){
-  if(!isBibleInlineEditing())renderActive();
-}
 // ── Progress-only operation undo ──────────────────────────────────────────
 // The history intentionally lives only in this tab.  Each record restores one
 // document/field and first verifies that its current value is still exactly the
@@ -764,7 +755,15 @@ async function progressWriteTarget(target,value,current){
     await progressRestoreMeetingDailyLogs(target,current||[],restored);return;
   }
   if(target.kind==='checks'){
-    await writeProgressCheckItems(target.key,restored,target.month);
+    await writeProgressCheckItems(target.key,latest=>{
+      if(!progressCheckDataEqual(latest,current)){
+        const error=new Error('此項目已被其他操作修改，無法復原。');
+        error.undoConflict=true;
+        throw error;
+      }
+      return restored;
+    },target.month);
+    refreshProgressCheckViews(target.key);
     return;
   }
   if(target.kind==='userTodo'){
@@ -777,11 +776,26 @@ async function progressWriteTarget(target,value,current){
     else await setDoc(doc(db,'globalNotes',target.key),restored);
   }
 }
-function progressUndoPush(record){
+function progressUndoPush(record,refresh=true){
   if(progressUndoRunning||!record||!record.targets||!record.targets.length)return;
   progressUndoStack.push(record);
   if(progressUndoStack.length>10)progressUndoStack.shift();
-  if(activePanel==='progress')renderProgress();
+  if(refresh&&activePanel==='progress')renderProgress();
+}
+function recordProgressCheckUndo(key,month,batch,previous){
+  if(progressUndoRunning||!batch.some(edit=>edit.undo))return;
+  const items=[...previous];
+  for(const edit of batch){
+    const before=edit.undo?[...items]:null;
+    applyProgressCheckEdit(items,edit);
+    if(edit.undo&&!progressSame(before,items))progressUndoPush({
+      action:edit.kind==='amount'?'setCheckAmount':'setCheckStatus',
+      label:edit.kind==='amount'?'修改工程估價金額':'修改工程檢核狀態',
+      targets:[{kind:'checks',key,month,ds:edit.ds,before,after:[...items]}]
+    },false);
+  }
+  const button=activePanel==='progress'&&document.querySelector('#panel-progress .progress-undo-button');
+  if(button)button.outerHTML=progressUndoButton();
 }
 async function progressRecordCreatedTarget(action,label,target,before){
   if(progressUndoRunning)return;
@@ -791,12 +805,19 @@ async function progressRecordCreatedTarget(action,label,target,before){
 window.progressUndo=async function(){
   const index=progressUndoStack.findLastIndex(progressCanUndoRecord);
   if(index<0)return;
+  if(progressUndoStack[index].targets.some(target=>target.kind==='checks'&&
+    progressCheckBusy(progressCheckQueues.get(progressCheckQueueId(target.key,target.month))))){
+    alert('施工寶典儲存中，請稍後再復原。');
+    return;
+  }
   var [record]=progressUndoStack.splice(index,1);
   progressUndoRunning=true;
   try{
     var current=[];
     for(const target of record.targets)current.push(await progressReadTarget(target));
-    var conflict=record.targets.some(function(target,index){return !progressSame(current[index],target.after);});
+    var conflict=record.targets.some(function(target,index){
+      return !(target.kind==='checks'?progressCheckDataEqual(current[index],target.after):progressSame(current[index],target.after));
+    });
     if(conflict){var conflictError=new Error('此項目已被其他操作修改，無法復原。');conflictError.undoConflict=true;throw conflictError;}
     const projectChanges=[];
     for(let i=0;i<record.targets.length;i++){
@@ -985,14 +1006,6 @@ progressWrapOperation('mDrop',progressMeetingDragTargets,'移動會議事項');
 ].forEach(function(entry){progressWrapOperation(entry[0],function(args){return progressScheduleTarget(args,entry[0]);},entry[1]);});
 progressWrapOperation('evDrop',progressScheduleDragTargets,'移動工程項目');
 progressWrapOperation('saveProgressSiteNote',function(args){return args[0]?[{kind:'siteNote',key:String(args[0]),month:args[1]}]:[];},'修改工地共用備註');
-function progressCheckTarget([projectId,stage]){
-  if(activePanel!=='progress')return [];
-  const modal=openCheckMoArgs;
-  return [{kind:'checks',key:projectId+'_'+stage,ds:modal?.projId===projectId&&modal.stage===stage?modal.ds:undefined,
-    month:progressCheckModalMonth(projectId,stage)}];
-}
-progressWrapOperation('setCheckStatus',progressCheckTarget,'修改工程檢核狀態');
-progressWrapOperation('setCheckAmount',progressCheckTarget,'修改工程估價金額');
 progressWrapOperation('saveGlobalNote',function(args){return currentUser&&args[0]?[{kind:'globalNote',key:currentUser.uid+'_'+args[0]}]:[];},'修改我的記事本');
 progressWrapOperation('saveTodoItemEdit',function(args){return String(args[0]||'').startsWith('m:')?[{kind:'userTodo',key:String(args[0]).slice(2)}]:progressPrivateTarget();},'修改工地待辦文字');
 progressWrapOperation('toggleManualTodo',function(args){return args[0]?[{kind:'userTodo',key:String(args[0])}]:[];},'切換工地待辦完成狀態');

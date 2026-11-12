@@ -103,11 +103,15 @@ function renderBibleWorksite(stage){
   ${allStages.map(s=>{
     const metaItems=getAllBibleItemsMeta(s);
     if(!metaItems.length)return'';
-    const key=`${activeBibleWs}_${s}`;const stored=S.checks[key]||[];
+    const key=`${activeBibleWs}_${s}`;const stored=visibleProgressCheckItems(key);
     const merged=metaItems.map((m,i)=>({...m,done:stored[i]?.done||false,skip:stored[i]?.skip||false}));
-    return`<div class="bible-worksite-stage" data-worksite-stage="${escAttr(s)}" style="margin-top:16px">
+    const started=stored.some(item=>item?.done||item?.skip);
+    const queue=progressCheckQueues.get(progressCheckQueueId(key,''));
+    const message=progressCheckStatus(queue);
+    return`<div class="bible-worksite-stage" data-worksite-stage="${escAttr(s)}" data-check-list="${escAttr(key)}" data-check-month="" style="margin-top:16px">
       <div style="font-size:13px;font-weight:600;margin-bottom:6px">${displayStageName(s)}</div>
-      ${merged.map((item,i)=>renderCheckItemRow(activeBibleWs,s,i,item)).join('')}
+      <div class="check-save-status${queue?.failed.size?' failed':''}" data-check-status role="status" ${message?'':'hidden'}>${message}</div>
+      ${merged.map((item,i)=>renderCheckItemRow(activeBibleWs,s,i,item,false,false,started)).join('')}
     </div>`;
   }).join('')}`;
 }

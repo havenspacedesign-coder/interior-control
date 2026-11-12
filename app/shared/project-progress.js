@@ -143,10 +143,26 @@ async function writeProgressOrder(order,month){
   }
 }
 
-function progressCheckItems(key,month,record=S.progressCheckRecords[key]){
-  if(!month)return record?.items??S.checks[key]??[];
+function progressCheckItems(key,month,record=S.progressCheckRecords[key]??{items:S.checks[key]??[]}){
+  if(!month)return record.items??[];
   return record?.progressCheckEdits?.[month]??progressVersionAt(record?.progressCheckHistory?.months,
-    record?.progressCheckHistory?.baseline??record?.items??S.checks[key]??[],month);
+    record?.progressCheckHistory?.baseline??record.items??[],month);
+}
+
+function progressCheckScope(month){
+  return month&&month<projectStageToday().slice(0,7)?month:'';
+}
+
+function applyProgressCheckEdit(items,edit){
+  while(items.length<=edit.index)items.push({done:false});
+  items[edit.index]={...items[edit.index],...edit.patch};
+}
+
+function progressCheckDataEqual(left,right){
+  if(left===right)return true;
+  if(!left||!right||typeof left!=='object'||typeof right!=='object'||Array.isArray(left)!==Array.isArray(right))return false;
+  const keys=Object.keys(left);
+  return keys.length===Object.keys(right).length&&keys.every(key=>Object.hasOwn(right,key)&&progressCheckDataEqual(left[key],right[key]));
 }
 
 function progressSharedCheckPatch(before,items){
@@ -155,22 +171,222 @@ function progressSharedCheckPatch(before,items){
     months:{...history?.months,[month]:items},writeMonth:month}};
 }
 
-async function writeProgressCheckItems(key,items,month){
+async function writeProgressCheckItems(key,update,month){
   const ref=doc(db,'checks',key);
+  const observed=S.progressCheckRecords[key];
   function prepare(before){
-    if(!month)return progressSharedCheckPatch(before,items);
-    if(!isAdmin()||!progressCanEditDate(month))throw new Error('這個月份的工程進度為唯讀。');
-    return {progressCheckEdits:{...before.progressCheckEdits,[month]:items},progressCheckWriteMonth:month};
+    if(month&&(!isAdmin()||!progressCanEditDate(month)))throw new Error('這個月份的工程進度為唯讀。');
+    const previous=progressCheckItems(key,month,before);
+    const items=typeof update==='function'?update(previous):update;
+    const patch=month?{progressCheckEdits:{...before.progressCheckEdits,[month]:items},progressCheckWriteMonth:month}
+      :progressSharedCheckPatch(before,items);
+    return {before,previous,items,patch};
   }
   if(localTestMode){
-    const snapshot=await getDoc(ref);
-    await setDoc(ref,prepare(snapshot.data()||{}),{merge:true});
-  }else{
-    await fbRunTransaction(db,async transaction=>{
-      const snapshot=await transaction.get(ref);
-      transaction.set(ref,prepare(snapshot.data()||{}),{merge:true});
-    });
+    const outcome=prepare(localRead('checks',key));
+    const previousChecks=S.checks[key];
+    localWrite('checks',key,outcome.patch,true);
+    try{saveLocalPreviewState(true);}
+    catch(error){
+      if(observed)S.progressCheckRecords[key]=observed;else delete S.progressCheckRecords[key];
+      if(previousChecks)S.checks[key]=previousChecks;else delete S.checks[key];
+      throw error;
+    }
+    return outcome;
   }
+  const outcome=await fbRunTransaction(db,async transaction=>{
+    const snapshot=await transaction.get(ref);
+    const result=prepare(snapshot.data()||{});
+    transaction.set(ref,result.patch,{merge:true});
+    return result;
+  });
+  // The listener may already have a newer document. Only bridge the wait for
+  // its notification when the observed state still precedes this commit.
+  const current=S.progressCheckRecords[key];
+  if(current===observed||progressCheckDataEqual(current,outcome.before)){
+    S.progressCheckRecords[key]={...outcome.before,...outcome.patch};
+    S.checks[key]=S.progressCheckRecords[key].items??[];
+  }
+  return outcome;
+}
+
+const progressCheckQueues=new Map();
+const PROGRESS_CHECK_WARNING_DELAY_MS=5000;
+function progressCheckQueueId(key,month){return JSON.stringify([key,month]);}
+function progressCheckBusy(queue){return !!(queue?.pending.length||queue?.saving.length);}
+
+function visibleProgressCheckItems(key,month){
+  const stored=progressCheckItems(key,month);
+  const queue=progressCheckQueues.get(progressCheckQueueId(key,progressCheckScope(month)));
+  if(!progressCheckBusy(queue))return stored;
+  const items=[...stored];
+  for(const edit of [...queue.saving,...queue.pending])applyProgressCheckEdit(items,edit);
+  return items;
+}
+
+function progressCheckStatus(queue){
+  if(queue?.failed.size)return'儲存失敗，已還原未儲存的項目，請重新操作。';
+  return queue?.slow?'儲存等待過久，請確認網路連線，並先留在此頁。':'';
+}
+
+function renderProgressCheckSync(){
+  const queues=[...progressCheckQueues.values()];
+  const failed=queues.some(queue=>queue.failed.size);
+  const text=failed?'寶典儲存失敗':queues.some(queue=>queue.slow)?'寶典儲存等待過久':'';
+  let warning=$('checklist-sync-warning');
+  if(!warning&&!text)return;
+  const label=$('slbl'),dot=$('sdot');
+  if(!label||!dot)return;
+  if(!warning){
+    warning=document.createElement('span');
+    warning.id='checklist-sync-warning';
+    warning.className='check-save-header';
+    warning.setAttribute('role','status');
+    label.after(warning);
+  }
+  if(warning.textContent!==text)warning.textContent=text;
+  warning.hidden=!text;
+  warning.classList.toggle('failed',failed);
+  label.hidden=dot.hidden=!!text;
+}
+
+function applyProgressCheckSnapshot(snapshot){
+  const changed=new Set();
+  for(const change of snapshot.docChanges()){
+    const key=change.doc.id;
+    if(change.type==='removed'){delete S.progressCheckRecords[key];delete S.checks[key];}
+    else{const record=change.doc.data();S.progressCheckRecords[key]=record;S.checks[key]=record.items??[];}
+    changed.add(key);
+  }
+  const visibleKeys=new Set([...document.querySelectorAll('[data-check-list], [data-check-badge]')]
+    .map(node=>node.dataset.checkList??node.dataset.checkBadge));
+  for(const key of visibleKeys)if(changed.has(key))refreshProgressCheckViews(key);
+  if(typeof refreshSiteReportChecklist==='function')refreshSiteReportChecklist(changed);
+}
+
+function refreshProgressCheckViews(key){
+  const escaped=CSS.escape(key);
+  for(const marker of document.querySelectorAll(`[data-check-list="${escaped}"]`)){
+    const list=marker.hasAttribute('data-check-modal')?marker.closest('#mo-content'):marker;
+    const month=marker.dataset.checkMonth;
+    const items=visibleProgressCheckItems(key,month);
+    const started=items.some(item=>item?.done||item?.skip);
+    const rows=list.querySelectorAll('[data-check-index]');
+    const queue=progressCheckQueues.get(progressCheckQueueId(key,progressCheckScope(month)));
+    let required=0,resolved=0,totalAmount=0;
+    for(const row of rows){
+      const index=Number(row.dataset.checkIndex),item=items[index]||{};
+      row.classList.toggle('check-save-failed',!!(queue?.failed.has(index+':status')||queue?.failed.has(index+':amount')));
+      const [doneButton,skipButton]=row.querySelectorAll('.ck-btn');
+      if(doneButton){
+        const done=!!item.done,skip=!!item.skip;
+        required++;
+        if(done||skip)resolved++;
+        row.classList.toggle('done',done);
+        row.classList.toggle('skip',!done&&skip);
+        row.querySelector('.ck-pending-marker').classList.toggle('show',started&&!done&&!skip);
+        doneButton.classList.toggle('on-done',done);
+        skipButton.classList.toggle('on-skip',skip);
+        if(doneButton.getAttribute('aria-pressed')!==String(done))doneButton.setAttribute('aria-pressed',String(done));
+        if(skipButton.getAttribute('aria-pressed')!==String(skip))skipButton.setAttribute('aria-pressed',String(skip));
+      }
+      const amount=row.querySelector('.ck-amount');
+      if(amount){
+        totalAmount+=parseFloat(item.amount)||0;
+        if(document.activeElement!==amount&&amount.value!==String(item.amount??''))amount.value=item.amount??'';
+      }
+    }
+    const count=list.querySelector('[data-check-count]');
+    const countText=`${resolved}/${required} 完成`;
+    if(count&&count.textContent!==countText)count.textContent=countText;
+    const fill=list.querySelector('.pb-fill');
+    if(fill){
+      const pct=required?Math.round(100*resolved/required):100;
+      if(fill.style.width!==pct+'%'){
+        fill.style.width=pct+'%';
+        fill.style.background=pct===100?'var(--teal)':'var(--purple)';
+      }
+    }
+    const total=list.querySelector('[data-check-total]');
+    if(total&&total.textContent!==totalAmount.toLocaleString())total.textContent=totalAmount.toLocaleString();
+    const message=list.querySelector('[data-check-status]');
+    if(message){
+      const text=progressCheckStatus(queue);
+      if(message.textContent!==text)message.textContent=text;
+      message.hidden=!text;
+      message.classList.toggle('failed',!!queue?.failed.size);
+    }
+  }
+  const counts=new Map();
+  for(const badge of document.querySelectorAll(`[data-check-badge="${escaped}"]`)){
+    const {checkProject,checkStage,checkMonth}=badge.dataset;
+    if(!counts.has(checkMonth))counts.set(checkMonth,pendingCount(checkProject,checkStage,checkMonth));
+    const count=counts.get(checkMonth);
+    const text=count===0?'✓':String(count??'');
+    if(badge.textContent!==text)badge.textContent=text;
+    badge.classList.toggle('pend-g',count===0);
+    badge.classList.toggle('pend-r',count>0);
+  }
+}
+
+function queueProgressCheckEdit(projectId,stage,index,kind,value){
+  const modal=typeof openCheckMoArgs==='undefined'?null:openCheckMoArgs;
+  const ds=modal?.projId===projectId&&modal.stage===stage?modal.ds:undefined;
+  if(ds&&!progressCanEditDate(ds))return;
+  const meta=projectBibleItemsMeta(findProgressProject(projectId),stage);
+  if(!meta[index]||(kind==='status'&&!bibleItemNeedsCheck(meta[index])))return;
+  const key=projectId+'_'+stage,month=progressCheckScope(ds?.slice(0,7));
+  const id=progressCheckQueueId(key,month);
+  let queue=progressCheckQueues.get(id);
+  if(!queue){
+    queue={pending:[],saving:[],failed:new Set()};
+    progressCheckQueues.set(id,queue);
+  }
+  const item=visibleProgressCheckItems(key,month)[index]||{};
+  const patch=kind==='amount'?{amount:value}:{done:value==='done'&&!item.done,skip:value==='skip'&&!item.skip};
+  if(!queue.pending.length)queue.pendingSince=performance.now();
+  queue.pending.push({index,kind,patch,ds,undo:activePanel==='progress'});
+  if(queue.pending.length===1&&!queue.saving.length)setTimeout(()=>flushProgressCheckEdits(key,month,queue),40);
+  refreshProgressCheckViews(key);
+}
+
+async function flushProgressCheckEdits(key,month,queue){
+  const batch=queue.pending;
+  const warningDelay=Math.max(0,PROGRESS_CHECK_WARNING_DELAY_MS-(performance.now()-queue.pendingSince));
+  queue.saving=batch;
+  queue.pending=[];
+  const warningTimer=setTimeout(()=>{
+    queue.slow=true;
+    renderProgressCheckSync();
+    refreshProgressCheckViews(key);
+  },warningDelay);
+  let result;
+  try{
+    if(batch.some(edit=>edit.ds&&(!progressCanEditDate(edit.ds)||progressCheckScope(edit.ds.slice(0,7))!==month))){
+      throw new Error('檢核月份已變更，請重新開啟後操作。');
+    }
+    result=await writeProgressCheckItems(key,previous=>{
+      const items=[...previous];
+      for(const edit of batch)applyProgressCheckEdit(items,edit);
+      return items;
+    },month);
+  }catch(error){
+    console.warn('施工寶典儲存失敗',error);
+  }finally{
+    clearTimeout(warningTimer);
+    queue.slow=false;
+  }
+  for(const edit of batch){
+    const field=edit.index+':'+edit.kind;
+    if(result)queue.failed.delete(field);else queue.failed.add(field);
+  }
+  queue.saving=[];
+  if(!queue.pending.length&&!queue.failed.size)progressCheckQueues.delete(progressCheckQueueId(key,month));
+  if(queue.pending.length)void flushProgressCheckEdits(key,month,queue);
+  if(result&&typeof recordProgressCheckUndo==='function')recordProgressCheckUndo(key,month,batch,result.previous);
+  if(result&&typeof refreshSiteReportChecklist==='function')refreshSiteReportChecklist(new Set([key]));
+  renderProgressCheckSync();
+  refreshProgressCheckViews(key);
 }
 
 function progressCanEditDate(date,role=currentRole,now=new Date()){

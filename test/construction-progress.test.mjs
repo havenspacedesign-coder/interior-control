@@ -124,7 +124,7 @@ const require = createRequire(new URL('./ai-database/package.json', import.meta.
 const { initializeTestEnvironment, assertFails, assertSucceeds } = require('@firebase/rules-unit-testing');
 const { initializeApp, deleteApp } = require('firebase/app');
 const { getAuth, connectAuthEmulator, createUserWithEmailAndPassword } = require('firebase/auth');
-const { getFirestore, connectFirestoreEmulator, doc, getDoc, setDoc, updateDoc, deleteDoc, runTransaction, writeBatch, serverTimestamp } = require('firebase/firestore');
+const { getFirestore, connectFirestoreEmulator, doc, getDoc, getDocFromServer, setDoc, updateDoc, deleteDoc, runTransaction, writeBatch, serverTimestamp } = require('firebase/firestore');
 const rules = await read('firestore.rules');
 const projectId = 'demo-haven-ai-review';
 const env = await initializeTestEnvironment({
@@ -238,7 +238,7 @@ try {
   const staff = accounts.get('staff').db, admin = accounts.get('admin').db;
   const project = doc(staff, 'projects', 'progress-site'), adminProject=doc(admin,'projects','progress-site');
   const sdkFor = (db,role) => load({db,doc,getDoc,serverTimestamp,fbRunTransaction:runTransaction,localTestMode:false,
-    isAdmin:()=>role==='admin',currentRole:role});
+    S:{progressCheckRecords:{},checks:{}},isAdmin:()=>role==='admin',currentRole:role});
   const staffApp=sdkFor(staff,'staff'),adminApp=sdkFor(admin,'admin');
   const snapshot=(await getDoc(adminProject)).data();
   await deny(updateDoc(adminProject,{progressLegacyClosedMonth:thisMonth}));
@@ -329,6 +329,57 @@ try {
   const record=(await getDoc(doc(admin,'checks',checkKey))).data();
   assert.deepEqual(adminApp.progressCheckItems(checkKey,pastMonth,record),[{done:true}]);
   assert.deepEqual(record.items,[{done:true,amount:'100'}]);
+
+  const sharedCheckKey='qa-site_concurrent';
+  const historicalItems=[{done:false,amount:'50'}];
+  await allow(adminApp.writeProgressCheckItems(sharedCheckKey,historicalItems,pastMonth));
+  let releaseInitialReads,initialReads=0,checklistAttempts=0;
+  const bothRead=new Promise(resolve=>{releaseInitialReads=resolve;});
+  const makeChecklistClient=role=>{
+    let firstRead=true;
+    const bindings={
+      S:{projects:[],progressArchivedProjects:[],progressCheckRecords:{},checks:{}},currentRole:role,activePanel:'design',localTestMode:false,
+      db:accounts.get(role).db,doc,document:{querySelectorAll:()=>[]},CSS:{escape:String},
+      setTimeout,$:()=>null,
+      projectBibleItemsMeta:()=>Array.from({length:24},()=>({})),bibleItemNeedsCheck:()=>true,
+      fbRunTransaction:(db,save)=>runTransaction(db,transaction=>{
+        checklistAttempts++;
+        return save({
+          async get(ref){
+            const snapshot=await transaction.get(ref);
+            if(firstRead){
+              firstRead=false;
+              if(++initialReads===2)releaseInitialReads();
+              await bothRead;
+            }
+            return snapshot;
+          },
+          set:(...args)=>transaction.set(...args)
+        });
+      })
+    };
+    return new Function(...Object.keys(bindings),dates+dataSource+
+      '\nreturn {queueProgressCheckEdit,progressCheckQueues};')(...Object.values(bindings));
+  };
+  const firstChecklist=makeChecklistClient('staff'),secondChecklist=makeChecklistClient('supervisor');
+  for(let index=0;index<20;index++)firstChecklist.queueProgressCheckEdit('qa-site','concurrent',index,'status','done');
+  secondChecklist.queueProgressCheckEdit('qa-site','concurrent',20,'status','skip');
+  secondChecklist.queueProgressCheckEdit('qa-site','concurrent',0,'amount','350');
+  const deadline=Date.now()+15000;
+  while((firstChecklist.progressCheckQueues.size||secondChecklist.progressCheckQueues.size)&&Date.now()<deadline){
+    await new Promise(resolve=>setTimeout(resolve,30));
+  }
+  assert.equal(firstChecklist.progressCheckQueues.size+secondChecklist.progressCheckQueues.size,0);
+  assert.equal(initialReads,2);
+  assert(checklistAttempts>2,'one conflicting transaction must retry');
+  const concurrent=(await getDocFromServer(doc(manager.db,'checks',sharedCheckKey))).data();
+  assert.equal(concurrent.items.filter(item=>item.done).length,20);
+  assert.equal(concurrent.items[20].skip,true);
+  assert.equal(concurrent.items[0].amount,'350');
+  assert.deepEqual(concurrent.progressCheckHistory.months[thisMonth],concurrent.items);
+  assert.deepEqual(adminApp.progressCheckItems(sharedCheckKey,pastMonth,concurrent),historicalItems);
+  console.log('PASS: concurrent authenticated checklist batches merge 20 statuses, another employee’s status and amount, and preserve history.');
+
   await allow(setDoc(doc(admin, 'meetingLogs', 'meet1_' + pastMonth + '-03'), meeting(pastMonth + '-03', '歷史新增')));
   await allow(deleteDoc(doc(admin, 'meetingLogs', 'meet1_' + pastMonth + '-03')));
   console.log('PASS: ' + checks + ' Firestore emulator permission operations and month isolation.');

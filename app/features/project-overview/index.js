@@ -131,6 +131,35 @@ window.overviewRowDragOver=function(e){if(isAdmin()&&overviewRowDragSrc)e.preven
 window.overviewRowDrop=async function(e,targetId){e.preventDefault();if(!isAdmin()||!overviewRowDragSrc||overviewRowDragSrc===targetId)return;const ids=sortDesignProjs(S.projects).map(p=>p.id),from=ids.indexOf(overviewRowDragSrc),to=ids.indexOf(targetId);if(from<0||to<0)return;ids.splice(from,1);ids.splice(to,0,overviewRowDragSrc);overviewRowDragSrc=null;try{await writeProgressOrder(ids);}catch(error){alert(error.message);}}
 window.showSiteReport=function(id){overviewReportProjId=id;renderOverview();}
 window.closeSiteReport=function(){overviewReportProjId=null;renderOverview();}
+function renderSiteReportChecklist(project,stages){
+  const touchedStages=stages.filter(stage=>(S.checks[project.id+'_'+stage]||[]).some(item=>item?.done||item?.skip));
+  if(!touchedStages.length)return'<div class="empty">尚無勾選紀錄</div>';
+  return touchedStages.map(stage=>{
+    const metaItems=projectBibleItemsMeta(project,stage);
+    if(!metaItems.length)return'';
+    const stored=S.checks[project.id+'_'+stage]||[];
+    const requiredCount=metaItems.filter(bibleItemNeedsCheck).length;
+    const done=metaItems.filter((item,index)=>bibleItemNeedsCheck(item)&&(stored[index]?.done||stored[index]?.skip)).length;
+    return`<div style="margin-bottom:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">${stage}（${done}/${requiredCount}）</div>
+      ${metaItems.map((item,index)=>{
+        const state=stored[index]||{};
+        const icon=item.emoji||(state.done?'✓':(state.skip?'✗':'○'));
+        const color=!item.emoji&&state.done?'var(--teal)':'var(--text3)';
+        const depth=item.depth||(item.isSub?1:0);
+        return`<div style="font-size:12px;padding:3px 0 3px ${depth*26}px;display:flex;gap:6px"><span style="color:${color};font-weight:600;width:14px">${icon}</span>${depth>0?'└ ':''}${item.text}</div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+function refreshSiteReportChecklist(changed){
+  if(activePanel!=='overview'||!overviewReportProjId)return;
+  const list=$('site-report-checklist');
+  const project=list&&S.projects.find(item=>item.id===overviewReportProjId);
+  if(!project)return;
+  const stages=getBibleStages();
+  if(stages.some(stage=>changed.has(project.id+'_'+stage)))list.innerHTML=renderSiteReportChecklist(project,stages);
+}
 function renderSiteReport(projId){
   const p=S.projects.find(x=>x.id===projId);
   if(!p)return`<div class="empty">找不到這個案件</div><button class="btn" onclick="closeSiteReport()">← 返回</button>`;
@@ -151,30 +180,7 @@ function renderSiteReport(projId){
   </div>
   <div class="card">
     <div class="card-hdr"><span class="card-title">📖 施工寶典勾選結果</span></div>
-    ${(()=>{
-      const touchedStages=stages.filter(s=>{
-        const stored=S.checks[`${p.id}_${s}`]||[];
-        return stored.some(x=>x&&(x.done||x.skip));
-      });
-      if(!touchedStages.length)return'<div class="empty">尚無勾選紀錄</div>';
-      return touchedStages.map(s=>{
-        const metaItems=projectBibleItemsMeta(p,s);
-        if(!metaItems.length)return'';
-        const stored=S.checks[`${p.id}_${s}`]||[];
-        const requiredCount=metaItems.filter(bibleItemNeedsCheck).length;
-        const done=metaItems.filter((item,i)=>bibleItemNeedsCheck(item)&&(stored[i]?.done||stored[i]?.skip)).length;
-        return`<div style="margin-bottom:14px">
-          <div style="font-size:13px;font-weight:600;margin-bottom:4px">${s}（${done}/${requiredCount}）</div>
-          ${metaItems.map((m,i)=>{
-            const st=stored[i]||{};
-            const icon=m.emoji|| (st.done?'✓':(st.skip?'✗':'○'));
-            const color=!m.emoji&&st.done?'var(--teal)':'var(--text3)';
-            const depth=m.depth||(m.isSub?1:0);
-            return`<div style="font-size:12px;padding:3px 0 3px ${depth*26}px;display:flex;gap:6px"><span style="color:${color};font-weight:600;width:14px">${icon}</span>${depth>0?'└ ':''}${m.text}</div>`;
-          }).join('')}
-        </div>`;
-      }).join('');
-    })()}
+    <div id="site-report-checklist">${renderSiteReportChecklist(p,stages)}</div>
   </div>
   <div class="card">
     <div class="card-hdr"><span class="card-title">🏗 工地進度</span></div>

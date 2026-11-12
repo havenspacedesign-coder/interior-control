@@ -55,6 +55,27 @@ window.progressTestFixture = {
     })));
     renderActive(); saveLocalPreviewState();
   },
+  seedDesignChecklist(stage){
+    const col=getDesignCols().find(col=>!col.collapsible&&col.kind!=='note'&&col.kind!=='member');
+    S.projects[0].status='design';
+    S.projects[0].designProgress={[col.key||col.name]:'#'+stage};
+    S.bible[stage].before=Array.from({length:24},(_,index)=>'檢核 '+(index+1));
+    renderActive();saveLocalPreviewState();
+  },
+  delayChecklistWrites(){
+    const actual=writeProgressCheckItems;
+    this.checklistWrites=0;
+    writeProgressCheckItems=async(...args)=>{
+      this.checklistWrites++;
+      const succeeded=await new Promise(resolve=>{this.releaseChecklistWrite=resolve;});
+      if(!succeeded)throw new Error('模擬 Firebase 拒絕寫入');
+      return actual(...args);
+    };
+  },
+  receiveChecklistSnapshot(key,record){
+    applyProgressCheckSnapshot({docChanges:()=>[{type:'modified',doc:{id:key,data:()=>record}}]});
+  },
+  refreshSyncIndicator(){setSynced();},
   async order(ids,month){await writeProgressOrder(ids,month);},
   async change(id,patch){
     const project=S.projects.find(item=>item.id===id);
@@ -571,6 +592,11 @@ async function administrator(browser) {
     await page.locator('#mo-content .ck-btn[title="完成"]').click();
     await check(page, () => window.progressTestFixture.read().checkRecords['qa-site_測試木作']?.progressCheckEdits['2026-10']?.[0]?.done);
     await closeModal(page);
+    const undo=page.locator('#panel-progress .progress-undo-button');
+    assert.match(await undo.getAttribute('title'),/修改工程檢核狀態/);
+    await undo.click();
+    await check(page,()=>window.progressTestFixture.read().checkRecords['qa-site_測試木作']?.progressCheckEdits['2026-10']?.length===0);
+    assert.equal(await work(page,dates.october).locator('[data-check-badge]').textContent(),'1');
     await work(page, dates.next).locator('.add-ev-btn').click();
     await page.locator('.stage-search-item').filter({ hasText: stage }).click();
     await visible(work(page, dates.next).locator('.ev-chip'));
@@ -595,6 +621,137 @@ async function administrator(browser) {
   } finally { await context.close(); }
 }
 
+async function rapidChecklist(browser){
+  const {page,context,errors}=await open(browser,'staff');
+  try{
+    const key='qa-site_'+stage;
+    const design=page.locator('#panel-design');
+    const badge=design.locator('[data-check-badge]');
+    const modal=page.locator('#mo-content');
+    const rows=modal.locator('[data-check-index]');
+    const count=modal.locator('[data-check-count]');
+    const status=modal.locator('[data-check-status]');
+    const syncWarning=page.locator('#checklist-sync-warning');
+    const saved=async()=>((await read(page)).checkRecords[key]?.items||[]);
+    const toggle=(index,action)=>rows.nth(index).locator(`.ck-btn[title="${action}"]`);
+    const release=ok=>page.evaluate(value=>window.progressTestFixture.releaseChecklistWrite(value),ok);
+    const writes=n=>page.waitForFunction(value=>window.progressTestFixture.checklistWrites===value,n);
+    await page.evaluate(stage=>{
+      window.progressTestFixture.seedDesignChecklist(stage);
+      window.progressTestFixture.delayChecklistWrites();
+    },stage);
+    await page.locator('[data-tab="design"]').click();
+    await badge.click();
+    await visible(count.getByText('0/24 完成'));
+    await page.evaluate(()=>{
+      const table=document.querySelector('#panel-design table');
+      const first=document.querySelector('#mo-content [data-check-index]');
+      window.checklistOriginalNodes={table,first};
+      const buttons=[...document.querySelectorAll('#mo-content .ck-btn[title="完成"]')];
+      buttons.slice(0,20).forEach(button=>button.click());
+    });
+    assert.equal(await status.isVisible(),false);
+    assert.equal(await syncWarning.isVisible(),false);
+    assert.equal(await count.textContent(),'20/24 完成');
+    assert.equal(await badge.textContent(),'4');
+    assert.equal(await modal.locator('.ck-pending-marker.show').count(),4);
+    assert.equal((await saved()).length,0);
+    await writes(1);
+    await page.evaluate(key=>{
+      window.progressTestFixture.receiveChecklistSnapshot(key,{items:[]});
+      window.progressTestFixture.refreshSyncIndicator();
+    },key);
+    assert.equal(await count.textContent(),'20/24 完成');
+    assert.equal(await page.locator('#slbl').textContent(),'本機測試');
+    assert.equal(await status.isVisible(),false);
+    assert.equal(await syncWarning.isVisible(),false);
+    assert.equal(await page.evaluate(()=>window.dispatchEvent(new Event('beforeunload',{cancelable:true}))),false);
+    await page.evaluate(()=>{
+      const row=document.querySelector('#mo-content [data-check-index="0"]');
+      const skip=row.querySelector('[title="不適用"]');
+      const done=row.querySelector('[title="完成"]');
+      skip.click();skip.click();done.click();done.click();
+    });
+    assert.equal(await count.textContent(),'19/24 完成');
+    assert.equal(await toggle(0,'完成').getAttribute('aria-pressed'),'false');
+    assert.equal(await toggle(0,'不適用').getAttribute('aria-pressed'),'false');
+    await status.getByText(/儲存等待過久/).waitFor({state:'visible',timeout:8000});
+    await visible(syncWarning.getByText('寶典儲存等待過久',{exact:true}));
+    assert.equal(await page.evaluate(()=>window.dispatchEvent(new Event('beforeunload',{cancelable:true}))),false);
+    await release(true);
+    await writes(2);
+    assert.equal(await count.textContent(),'19/24 完成');
+    await release(true);
+    await check(page,()=>window.progressTestFixture.read().checkRecords['qa-site_測試木作']?.items.filter(item=>item.done).length===19);
+    assert.equal(await status.isVisible(),false);
+    assert.equal(await syncWarning.isVisible(),false);
+    assert.equal(await page.locator('#slbl').textContent(),'本機測試');
+    assert.equal(await page.evaluate(()=>window.dispatchEvent(new Event('beforeunload',{cancelable:true}))),true);
+    assert.equal((await saved()).filter(item=>item.done).length,19);
+    assert.equal(await page.evaluate(()=>window.checklistOriginalNodes.table===document.querySelector('#panel-design table')&&
+      window.checklistOriginalNodes.first===document.querySelector('#mo-content [data-check-index]')),true);
+
+    await toggle(21,'不適用').click();
+    await writes(3);
+    await toggle(22,'完成').click();
+    await release(false);
+    await writes(4);
+    assert.equal(await toggle(21,'不適用').getAttribute('aria-pressed'),'false');
+    assert.match(await status.textContent(),/未儲存/);
+    await visible(syncWarning.getByText('寶典儲存失敗',{exact:true}));
+    await release(true);
+    await visible(status.getByText(/儲存失敗/));
+    assert.match(await rows.nth(21).getAttribute('class'),/check-save-failed/);
+    assert.equal(await page.evaluate(()=>window.dispatchEvent(new Event('beforeunload',{cancelable:true}))),false);
+    assert.equal((await saved())[21]?.skip,undefined);
+    assert.equal((await saved())[22]?.done,true);
+    await toggle(21,'不適用').click();
+    await writes(5);
+    await release(true);
+    await status.waitFor({state:'hidden'});
+    assert.equal(await syncWarning.isVisible(),false);
+    assert.equal(await page.evaluate(()=>window.dispatchEvent(new Event('beforeunload',{cancelable:true}))),true);
+    const committed=await saved();
+    assert.equal(committed[21].skip,true);
+    assert.equal(await count.textContent(),'21/24 完成');
+    assert.equal(await badge.textContent(),'3');
+    await page.reload();
+    await page.locator('[data-tab="design"]').click();
+    await badge.click();
+    await visible(count.getByText('21/24 完成'));
+    assert.deepEqual(await saved(),committed);
+    assert.equal(await toggle(21,'不適用').getAttribute('aria-pressed'),'true');
+    assert.equal(await modal.locator('.ck-pending-marker.show').count(),3);
+    await closeModal(page);
+    await page.locator('[data-tab="bible"]').click();
+    const bible=page.locator('#panel-bible');
+    await bible.getByRole('button',{name:'案件勾選',exact:true}).click();
+    const worksite=bible.locator('[data-check-list]');
+    const worksiteToggle=worksite.locator('[data-check-index="0"] .ck-btn[title="不適用"]');
+    await worksiteToggle.click();
+    assert.equal(await worksiteToggle.getAttribute('aria-pressed'),'true');
+    assert.equal(await worksite.locator('[data-check-status]').isVisible(),false);
+    await check(page,()=>window.progressTestFixture.read().checkRecords['qa-site_測試木作']?.items[0]?.skip);
+    assert.equal(await worksite.locator('[data-check-status]').isVisible(),false);
+    assert.equal(await syncWarning.isVisible(),false);
+    await page.locator('[data-tab="overview"]').click();
+    await page.evaluate(()=>showSiteReport('qa-site'));
+    const report=page.locator('#site-report-checklist');
+    await visible(report.getByText('測試木作（22/24）',{exact:true}));
+    await page.evaluate(key=>{
+      const report=document.querySelector('#site-report-checklist');
+      window.checklistReportNode=report;
+      const record=window.progressTestFixture.read().checkRecords[key];
+      record.items[23]={done:true};
+      window.progressTestFixture.receiveChecklistSnapshot(key,record);
+    },key);
+    await visible(report.getByText('測試木作（23/24）',{exact:true}));
+    assert.equal(await page.evaluate(()=>window.checklistReportNode===document.querySelector('#site-report-checklist')),true);
+    assert.deepEqual(errors,[]);
+    console.log('PASS browser: silent normal saves, slow and failed save warnings, leave guard, 20 rapid clicks, retry, badges, reload, worksite checklist.');
+  }finally{await context.close();}
+}
+
 (async () => {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
@@ -602,7 +759,8 @@ async function administrator(browser) {
       ['completion', completion], ['completed filters',completedFilters], ['new unsigned project',createAndCloseUnsignedProject], ['design-only completion',designOnlyCompletion], ['legacy completion dates', legacyCompletionDates], ['staff desktop', b => employee(b, 'staff', false)],
       ['staff mobile', b => employee(b, 'staff', true)],
       ['supervisor desktop', b => employee(b, 'supervisor', false)],
-      ['supervisor mobile', b => employee(b, 'supervisor', true)], ['administrator', administrator]
+      ['supervisor mobile', b => employee(b, 'supervisor', true)], ['administrator', administrator],
+      ['rapid checklist',rapidChecklist]
     ]) {
       try{await test(browser);}
       catch(error){console.error(label, error);process.exitCode=1;}

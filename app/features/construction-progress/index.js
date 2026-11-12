@@ -160,12 +160,11 @@ function renderWeekView(viewMonth){
     return`<td class="ev-cell ${isT?'tc':''}" style="min-height:88px" ${readOnly?'':`onclick="handleCellBg(event,'${p.id}','${ds}')" ondragover="event.preventDefault()" ondrop="evDrop(event,'${p.id}','${ds}')"`}>
       ${allEvs.map((ev,ei)=>{
         const resolvedStage=resolveBibleStage(ev.stage,ev.label);
-        const pn=pendingCount(p.id,resolvedStage,viewMonth);
         const isSel=selectedTag&&selectedTag.projId===p.id&&selectedTag.ds===ds&&selectedTag.ei===ei;
         return`<div class="ev-row">
           <span class="ev-chip${isSel?' sel':''}" style="background:${ev.bg||sc(pi)};color:${ev.completed?'#E24B4A':(ev.color||tc(pi))};${ev.strike?'text-decoration:line-through;':''}"
             ${readOnly?'':`draggable="true" ondragstart="evDragStart(event,'${p.id}','${ds}',${ei})" ondragend="evDragSrc=null"`}
-            onclick="event.stopPropagation();handleChipClick(event,'${p.id}','${ds}',${ei},'${resolvedStage}')">${displayStageName(ev.label||ev.stage||'?')}${ev.completed?'<span class="progress-item-check">✓</span>':''}${pendBadge(pn)}</span>
+            onclick="event.stopPropagation();handleChipClick(event,'${p.id}','${ds}',${ei},'${resolvedStage}')">${displayStageName(ev.label||ev.stage||'?')}${ev.completed?'<span class="progress-item-check">✓</span>':''}${pendBadge(p.id,resolvedStage,viewMonth)}</span>
           <span class="ev-field excel-cell ${!readOnly&&scheduleCellIsSelected(p.id,ds,ei)?'excel-selected':''} ${!readOnly&&scheduleCellIsEditing(p.id,ds,ei)?'excel-editing':''}" data-proj="${p.id}" data-ds="${ds}" data-ei="${ei}" data-field="note" contenteditable="${!readOnly&&scheduleCellIsEditing(p.id,ds,ei)?'true':'false'}"
             style="${ev.bg?'background:'+ev.bg+';':''}${ev.completed?'color:#E24B4A;':(ev.color?'color:'+ev.color+';':'')}${ev.strike?'text-decoration:line-through;':''}" ${readOnly?'':`onclick="event.stopPropagation();selectScheduleCell(this)" ondblclick="event.stopPropagation();startFieldEdit(this)" onblur="saveScheduleCell(this)" onkeydown="scheduleCellKeyDown(event,this)"`}>${escAttr(ev.note||'')}</span>
           ${!readOnly?`<button class="ev-del" onclick="event.stopPropagation();removeEv('${p.id}','${ds}',${ei})">×</button>`:''}

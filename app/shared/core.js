@@ -21,10 +21,10 @@ applyAppearance(DEFAULT_APPEARANCE);
 let localRenderTimer=null;
 function localClone(v){return v===undefined?v:JSON.parse(JSON.stringify(v));}
 const LOCAL_PREVIEW_STATE_KEY='localPreviewStateV1';
-function saveLocalPreviewState(){
+function saveLocalPreviewState(throwOnError=false){
   if(!localTestMode)return;
   try{localStorage.setItem(LOCAL_PREVIEW_STATE_KEY,JSON.stringify({version:1,state:localClone(S),userPrefs:localClone(userPrefs),companyDuty:localClone(companyDutyConfig)}));}
-  catch(error){console.warn('本機測試資料無法保存',error);}
+  catch(error){if(throwOnError)throw error;console.warn('本機測試資料無法保存',error);}
 }
 function restoreLocalPreviewState(){
   try{
@@ -428,80 +428,43 @@ function pendingCount(projId,stage,month){
   if(!stage)return null;
   const proj=findProgressProject(projId);
   const items=projectBibleItemsMeta(proj,stage);if(!items.length)return null;
-  const stored=progressCheckItems(`${projId}_${stage}`,month);
+  const stored=visibleProgressCheckItems(`${projId}_${stage}`,month);
   return items.reduce((count,item,i)=>count+(bibleItemNeedsCheck(item)&&!stored[i]?.done&&!stored[i]?.skip?1:0),0);
 }
-function pendBadge(n){
+function pendBadge(projId,stage,month=''){
+  const n=pendingCount(projId,stage,month);
   if(n===null)return'';
-  if(n===0)return`<span class="pend pend-g">✓</span>`;
-  return`<span class="pend pend-r">${n}</span>`;
+  return`<span class="pend ${n===0?'pend-g':'pend-r'}" data-check-badge="${escAttr(projId+'_'+stage)}" data-check-project="${escAttr(projId)}" data-check-stage="${escAttr(stage)}" data-check-month="${escAttr(month)}">${n===0?'✓':n}</span>`;
 }
 // Shared row renderer for a bible checklist item — ✓ means done, ✗ means
 // "seen but not applicable to this site". Both count as resolved. Sub-items
 // (item.isSub) render indented under their parent.
-function renderCheckItemRow(projId,stage,idx,item,isEstimate,readOnly=false,month){
+function renderCheckItemRow(projId,stage,idx,item,isEstimate,readOnly,stageStarted){
   const emoji=normalizeBibleItem(item).emoji;
   const cls=emoji?'':item.done?'done':(item.skip?'skip':'');
   const depth=item.depth||(item.isSub?1:0);
-  const stageStarted=progressCheckItems(`${projId}_${stage}`,month).some(row=>row?.done||row?.skip);
   const showPending=!emoji&&stageStarted&&!item.done&&!item.skip;
-  return`<div class="ws-cl-item ${cls}"${depth>0?` style="padding-left:${depth*26}px"`:''}>
+  return`<div class="ws-cl-item ${cls}" data-check-index="${idx}"${depth>0?` style="padding-left:${depth*26}px"`:''}>
     ${emoji?`<span class="ck-emoji" role="img" aria-label="分類圖示" style="display:inline-flex;align-items:center;justify-content:center;width:62px;flex:0 0 62px;font-size:18px;line-height:22px">${escAttr(emoji)}</span>`:`<div class="ck-btns">
       <span class="ck-pending-marker ${showPending?'show':''}" aria-hidden="true"></span>
-      <button type="button" class="ck-btn ${item.done?'on-done':''}" title="完成" ${readOnly?'disabled':''} onclick="setCheckStatus('${projId}','${stage}',${idx},'done')">✓</button>
-      <button type="button" class="ck-btn ${item.skip?'on-skip':''}" title="不適用" ${readOnly?'disabled':''} onclick="setCheckStatus('${projId}','${stage}',${idx},'skip')">✗</button>
+      <button type="button" class="ck-btn ${item.done?'on-done':''}" title="完成" aria-pressed="${!!item.done}" ${readOnly?'disabled':''} onclick="setCheckStatus('${projId}','${stage}',${idx},'done')">✓</button>
+      <button type="button" class="ck-btn ${item.skip?'on-skip':''}" title="不適用" aria-pressed="${!!item.skip}" ${readOnly?'disabled':''} onclick="setCheckStatus('${projId}','${stage}',${idx},'skip')">✗</button>
     </div>`}
     <label>${depth>0?'└ ':''}${item.text}</label>
     ${isEstimate?`<input type="number" class="ck-amount" ${readOnly?'readonly':''} placeholder="金額" value="${item.amount||''}" onclick="event.stopPropagation()" onchange="setCheckAmount('${projId}','${stage}',${idx},this.value)">`:''}
   </div>`;
 }
-window.setCheckStatus=async function(projId,stage,idx,status){
-  if(typeof openCheckMoArgs!=='undefined'&&openCheckMoArgs?.ds&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage&&!progressCanEditDate(openCheckMoArgs.ds))return;
-  const month=typeof progressCheckModalMonth==='function'?progressCheckModalMonth(projId,stage):'';
-  const proj=findProgressProject(projId);
-  const meta=projectBibleItemsMeta(proj,stage);
-  if(!meta[idx]||!bibleItemNeedsCheck(meta[idx]))return;
-  const allItems=projectBibleItems(proj,stage);
-  const key=`${projId}_${stage}`;
-  const stored=[...(progressCheckItems(key,month))];
-  while(stored.length<allItems.length)stored.push({done:false});
-  const cur=stored[idx]||{};
-  stored[idx]={...cur,done:status==='done'?!cur.done:false,skip:status==='skip'?!cur.skip:false};
-  setSyncing();
-  try{await writeProgressCheckItems(key,stored,month);setSynced();}catch(error){setOffline();return;}
-  if(!month)S.checks={...S.checks,[key]:stored};
-  else{const record=S.progressCheckRecords[key]||{};S.progressCheckRecords[key]={...record,progressCheckEdits:{...record.progressCheckEdits,[month]:stored}};}
-  if(typeof openCheckMoArgs!=='undefined'&&openCheckMoArgs&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage){
-    openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName,openCheckMoArgs.ds);
-  }
-  if(activePanel==='progress'&&typeof renderProgress==='function')renderProgress();
-  else if(activePanel==='bible'&&(typeof isBibleInlineEditing!=='function'||!isBibleInlineEditing())){
-    if(typeof rememberBibleScrollPosition==='function')rememberBibleScrollPosition(2);
-    if(typeof renderBible==='function')renderBible();
-  }
-}
-window.setCheckAmount=async function(projId,stage,idx,value){
-  if(typeof openCheckMoArgs!=='undefined'&&openCheckMoArgs?.ds&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage&&!progressCanEditDate(openCheckMoArgs.ds))return;
-  const month=typeof progressCheckModalMonth==='function'?progressCheckModalMonth(projId,stage):'';
-  const proj=findProgressProject(projId);
-  const allItems=projectBibleItems(proj,stage);
-  const key=`${projId}_${stage}`;
-  const stored=[...(progressCheckItems(key,month))];
-  while(stored.length<allItems.length)stored.push({done:false});
-  const cur=stored[idx]||{};
-  stored[idx]={...cur,amount:value};
-  setSyncing();
-  try{await writeProgressCheckItems(key,stored,month);setSynced();}catch(error){setOffline();return;}
-  if(!month)S.checks={...S.checks,[key]:stored};
-  else{const record=S.progressCheckRecords[key]||{};S.progressCheckRecords[key]={...record,progressCheckEdits:{...record.progressCheckEdits,[month]:stored}};}
-  if(typeof openCheckMoArgs!=='undefined'&&openCheckMoArgs&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage){
-    openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName,openCheckMoArgs.ds);
-  }
-}
 function setSynced(){
   if(localTestMode){$('sdot').style.background='var(--amber)';$('slbl').textContent='本機測試';return;}
   $('sdot').style.background='#1D9E75';$('slbl').textContent='已同步';
 }
+window.setCheckStatus=(projId,stage,index,status)=>queueProgressCheckEdit(projId,stage,index,'status',status);
+window.setCheckAmount=(projId,stage,index,value)=>queueProgressCheckEdit(projId,stage,index,'amount',value);
+window.addEventListener('beforeunload',event=>{
+  if(![...progressCheckQueues.values()].some(queue=>progressCheckBusy(queue)||queue.failed.size))return;
+  event.preventDefault();
+  event.returnValue='';
+});
 function setSyncing(){
   if(localTestMode){$('sdot').style.background='var(--amber)';$('slbl').textContent='本機測試';return;}
   $('sdot').style.background='var(--amber)';$('slbl').textContent='同步中';

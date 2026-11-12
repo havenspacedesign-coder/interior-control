@@ -44,4 +44,10 @@
 .ck-btn{width:22px;height:22px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--text3);font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .ck-btn.on-done{background:var(--teal);border-color:var(--teal);color:#fff}
 .ck-btn.on-skip{background:var(--text3);border-color:var(--text3);color:#fff}
+.check-save-status{margin:6px 0 8px;padding:6px 9px;border-radius:6px;background:var(--al);color:var(--ad);font-size:12px}
+.mo-box>.check-save-status{position:sticky;top:0;z-index:1}
+.check-save-status.failed{background:var(--rl);color:var(--rd);font-weight:600}
+.check-save-header{color:var(--ad)}
+.check-save-header.failed{color:var(--rd);font-weight:600}
+.ws-cl-item.check-save-failed{background:var(--rl)}
 .ck-amount{width:80px;flex-shrink:0;font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-family:inherit;text-align:right}
