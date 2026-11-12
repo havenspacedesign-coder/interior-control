@@ -31,7 +31,8 @@ window.progressTestFixture = {
   seedCompletionTypes(){
     const source=S.projects[0];
     S.projects=['月份驗收案件','結案測試乙','結案測試丙','結案測試丁'].map((name,index)=>({
-      ...structuredClone(source),id:index?'qa-close-'+index:'qa-site',name,initialInspectionDate:'2026-09-15'
+      ...structuredClone(source),id:index?'qa-close-'+index:'qa-site',name,initialInspectionDate:'2026-09-15',
+      stageHistory:projectStageInitial('prog','2026-09-01')
     }));
     S.projectTradeSelections=Object.fromEntries(S.projects.map(project=>[project.id,{'qa-trade':{none:true}}]));
     S.meetingLogs['meet1_2026-11-02'].items.push({text:'[proj:月份驗收案件] 十一月報告會議',mentions:[]});
@@ -164,6 +165,7 @@ async function completion(browser) {
     assert.equal(await siteRow(page).count(),1);
     await page.locator('[data-tab="overview"]').click();
     for(const [i,name] of names.entries()){
+      assert.equal(await status(name).inputValue(),'prog');
       await status(name).selectOption('done');
       await page.locator('#ct-'+i).check();
       if(i===3){
@@ -175,8 +177,19 @@ async function completion(browser) {
       await status(name).waitFor({state:'hidden'});
     }
     const closed=await read(page);
-    assert.deepEqual(closed.projects.map(p=>p.completionTypes[0]),types);
+    assert.deepEqual(closed.projects.map(p=>[p.status,p.completionTypes]),types.map(type=>['done',[type]]));
     assert(closed.projects.every(p=>p.progressClosedAt.startsWith('2026-11-11')&&p.initialInspectionDate==='2026-09-15'));
+    await page.reload();
+    const overview=page.locator('#panel-overview');
+    await page.locator('[data-tab="overview"]').click();
+    await overview.locator(':scope > .stats > .stat').filter({hasText:'已完工'}).click();
+    for(const [i,name] of names.entries()){
+      const row=overview.getByRole('row').filter({hasText:name});
+      await visible(row.getByRole('cell',{name:types[i],exact:true}));
+      assert.equal(await status(name).inputValue(),'done');
+    }
+    assert.deepEqual((await read(page)).projects.map(p=>[p.status,p.completionTypes]),types.map(type=>['done',[type]]));
+    await overview.getByRole('button',{name:/返回案件總覽/}).click();
     await page.locator('[data-tab="progress"]').click();
     await visible(siteRow(page).getByText('完工',{exact:true}));
     const november=await roster();

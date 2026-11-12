@@ -160,7 +160,9 @@ try {
     await setDoc(doc(db, 'projects', 'progress-site'), {
       name: '保留案件', status: 'prog', siteNote: '舊備註',
       schedule: [{ date: pastDate, note: '舊排程' }],
-      progressMonths: { [pastMonth]: { siteNote: '歷史月備註' } }
+      progressMonths: { [pastMonth]: { siteNote: '歷史月備註' } },
+      stageHistory: { version: 1, revision: 1, partial: true, firstConstructionDay: pastDate,
+        segments: [{ status: 'prog', start: pastDate, end: null }] }
     });
     await setDoc(doc(db, 'meetingLogs', 'meet1_' + pastDate), meeting(pastDate, '舊會議'));
   });
@@ -254,15 +256,55 @@ try {
   await deny(updateDoc(project,{status:'done',progressCompletedOn:pastDate}));
   await deny(updateDoc(project,staffApp.progressProjectWrite(snapshot,{status:'done'})));
   await deny(updateDoc(adminProject,{status:'done',progressClosedAt:new Date('2020-01-01')}));
-  const closureHistory={version:1,revision:2,partial:true,firstConstructionDay:pastDate,segments:[
-    {status:'prog',start:pastDate,end:today},{status:'done',start:today,end:null}
-  ]};
-  await allow(updateDoc(adminProject,adminApp.progressProjectWrite(snapshot,{status:'done',stageHistory:closureHistory,initialInspectionDate:pastDate})));
+
+  const stageWriter = new Function('db','doc','serverTimestamp','fbRunTransaction','localTestMode',
+    'const window = {};\n' + dataSource + projects.slice(0, projects.indexOf('let projectStageRenderedDay')) +
+    '\nreturn {writeProjectStageChange,projectStageTransition,projectStageAdjust};');
+  const manager = accounts.get('manager');
+  const managerRef = doc(manager.db,'projects','progress-site');
+  const managerWriter = stageWriter(manager.db,doc,serverTimestamp,runTransaction,false);
+  const adminWriter = stageWriter(admin,doc,serverTimestamp,runTransaction,false);
+  const oldView = { ...snapshot, id: 'progress-site' };
+  const finish = { status: 'done', completionTypes: ['工程完成'], initialInspectionDate: pastDate };
+  let attempts = 0;
+  const racingWriter = stageWriter(admin,doc,serverTimestamp,(db,save)=>runTransaction(db,transaction=>{
+    attempts++;
+    return save({
+      async get(ref) {
+        const before = await transaction.get(ref);
+        if (attempts === 1) {
+          const managerView = { ...(await getDoc(managerRef)).data(), id: oldView.id };
+          const revised = managerWriter.projectStageAdjust(managerView, 368, manager.uid, today);
+          await allow(managerWriter.writeProjectStageChange(managerView,{},revised));
+        }
+        return before;
+      },
+      update(ref, patch) { return transaction.update(ref,patch); }
+    });
+  }),false);
+  await assert.rejects(racingWriter.writeProjectStageChange(oldView,finish,
+    adminWriter.projectStageTransition(oldView,'done','keep',today)),/已被更新/);
+  assert(attempts>1);
+  const latest = (await getDoc(adminProject)).data();
+  assert.equal(latest.status,'prog');
+  assert.equal(latest.stageHistory.revision,snapshot.stageHistory.revision+1);
+  assert.equal(latest.stageHistory.segments[0].adjustments[0].by,manager.uid);
+  assert.equal(latest.completionTypes,undefined);
+
+  const reorderedHistory = Object.fromEntries(Object.entries(latest.stageHistory).reverse());
+  assert.notEqual(JSON.stringify(reorderedHistory),JSON.stringify(latest.stageHistory));
+  const refreshedView = { ...latest, id: oldView.id, stageHistory: reorderedHistory };
+  const closureHistory = adminWriter.projectStageTransition(refreshedView,'done','keep',today);
+  await allow(adminWriter.writeProjectStageChange(refreshedView,finish,closureHistory));
   const saved=(await getDoc(adminProject)).data();
+  assert.equal(saved.status,'done');
+  assert.deepEqual(saved.completionTypes,['工程完成']);
+  assert.deepEqual((await getDoc(managerRef)).data().stageHistory,closureHistory);
   assert(saved.progressClosedAt.toDate() instanceof Date);
   assert.equal(saved.progressRoster.months[thisMonth].closedAt.toMillis(),saved.progressClosedAt.toMillis());
   assert.equal(saved.initialInspectionDate,pastDate);
   assert.deepEqual(saved.stageHistory,closureHistory);
+  console.log('PASS: two authenticated clients, transaction retry rejects a stale closure, reordered fields save after re-reading.');
   await deny(updateDoc(adminProject,{progressLegacyClosedMonth:pastMonth}));
   await deny(updateDoc(project,{status:'prog'}));
   await deny(updateDoc(adminProject,{progressClosedAt:new Date('2020-01-01')}));

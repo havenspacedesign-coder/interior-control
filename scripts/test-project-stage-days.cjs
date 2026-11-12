@@ -104,8 +104,21 @@ async function main(){
   context.S.projects=[kept];writes=[];
   await assert.rejects(call('writeProjectStageChange',design,{status:'contact'},kept.stageHistory),/已被更新/);assert.equal(writes.length,0);
   context.localTestMode=false;let remotePatch;
-  context.fbRunTransaction=async(_db,fn)=>fn({get:async()=>({exists:()=>true,data:()=>design}),update:(_ref,patch)=>{remotePatch=patch;}});
-  await call('writeProjectStageChange',design,{status:'contact'},kept.stageHistory);assert.equal(remotePatch.status,'contact');assert(remotePatch.stageHistory);
+  function reverseMapKeys(value){
+    if(Array.isArray(value))return value.map(reverseMapKeys);
+    if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).reverse().map(([key,entry])=>[key,reverseMapKeys(entry)]));
+    return value;
+  }
+  const transactionProject={...corrected,stageHistory:reverseMapKeys(corrected.stageHistory)};
+  assert.notEqual(JSON.stringify(transactionProject.stageHistory),JSON.stringify(corrected.stageHistory));
+  context.fbRunTransaction=async(_db,fn)=>fn({get:async()=>({exists:()=>true,data:()=>transactionProject}),update:(_ref,patch)=>{remotePatch=patch;}});
+  const finishCorrected=move(corrected,'done','2026-10-10');
+  await call('writeProjectStageChange',corrected,{status:'done',completionTypes:['設計完成']},finishCorrected.stageHistory);
+  assert.equal(remotePatch.status,'done');assert(remotePatch.stageHistory);assert.deepEqual(remotePatch.completionTypes,['設計完成']);
+  remotePatch=undefined;
+  transactionProject.stageHistory.segments.at(-1).adjustments[0].delta++;
+  await assert.rejects(call('writeProjectStageChange',corrected,{status:'done'},finishCorrected.stageHistory),/已被更新/);
+  assert.equal(remotePatch,undefined);
   context.localTestMode=true;
   // Existing completion gates stay active before any status write.
   context.S.projects=[{id:'blocked',status:'design'}];let blocked=0;context.alert=()=>blocked++;

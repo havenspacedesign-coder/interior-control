@@ -174,10 +174,17 @@ async function prepareProjectStageChange(project,target){
   if(day!==projectStageToday())throw new Error('日期已更新，請重新操作狀態切換');
   return projectStageTransition(project,target,choice,day);
 }
+function projectStageFingerprint(history){
+  // Firestore map field order is immaterial. Keep the order of segments and adjustments.
+  return JSON.stringify(history||null,(_key,value)=>{
+    if(value===null||typeof value!=='object'||Array.isArray(value))return value;
+    return Object.fromEntries(Object.keys(value).sort().map(key=>[key,value[key]]));
+  });
+}
 async function writeProjectStageChange(project,patch,history){
-  const ref=doc(db,'projects',project.id),expected=JSON.stringify(project.stageHistory||null);
+  const ref=doc(db,'projects',project.id),expected=projectStageFingerprint(project.stageHistory);
   const check=fresh=>{
-    if(!fresh||fresh.status!==project.status||JSON.stringify(fresh.stageHistory||null)!==expected)throw new Error('此案件狀態或階段紀錄已被更新，請重新整理後再試');
+    if(!fresh||fresh.status!==project.status||projectStageFingerprint(fresh.stageHistory)!==expected)throw new Error('此案件狀態或階段紀錄已被更新，請重新整理後再試');
     if(Object.hasOwn(patch,'name')&&fresh.name!==project.name)throw new Error('案件名稱已被更新，請重新整理後再試。');
   };
   const data={...patch,...(history?{stageHistory:history}:{})};
