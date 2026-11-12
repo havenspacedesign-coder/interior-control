@@ -207,8 +207,8 @@ function initListeners(){
   initDailyWaste();
   initB1FSharedStore();
   onSnapshot(doc(db,'homeLayouts','company-default'),snap=>{if(!snap.exists())return;companyHomeLayout=normalizeHomeLayout(snap.data());personalHomeLayout=syncPersonalHomeLayout(personalHomeLayout);if(activePanel==='home'&&!homeEditMode)renderHome();});
-  onSnapshot(collection(db,'projects'),snap=>{S.projects=snap.docs.map(d=>({id:d.id,...d.data()}));renderActive();setSynced();},()=>setOffline());
-  onSnapshot(collection(db,'checks'),snap=>{S.checks={};snap.docs.forEach(d=>{S.checks[d.id]=d.data().items||[]});renderAfterCheckSync();});
+  onSnapshot(collection(db,'projects'),snap=>{const projects=snap.docs.map(d=>({id:d.id,...d.data()}));S.projects=projects.filter(p=>p.progressArchived!==true);S.progressArchivedProjects=projects.filter(p=>p.progressArchived===true);renderActive();setSynced();},()=>setOffline());
+  onSnapshot(collection(db,'checks'),snap=>{S.checks={};S.progressCheckRecords={};snap.docs.forEach(d=>{const record=d.data();S.progressCheckRecords[d.id]=record;S.checks[d.id]=record.items||[];});renderAfterCheckSync();});
   onSnapshot(collection(db,'bible'),snap=>{
     S.bible={};S.bibleOrder=[];
     snap.docs.forEach(d=>{if(d.id==='orderConfig'){S.bibleOrder=[...new Set(d.data().order||[])];}else{const data=d.data(),stage=data.stageTitle||bibleStageFromStorageId(d.id);S.bible[stage]=data;}});
@@ -246,7 +246,10 @@ function initListeners(){
     if(activePanel==='design')renderDesign();
   });
   onSnapshot(doc(db,'settings','designProjectOrder'),snap=>{
-    designProjectOrder=snap.exists()?(snap.data().order||[]):[];
+    const orderData=snap.exists()?snap.data():{};
+    designProjectOrder=orderData.order||[];
+    S.progressDesignOrders=orderData.progressDesignOrders||{};
+    S.progressWorkOrders=orderData.workOrderMonths||{};
     if(activePanel==='design')renderDesign();else if(activePanel==='overview')renderOverview();else if(activePanel==='progress')renderProgress();
   });
   onSnapshot(doc(db,'settings','dateColors'),snap=>{

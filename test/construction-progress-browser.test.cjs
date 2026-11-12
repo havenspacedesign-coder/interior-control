@@ -28,9 +28,33 @@ window.progressTestFixture = {
     S.bible={[stage]:{before:['確認歷史檢核'],during:[],after:[]}};
     renderActive(); saveLocalPreviewState();
   },
+  seedCompletionTypes(){
+    const source=S.projects[0];
+    S.projects=['月份驗收案件','結案測試乙','結案測試丙','結案測試丁'].map((name,index)=>({
+      ...structuredClone(source),id:index?'qa-close-'+index:'qa-site',name,initialInspectionDate:'2026-09-15'
+    }));
+    S.projectTradeSelections=Object.fromEntries(S.projects.map(project=>[project.id,{'qa-trade':{none:true}}]));
+    S.meetingLogs['meet1_2026-11-02'].items.push({text:'[proj:月份驗收案件] 十一月報告會議',mentions:[]});
+    renderActive(); saveLocalPreviewState();
+  },
+  async order(ids,month){await writeProgressOrder(ids,month);},
+  async change(id,patch){
+    const project=S.projects.find(item=>item.id===id);
+    const history=patch.status&&patch.status!==project.status?projectStageTransition(project,patch.status):null;
+    await writeProjectStageChange(project,patch,history);
+  },
+  seedLegacyCompletions(){
+    const source=S.projects[0];
+    S.projects=['河南路住宅案','舊完工驗收案乙'].map((name,index)=>({
+      ...structuredClone(source),id:index?'qa-legacy-2':'local-third-project',name,status:'done',
+      contractEnd:'2026-08-15',finish:'2026-08-15',initialInspectionDate:'2026-08-16',progressCompletedOn:'2026-08-17',
+      schedule:[...source.schedule,{...source.schedule[0],date:'2026-01-02',note:'一月施工文字'}]
+    }));
+    renderActive(); saveLocalPreviewState();
+  },
   read(){
-    return structuredClone({project:S.projects.find(p=>p.id==='qa-site'),meetings:S.meetingLogs,
-      logs:S.dailyLogs,notes:S.privateNotes,checks:S.checks});
+    return structuredClone({project:S.projects.find(p=>p.id==='qa-site'),projects:S.projects,archivedProjects:S.progressArchivedProjects,meetings:S.meetingLogs,
+      logs:S.dailyLogs,notes:S.privateNotes,checks:S.checks,checkRecords:S.progressCheckRecords});
   }
 };`;
 
@@ -114,57 +138,138 @@ async function closeModal(page) {
 async function completion(browser) {
   const { page, context, errors } = await open(browser, 'manager');
   try {
+    const ids=['qa-site','qa-close-1','qa-close-2','qa-close-3'];
+    const names=['月份驗收案件','結案測試乙','結案測試丙','結案測試丁'];
+    const types=['未簽約','設計終止','設計完成','工程完成'];
+    const roster = () => page.locator('#panel-progress td.site-hd').filter({has:page.locator('textarea')}).allTextContents();
+    const status = name => page.locator('#panel-overview tr').filter({hasText:name}).locator('select.status-sel');
+    await page.evaluate(async ids=>{window.progressTestFixture.seedCompletionTypes();await window.progressTestFixture.order(ids);},ids);
+    assert.equal(await siteRow(page).count(),1);
     await page.locator('[data-tab="overview"]').click();
-    const status = page.locator('#panel-overview tr').filter({ hasText: '月份驗收案件' }).locator('select.status-sel');
-    await status.selectOption('done');
-    await page.locator('#ct-3').check();
-    await page.locator('#mo-content').getByRole('button', { name: '確定', exact: true }).click();
-    await check(page, () => window.progressTestFixture.read().project.progressCompletedOn === '2026-11-11');
+    for(const [i,name] of names.entries()){
+      await status(name).selectOption('done');
+      await page.locator('#ct-'+i).check();
+      if(i===3){
+        await page.locator('#ct-insp-y').fill('2026');
+        await page.locator('#ct-insp-m').fill('9');
+        await page.locator('#ct-insp-d').fill('15');
+      }
+      await page.locator('#mo-content').getByRole('button',{name:'確定',exact:true}).click();
+      await status(name).waitFor({state:'hidden'});
+    }
+    const closed=await read(page);
+    assert.deepEqual(closed.projects.map(p=>p.completionTypes[0]),types);
+    assert(closed.projects.every(p=>p.progressClosedAt.startsWith('2026-11-11')&&p.initialInspectionDate==='2026-09-15'));
     await page.locator('[data-tab="progress"]').click();
-    await visible(siteRow(page).getByText('完工', { exact: true }));
-    assert.doesNotMatch(await siteRow(page).innerText(), /完工日期|2026-11-11/);
-    await month(page, 1, 12);
-    assert.equal(await siteRow(page).count(), 0);
-    await month(page, -1, 11);
-    await month(page, -1, 10);
-    await visible(work(page, dates.october).getByText('原始排程 october'));
-    await visible(meet(page, dates.october).getByText('原始會議 october'));
-    await openChecklist(page, dates.october);
-    assert.equal(await page.locator('#mo-content .ck-btn:enabled').count(), 2);
-    await closeModal(page);
-    await month(page, -1, 9);
-    await visible(work(page, dates.september).getByText('原始排程 september'));
-    await visible(meet(page, dates.september).getByText('原始會議 september'));
+    await visible(siteRow(page).getByText('完工',{exact:true}));
+    const november=await roster();
+    assert.equal(november.length,4);
+    names.forEach((name,index)=>assert.match(november[index],new RegExp(name)));
+    await page.setViewportSize({width:390,height:844});
+    assert.deepEqual(await roster(),november);
+    await month(page,1,12);
+    assert.equal((await roster()).length,0);
+    await page.setViewportSize({width:1440,height:950});
+    await page.clock.setFixedTime(new Date('2026-12-11T12:00:00+08:00'));
+    await page.locator('[data-tab="overview"]').click();
+    await page.evaluate(async ids=>{
+      const fixture=window.progressTestFixture;
+      await fixture.change(ids[0],{status:'prog',name:'十二月重新施工'});
+      await fixture.change(ids[1],{status:'prog',name:'十二月復工乙'});
+      await fixture.change(ids[3],{completionTypes:['設計完成'],initialInspectionDate:'2026-08-01'});
+      await fixture.order([ids[1],ids[0],ids[2],ids[3]]);
+    },ids);
+    await page.locator('[data-tab="progress"]').click();
+    assert.match((await roster())[0],/十二月復工乙/);
+    assert.match((await roster())[1],/十二月重新施工/);
+    await month(page,-1,11);
+    assert.deepEqual(await roster(),november);
+    await visible(work(page,dates.november).getByText('原始排程 november'));
+    await visible(meet(page,dates.november).getByText('原始會議 november'));
+    await edit(siteRow(page).locator('textarea'),'十一月專屬備註');
+    await page.evaluate(ids=>window.progressTestFixture.order([ids[2],ids[0],ids[1],ids[3]],'2026-11'),ids);
+    await visible(page.locator('#panel-progress td.site-hd').filter({has:page.locator('textarea')}).first().filter({hasText:'結案測試丙'}));
+    assert.match((await roster())[0],/結案測試丙/);
+    await month(page,1,12);
+    assert.match((await roster())[0],/十二月復工乙/);
+    assert.equal(await page.locator('#panel-progress td.site-hd').filter({hasText:'十二月重新施工'}).locator('textarea').inputValue(),'舊版工地備註');
+    await page.locator('[data-tab="overview"]').click();
+    await status('十二月重新施工').selectOption('done');
+    await page.locator('#ct-3').check();
+    await page.locator('#mo-content').getByRole('button',{name:'確定',exact:true}).click();
+    await page.getByRole('button',{name:'保留紀錄',exact:true}).click();
+    await status('十二月重新施工').waitFor({state:'hidden'});
+    assert.match((await read(page)).project.progressClosedAt,/^2026-12-11/);
+    await page.evaluate(id=>window.showSiteReport(id),ids[0]);
+    await visible(page.locator('#panel-overview').getByText(/十一月報告會議/));
+    await page.evaluate(()=>window.closeSiteReport());
+    await page.locator('[data-tab="progress"]').click();
+    assert.match((await roster()).join(' '),/十二月重新施工/);
+    await page.locator('.nav-btn').nth(1).click();
+    await visible(page.locator('.wk-lbl').filter({hasText:'2027年 1月'}));
+    assert.doesNotMatch((await roster()).join(' '),/十二月重新施工/);
+    const after=await read(page);
+    assert.deepEqual(after.projects.map(p=>p.schedule),closed.projects.map(p=>p.schedule));
+    assert.deepEqual(after.meetings,closed.meetings);
+    assert.deepEqual(after.logs,closed.logs);
+    await page.evaluate(id=>window.deleteProject(id),ids[1]);
+    const archived=await read(page);
+    assert.equal(archived.projects.some(project=>project.id===ids[1]),false);
+    assert.deepEqual(archived.archivedProjects.find(project=>project.id===ids[1]).schedule,closed.projects[1].schedule);
+    await page.reload();
+    await goToProgress(page);
+    await page.evaluate(()=>window.jumpToDate('2026-11-02'));
+    const savedRoster=await roster();
+    assert.match(savedRoster[0],/結案測試丙/);
+    assert.match(savedRoster[1],/月份驗收案件/);
+    assert.match(savedRoster[2],/結案測試乙/);
+    assert.equal(await siteRow(page).locator('textarea').inputValue(),'十一月專屬備註');
+    await visible(work(page,dates.november).getByText('原始排程 november'));
+    await visible(meet(page,dates.november).getByText('原始會議 november'));
+    assert.deepEqual(errors,[]);
+    console.log('PASS browser: four completion types, November closure after September inspection, independent November roster and edits, December reopening, reclosure and archive, history after reload.');
+  } finally { await context.close(); }
+}
+
+async function legacyCompletionDates(browser) {
+  const { page, context, errors }=await open(browser,'admin');
+  try {
+    await page.evaluate(()=>window.progressTestFixture.seedLegacyCompletions());
+    const before=await read(page);
+    await month(page,1,12);
+    const site=page.locator('#panel-progress td.site-hd').filter({hasText:'河南路住宅案'});
+    await visible(site);
     await page.locator('[data-tab="overview"]').click();
     await page.locator('#panel-overview .stat[onclick*="toggleOverviewCompletedMode"]').click();
-    await page.locator('#panel-overview [onclick*="showSiteReport"]').getByText('月份驗收案件').click();
-    await visible(page.getByText(/實際完工日：2026-11-11/));
-    await page.evaluate(() => window.progressTestFixture.role('staff'));
-    assert.equal(await page.getByText('更改完工日期', { exact: true }).count(), 0);
-    await page.evaluate(() => window.progressTestFixture.role('manager'));
-    await page.getByText('更改完工日期', { exact: true }).click();
-    await page.locator('#overview-completion-date').fill('2026-10-31');
-    await page.getByRole('button', { name: '儲存完工日期', exact: true }).click();
-    await visible(page.getByText(/實際完工日：2026-10-31/));
-    await page.getByRole('button', { name: /返回案件總覽/ }).click();
+    await visible(page.getByRole('columnheader',{name:'設定已完工日',exact:true}));
+    const row=page.getByRole('row').filter({hasText:'河南路住宅案'});
+    await visible(row.getByRole('cell',{name:/未留結案紀錄/}));
+    await row.getByRole('button',{name:'補登月份'}).click();
+    const input=page.getByLabel('設定已完工月份',{exact:true});
+    assert.equal(await input.inputValue(),'');
+    await input.fill('2026-11');
+    await page.getByRole('button',{name:'確認儲存'}).click();
+    await visible(row.getByText('2026-11',{exact:false}));
+    const after=await read(page);
+    assert.deepEqual(after,{...before,projects:[{...before.projects[0],progressLegacyClosedMonth:'2026-11'},before.projects[1]]});
     await page.locator('[data-tab="progress"]').click();
-    await visible(page.locator('.wk-lbl').filter({ hasText: '2026年 11月' }));
-    assert.equal(await siteRow(page).count(), 0);
-    await month(page, -1, 10);
-    await visible(siteRow(page).getByText('完工', { exact: true }));
-    await visible(work(page, dates.october).getByText('原始排程 october'));
-    await page.locator('[data-tab="overview"]').click();
-    await status.selectOption('prog');
-    const keep = page.getByRole('button', { name: '保留紀錄', exact: true });
-    if (await keep.isVisible()) await keep.click();
-    await check(page, () => window.progressTestFixture.read().project.status === 'prog');
-    await page.locator('[data-tab="progress"]').click();
-    await visible(siteRow(page));
-    await month(page, 1, 12);
-    await visible(siteRow(page));
-    assert.equal((await read(page)).project.schedule.length, 3);
-    assert.deepEqual(errors, []);
-    console.log('PASS browser: complete on Nov 11, hide in December, September/October history, date correction, reopen.');
+    await page.evaluate(()=>window.jumpToDate('2026-11-02'));
+    await visible(site.getByText('完工',{exact:true}));
+    await month(page,1,12);
+    assert.equal(await site.count(),0);
+    await page.locator('.nav-btn').nth(1).click();
+    await visible(page.locator('.wk-lbl').filter({hasText:'2027年 1月'}));
+    assert.equal(await site.count(),0);
+    await page.reload();
+    await goToProgress(page);
+    for(const [day,note] of [['2026-01-02','一月施工文字'],[dates.october,'原始排程 october'],[dates.november,'原始排程 november']]){
+      await page.evaluate(day=>window.jumpToDate(day),day);
+      await visible(site);
+      assert.equal(await site.locator('textarea').inputValue(),'舊版工地備註');
+      await visible(site.locator('..').getByText(note,{exact:true}));
+    }
+    assert.deepEqual(errors,[]);
+    console.log('PASS browser: 河南路住宅案 legacy month backfill; 11/2026 visible, 12/2026 and 01/2027 hidden; January, October and November history retained after reload.');
   } finally { await context.close(); }
 }
 
@@ -250,7 +355,7 @@ async function administrator(browser) {
     await editSchedule(page, dates.october, '管理員歷史排程');
     await openChecklist(page, dates.october);
     await page.locator('#mo-content .ck-btn[title="完成"]').click();
-    await check(page, () => window.progressTestFixture.read().checks['qa-site_測試木作']?.[0]?.done);
+    await check(page, () => window.progressTestFixture.read().checkRecords['qa-site_測試木作']?.progressCheckEdits['2026-10']?.[0]?.done);
     await closeModal(page);
     await work(page, dates.next).locator('.add-ev-btn').click();
     await page.locator('.stage-search-item').filter({ hasText: stage }).click();
@@ -280,7 +385,7 @@ async function administrator(browser) {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     for (const [label, test] of [
-      ['completion', completion], ['staff desktop', b => employee(b, 'staff', false)],
+      ['completion', completion], ['legacy completion dates', legacyCompletionDates], ['staff desktop', b => employee(b, 'staff', false)],
       ['staff mobile', b => employee(b, 'staff', true)],
       ['supervisor desktop', b => employee(b, 'supervisor', false)],
       ['supervisor mobile', b => employee(b, 'supervisor', true)], ['administrator', administrator]

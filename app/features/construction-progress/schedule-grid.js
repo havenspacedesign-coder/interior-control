@@ -429,8 +429,30 @@ window.togglePicker=function(e,projId,ds,row){
     if(inp){inp.focus();inp.select();}
   },80);
 }
+let workProjectDragSrc=null;
+window.workProjectDragStart=function(event,id){
+  if(!isAdmin())return event.preventDefault();
+  if(event.target!==event.currentTarget){workProjectDragSrc=null;return;}
+  workProjectDragSrc=id;
+  event.dataTransfer.effectAllowed='move';
+};
+window.workProjectDragOver=function(event){
+  if(isAdmin()&&workProjectDragSrc)event.preventDefault();
+};
+window.workProjectDragDrop=async function(event,targetId,month){
+  const source=workProjectDragSrc;
+  workProjectDragSrc=null;
+  if(!isAdmin()||!source||source===targetId||event.defaultPrevented)return;
+  event.preventDefault();
+  const order=progressMonthProjects(month).map(project=>project.id);
+  const from=order.indexOf(source),to=order.indexOf(targetId);
+  if(from<0||to<0)return;
+  order.splice(to,0,...order.splice(from,1));
+  try{await writeProgressOrder(order,month);}
+  catch(error){alert(error.message);}
+};
 function progressScheduleChange(projId,ds,edit){
-  const project=S.projects.find(item=>item.id===projId);
+  const project=findProgressProject(projId);
   const month=ds.slice(0,7);
   if(!project||!progressProjectVisible(project,month)||!progressCanEditDate(ds))return null;
   const before=progressMonthSchedule(project,month);
@@ -463,14 +485,14 @@ window.handleChipClick=function(e,projId,ds,ei,stage){
   if(e.ctrlKey){if(progressCanEditDate(ds)){selectedTag={projId,ds,ei,stage};renderProgress();}return;}
   if(selectedTag){selectedTag=null;renderProgress();return;}
   if(stage&&getBibleStages().includes(stage)){
-    const proj=S.projects.find(p=>p.id===projId);
-    openCheckMo(projId,stage,stage,proj?.name||'',ds);
+    const proj=findProgressProject(projId);
+    openCheckMo(projId,stage,stage,proj?progressRosterAt(proj,ds.slice(0,7))?.name||proj.name:'',ds);
   }
 }
 window.copyTagToCell=async function(toProjId,toDs){
   const from=selectedTag;
   if(!from||!progressCanEditDate(from.ds))return;
-  const project=S.projects.find(p=>p.id===from.projId);
+  const project=findProgressProject(from.projId);
   const event=project&&progressMonthSchedule(project,from.ds.slice(0,7)).filter(item=>item.date===from.ds)[from.ei];
   if(!event)return;
   const change=progressScheduleChange(toProjId,toDs,items=>[...items,{...event,date:toDs,_progressItemId:progressItemId()}]);
@@ -495,7 +517,7 @@ window.evDrop=async function(e,toProjId,toDs){
   evDragSrc=null;
   if(!from||!progressCanEditDate(from.ds)||!progressCanEditDate(toDs))return;
   if(from.projId===toProjId&&from.ds===toDs)return;
-  const project=S.projects.find(p=>p.id===from.projId);
+  const project=findProgressProject(from.projId);
   if(!project)return;
   const source=progressMonthSchedule(project,from.ds.slice(0,7));
   const entry=source.filter(item=>item.date===from.ds)[from.ei];
@@ -566,7 +588,7 @@ window.scheduleCellKeyDown=function(e,span){
   if(e.key==='Enter'||e.key==='Tab'){e.preventDefault();const direction=e.key==='Enter'?'down':(e.shiftKey?'left':'right');window.saveScheduleCell(span).then(()=>moveScheduleSelection(direction));}
 }
 function moveScheduleSelection(direction){
-  if(!scheduleSelected)return;const days=getWeekDates().map(fmtDay),projects=sortDesignProjs(S.projects.filter(p=>progressProjectVisible(p,days[0]?.slice(0,7))));
+  if(!scheduleSelected)return;const days=getWeekDates().map(fmtDay),projects=progressMonthProjects(days[0].slice(0,7));
   let pi=projects.findIndex(p=>p.id===scheduleSelected.projId),di=days.indexOf(scheduleSelected.ds);if(pi<0||di<0)return;
   if(direction==='left')di--;else if(direction==='right')di++;else if(direction==='up')pi--;else pi++;
   if(pi<0||di<0||pi>=projects.length||di>=days.length)return;
@@ -584,7 +606,7 @@ window.jumpToDate=async function(dateStr){
   if(!dateStr)return;
   rememberProgressMonthScroll();
   const target=new Date(dateStr+'T00:00:00');
-  const base=today();
+  const base=progressCalendarToday();
   monthOffset=(target.getFullYear()-base.getFullYear())*12+(target.getMonth()-base.getMonth());
   const targetKey=progressMonthKey();
   if(!Number.isFinite(progressMonthScrollPositions[targetKey]))progressMonthScrollPositions[targetKey]=Math.max(0,(monthOffset===0?base.getDate()-2:target.getDate()-3)*180);
@@ -617,14 +639,20 @@ function renderDayView(){
 }
 
 let openCheckMoArgs=null;
+function progressCheckModalMonth(projId,stage){
+  const modal=openCheckMoArgs;
+  const month=modal?.projId===projId&&modal.stage===stage?modal.ds?.slice(0,7):'';
+  return month&&month<projectStageToday().slice(0,7)?month:'';
+}
 window.openCheckMo=function(projId,stage,label,projName,ds){
   const readOnly=ds&&!progressCanEditDate(ds);
+  const month=ds?.slice(0,7);
   if(!stage)return;
-  const proj=S.projects.find(p=>p.id===projId);
+  const proj=findProgressProject(projId);
   const metaItems=projectBibleItemsMeta(proj,stage);
   if(!metaItems.length){alert('此階段尚無項目');return;}
   const isEstimate=!!(S.bible[stage]&&S.bible[stage].isEstimate);
-  const key=`${projId}_${stage}`;const stored=S.checks[key]||[];
+  const key=`${projId}_${stage}`;const stored=progressCheckItems(key,month);
   const merged=metaItems.map((m,i)=>({...m,done:stored[i]?.done||false,skip:stored[i]?.skip||false,amount:stored[i]?.amount||''}));
   const required=merged.filter(bibleItemNeedsCheck);
   const done=required.filter(x=>x.done||x.skip).length;const pct=required.length?Math.round(done/required.length*100):100;
@@ -641,7 +669,7 @@ window.openCheckMo=function(projId,stage,label,projName,ds){
     if(ph.to<=ph.from)return;
     itemsHtml+=`<div style="font-size:11px;font-weight:600;color:var(--text2);margin:10px 0 4px"><span style="background:${ph.color};padding:2px 8px;border-radius:8px">${ph.label}</span></div>`;
     for(let i=ph.from;i<ph.to;i++){
-      itemsHtml+=renderCheckItemRow(projId,stage,i,merged[i],isEstimate,readOnly);
+      itemsHtml+=renderCheckItemRow(projId,stage,i,merged[i],isEstimate,readOnly,month);
     }
   });
   const oldScroll=$('mo-content').querySelector('.estimate-check-list')?.scrollTop||0;
@@ -699,8 +727,9 @@ async function progressReadTarget(target){
     return progressClone(target.kind==='schedule'?progressMonthSchedule(project,target.month):progressMonthNote(project,target.month));
   }
   if(target.kind==='checks'){
-    if(localTestMode)return progressClone(S.checks[target.key]||[]);
-    var checkSnap=await getDoc(doc(db,'checks',target.key));return checkSnap.exists()?progressClone(checkSnap.data().items||[]):[];
+    if(localTestMode)return progressClone(progressCheckItems(target.key,target.month));
+    const snapshot=await getDoc(doc(db,'checks',target.key));
+    return snapshot.exists()?progressClone(progressCheckItems(target.key,target.month,snapshot.data())):[];
   }
   if(target.kind==='userTodo'){
     if(localTestMode){var localTodo=(S.userTodos||[]).find(function(item){return String(item.id)===String(target.key);});return localTodo?progressClone(localTodo):null;}
@@ -735,8 +764,7 @@ async function progressWriteTarget(target,value,current){
     await progressRestoreMeetingDailyLogs(target,current||[],restored);return;
   }
   if(target.kind==='checks'){
-    S.checks=Object.assign({},S.checks,{[target.key]:restored});
-    await setDoc(doc(db,'checks',target.key),{items:restored});
+    await writeProgressCheckItems(target.key,restored,target.month);
     return;
   }
   if(target.kind==='userTodo'){
@@ -798,7 +826,7 @@ window.progressSelectedTarget=function(){
   var p=privateSelectedCell&&privateSelectedCell(),m=meetingSelectedCell&&meetingSelectedCell(),s=scheduleSelected;
   if(p){var pItem=((((S.privateNotes||{})[p.type]||{})[p.ds]||[])[p.idx]);if(pItem)return{kind:'private',ref:p,item:pItem};}
   if(m&&progressCanEditDate(m.ds)){var mItem=((((S.meetingLogs||{})[m.rowId+'_'+m.ds]||{}).items||[])[m.idx]);return{kind:'meeting',ref:m,item:mItem||{},empty:!mItem};}
-  if(s&&progressCanEditDate(s.ds)){var proj=S.projects.find(function(x){return x.id===s.projId;}),sItem=(proj?progressMonthSchedule(proj,s.ds.slice(0,7)):[]).filter(function(x){return x.date===s.ds;})[s.ei];if(sItem)return{kind:'schedule',ref:s,item:sItem};}
+  if(s&&progressCanEditDate(s.ds)){var proj=findProgressProject(s.projId),sItem=(proj?progressMonthSchedule(proj,s.ds.slice(0,7)):[]).filter(function(x){return x.date===s.ds;})[s.ei];if(sItem)return{kind:'schedule',ref:s,item:sItem};}
   return null;
 };
 window.progressApplySelectedColor=async function(kind,value,target){
@@ -879,7 +907,7 @@ window.scheduleToggleStrike=function(projId,ds,ei){
 };
 window.saveProgressSiteNote=async function(projId,month,value){
   if(!progressCanEditDate(month))return;
-  const project=S.projects.find(item=>item.id===projId);
+  const project=findProgressProject(projId);
   if(!project||!progressProjectVisible(project,month))return;
   const before=progressMonthNote(project,month),after=String(value||'');
   if(before!==after)await saveProgressSchedule([{projectId:projId,month,field:'siteNote',before,after}]);
@@ -960,7 +988,8 @@ progressWrapOperation('saveProgressSiteNote',function(args){return args[0]?[{kin
 function progressCheckTarget([projectId,stage]){
   if(activePanel!=='progress')return [];
   const modal=openCheckMoArgs;
-  return [{kind:'checks',key:projectId+'_'+stage,ds:modal?.projId===projectId&&modal.stage===stage?modal.ds:undefined}];
+  return [{kind:'checks',key:projectId+'_'+stage,ds:modal?.projId===projectId&&modal.stage===stage?modal.ds:undefined,
+    month:progressCheckModalMonth(projectId,stage)}];
 }
 progressWrapOperation('setCheckStatus',progressCheckTarget,'修改工程檢核狀態');
 progressWrapOperation('setCheckAmount',progressCheckTarget,'修改工程估價金額');

@@ -5,7 +5,9 @@ import { createRequire } from 'node:module';
 const read = path => readFile(new URL('../' + path, import.meta.url), 'utf8');
 const projects = await read('app/shared/projects.js');
 const dataSource = await read('app/shared/project-progress.js');
+const core = await read('app/shared/core.js');
 const dates = projects.slice(projects.indexOf('function projectStageToday'), projects.indexOf('function projectStageInitial'));
+const calendar = core.slice(core.indexOf('function progressCalendarToday'), core.indexOf('function rememberProgressMonthScroll'));
 const date = '2026-11-11';
 const october = '2026-10';
 const november = '2026-11';
@@ -13,22 +15,37 @@ const december = '2026-12';
 const legacy = {
   id: 'site', name: '驗證工地', status: 'done', siteNote: '原始共用備註',
   schedule: [{ date: '2026-10-15', note: '十月工地紀錄', label: '木作' }, { date, note: '十一月工地紀錄' }],
-  stageHistory: { segments: [{ status: 'prog', start: '2026-09-01', end: date }, { status: 'done', start: date, end: null }] }
+  stageHistory: { version: 1, revision: 2, segments: [{ status: 'prog', start: '2026-09-01', end: date }, { status: 'done', start: date, end: null }] }
 };
 
 function load(extra = {}, source = '') {
   return new Function(...Object.keys(extra), dates + dataSource + source +
-    '\nreturn { progressCompletedOn, progressProjectVisible, progressCanEditDate, progressMonthSchedule, progressAllSchedule, progressMonthNote, writeProgressMonths, ...(typeof renderWeekView === "function" ? {renderWeekView} : {}) };')(...Object.values(extra));
+    '\nreturn { progressLegacyClosedOn, progressRosterAt, progressProjectWrite, progressProjectVisible, progressCanEditDate, progressMonthSchedule, progressAllSchedule, progressMonthNote, writeProgressLegacyClosedMonth, writeProgressMonths, writeProgressOrder, writeProgressCheckItems, progressCheckItems, ...(typeof renderWeekView === "function" ? {renderWeekView} : {}) };')(...Object.values(extra));
 }
 
 const model = load();
-assert.equal(model.progressCompletedOn(legacy), date);
+assert.equal(model.progressLegacyClosedOn(legacy), date);
 for (const month of ['2026-09', october, november]) assert.equal(model.progressProjectVisible(legacy, month), true);
 assert.equal(model.progressProjectVisible(legacy, december), false);
-assert.equal(model.progressProjectVisible({ ...legacy, progressCompletedOn: '2026-10-31' }, november), false);
+assert.equal(model.progressProjectVisible({ ...legacy, progressCompletedOn: '2026-10-31' }, november), true);
 assert.equal(model.progressProjectVisible({ ...legacy, status: 'prog' }, december), true);
 assert.equal(model.progressProjectVisible({ ...legacy, stageHistory: null, contractEnd: '2026-09-01' }, december), true);
-assert.equal(model.progressCompletedOn({ ...legacy, stageHistory: { partial: true, segments: [legacy.stageHistory.segments[1]] } }), '');
+assert.equal(model.progressLegacyClosedOn({ ...legacy, stageHistory: { version:1,partial: true, segments: [legacy.stageHistory.segments[1]] } }), '');
+assert.equal(model.progressLegacyClosedOn({ ...legacy, stageHistory: { ...legacy.stageHistory, revision: 4 } }), '');
+const backfilled={...legacy,stageHistory:null,progressLegacyClosedMonth:november};
+for(let month=1;month<=11;month++)assert.equal(model.progressProjectVisible(backfilled,`2026-${String(month).padStart(2,'0')}`),true);
+assert.equal(model.progressProjectVisible(backfilled,december),false);
+assert.equal(model.progressProjectVisible(backfilled,'2027-01'),false);
+const journal = load({serverTimestamp:()=> '2026-11-11T04:00:00Z'});
+const opening = {name:'十一月原名',status:'prog',initialInspectionDate:'2026-09-15'};
+const closing = {...opening,...journal.progressProjectWrite(opening,{status:'done'},november)};
+const renamed = {...closing,...journal.progressProjectWrite(closing,{status:'prog',name:'十二月新名'},december)};
+assert.equal(journal.progressRosterAt(renamed,november).name,'十一月原名');
+assert.equal(journal.progressRosterAt(renamed,november).status,'done');
+assert.equal(journal.progressRosterAt(renamed,december).name,'十二月新名');
+assert.equal(journal.progressProjectVisible(closing,december),false);
+assert.equal(journal.progressProjectVisible(renamed,december),true);
+assert.equal(journal.progressProjectVisible({...opening,...journal.progressProjectWrite(null,opening,november)},october),false);
 const now = new Date('2026-11-11T04:00:00Z');
 for (const role of ['admin', 'manager', 'staff', 'supervisor']) {
   assert.equal(model.progressCanEditDate(october, role, now), ['admin', 'manager'].includes(role));
@@ -52,7 +69,7 @@ function renderMonth(role, month, day) {
   const viewing = new Date(day + 'T12:00:00');
   const fixture = load({
     currentRole: role, Date: class extends Date { constructor(...args) { super(...(args.length ? args : [now])); } },
-    S: { projects: [legacy], dateColors: {}, members: [], meetingLogs: {
+    designProjectOrder: [], S: { projects: [legacy], progressArchivedProjects:[],progressWorkOrders:{},progressDesignOrders:{},dateColors: {}, members: [], meetingLogs: {
       ['meet1_' + day]: { items: [{ text: '歷史會議紀錄', mentions: [] }] }
     } },
     getWeekDates: () => [viewing], today: () => now, fmtDay: () => day, isSameDay: () => false,
@@ -62,8 +79,8 @@ function renderMonth(role, month, day) {
     MEETING_ROWS: [{ id: 'meet1', name: '客戶會議' }], meetingSelected: {}, meetingEditing: null,
     normalizeLinkedItem: x => x, markableMembersList: () => [], renderItemText: x => x.text,
     isAdmin: () => ['admin', 'manager'].includes(role)
-  }, progress.slice(progress.indexOf('function renderWeekView(')));
-  return fixture.renderWeekView(project => fixture.progressProjectVisible(project, month), month);
+  }, calendar + progress.slice(progress.indexOf('function renderWeekView(')));
+  return fixture.renderWeekView(month);
 }
 for (const role of ['staff', 'supervisor']) {
   const html = renderMonth(role, october, '2026-10-15');
@@ -87,7 +104,7 @@ const require = createRequire(new URL('./ai-database/package.json', import.meta.
 const { initializeTestEnvironment, assertFails, assertSucceeds } = require('@firebase/rules-unit-testing');
 const { initializeApp, deleteApp } = require('firebase/app');
 const { getAuth, connectAuthEmulator, createUserWithEmailAndPassword } = require('firebase/auth');
-const { getFirestore, connectFirestoreEmulator, doc, getDoc, setDoc, updateDoc, deleteDoc, runTransaction, writeBatch } = require('firebase/firestore');
+const { getFirestore, connectFirestoreEmulator, doc, getDoc, setDoc, updateDoc, deleteDoc, runTransaction, writeBatch, serverTimestamp } = require('firebase/firestore');
 const rules = await read('firestore.rules');
 const projectId = 'demo-haven-ai-review';
 const env = await initializeTestEnvironment({
@@ -196,13 +213,56 @@ try {
       projectId: 'progress-site', month: thisMonth, field: 'siteNote', before: '過期內容', after: '覆蓋'
     }]), /已被更新/);
   }
-  const staff = accounts.get('staff').db;
-  const project = doc(staff, 'projects', 'progress-site');
-  await deny(updateDoc(project, { status: 'done', progressCompletedOn: pastDate }));
-  await allow(updateDoc(project, { status: 'done', progressCompletedOn: today }));
-  await deny(updateDoc(project, { status: 'prog' }));
-  const admin = accounts.get('admin').db;
-  await allow(updateDoc(doc(admin, 'projects', 'progress-site'), { progressCompletedOn: pastDate }));
+  const staff = accounts.get('staff').db, admin = accounts.get('admin').db;
+  const project = doc(staff, 'projects', 'progress-site'), adminProject=doc(admin,'projects','progress-site');
+  const sdkFor = (db,role) => load({db,doc,getDoc,serverTimestamp,fbRunTransaction:runTransaction,localTestMode:false,
+    isAdmin:()=>role==='admin',currentRole:role});
+  const staffApp=sdkFor(staff,'staff'),adminApp=sdkFor(admin,'admin');
+  const snapshot=(await getDoc(adminProject)).data();
+  await deny(updateDoc(adminProject,{progressLegacyClosedMonth:thisMonth}));
+  const legacyRef=doc(admin,'projects','legacy-completed');
+  const oldProject={name:'河南路住宅案',status:'done',schedule:[{date:pastDate,note:'保留施工歷史'}],initialInspectionDate:pastDate};
+  await env.withSecurityRulesDisabled(context=>setDoc(doc(context.firestore(),'projects','legacy-completed'),oldProject));
+  for(const role of ['staff','supervisor']){
+    await deny(updateDoc(doc(accounts.get(role).db,'projects','legacy-completed'),{progressLegacyClosedMonth:thisMonth}));
+  }
+  await deny(updateDoc(legacyRef,{progressLegacyClosedMonth:futureMonth}));
+  await deny(updateDoc(legacyRef,{progressLegacyClosedMonth:thisMonth,initialInspectionDate:today}));
+  await allow(adminApp.writeProgressLegacyClosedMonth({...oldProject,id:'legacy-completed'},thisMonth));
+  assert.deepEqual((await getDoc(legacyRef)).data(),{...oldProject,progressLegacyClosedMonth:thisMonth});
+  await allow(updateDoc(doc(accounts.get('manager').db,'projects','legacy-completed'),{progressLegacyClosedMonth:pastMonth}));
+  await deny(updateDoc(project,{status:'done',progressCompletedOn:pastDate}));
+  await deny(updateDoc(project,staffApp.progressProjectWrite(snapshot,{status:'done'})));
+  await deny(updateDoc(adminProject,{status:'done',progressClosedAt:new Date('2020-01-01')}));
+  await allow(updateDoc(adminProject,adminApp.progressProjectWrite(snapshot,{status:'done',initialInspectionDate:pastDate})));
+  const saved=(await getDoc(adminProject)).data();
+  assert(saved.progressClosedAt.toDate() instanceof Date);
+  assert.equal(saved.progressRoster.months[thisMonth].closedAt.toMillis(),saved.progressClosedAt.toMillis());
+  assert.equal(saved.initialInspectionDate,pastDate);
+  await deny(updateDoc(adminProject,{progressLegacyClosedMonth:pastMonth}));
+  await deny(updateDoc(project,{status:'prog'}));
+  await deny(updateDoc(adminProject,{progressClosedAt:new Date('2020-01-01')}));
+  await deny(updateDoc(adminProject,{'progressRoster.baseline.name':'覆蓋歷史'}));
+  await deny(updateDoc(adminProject,{schedule:[]}));
+  await deny(updateDoc(adminProject,{progressMonths:{},progressWriteMonths:[pastMonth,thisMonth,futureMonth]}));
+  await deny(updateDoc(adminProject,{['progressMonths.'+pastMonth+'.siteNote']:'覆蓋其他月',progressWriteMonths:[thisMonth]}));
+  await deny(deleteDoc(adminProject));
+  await allow(updateDoc(adminProject,{completionTypes:['工程完成'],initialInspectionDate:'2021-02-02'}));
+  assert.equal((await getDoc(adminProject)).data().progressClosedAt.toMillis(),saved.progressClosedAt.toMillis());
+  const order=doc(admin,'settings','designProjectOrder');
+  await allow(adminApp.writeProgressOrder(['b','a']));
+  await allow(adminApp.writeProgressOrder(['a','b'],pastMonth));
+  await deny(updateDoc(doc(staff,'settings','designProjectOrder'),{['workOrderMonths.'+pastMonth]:['b','a'],workOrderWriteMonth:pastMonth}));
+  await deny(updateDoc(order,{order:['a','b']}));
+  assert.deepEqual((await getDoc(order)).data().order,['b','a']);
+  const checkKey='monthly-check';
+  await allow(staffApp.writeProgressCheckItems(checkKey,[{done:false}]));
+  await allow(adminApp.writeProgressCheckItems(checkKey,[{done:true}],pastMonth));
+  await deny(updateDoc(doc(staff,'checks',checkKey),{['progressCheckEdits.'+pastMonth]:[{done:false}],progressCheckWriteMonth:pastMonth}));
+  await allow(staffApp.writeProgressCheckItems(checkKey,[{done:true,amount:'100'}]));
+  const record=(await getDoc(doc(admin,'checks',checkKey))).data();
+  assert.deepEqual(adminApp.progressCheckItems(checkKey,pastMonth,record),[{done:true}]);
+  assert.deepEqual(record.items,[{done:true,amount:'100'}]);
   await allow(setDoc(doc(admin, 'meetingLogs', 'meet1_' + pastMonth + '-03'), meeting(pastMonth + '-03', '歷史新增')));
   await allow(deleteDoc(doc(admin, 'meetingLogs', 'meet1_' + pastMonth + '-03')));
   console.log('PASS: ' + checks + ' Firestore emulator permission operations and month isolation.');

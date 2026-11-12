@@ -3,7 +3,7 @@ let currentUser=null,currentRole=null;
 function isSystemAdmin(){return currentRole==='manager';}
 const IS_LOCAL_PREVIEW=location.protocol==='file:'||['127.0.0.1','localhost'].includes(location.hostname);
 let localTestMode=false;
-let S={projects:[],checks:{},bible:{},bibleOrder:[],bibleEmojiRecent:[],members:[],homeNotes:[],recommendations:[],recommendationCategories:[],recommendationRegions:[],growthItems:[],announcements:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},globalNotes:{},userTodos:[],tradeCategories:[],tradeVendors:[],otherVendorCategories:[],otherVendors:[],projectTradeSelections:{}};
+let S={projects:[],progressArchivedProjects:[],progressDesignOrders:{},progressWorkOrders:{},progressCheckRecords:{},checks:{},bible:{},bibleOrder:[],bibleEmojiRecent:[],members:[],homeNotes:[],recommendations:[],recommendationCategories:[],recommendationRegions:[],growthItems:[],announcements:[],dailyLogs:{},privateNotes:{work:{},personal:{}},dateColors:{},meetingLogs:{},globalNotes:{},userTodos:[],tradeCategories:[],tradeVendors:[],otherVendorCategories:[],otherVendors:[],projectTradeSelections:{}};
 let selectedProjectDetailId='',selectedProjectDetailPhotoId='',selectedProjectDetailPhotoBlob=null;
 let userPrefs={todoProjects:[]};
 const DEFAULT_APPEARANCE={theme:'default',fontSize:'small'};
@@ -31,6 +31,7 @@ function restoreLocalPreviewState(){
     const saved=JSON.parse(localStorage.getItem(LOCAL_PREVIEW_STATE_KEY)||'null');
     if(!saved||saved.version!==1||!saved.state||typeof saved.state!=='object')return;
     Object.keys(S).forEach(key=>{if(Object.prototype.hasOwnProperty.call(saved.state,key))S[key]=localClone(saved.state[key]);});
+    designProjectOrder=progressVersionAt(S.progressDesignOrders.months,S.progressDesignOrders.baseline??[],projectStageToday().slice(0,7));
     if(Object.prototype.hasOwnProperty.call(saved,'companyDuty'))companyDutyConfig=normalizeCompanyDutyConfig(saved.companyDuty);
     if(saved.userPrefs&&typeof saved.userPrefs==='object')userPrefs={...userPrefs,...localClone(saved.userPrefs)};
   }catch(error){console.warn('本機測試資料無法讀取',error);}
@@ -45,13 +46,13 @@ function bibleStageFromStorageId(id){return String(id).replace(/%2F/g,'/').repla
 function bibleStageDoc(stage){return doc(db,'bible',bibleStorageId(stage));}
 function bibleStageData(stage,data){return{...data,stageTitle:stage};}
 function localFindArray(collectionName,id){
-  const arr=collectionName==='projects'?S.projects:collectionName==='members'?S.members:collectionName==='homeNotes'?S.homeNotes:collectionName==='recommendations'?S.recommendations:collectionName==='recommendationCategories'?S.recommendationCategories:collectionName==='recommendationRegions'?S.recommendationRegions:collectionName==='growthItems'?S.growthItems:collectionName==='announcements'?S.announcements:collectionName==='userTodos'?S.userTodos:collectionName==='tradeCategories'?S.tradeCategories:collectionName==='tradeVendors'?S.tradeVendors:collectionName==='otherVendorCategories'?S.otherVendorCategories:collectionName==='otherVendors'?S.otherVendors:null;
+  const arr=collectionName==='projects'?[...S.projects,...S.progressArchivedProjects]:collectionName==='members'?S.members:collectionName==='homeNotes'?S.homeNotes:collectionName==='recommendations'?S.recommendations:collectionName==='recommendationCategories'?S.recommendationCategories:collectionName==='recommendationRegions'?S.recommendationRegions:collectionName==='growthItems'?S.growthItems:collectionName==='announcements'?S.announcements:collectionName==='userTodos'?S.userTodos:collectionName==='tradeCategories'?S.tradeCategories:collectionName==='tradeVendors'?S.tradeVendors:collectionName==='otherVendorCategories'?S.otherVendorCategories:collectionName==='otherVendors'?S.otherVendors:null;
   if(!arr)return null;
   return arr.find(x=>String(x.id)===id||String(x.uid)===id)||null;
 }
 function localRead(collectionName,id){
   if(['projects','members','homeNotes','recommendations','recommendationCategories','recommendationRegions','growthItems','announcements','userTodos','tradeCategories','tradeVendors','otherVendorCategories','otherVendors'].includes(collectionName))return localFindArray(collectionName,id);
-  if(collectionName==='checks')return{items:S.checks[id]||[]};
+  if(collectionName==='checks')return S.progressCheckRecords[id]||{items:S.checks[id]||[]};
   if(collectionName==='bible')return id==='orderConfig'?{order:S.bibleOrder}:S.bible[bibleStageFromStorageId(id)];
   if(collectionName==='dailyLogs')return S.dailyLogs[id];
   if(collectionName==='meetingLogs')return S.meetingLogs[id];
@@ -63,7 +64,7 @@ function localRead(collectionName,id){
     if(id==='bibleEmojiRecent')return{emojis:S.bibleEmojiRecent};
     if(id==='designCols')return{cols:designCols||DEFAULT_DESIGN_COLS};
     if(id==='designColWidths')return{widths:designColWidths};
-    if(id==='designProjectOrder')return{order:designProjectOrder};
+    if(id==='designProjectOrder')return{order:designProjectOrder,progressDesignOrders:S.progressDesignOrders,workOrderMonths:S.progressWorkOrders};
     if(id==='dateColors')return{colors:S.dateColors};
     if(id==='companyDuty')return companyDutyConfig;
   }
@@ -76,8 +77,16 @@ function localWrite(collectionName,id,data,merge=false){
     const existing=localFindArray(collectionName,id);
     if(existing)Object.assign(existing,merge?value:{...value,id:existing.id||id});
     else arr.push({...value,id,uid:collectionName==='members'?(value.uid||id):value.uid});
+    if(collectionName==='projects'&&value.progressArchived===true){
+      S.progressArchivedProjects=[...S.progressArchivedProjects.filter(project=>project.id!==id),existing||arr.at(-1)];
+      S.projects=S.projects.filter(project=>project.id!==id);
+    }
     if(collectionName==='announcements')localStorage.setItem('localPreviewAnnouncements',JSON.stringify(S.announcements));
-  }else if(collectionName==='checks')S.checks[id]=localClone(Array.isArray(value)?value:(value.items||[]));
+  }else if(collectionName==='checks'){
+    const record=Array.isArray(value)?{items:value}:value;
+    S.progressCheckRecords[id]=merge?{...(S.progressCheckRecords[id]||{items:S.checks[id]||[]}),...record}:record;
+    S.checks[id]=localClone(S.progressCheckRecords[id].items||[]);
+  }
   else if(collectionName==='bible'){
     if(id==='orderConfig')S.bibleOrder=[...(value.order||[])];
     else{const stage=bibleStageFromStorageId(id);S.bible[stage]=merge?{...(S.bible[stage]||{}),...value}:value;}
@@ -91,7 +100,11 @@ function localWrite(collectionName,id,data,merge=false){
     if(id==='bibleEmojiRecent')S.bibleEmojiRecent=normalizeBibleEmojiRecent(value.emojis);
     else if(id==='designCols')designCols=value.cols||DEFAULT_DESIGN_COLS;
     else if(id==='designColWidths')designColWidths=value.widths||{};
-    else if(id==='designProjectOrder')designProjectOrder=value.order||[];
+    else if(id==='designProjectOrder'){
+      if(value.order)designProjectOrder=value.order;
+      if(value.progressDesignOrders)S.progressDesignOrders=value.progressDesignOrders;
+      if(value.workOrderMonths)S.progressWorkOrders=value.workOrderMonths;
+    }
     else if(id==='dateColors')S.dateColors=value.colors||{};
     else if(id==='companyDuty')companyDutyConfig=normalizeCompanyDutyConfig(merge?{...(companyDutyConfig||{}),...value}:value);
   }
@@ -101,7 +114,7 @@ function localDelete(collectionName,id){
   else if(collectionName==='members')S.members=S.members.filter(x=>String(x.id)!==id&&String(x.uid)!==id);
   else if(collectionName==='homeNotes')S.homeNotes=S.homeNotes.filter(x=>String(x.id)!==id&&String(x.uid)!==id);
   else if(collectionName==='userTodos')S.userTodos=S.userTodos.filter(x=>String(x.id)!==id);
-  else if(collectionName==='checks')delete S.checks[id];
+  else if(collectionName==='checks'){delete S.checks[id];delete S.progressCheckRecords[id];}
   else if(collectionName==='bible'){const stage=bibleStageFromStorageId(id);delete S.bible[stage];S.bibleOrder=S.bibleOrder.filter(x=>x!==stage);}
   else if(collectionName==='dailyLogs')delete S.dailyLogs[id];
   else if(collectionName==='meetingLogs')delete S.meetingLogs[id];
@@ -143,7 +156,7 @@ async function getDocs(ref){
   else if(collectionName==='members')entries=S.members.map(x=>[x.id||x.uid,x]);
   else if(collectionName==='homeNotes')entries=S.homeNotes.map(x=>[x.id||x.uid,x]);
   else if(collectionName==='userTodos')entries=S.userTodos.map(x=>[x.id,x]);
-  else if(collectionName==='checks')entries=Object.entries(S.checks).map(([id,items])=>[id,{items}]);
+  else if(collectionName==='checks')entries=Object.entries(S.checks).map(([id,items])=>[id,S.progressCheckRecords[id]||{items}]);
   else if(collectionName==='bible')entries=Object.entries(S.bible).map(([stage,value])=>[bibleStorageId(stage),value]);
   else if(collectionName==='projectTradeSelections')entries=Object.entries(S.projectTradeSelections).map(([id,categories])=>[id,{categories}]);
   else if(['recommendations','recommendationCategories','recommendationRegions','growthItems','announcements','tradeCategories','tradeVendors','otherVendorCategories','otherVendors'].includes(collectionName))entries=S[collectionName].map(x=>[x.id,x]);
@@ -287,15 +300,16 @@ function today(){return new Date()}
 function getWeekDates(){
   return getMonthDates();
 }
+function progressCalendarToday(){return new Date(projectStageToday()+'T12:00:00');}
 function getMonthDates(){
-  const b=today();
+  const b=progressCalendarToday();
   const target=new Date(b.getFullYear(),b.getMonth()+monthOffset,1);
   const y=target.getFullYear(),m=target.getMonth();
   const daysInMonth=new Date(y,m+1,0).getDate();
   return Array.from({length:daysInMonth},(_,i)=>new Date(y,m,i+1));
 }
-function progressMonthKey(offset=monthOffset){const base=today(),target=new Date(base.getFullYear(),base.getMonth()+offset,1);return`${target.getFullYear()}-${String(target.getMonth()+1).padStart(2,'0')}`;}
-function defaultProgressScrollLeft(offset=monthOffset){return offset===0?Math.max(0,(today().getDate()-2)*180):0;}
+function progressMonthKey(offset=monthOffset){const base=progressCalendarToday(),target=new Date(base.getFullYear(),base.getMonth()+offset,1);return`${target.getFullYear()}-${String(target.getMonth()+1).padStart(2,'0')}`;}
+function defaultProgressScrollLeft(offset=monthOffset){return offset===0?Math.max(0,(progressCalendarToday().getDate()-2)*180):0;}
 function rememberProgressMonthScroll(){if(calMode==='month')progressMonthScrollPositions[progressMonthKey()]=captureProgressHScroll();}
 function progressScrollLeftForMonth(offset=monthOffset){const saved=progressMonthScrollPositions[progressMonthKey(offset)];return Number.isFinite(saved)?saved:defaultProgressScrollLeft(offset);}
 
@@ -410,11 +424,11 @@ function projectBibleItemsMeta(proj,stage){
   return[...flattenPhaseItems(b.before),...flattenPhaseItems(b.during),...flattenPhaseItems(b.after)];
 }
 function projectBibleItems(proj,stage){return projectBibleItemsMeta(proj,stage).map(x=>x.text);}
-function pendingCount(projId,stage){
+function pendingCount(projId,stage,month){
   if(!stage)return null;
-  const proj=S.projects.find(p=>p.id===projId);
+  const proj=findProgressProject(projId);
   const items=projectBibleItemsMeta(proj,stage);if(!items.length)return null;
-  const stored=S.checks[`${projId}_${stage}`]||[];
+  const stored=progressCheckItems(`${projId}_${stage}`,month);
   return items.reduce((count,item,i)=>count+(bibleItemNeedsCheck(item)&&!stored[i]?.done&&!stored[i]?.skip?1:0),0);
 }
 function pendBadge(n){
@@ -425,11 +439,11 @@ function pendBadge(n){
 // Shared row renderer for a bible checklist item — ✓ means done, ✗ means
 // "seen but not applicable to this site". Both count as resolved. Sub-items
 // (item.isSub) render indented under their parent.
-function renderCheckItemRow(projId,stage,idx,item,isEstimate,readOnly=false){
+function renderCheckItemRow(projId,stage,idx,item,isEstimate,readOnly=false,month){
   const emoji=normalizeBibleItem(item).emoji;
   const cls=emoji?'':item.done?'done':(item.skip?'skip':'');
   const depth=item.depth||(item.isSub?1:0);
-  const stageStarted=(S.checks[`${projId}_${stage}`]||[]).some(row=>row?.done||row?.skip);
+  const stageStarted=progressCheckItems(`${projId}_${stage}`,month).some(row=>row?.done||row?.skip);
   const showPending=!emoji&&stageStarted&&!item.done&&!item.skip;
   return`<div class="ws-cl-item ${cls}"${depth>0?` style="padding-left:${depth*26}px"`:''}>
     ${emoji?`<span class="ck-emoji" role="img" aria-label="分類圖示" style="display:inline-flex;align-items:center;justify-content:center;width:62px;flex:0 0 62px;font-size:18px;line-height:22px">${escAttr(emoji)}</span>`:`<div class="ck-btns">
@@ -443,16 +457,20 @@ function renderCheckItemRow(projId,stage,idx,item,isEstimate,readOnly=false){
 }
 window.setCheckStatus=async function(projId,stage,idx,status){
   if(typeof openCheckMoArgs!=='undefined'&&openCheckMoArgs?.ds&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage&&!progressCanEditDate(openCheckMoArgs.ds))return;
-  const proj=S.projects.find(p=>p.id===projId);
+  const month=typeof progressCheckModalMonth==='function'?progressCheckModalMonth(projId,stage):'';
+  const proj=findProgressProject(projId);
   const meta=projectBibleItemsMeta(proj,stage);
   if(!meta[idx]||!bibleItemNeedsCheck(meta[idx]))return;
   const allItems=projectBibleItems(proj,stage);
   const key=`${projId}_${stage}`;
-  const stored=[...(S.checks[key]||allItems.map(t=>({text:t,done:false})))];
+  const stored=[...(progressCheckItems(key,month))];
   while(stored.length<allItems.length)stored.push({done:false});
   const cur=stored[idx]||{};
   stored[idx]={...cur,done:status==='done'?!cur.done:false,skip:status==='skip'?!cur.skip:false};
-  S.checks=Object.assign({},S.checks,{[key]:stored});
+  setSyncing();
+  try{await writeProgressCheckItems(key,stored,month);setSynced();}catch(error){setOffline();return;}
+  if(!month)S.checks={...S.checks,[key]:stored};
+  else{const record=S.progressCheckRecords[key]||{};S.progressCheckRecords[key]={...record,progressCheckEdits:{...record.progressCheckEdits,[month]:stored}};}
   if(typeof openCheckMoArgs!=='undefined'&&openCheckMoArgs&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage){
     openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName,openCheckMoArgs.ds);
   }
@@ -461,24 +479,24 @@ window.setCheckStatus=async function(projId,stage,idx,status){
     if(typeof rememberBibleScrollPosition==='function')rememberBibleScrollPosition(2);
     if(typeof renderBible==='function')renderBible();
   }
-  setSyncing();
-  try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}
 }
 window.setCheckAmount=async function(projId,stage,idx,value){
   if(typeof openCheckMoArgs!=='undefined'&&openCheckMoArgs?.ds&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage&&!progressCanEditDate(openCheckMoArgs.ds))return;
-  const proj=S.projects.find(p=>p.id===projId);
+  const month=typeof progressCheckModalMonth==='function'?progressCheckModalMonth(projId,stage):'';
+  const proj=findProgressProject(projId);
   const allItems=projectBibleItems(proj,stage);
   const key=`${projId}_${stage}`;
-  const stored=[...(S.checks[key]||allItems.map(t=>({text:t,done:false})))];
+  const stored=[...(progressCheckItems(key,month))];
   while(stored.length<allItems.length)stored.push({done:false});
   const cur=stored[idx]||{};
   stored[idx]={...cur,amount:value};
-  S.checks=Object.assign({},S.checks,{[key]:stored});
+  setSyncing();
+  try{await writeProgressCheckItems(key,stored,month);setSynced();}catch(error){setOffline();return;}
+  if(!month)S.checks={...S.checks,[key]:stored};
+  else{const record=S.progressCheckRecords[key]||{};S.progressCheckRecords[key]={...record,progressCheckEdits:{...record.progressCheckEdits,[month]:stored}};}
   if(typeof openCheckMoArgs!=='undefined'&&openCheckMoArgs&&openCheckMoArgs.projId===projId&&openCheckMoArgs.stage===stage){
     openCheckMo(openCheckMoArgs.projId,openCheckMoArgs.stage,openCheckMoArgs.label,openCheckMoArgs.projName,openCheckMoArgs.ds);
   }
-  setSyncing();
-  try{await setDoc(doc(db,'checks',key),{items:stored});setSynced();}catch(e){setOffline();}
 }
 function setSynced(){
   if(localTestMode){$('sdot').style.background='var(--amber)';$('slbl').textContent='本機測試';return;}

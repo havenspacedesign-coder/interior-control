@@ -3,20 +3,160 @@ function progressValidDate(day){
   try{projectStageDayNumber(day);return true;}catch(error){return false;}
 }
 
-function progressCompletedOn(project){
+function progressLegacyClosedOn(project){
   if(project.status!=='done')return '';
-  if(progressValidDate(project.progressCompletedOn))return project.progressCompletedOn;
-  const segments=project.stageHistory?.segments;
-  if(!Array.isArray(segments)||(project.stageHistory.partial&&segments.length===1))return '';
+  const history=project.stageHistory,segments=history?.segments;
+  // A rollback can reopen an older done segment without recording the new closure date.
+  if(history?.version!==1||!Array.isArray(segments)||history.revision!==segments.length||(history.partial&&segments.length===1))return '';
   const recorded=segments.at(-1);
-  return recorded?.status==='done'&&recorded.end===null&&progressValidDate(recorded.start)?recorded.start:'';
+  return recorded?.status==='done'&&recorded.end===null&&progressValidDate(recorded.start)
+    &&(segments.length===1||segments.at(-2)?.end===recorded.start)?recorded.start:'';
+}
+
+function progressClosureDay(timestamp){
+  const date=typeof timestamp?.toDate==='function'?timestamp.toDate():typeof timestamp==='string'?new Date(timestamp):null;
+  return date&&Number.isFinite(date.getTime())?projectStageToday(date):'';
+}
+
+function progressRosterVersion(project){
+  return {name:project.name??'',status:project.status??'',archived:project.progressArchived===true,
+    closedAt:project.progressClosedAt??null,recordedDay:progressLegacyClosedOn(project)};
+}
+
+function progressClosureLabel(project,version=progressRosterVersion(project)){
+  return version.status==='done'
+    ? progressClosureDay(version.closedAt)||version.recordedDay||project.progressLegacyClosedMonth||''
+    : '';
+}
+
+function progressCanBackfillClosure(project){
+  return !!project&&isAdmin()&&project.status==='done'&&!project.progressArchived
+    &&project.progressClosedAt==null&&!progressLegacyClosedOn(project);
+}
+
+async function writeProgressLegacyClosedMonth(project,month){
+  const ref=doc(db,'projects',project.id);
+  function patch(snapshot){
+    const fresh=snapshot.exists()?snapshot.data():null;
+    if(!progressCanBackfillClosure(fresh)||fresh.progressLegacyClosedMonth!==project.progressLegacyClosedMonth){
+      throw new Error('案件結案紀錄已變更，請重新開啟後再試。');
+    }
+    if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)||month>projectStageToday().slice(0,7)){
+      throw new Error('請選擇當月或更早的結案月份。');
+    }
+    return {progressLegacyClosedMonth:month};
+  }
+  if(localTestMode)await updateDoc(ref,patch(await getDoc(ref)));
+  else await fbRunTransaction(db,async tx=>tx.update(ref,patch(await tx.get(ref))));
+}
+
+function progressVersionAt(months,baseline,month){
+  const latest=Object.keys(months||{}).filter(key=>key<=month).sort().at(-1);
+  return latest?months[latest]:baseline;
+}
+
+function progressRosterAt(project,month){
+  const roster=project.progressRoster;
+  return roster?progressVersionAt(roster.months,roster.baseline,month):progressRosterVersion(project);
 }
 
 function progressProjectVisible(project,month){
-  if(project.status==='prog')return true;
-  if(project.status!=='done')return false;
-  const completedOn=progressCompletedOn(project);
-  return !completedOn||month<=completedOn.slice(0,7);
+  const version=progressRosterAt(project,month);
+  if(!version||version.archived)return false;
+  if(version.status==='prog')return true;
+  if(version.status==='done'){
+    const closedOn=progressClosureLabel(project,version);
+    return !closedOn||month<=closedOn.slice(0,7);
+  }
+  // Before roster recording, a dated schedule is evidence the site belonged
+  // to that month even if its current status is unrelated to construction.
+  return month<projectStageToday().slice(0,7)
+    && !Object.keys(project.progressRoster?.months||{}).some(key=>key<=month)
+    && progressMonthSchedule(project,month).length>0;
+}
+
+function progressProjectWrite(before,patch,month=projectStageToday().slice(0,7)){
+  const after={...before,...patch};
+  if(after.status!==before?.status&&[after.status,before?.status].includes('done')){
+    patch={...patch,progressClosedAt:after.status==='done'?serverTimestamp():null};
+    after.progressClosedAt=patch.progressClosedAt;
+  }
+  const roster=before?.progressRoster;
+  const version=progressRosterVersion(after);
+  const prior=before&&progressRosterVersion(before);
+  if(!before||JSON.stringify(version)!==JSON.stringify(prior)){
+    patch={...patch,progressRoster:{
+      baseline:roster?roster.baseline:prior??null,
+      months:{...roster?.months,[month]:version},
+      writeMonth:month
+    }};
+  }
+  return patch;
+}
+
+function findProgressProject(id){
+  return S.projects.find(project=>project.id===id)||S.progressArchivedProjects.find(project=>project.id===id);
+}
+
+function progressMonthProjects(month){
+  const order=S.progressWorkOrders[month]??progressVersionAt(S.progressDesignOrders.months,S.progressDesignOrders.baseline??designProjectOrder,month);
+  const rank=new Map(order.map((id,index)=>[id,index]));
+  return [...S.projects,...S.progressArchivedProjects]
+    .filter(project=>progressProjectVisible(project,month))
+    .map(project=>{
+      const version=progressRosterAt(project,month);
+      return {...project,name:version.name,status:version.status,progressArchived:version.archived||project.progressArchived};
+    })
+    .sort((a,b)=>((rank.get(a.id)??Infinity)-(rank.get(b.id)??Infinity))||(a.id<b.id?-1:a.id>b.id?1:0));
+}
+
+async function writeProgressOrder(order,month){
+  const ref=doc(db,'settings','designProjectOrder');
+  function prepare(before){
+    if(month)return {workOrderMonths:{...before.workOrderMonths,[month]:order},workOrderWriteMonth:month};
+    const key=projectStageToday().slice(0,7),history=before.progressDesignOrders;
+    return {order,progressDesignOrders:{baseline:history?.baseline??before.order??[],
+      months:{...history?.months,[key]:order},writeMonth:key}};
+  }
+  if(localTestMode){
+    const snapshot=await getDoc(ref);
+    await setDoc(ref,prepare(snapshot.data()||{}),{merge:true});
+  }else{
+    await fbRunTransaction(db,async transaction=>{
+      const snapshot=await transaction.get(ref);
+      transaction.set(ref,prepare(snapshot.data()||{}),{merge:true});
+    });
+  }
+}
+
+function progressCheckItems(key,month,record=S.progressCheckRecords[key]){
+  if(!month)return record?.items??S.checks[key]??[];
+  return record?.progressCheckEdits?.[month]??progressVersionAt(record?.progressCheckHistory?.months,
+    record?.progressCheckHistory?.baseline??record?.items??S.checks[key]??[],month);
+}
+
+function progressSharedCheckPatch(before,items){
+  const month=projectStageToday().slice(0,7),history=before.progressCheckHistory;
+  return {items,progressCheckHistory:{baseline:history?.baseline??before.items??[],
+    months:{...history?.months,[month]:items},writeMonth:month}};
+}
+
+async function writeProgressCheckItems(key,items,month){
+  const ref=doc(db,'checks',key);
+  function prepare(before){
+    if(!month)return progressSharedCheckPatch(before,items);
+    if(!isAdmin()||!progressCanEditDate(month))throw new Error('這個月份的工程進度為唯讀。');
+    return {progressCheckEdits:{...before.progressCheckEdits,[month]:items},progressCheckWriteMonth:month};
+  }
+  if(localTestMode){
+    const snapshot=await getDoc(ref);
+    await setDoc(ref,prepare(snapshot.data()||{}),{merge:true});
+  }else{
+    await fbRunTransaction(db,async transaction=>{
+      const snapshot=await transaction.get(ref);
+      transaction.set(ref,prepare(snapshot.data()||{}),{merge:true});
+    });
+  }
 }
 
 function progressCanEditDate(date,role=currentRole,now=new Date()){
@@ -36,6 +176,17 @@ function progressAllSchedule(project){
   const months=project.progressMonths||{};
   return (project.schedule||[]).filter(entry=>!Array.isArray(months[entry?.date?.slice(0,7)]?.schedule))
     .concat(Object.keys(months).flatMap(month=>Array.isArray(months[month]?.schedule)?progressMonthSchedule(project,month):[]));
+}
+
+async function relinkUpcomingProgress(project,stage,relink){
+  const currentMonth=projectStageToday().slice(0,7);
+  const months=[...new Set(progressAllSchedule(project).filter(entry=>entry.stage===stage)
+    .map(entry=>entry.date?.slice(0,7)).filter(month=>month&&month>=currentMonth))];
+  if(months.length)await writeProgressMonths(months.map(month=>{
+    const before=progressMonthSchedule(project,month);
+    return {projectId:project.id,month,field:'schedule',before,
+      after:before.map(entry=>entry.stage===stage?relink(entry):entry)};
+  }));
 }
 
 function progressMonthNote(project,month){

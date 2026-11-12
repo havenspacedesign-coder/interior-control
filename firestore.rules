@@ -67,26 +67,105 @@ service cloud.firestore {
         && (months.size() == 1 || validProgressBucket(after, months[1]));
     }
 
-    function todayCompletion(data) {
-      let date = data.get('progressCompletedOn', '');
-      return date is string && date.matches('[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])')
-        && int(date.split('-')[0]) == taipeiTime().year()
-        && int(date.split('-')[1]) == taipeiTime().month()
-        && int(date.split('-')[2]) == taipeiTime().day();
+    function validProgressMonth(month) {
+      return month is string && month.matches('[0-9]{4}-(0[1-9]|1[0-2])');
+    }
+
+    function currentProgressMonth(month) {
+      return validProgressMonth(month)
+        && int(month.split('-')[0]) == taipeiTime().year()
+        && int(month.split('-')[1]) == taipeiTime().month();
+    }
+
+    function recordedDoneDay(data) {
+      let history = data.get('stageHistory', {});
+      let segments = history is map ? history.get('segments', []) : [];
+      let tail = segments is list && segments.size() > 0 ? segments[segments.size()-1] : {};
+      return data.get('status', '') == 'done' && history is map && history.get('version', 0) == 1
+        && tail is map && tail.get('status', '') == 'done' && tail.get('end', false) == null
+        && history.get('revision', 0) == segments.size()
+        && !(history.get('partial', false) && segments.size() == 1)
+        && (segments.size() == 1 || segments[segments.size()-2].get('end', false) == tail.get('start', ''))
+        && tail.get('start', '') is string
+        && tail.get('start', '').matches('[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])')
+        ? tail.start : '';
+    }
+
+    function progressProjectVersion(data) {
+      return {'name':data.get('name', ''), 'status':data.get('status', ''),
+        'archived':data.get('progressArchived', false) == true,
+        'closedAt':data.get('progressClosedAt', null), 'recordedDay':recordedDoneDay(data)};
+    }
+
+    function singleMonthRevision(before, after, month, value) {
+      return before is map && after is map && after.diff(before).affectedKeys().hasOnly([month])
+        && after.get(month, null) == value;
+    }
+
+    function rosterRevision(before, after, baseline, version) {
+      let month = after.get('writeMonth', '');
+      return after.keys().hasOnly(['baseline','months','writeMonth']) && currentProgressMonth(month)
+        && after.get('baseline', false) == before.get('baseline', baseline)
+        && singleMonthRevision(before.get('months', {}), after.get('months', {}), month, version);
+    }
+
+    function projectRosterKeepsHistory(before, after) {
+      let oldRoster = before.get('progressRoster', {});
+      let newRoster = after.get('progressRoster', {});
+      let oldVersion = progressProjectVersion(before);
+      let newVersion = progressProjectVersion(after);
+      return (oldVersion == newVersion && oldRoster == newRoster)
+        || (newRoster is map && rosterRevision(oldRoster, newRoster, oldVersion, newVersion))
+        || (oldRoster == {} && newRoster == {} && oldVersion.status == '' && newVersion.status == ''
+          && before.get('schedule', []) == [] && before.get('progressMonths', {}) == {}
+          && oldVersion.diff(newVersion).affectedKeys().hasOnly(['name']));
+    }
+
+    function closureFollowsStatus(before, after) {
+      let previous = before.get('status', '');
+      let next = after.get('status', '');
+      let closedAt = after.get('progressClosedAt', null);
+      return previous != next && next == 'done' ? (isAdmin() && closedAt == request.time)
+        : (previous == 'done' && next != 'done' ? closedAt == null
+          : closedAt == before.get('progressClosedAt', null));
+    }
+
+    function protectedProjectFields(before, after) {
+      return !after.diff(before).affectedKeys().hasAny(['schedule','siteNote','progressCompletedOn'])
+        && closureFollowsStatus(before, after)
+        && (before.get('progressArchived', false) == after.get('progressArchived', false)
+          || (myMember().role == 'manager' && after.get('progressArchived', false) == true))
+        && projectRosterKeepsHistory(before, after);
+    }
+
+    function legacyClosureMonthCanChange(before, after) {
+      let changed = after.diff(before).affectedKeys();
+      let month = after.get('progressLegacyClosedMonth', '');
+      return !changed.hasAny(['progressLegacyClosedMonth'])
+        || (isAdmin() && before.get('status', '') == 'done' && !before.get('progressArchived', false)
+          && before.get('progressClosedAt', null) == null && recordedDoneDay(before) == ''
+          && changed.hasOnly(['progressLegacyClosedMonth']) && validProgressMonth(month)
+          && (int(month.split('-')[0]) * 12 + int(month.split('-')[1])
+            <= taipeiTime().year() * 12 + taipeiTime().month()));
     }
 
     function projectUpdateKeepsHistory() {
       let before = resource.data;
       let after = request.resource.data;
       let changed = after.diff(before).affectedKeys();
-      return !changed.hasAny(['schedule', 'siteNote'])
-        && (!changed.hasAny(['progressCompletedOn'])
-          || (before.get('status', '') != 'done' && after.get('status', '') == 'done' && todayCompletion(after)))
-        && (before.get('status', '') != 'done' || !changed.hasAny(['status', 'stageHistory']))
-        && (after.get('status', '') != 'done' || before.get('status', '') == 'done' || todayCompletion(after))
+      return (before.get('status', '') != 'done' || !changed.hasAny(['status', 'stageHistory']))
         && (!changed.hasAny(['progressMonths'])
           || onlyWritableProgressMonths(before.get('progressMonths', {}), after.get('progressMonths', {}),
             after.get('progressWriteMonths', [])));
+    }
+
+    function adminProgressMonthUpdatesStayScoped(before, after) {
+      let oldMonths = before.get('progressMonths', {});
+      let newMonths = after.get('progressMonths', {});
+      let months = after.get('progressWriteMonths', []);
+      return oldMonths == newMonths || (oldMonths is map && newMonths is map && months is list
+        && newMonths.diff(oldMonths).affectedKeys().hasOnly(months)
+        && newMonths.diff(oldMonths).removedKeys().size() == 0);
     }
 
     match /meetingLogs/{id} {
@@ -97,22 +176,69 @@ service cloud.firestore {
     }
 
     match /projects/{id} {
-      allow create: if isAdmin() || (isActiveMember()
-        && request.resource.data.get('schedule', []) == []
-        && request.resource.data.get('siteNote', '') == ''
-        && request.resource.data.get('progressMonths', {}) == {}
-        && request.resource.data.get('progressCompletedOn', null) == null
-        && request.resource.data.get('status', '') != 'done');
-      allow update: if isAdmin() || (isActiveMember() && projectUpdateKeepsHistory());
-      allow delete: if isActiveMember() && (myMember().role == 'manager'
-        || (!(resource.data.get('status', '') in ['prog', 'done'])
+      allow create: if isActiveMember()
+        && request.resource.data.get('progressArchived', false) == false
+        && !request.resource.data.keys().hasAny(['progressLegacyClosedMonth'])
+        && closureFollowsStatus({}, request.resource.data)
+        && (isAdmin() || (request.resource.data.get('schedule', []) == []
+          && request.resource.data.get('siteNote', '') == ''
+          && request.resource.data.get('progressMonths', {}) == {}
+          && request.resource.data.get('status', '') != 'done'))
+        && ((request.resource.data.get('status', '') == '' && request.resource.data.get('progressRoster', {}) == {})
+          || rosterRevision({}, request.resource.data.get('progressRoster', {}), null, progressProjectVersion(request.resource.data)));
+      allow update: if isActiveMember() && protectedProjectFields(resource.data, request.resource.data)
+        && legacyClosureMonthCanChange(resource.data, request.resource.data)
+        && (isAdmin() ? adminProgressMonthUpdatesStayScoped(resource.data, request.resource.data)
+          : projectUpdateKeepsHistory());
+      allow delete: if isActiveMember() && resource.data.get('progressRoster', {}) == {}
+        && (!(resource.data.get('status', '') in ['prog', 'done'])
           && resource.data.get('schedule', []) == []
           && resource.data.get('siteNote', '') == ''
-          && resource.data.get('progressMonths', {}) == {}));
+          && resource.data.get('progressMonths', {}) == {});
+    }
+
+    function progressOrderKeepsHistory(before, after) {
+      let oldOrder = before.get('order', []);
+      let order = after.get('order', []);
+      let oldHistory = before.get('progressDesignOrders', {});
+      let history = after.get('progressDesignOrders', {});
+      let oldWork = before.get('workOrderMonths', {});
+      let work = after.get('workOrderMonths', {});
+      let month = after.get('workOrderWriteMonth', '');
+      return ((oldOrder == order && oldHistory == history)
+          || (order is list && rosterRevision(oldHistory, history, oldOrder, order)))
+        && ((oldWork == work && before.get('workOrderWriteMonth', '') == month)
+          || (isAdmin() && validProgressMonth(month) && work.get(month, null) is list
+            && singleMonthRevision(oldWork, work, month, work.get(month, null))));
     }
 
     match /settings/{id} {
-      allow write: if id == 'dateColors' ? isAdmin() : isActiveMember();
+      allow create, update: if id == 'dateColors' ? isAdmin() : (isActiveMember()
+        && (id != 'designProjectOrder' || progressOrderKeepsHistory(resource == null ? {} : resource.data, request.resource.data)));
+      allow delete: if id == 'dateColors' ? isAdmin() : (isActiveMember() && id != 'designProjectOrder');
+    }
+
+    function checkMonthsStayIndependent(before, after) {
+      let oldItems = before.get('items', []);
+      let items = after.get('items', []);
+      let oldHistory = before.get('progressCheckHistory', {});
+      let history = after.get('progressCheckHistory', {});
+      let oldEdits = before.get('progressCheckEdits', {});
+      let edits = after.get('progressCheckEdits', {});
+      let month = after.get('progressCheckWriteMonth', '');
+      return ((oldItems == items && oldHistory == history)
+          || (items is list && rosterRevision(oldHistory, history, oldItems, items)))
+        && ((oldEdits == edits && before.get('progressCheckWriteMonth', '') == month)
+          || (isAdmin() && validProgressMonth(month) && !writableProgressMonth(month)
+            && edits.get(month, null) is list && singleMonthRevision(oldEdits, edits, month, edits.get(month, null))));
+    }
+
+    match /checks/{id} {
+      allow create, update: if isActiveMember()
+        && checkMonthsStayIndependent(resource == null ? {} : resource.data, request.resource.data);
+      allow delete: if isActiveMember() && resource.data.get('items', []) == []
+        && resource.data.get('progressCheckHistory', {}) == {}
+        && resource.data.get('progressCheckEdits', {}) == {};
     }
 
     match /members/{uid} {
@@ -140,12 +266,12 @@ service cloud.firestore {
     // Keep legacy access except for AI paths and the role-bearing member documents.
     match /{collection}/{document=**} {
       allow read: if isAiCollection(collection) ? isAdmin() : isActiveMember();
-      allow write: if !(collection in ['members', 'projects', 'meetingLogs', 'settings'])
+      allow write: if !(collection in ['members', 'projects', 'meetingLogs', 'settings', 'checks'])
         && (isAiCollection(collection) ? isAdmin() : isActiveMember());
     }
 
     match /{collection}/{id}/{subcollection}/{document=**} {
-      allow write: if collection in ['projects', 'meetingLogs', 'settings'] && isActiveMember();
+      allow write: if collection in ['projects', 'meetingLogs', 'settings', 'checks'] && isActiveMember();
     }
   }
 }

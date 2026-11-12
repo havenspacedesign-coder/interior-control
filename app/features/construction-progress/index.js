@@ -6,7 +6,7 @@ const MOBILE_PROGRESS_DAY_WIDTH=180;
 function mobileProgressTimelineWidth(days){return MOBILE_PROGRESS_LABEL_WIDTH+days.length*MOBILE_PROGRESS_DAY_WIDTH;}
 function renderMobileProgressDateHeader(days){
   const WD=['日','一','二','三','四','五','六'];
-  const td=today();
+  const td=progressCalendarToday();
   const timelineWidth=mobileProgressTimelineWidth(days);
   return`<div class="mobile-progress-date-sticky" id="mobile-progress-date-sticky"><div class="mobile-progress-date-track" id="mobile-progress-date-track" style="width:${timelineWidth}px"><div class="mobile-progress-date-spacer"></div>${days.map(function(d){
     const ds=fmtDay(d),dow=d.getDay(),dc=S.dateColors[ds]||{},color=dc.color||(dow===0||dow===6?'var(--red)':'');
@@ -31,7 +31,6 @@ function renderProgress(force){
   const el=$('panel-progress');
   const weekDays=getWeekDates();
   const viewMonth=fmtDay(weekDays[0]).slice(0,7);
-  const shouldShow=project=>progressProjectVisible(project,viewMonth);
   const meeting=meetingSelectedCell();
   if(meeting&&(!progressCanEditDate(meeting.ds)||meeting.ds.slice(0,7)!==viewMonth)){
     meetingSelected={};meetingEditing=null;meetingPendingSelection=null;
@@ -69,7 +68,7 @@ function renderProgress(force){
   </div>
   ${calMode==='todo'?renderTodoPanel():calMode==='notes'?renderGlobalNotesPanel(viewMonth,false):`
   ${getBibleStages().length===0?`<div class="empty" style="margin-bottom:1rem">請先至「施工寶典」新增工程階段</div>`:''}
-  ${calMode==='month'?renderMobileProgressDateHeader(weekDays)+`<div class="progress-horizontal-viewport hide-hscrollbar" id="progress-horizontal-viewport" style="--progress-timeline-width:${mobileProgressTimelineWidth(weekDays)}px">${renderWeekView(shouldShow,viewMonth)}${renderDailyLogSection(weekDays)}${renderPrivateTodoSection()}</div>`:renderDayView()}
+  ${calMode==='month'?renderMobileProgressDateHeader(weekDays)+`<div class="progress-horizontal-viewport hide-hscrollbar" id="progress-horizontal-viewport" style="--progress-timeline-width:${mobileProgressTimelineWidth(weekDays)}px">${renderWeekView(viewMonth)}${renderDailyLogSection(weekDays)}${renderPrivateTodoSection()}</div>`:renderDayView()}
   ${calMode==='month'?'':renderPrivateTodoSection()}
   <div style="height:500px"></div>
   `}
@@ -147,11 +146,11 @@ window.saveGlobalNote=async function(viewMonth,text){
   setSynced();
 }
 
-function renderWeekView(shouldShow,viewMonth){
+function renderWeekView(viewMonth){
   const readOnly=!progressCanEditDate(viewMonth);
-  const days=getWeekDates();const td=today();
+  const days=getWeekDates();const td=progressCalendarToday();
   const WD=['日','一','二','三','四','五','六'];
-  const projs=sortDesignProjs(S.projects.filter(shouldShow));
+  const projs=progressMonthProjects(viewMonth);
   const hint=selectedTag?`<div style="background:var(--pl);color:var(--pd);padding:6px 10px;border-radius:var(--r);margin-bottom:8px;font-size:12px">已選取色塊 — Ctrl+點格子複製，點空白取消</div>`:'';
 
   function renderCell(p,pi,d){
@@ -161,7 +160,7 @@ function renderWeekView(shouldShow,viewMonth){
     return`<td class="ev-cell ${isT?'tc':''}" style="min-height:88px" ${readOnly?'':`onclick="handleCellBg(event,'${p.id}','${ds}')" ondragover="event.preventDefault()" ondrop="evDrop(event,'${p.id}','${ds}')"`}>
       ${allEvs.map((ev,ei)=>{
         const resolvedStage=resolveBibleStage(ev.stage,ev.label);
-        const pn=pendingCount(p.id,resolvedStage);
+        const pn=pendingCount(p.id,resolvedStage,viewMonth);
         const isSel=selectedTag&&selectedTag.projId===p.id&&selectedTag.ds===ds&&selectedTag.ei===ei;
         return`<div class="ev-row">
           <span class="ev-chip${isSel?' sel':''}" style="background:${ev.bg||sc(pi)};color:${ev.completed?'#E24B4A':(ev.color||tc(pi))};${ev.strike?'text-decoration:line-through;':''}"
@@ -314,9 +313,9 @@ function renderWeekView(shouldShow,viewMonth){
   ${projs.length?`<div class="wtbl-wrap hscroll-sync hide-hscrollbar"><table class="wtbl" style="width:${200+days.length*180}px"><colgroup><col style="width:200px">${days.map(()=>'<col style="width:180px">').join('')}</colgroup><tbody>
   <tr><td colspan="${days.length+1}" style="padding:8px 10px;background:var(--bg);font-size:12px;font-weight:600;border-top:3px solid #1a1a1a"><div style="position:sticky;left:8px;display:inline-flex;align-items:center;gap:7px">🏗 工地進度<span class="help-wrap"><button class="help-btn" type="button" aria-label="工地進度操作說明" onclick="toggleHelpPop(event,'work-progress-help')">?</button><span class="help-pop" id="work-progress-help" onclick="event.stopPropagation()"><ul><li>單擊色塊可開啟 checklist。</li><li>按住 Ctrl 再單擊可複製。</li><li>雙擊白色欄位可編輯。</li><li>直接拖拉可搬移項目。</li><li>按住 Ctrl 拖拉可複製項目。</li></ul></span></span></div></td></tr>
   ${projs.map((p,pi)=>`
-    <tr ${currentRole==='manager'?`draggable="true" ondragstart="workProjectDragStart(event,'${p.id}')" ondragover="workProjectDragOver(event)" ondrop="workProjectDragDrop(event,'${p.id}')"`:''}>
-      <td class="site-hd" style="color:${tc(pi)};cursor:${currentRole==='manager'?'grab':'pointer'}" onclick="showProjectDetail('${p.id}')" title="${currentRole==='manager'?'拖曳可調整工地順序':'點擊查看案件詳細資料'}">${currentRole==='manager'?'<span style="color:var(--text3);margin-right:6px">⠿</span>':''}
-        ${p.name}${p.status==='done'?'<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">完工</span>':''}
+    <tr ${isAdmin()?`draggable="true" ondragstart="workProjectDragStart(event,'${p.id}')" ondragover="workProjectDragOver(event)" ondrop="workProjectDragDrop(event,'${p.id}','${viewMonth}')"`:''}>
+      <td class="site-hd" style="color:${tc(pi)};cursor:${isAdmin()?'grab':'pointer'}" ${p.progressArchived?'':`onclick="showProjectDetail('${p.id}')"`} title="${isAdmin()?'拖曳可調整工地順序':'點擊查看案件詳細資料'}">${isAdmin()?'<span style="color:var(--text3);margin-right:6px">⠿</span>':''}
+        ${escAttr(p.name)}${p.status==='done'?'<br><span style="font-size:10px;color:var(--gd);background:var(--gl);padding:1px 5px;border-radius:8px">完工</span>':''}
         <textarea onclick="event.stopPropagation()" ${readOnly?'readonly':`onblur="saveProgressSiteNote('${p.id}','${viewMonth}',this.value)"`} placeholder="共用備註…" style="width:100%;box-sizing:border-box;margin-top:5px;font-size:11px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;resize:vertical;min-height:44px;cursor:text;color:var(--text)">${escAttr(progressMonthNote(p,viewMonth))}</textarea>
       </td>
       ${days.map(d=>renderCell(p,pi,d)).join('')}

@@ -343,8 +343,9 @@ window.delBibleNodeAtPath=async function(stage,phase,pathStr){
   const snap=await getDocs(collection(db,'checks'));
   const batch=writeBatch(db);
   snap.docs.filter(d=>d.id.endsWith('_'+stage)).forEach(d=>{
-    const arr2=d.data().items||[];arr2.splice(absIdx,removedCount);
-    batch.set(doc(db,'checks',d.id),{items:arr2});
+    const record=d.data(),arr2=[...(record.items||[])];
+    arr2.splice(absIdx,removedCount);
+    batch.set(doc(db,'checks',d.id),progressSharedCheckPatch(record,arr2),{merge:true});
   });
   await batch.commit();setSynced();
 }
@@ -478,18 +479,17 @@ window.saveBibleStageTitle=async function(oldName,newName){
     // frozen snapshot on completed projects.
     const snap=await getDocs(collection(db,'checks'));
     const batch=writeBatch(db);
-    snap.docs.filter(d=>d.id.endsWith('_'+oldName)).forEach(d=>{
+    snap.docs.filter(d=>d.id.endsWith('_'+oldName)&&d.data().items?.length).forEach(d=>{
       const projId=d.id.slice(0,d.id.length-('_'+oldName).length);
-      batch.set(doc(db,'checks',projId+'_'+newName),d.data());
-      batch.delete(doc(db,'checks',d.id));
+      const id=projId+'_'+newName,record=d.data();
+      const destination=snap.docs.find(item=>item.id===id)?.data()||{};
+      batch.set(doc(db,'checks',id),progressSharedCheckPatch(destination,record.items),{merge:true});
+      batch.set(doc(db,'checks',d.id),progressSharedCheckPatch(record,[]),{merge:true});
     });
     await batch.commit();
     for(const p of S.projects){
-      const sched=progressAllSchedule(p);
       const patch={};
-      if(sched.some(e=>e.stage===oldName)){
-        patch.schedule=sched.map(e=>e.stage===oldName?{...e,stage:newName,label:e.label===oldName?newName:e.label}:e);
-      }
+      await relinkUpcomingProgress(p,oldName,entry=>({...entry,stage:newName,label:entry.label===oldName?newName:entry.label}));
       if(p.bibleSnapshot&&p.bibleSnapshot[oldName]){
         const snap2=Object.assign({},p.bibleSnapshot);
         snap2[newName]=snap2[oldName];
@@ -533,20 +533,15 @@ window.deleteStage=async function(stage){
     await setDoc(doc(db,'bible','orderConfig'),{order});
     const snap=await getDocs(collection(db,'checks'));
     const batch=writeBatch(db);
-    snap.docs.filter(d=>d.id.endsWith('_'+stage)).forEach(d=>batch.delete(doc(db,'checks',d.id)));
+    snap.docs.filter(d=>d.id.endsWith('_'+stage)&&d.data().items?.length).forEach(d=>{
+      batch.set(doc(db,'checks',d.id),progressSharedCheckPatch(d.data(),[]),{merge:true});
+    });
     await batch.commit();
     if(relinkTarget){
       const sourceLabel=displayStageName(stage),targetLabel=displayStageName(relinkTarget);
       for(const p of S.projects){
-        const relink=entries=>entries.map(e=>e.stage!==stage?e:{...e,stage:relinkTarget,label:displayStageName(e.label||e.stage)===sourceLabel?targetLabel:e.label});
-        const schedule=p.schedule||[];
-        if(schedule.some(e=>e.stage===stage))await updateDoc(doc(db,'projects',p.id),{schedule:relink(schedule)});
-        const changes=Object.entries(p.progressMonths||{}).flatMap(([month,data])=>{
-          if(!Array.isArray(data?.schedule))return [];
-          const before=progressMonthSchedule(p,month);
-          return before.some(e=>e.stage===stage)?[{projectId:p.id,month,field:'schedule',before,after:relink(before)}]:[];
-        });
-        if(changes.length)await writeProgressMonths(changes);
+        await relinkUpcomingProgress(p,stage,entry=>({...entry,stage:relinkTarget,
+          label:displayStageName(entry.label||entry.stage)===sourceLabel?targetLabel:entry.label}));
       }
     }
     activeBibleStage=null;setSynced();

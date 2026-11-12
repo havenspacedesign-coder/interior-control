@@ -352,10 +352,8 @@ window.designRowDrop=async function(e,toProjId){
   const fi=allIds.indexOf(designRowDragSrc),ti=allIds.indexOf(toProjId);
   if(fi<0||ti<0)return;
   allIds.splice(fi,1);allIds.splice(ti,0,designRowDragSrc);
-  designProjectOrder=allIds;
-  renderDesign();
   setSyncing();
-  try{await setDoc(doc(db,'settings','designProjectOrder'),{order:allIds});setSynced();}
+  try{await writeProgressOrder(allIds);setSynced();}
   catch(err){alert('順序存檔失敗：'+err.message);setSynced();}
 }
 window.designRowDragEnd=function(){

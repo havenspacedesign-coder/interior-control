@@ -39,9 +39,12 @@ function renderOverview(){
     </div>
     ${shown.length===0?`<div class="empty">尚無案件</div>`:`
     <div style="overflow-x:auto"><table>
-      <thead><tr>${isAdmin()&&overviewEditMode?'<th style="width:34px"></th>':''}<th>案件名稱</th><th>狀態</th><th style="text-align:center;white-space:nowrap">階段天數</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>合約完工日</th>${canEditShown&&overviewEditMode?'<th>操作</th>':''}</tr></thead>
+      <thead><tr>${isAdmin()&&overviewEditMode?'<th style="width:34px"></th>':''}<th>案件名稱</th><th>狀態</th><th style="text-align:center;white-space:nowrap">階段天數</th><th>業主姓名</th><th>類型</th><th>設計師</th><th>預算</th><th>合約完工日</th>${overviewCompletedMode?'<th>設定已完工日</th>':''}${canEditShown&&overviewEditMode?'<th>操作</th>':''}</tr></thead>
       <tbody>${shown.map(p=>{
         const si=statusInfo(p.status);
+        const closedOn=overviewCompletedMode?progressClosureLabel(p):'';
+        const backfill=overviewCompletedMode&&progressCanBackfillClosure(p)
+          ? ` <button class="btn btn-sm" type="button" onclick="showProgressClosureBackfill('${p.id}')">${closedOn?'更正月份':'補登月份'}</button>` : '';
         return`<tr ${isAdmin()&&overviewEditMode?`draggable="true" ondragstart="overviewRowDragStart(event,'${p.id}')" ondragover="overviewRowDragOver(event)" ondrop="overviewRowDrop(event,'${p.id}')"`:''}>${isAdmin()&&overviewEditMode?'<td style="text-align:center;cursor:grab;color:var(--text3)">⠿</td>':''}
           <td><strong style="font-weight:500;cursor:pointer;color:var(--purple)" onclick="${p.status==='done'?`showSiteReport('${p.id}')`:`showProjectDetail('${p.id}')`}">${p.name}</strong>${p.status==='done'?' <span style="font-size:10px;color:var(--text3)">(查看總報告表)</span>':''}</td>
           <td>${isAdmin()&&(p.status!=='done'||currentRole==='manager')?`<select class="status-sel" style="background:${si.bg};color:${si.color}" onchange="handleStatusChange('${p.id}',this)">
@@ -50,6 +53,7 @@ function renderOverview(){
           ${projectStageCell(p)}<td>${p.owner||''}</td><td style="color:var(--text2)">${p.type||''}</td>
           <td>${p.designer||''}</td><td>${p.budget||''}</td>
           <td style="color:var(--text2)">${p.contractEnd||p.finish||''}</td>
+          ${overviewCompletedMode?`<td style="white-space:nowrap">${escAttr(closedOn)||'未留結案紀錄'}${backfill}</td>`:''}
           ${canEditShown&&overviewEditMode?`<td>${p.status!=='done'||currentRole==='manager'?`<button class="btn btn-sm" onclick="showEditProject('${p.id}')">編輯</button>${canDeleteProjects()?` <button class="btn btn-sm" onclick="deleteProject('${p.id}')">刪除</button>`:''}`:''}</td>`:''}
         </tr>`;}).join('')}</tbody>
     </table></div>`}
@@ -58,36 +62,45 @@ function renderOverview(){
 window.setOverviewFilter=function(v){overviewCompletedMode=false;overviewStatusFilter=overviewStatusFilter===v?null:v;renderOverview();}
 window.toggleOverviewCompletedMode=function(){overviewCompletedMode=!overviewCompletedMode;overviewStatusFilter=null;overviewEditMode=false;renderOverview();}
 window.toggleOverviewEditMode=function(){if(!canEditProjects())return;overviewEditMode=!overviewEditMode;renderOverview();}
+window.showProgressClosureBackfill=function(id){
+  const project=S.projects.find(p=>p.id===id);
+  if(!progressCanBackfillClosure(project))return;
+  const content=$('mo-content');
+  content.innerHTML=`<div class="mo-title">補登設定已完工月份</div>
+    <p><strong>${escAttr(project.name)}</strong></p>
+    <p>請填當初在案件總覽確認「已完工」的月份。所填月份及以前的工地進度保留，下一個月起隱藏。</p>
+    <form id="progress-closure-backfill">
+      <label for="progress-closure-month">設定已完工月份</label>
+      <input type="month" id="progress-closure-month" required max="${projectStageToday().slice(0,7)}" value="${escAttr(project.progressLegacyClosedMonth||'')}">
+      <div class="mo-footer"><button class="btn" type="button" onclick="closeMo()">取消</button><button class="btn btn-p" type="submit">確認儲存</button></div>
+    </form>`;
+  $('modal').style.display='flex';
+  const form=$('progress-closure-backfill');
+  form.onsubmit=async event=>{
+    event.preventDefault();
+    const button=form.querySelector('[type=submit]');
+    button.disabled=true;
+    try{
+      await writeProgressLegacyClosedMonth(project,$('progress-closure-month').value);
+      closeMo();
+      renderOverview();
+    }catch(error){alert(error.message);}
+    finally{button.disabled=false;}
+  };
+};
 let overviewRowDragSrc=null;
 window.overviewRowDragStart=function(e,id){if(!isAdmin())return e.preventDefault();overviewRowDragSrc=id;e.dataTransfer.effectAllowed='move';}
 window.overviewRowDragOver=function(e){if(isAdmin()&&overviewRowDragSrc)e.preventDefault();}
-window.overviewRowDrop=async function(e,targetId){e.preventDefault();if(!isAdmin()||!overviewRowDragSrc||overviewRowDragSrc===targetId)return;const ids=sortDesignProjs(S.projects).map(p=>p.id),from=ids.indexOf(overviewRowDragSrc),to=ids.indexOf(targetId);if(from<0||to<0)return;ids.splice(from,1);ids.splice(to,0,overviewRowDragSrc);designProjectOrder=ids;overviewRowDragSrc=null;renderOverview();await setDoc(doc(db,'settings','designProjectOrder'),{order:ids});}
-let workProjectDragSrc=null;
-window.workProjectDragStart=function(e,id){if(currentRole!=='manager')return e.preventDefault();workProjectDragSrc=id;e.dataTransfer.effectAllowed='move';}
-window.workProjectDragOver=function(e){if(currentRole==='manager'&&workProjectDragSrc)e.preventDefault();}
-window.workProjectDragDrop=async function(e,targetId){e.preventDefault();if(currentRole!=='manager'||!workProjectDragSrc||workProjectDragSrc===targetId)return;const ids=sortDesignProjs(S.projects).map(p=>p.id),from=ids.indexOf(workProjectDragSrc),to=ids.indexOf(targetId);if(from<0||to<0)return;ids.splice(from,1);ids.splice(to,0,workProjectDragSrc);designProjectOrder=ids;workProjectDragSrc=null;renderProgress();await setDoc(doc(db,'settings','designProjectOrder'),{order:ids});}
+window.overviewRowDrop=async function(e,targetId){e.preventDefault();if(!isAdmin()||!overviewRowDragSrc||overviewRowDragSrc===targetId)return;const ids=sortDesignProjs(S.projects).map(p=>p.id),from=ids.indexOf(overviewRowDragSrc),to=ids.indexOf(targetId);if(from<0||to<0)return;ids.splice(from,1);ids.splice(to,0,overviewRowDragSrc);overviewRowDragSrc=null;try{await writeProgressOrder(ids);}catch(error){alert(error.message);}}
 window.showSiteReport=function(id){overviewReportProjId=id;renderOverview();}
 window.closeSiteReport=function(){overviewReportProjId=null;renderOverview();}
-window.saveOverviewCompletionDate=async function(event){
-  event.preventDefault();
-  const project=S.projects.find(item=>item.id===overviewReportProjId);
-  if(activePanel!=='overview'||!isAdmin()||project?.status!=='done')return;
-  const date=new FormData(event.currentTarget).get('completionDate');
-  if(!progressValidDate(date)||date>projectStageToday())return alert('請輸入今天或更早的實際完工日期。');
-  try{
-    setSyncing();
-    await writeProjectStageChange(project,{progressCompletedOn:date},null);
-    if(activePanel==='overview'&&overviewReportProjId===project.id)renderOverview();
-  }catch(error){alert(error.message);}
-  finally{setSynced();}
-};
 function renderSiteReport(projId){
   const p=S.projects.find(x=>x.id===projId);
   if(!p)return`<div class="empty">找不到這個案件</div><button class="btn" onclick="closeSiteReport()">← 返回</button>`;
   const stages=getBibleStages();
   const schedule=progressAllSchedule(p).sort((a,b)=>(a.date<b.date?-1:a.date>b.date?1:0));
-  const meetingEntries=getMeetingEntriesForProject(p.name);
-  const completedOn=progressCompletedOn(p);
+  const meetingEntries=getMeetingEntriesForProject(p);
+  const closedOn=progressClosureLabel(p);
   return`
   <button class="btn btn-sm" onclick="closeSiteReport()">← 返回案件總覽</button>
   <div class="card" style="margin-top:12px">
@@ -96,16 +109,8 @@ function renderSiteReport(projId){
       業主姓名：${p.owner||'—'}　類型：${p.type||'—'}　設計師：${p.designer||'—'}<br>
       預算：${p.budget||'—'}　合約完工日：${p.contractEnd||p.finish||'—'}　初驗日：${p.initialInspectionDate||'—'}<br>
       完工類型：${p.completionTypes&&p.completionTypes.length?p.completionTypes.join('、'):'—'}
-        ${p.status==='done'?`<br>實際完工日：${completedOn||'待補'}`:''}
+      ${p.status==='done'?`<br>設定已完工日：${closedOn||'未留結案紀錄'}`:''}
     </div>
-      ${p.status==='done'&&isAdmin()?`<details style="margin-top:8px">
-        <summary style="cursor:pointer;color:var(--purple)">更改完工日期</summary>
-        <form style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px" onsubmit="saveOverviewCompletionDate(event)">
-          <label for="overview-completion-date">實際完工日</label>
-          <input id="overview-completion-date" name="completionDate" type="date" value="${completedOn}" max="${projectStageToday()}" required>
-          <button type="submit" class="btn btn-sm btn-p">儲存完工日期</button>
-        </form>
-      </details>`:''}
   </div>
   <div class="card">
     <div class="card-hdr"><span class="card-title">📖 施工寶典勾選結果</span></div>
@@ -147,15 +152,16 @@ function renderSiteReport(projId){
     </div>`).join(''):'<div class="empty">沒有標記這個工地的會議/其他事項紀錄</div>'}
   </div>`;
 }
-function getMeetingEntriesForProject(projName){
+function getMeetingEntriesForProject(project){
   const out=[];
   Object.keys(S.meetingLogs||{}).forEach(key=>{
     const log=S.meetingLogs[key];
     if(!log||!log.items)return;
+    const historicalName=log.date&&progressRosterAt(project,log.date.slice(0,7))?.name;
     const rowInfo=MEETING_ROWS.find(r=>r.id===log.rowId);
     (log.items||[]).forEach(item=>{
       const m=(item.text||'').match(/\[proj:([^\]]+)\]/);
-      if(m&&m[1]===projName){
+      if(m&&(m[1]===project.name||m[1]===historicalName)){
         out.push({date:log.date,rowLabel:rowInfo?rowInfo.name:(log.rowId||''),text:(item.text||'').replace(/\[proj:[^\]]+\]/g,'').trim()});
       }
     });
@@ -166,6 +172,7 @@ function getMeetingEntriesForProject(projName){
 window.updateStatus=async function(projId,v,completionTypes,inspDate){
   const existing=S.projects.find(p=>p.id===projId);
   if(!existing||existing.status===v||projectStageBusy.has(projId))return;
+  if(v==='done'&&!isAdmin())return;
   if(existing?.status==='done'&&currentRole!=='manager')return alert('已完工案件僅限管理員變更狀態。');
   projectStageBusy.add(projId);
   try{
@@ -348,9 +355,4 @@ window.confirmStatusDone=function(projId){
   }
   closeMo();
   updateStatus(projId,'done',selected,inspDate);
-}
-window.saveSiteNote=async function(projId,val){
-  setSyncing();
-  await updateDoc(doc(db,'projects',projId),{siteNote:val});
-  setSynced();
 }

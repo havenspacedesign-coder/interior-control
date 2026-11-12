@@ -5,13 +5,15 @@ const path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const shared=fs.readFileSync(path.join(root,'app/shared/projects.js'),'utf8');
 const overview=fs.readFileSync(path.join(root,'app/features/project-overview/index.js'),'utf8');
+const progress=fs.readFileSync(path.join(root,'app/shared/project-progress.js'),'utf8');
 const context={console,Intl,Date,setInterval:()=>0,document:{addEventListener:()=>{}},window:null,
   activePanel:'overview',localTestMode:true,currentRole:'manager',S:{projects:[]},
   statusInfo:key=>({l:{contact:'接洽中',cv:'客變案',design:'設計中',prog:'施工中',done:'已完工'}[key]}),
   escAttr:String,alert:()=>{},setSyncing:()=>{},setSynced:()=>{},closeMo:()=>{},
-  getBibleStages:()=>[],db:{},doc:(_db,collection,id)=>({collection,id})};
+  getBibleStages:()=>[],isAdmin:()=>true,serverTimestamp:()=>new Date().toISOString(),db:{},doc:(_db,collection,id)=>({collection,id})};
 context.window=context;vm.createContext(context);
 vm.runInContext(shared.slice(0,shared.indexOf('function ymdInputs')),context);
+vm.runInContext(progress,context);
 vm.runInContext(overview,context);
 const call=(name,...args)=>{context.args=args;return vm.runInContext(`${name}(...args)`,context);};
 const plain=value=>JSON.parse(JSON.stringify(value));
@@ -122,7 +124,7 @@ async function main(){
   vm.runInContext(shared.slice(shared.indexOf('window.saveProjectForm='),shared.indexOf('window.deleteProject=')),context);
   context.isAdmin=()=>true;context.canEditProjects=()=>true;context.ymdValue=()=>'';context.serverTimestamp=()=> 'server-time';context.collection=(_db,name)=>name;
   const fields={'np-name':'New stage test','np-status':'contact','np-type-kind':'新成屋','np-type-building':'公寓'};
-  context.$=id=>({value:fields[id]||'',checked:false});context.sortDesignProjs=()=>[];context.setDoc=async()=>{};
+  context.$=id=>({value:fields[id]||'',checked:false});context.sortDesignProjs=()=>[];context.writeProgressOrder=async()=>{};
   let created;context.addDoc=async(collection,data)=>{assert.equal(collection,'projects');created=data;return{id:'new'};};
   await context.saveProjectForm(null);assert.equal(created.stageHistory.segments[0].status,'contact');assert.equal(call('projectStageTotals',created.stageHistory).contact,1);
   // Form cancellation must keep its draft open and must not write any fields.

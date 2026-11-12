@@ -173,14 +173,16 @@ async function writeProjectStageChange(project,patch,history){
   const ref=doc(db,'projects',project.id),expected=JSON.stringify(project.stageHistory||null);
   const check=fresh=>{
     if(!fresh||fresh.status!==project.status||JSON.stringify(fresh.stageHistory||null)!==expected)throw new Error('此案件狀態或階段紀錄已被更新，請重新整理後再試');
-    if(Object.hasOwn(patch,'progressCompletedOn')&&(fresh.progressCompletedOn||null)!==(project.progressCompletedOn||null))throw new Error('完工日期已被更新，請重新整理後再試。');
+    if(Object.hasOwn(patch,'name')&&fresh.name!==project.name)throw new Error('案件名稱已被更新，請重新整理後再試。');
   };
   const data={...patch,...(history?{stageHistory:history}:{})};
-  if(patch.status&&patch.status!==project.status&&[patch.status,project.status].includes('done')){
-    data.progressCompletedOn=patch.status==='done'?projectStageToday():null;
-  }
-  if(localTestMode){const snapshot=await getDoc(ref);check(snapshot.exists()?snapshot.data():null);await updateDoc(ref,data);}
-  else await fbRunTransaction(db,async transaction=>{const snapshot=await transaction.get(ref);check(snapshot.exists()?snapshot.data():null);transaction.update(ref,data);});
+  const prepare=snapshot=>{
+    const fresh=snapshot.exists()?snapshot.data():null;
+    check(fresh);
+    return progressProjectWrite(fresh,data);
+  };
+  if(localTestMode)await updateDoc(ref,prepare(await getDoc(ref)));
+  else await fbRunTransaction(db,async transaction=>transaction.update(ref,prepare(await transaction.get(ref))));
 }
 let projectStageRenderedDay=projectStageToday();
 function refreshProjectStageDay(){const day=projectStageToday();if(day!==projectStageRenderedDay){projectStageRenderedDay=day;if(activePanel==='overview'&&typeof renderOverview==='function')renderOverview();}}
@@ -272,7 +274,7 @@ function showProjectForm(projId,draft=null){
       <textarea id="np-process" placeholder="廠商施工流程…" rows="10" oninput="autoGrow(this)" style="font-family:inherit;padding:8px;border:1px solid var(--border);border-radius:var(--r);overflow-y:auto;resize:none;min-height:190px;max-height:340px">${escAttr(p?.process||'')}</textarea>
       ${photoEditor}
       <select id="np-status">
-        ${STATUS_OPTS.map(o=>`<option value="${o.v}" ${p?.status===o.v?'selected':''}>${o.l}</option>`).join('')}
+        ${STATUS_OPTS.filter(o=>o.v!=='done'||p?.status==='done').map(o=>`<option value="${o.v}" ${p?.status===o.v?'selected':''}>${o.l}</option>`).join('')}
       </select>
     </div>
     <div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button id="np-save-btn" class="btn btn-p" onclick="saveProjectForm(${p?`'${p.id}'`:'null'})" ${p?'':'disabled'}>${p?'儲存':'新增'}</button></div>`;
@@ -319,15 +321,16 @@ window.saveProjectForm=async function(projId){
   projectStageBusy.add(projId);
   try{
   const existing=projId?S.projects.find(p=>p.id===projId):null;
+  if(data.status==='done'&&existing?.status!=='done')return alert('請在案件總覽的狀態選單確認結案。');
   const history=existing&&existing.status!==data.status?await prepareProjectStageChange(existing,data.status):null;
   if(history===false)return;
   setSyncing();
   if(projId){
     await writeProjectStageChange(existing,data,history);
   }else{
-    const created=await addDoc(collection(db,'projects'),Object.assign({},data,{schedule:[],designProgress:{},createdAt:serverTimestamp(),stageHistory:projectStageInitial(data.status),...(data.status==='done'?{progressCompletedOn:projectStageToday()}:{})}));
-    const order=[created.id,...sortDesignProjs(S.projects).map(p=>p.id).filter(id=>id!==created.id)];designProjectOrder=order;
-    await setDoc(doc(db,'settings','designProjectOrder'),{order});
+    const created=await addDoc(collection(db,'projects'),progressProjectWrite(null,{...data,schedule:[],designProgress:{},createdAt:serverTimestamp(),stageHistory:projectStageInitial(data.status)}));
+    const order=[created.id,...sortDesignProjs(S.projects).map(p=>p.id).filter(id=>id!==created.id)];
+    await writeProgressOrder(order);
   }
   closeMo();setSynced();
   }catch(error){console.error('project form save failed',error);alert('案件未儲存：'+error.message);}
@@ -335,7 +338,10 @@ window.saveProjectForm=async function(projId){
 }
 window.deleteProject=async function(id){
   if(!canDeleteProjects())return;if(!confirm('確定刪除？'))return;
-  await deleteDoc(doc(db,'projects',id));
+  const project=S.projects.find(item=>item.id===id);
+  if(!project)return;
+  try{await writeProjectStageChange(project,{progressArchived:true},null);}
+  catch(error){alert(error.message);}
 }
 function projectTradeSummary(projectId){
   const saved=S.projectTradeSelections[projectId]||{};
