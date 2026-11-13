@@ -38,6 +38,16 @@ window.progressTestFixture = {
     S.meetingLogs['meet1_2026-11-02'].items.push({text:'[proj:月份驗收案件] 十一月報告會議',mentions:[]});
     renderActive(); saveLocalPreviewState();
   },
+  seedSecondScheduleProject(){
+    S.projects.push({id:'qa-site-two',name:'第二個驗收案件',status:'prog',schedule:[]});
+    renderActive();saveLocalPreviewState();
+  },
+  receiveScheduleNote(date,note){
+    const project=S.projects.find(item=>item.id==='qa-site'),month=date.slice(0,7);
+    const schedule=progressMonthSchedule(project,month).map(item=>item.date===date?{...item,note}:item);
+    project.progressMonths={...project.progressMonths,[month]:{...project.progressMonths?.[month],schedule}};
+    renderProgress();
+  },
   seedDesignClosures(){
     const designProgress=Object.fromEntries(getDesignCols().filter(col=>col.collapsible).map(col=>[col.key||col.name,'已填']));
     S.projects=['未簽約驗收案','設計終止驗收案','設計完成驗收案','工程完成驗收案'].map((name,index)=>({
@@ -172,6 +182,41 @@ async function openChecklist(page, date) {
 }
 async function closeModal(page) {
   await page.locator('#mo-content').getByRole('button', { name: '關閉', exact: true }).click();
+}
+
+async function scheduleSave(browser){
+  const {page,context,errors}=await open(browser,'manager');
+  try{
+    await page.evaluate(()=>window.progressTestFixture.seedSecondScheduleProject());
+    const another=page.locator('#panel-progress tr').filter({has:page.locator('td.site-hd',{hasText:'第二個驗收案件'})});
+    const anotherCell=another.locator('.ev-cell').nth(Number(dates.november.slice(-2))-1);
+    const add=async cell=>{
+      await cell.locator('.add-ev-btn').click();
+      await cell.locator('.stage-search-item').filter({hasText:stage}).click();
+      await visible(cell.locator('.ev-chip'));
+    };
+    await add(work(page,dates.novemberNext));
+    await add(anotherCell);
+    await editSchedule(page,dates.novemberNext,'新增後修改的施工備註');
+    await page.reload();
+    await goToProgress(page);
+    await visible(work(page,dates.novemberNext).getByText('新增後修改的施工備註',{exact:true}));
+    await visible(anotherCell.locator('.ev-chip'));
+
+    const field=work(page,dates.novemberNext).locator('.ev-field');
+    await field.dblclick();
+    await field.fill('舊畫面的編輯');
+    await page.evaluate(date=>window.progressTestFixture.receiveScheduleNote(date,'另一帳號較新的編輯'),dates.novemberNext);
+    await field.press('Enter');
+    await visible(work(page,dates.novemberNext).getByText('另一帳號較新的編輯',{exact:true}));
+    assert.deepEqual(errors,['工程進度已被更新，請確認最新資料後再操作。']);
+    await editSchedule(page,dates.novemberNext,'讀取最新版本後重試');
+    await work(page,dates.novemberNext).locator('.ev-row').hover();
+    await work(page,dates.novemberNext).locator('.ev-del').click();
+    await work(page,dates.novemberNext).locator('.ev-chip').waitFor({state:'hidden'});
+    assert.equal(await anotherCell.locator('.ev-chip').count(),1);
+    console.log('PASS browser: add on different dates/projects, edit, reload, stale edit rejection, retry and delete.');
+  }finally{await context.close();}
 }
 
 async function completion(browser) {
@@ -760,7 +805,7 @@ async function rapidChecklist(browser){
       ['staff mobile', b => employee(b, 'staff', true)],
       ['supervisor desktop', b => employee(b, 'supervisor', false)],
       ['supervisor mobile', b => employee(b, 'supervisor', true)], ['administrator', administrator],
-      ['rapid checklist',rapidChecklist]
+      ['rapid checklist',rapidChecklist], ['schedule save and conflict retry',scheduleSave]
     ]) {
       try{await test(browser);}
       catch(error){console.error(label, error);process.exitCode=1;}

@@ -240,6 +240,59 @@ try {
   const sdkFor = (db,role) => load({db,doc,getDoc,serverTimestamp,fbRunTransaction:runTransaction,localTestMode:false,
     S:{progressCheckRecords:{},checks:{}},isAdmin:()=>role==='admin',currentRole:role});
   const staffApp=sdkFor(staff,'staff'),adminApp=sdkFor(admin,'admin');
+  const scheduleId='schedule-concurrency',secondScheduleId='schedule-other-project';
+  const scheduleRef=doc(staff,'projects',scheduleId);
+  const scheduleDate=thisMonth+'-01',anotherDate=thisMonth+'-02',thirdDate=thisMonth+'-03';
+  const existingEntry={date:scheduleDate,note:'原施工文字',stage:'木作',_progressItemId:'qa-existing'};
+  const legacySchedule=[{date:pastDate,note:'歷史文字'}];
+  const historicalMonth={schedule:legacySchedule,siteNote:'歷史備註'};
+  const scheduleFixture={name:'排程驗證',status:'prog',schedule:legacySchedule,
+    progressMonths:{[pastMonth]:historicalMonth,[thisMonth]:{schedule:[existingEntry],siteNote:'本月備註'}}};
+  await env.withSecurityRulesDisabled(async context=>{
+    const db=context.firestore();
+    await Promise.all([setDoc(doc(db,'projects',scheduleId),scheduleFixture),
+      setDoc(doc(db,'projects',secondScheduleId),{name:'另一個排程案件',status:'prog',schedule:[]})]);
+  });
+  const writeSchedule=(client,id,before,after)=>client.writeProgressMonths([
+    {projectId:id,month:thisMonth,field:'schedule',before,after}
+  ]);
+  const readSchedule=async()=>staffApp.progressMonthSchedule((await getDocFromServer(scheduleRef)).data(),thisMonth);
+  const reordered={_progressItemId:'qa-existing',stage:'木作',note:'原施工文字',date:scheduleDate};
+  const serverBefore=await readSchedule();
+  const differingOrder=JSON.stringify(serverBefore)===JSON.stringify([reordered])?existingEntry:reordered;
+  assert.notEqual(JSON.stringify(serverBefore),JSON.stringify([differingOrder]));
+  const otherDateEntry={date:anotherDate,note:'新增至另一日',_progressItemId:'qa-another'};
+  await allow(writeSchedule(staffApp,scheduleId,[differingOrder],[differingOrder,otherDateEntry]));
+  await allow(writeSchedule(adminApp,secondScheduleId,[],[{date:thirdDate,note:'另一個案件'}]));
+  assert.equal((await getDocFromServer(doc(admin,'projects',secondScheduleId))).data().progressMonths[thisMonth].schedule[0].note,'另一個案件');
+  const beforeRace=await readSchedule();
+  const changeNote=(items,date,note)=>items.map(item=>item.date===date?{...item,note}:item);
+  const concurrentSaves=await Promise.all([
+    allow(writeSchedule(staffApp,scheduleId,beforeRace,changeNote(beforeRace,scheduleDate,'員工編輯'))),
+    allow(writeSchedule(adminApp,scheduleId,beforeRace,changeNote(beforeRace,anotherDate,'管理員編輯')))
+  ]);
+  const afterRace=await readSchedule();
+  assert.deepEqual(afterRace.map(item=>item.note),['員工編輯','管理員編輯']);
+  const secondCommit=concurrentSaves.map(result=>result[0]).find(result=>result.after.every((item,index)=>item.note===afterRace[index].note));
+  assert(secondCommit,'the last commit returns the actual merged schedule for undo');
+  assert.equal(secondCommit.before.filter((item,index)=>item.note!==secondCommit.after[index].note).length,1);
+  const overlapping=await Promise.allSettled([
+    writeSchedule(staffApp,scheduleId,afterRace,changeNote(afterRace,scheduleDate,'同筆操作 A')),
+    writeSchedule(adminApp,scheduleId,afterRace,changeNote(afterRace,scheduleDate,'同筆操作 B'))
+  ]);
+  assert.equal(overlapping.filter(result=>result.status==='fulfilled').length,1);
+  const rejected=overlapping.find(result=>result.status==='rejected');
+  assert.match(rejected.reason.message,/已被更新/);
+  assert.equal(rejected.reason.progressLatest.projectId,scheduleId);
+  const fresh=await readSchedule();
+  assert.match(fresh[0].note,/同筆操作 [AB]/);
+  await allow(writeSchedule(staffApp,scheduleId,fresh,fresh.filter(item=>item.date!==scheduleDate)));
+  assert.deepEqual((await readSchedule()).map(item=>item.note),['管理員編輯']);
+  const preserved=(await getDocFromServer(scheduleRef)).data();
+  assert.deepEqual(preserved.progressMonths[pastMonth],historicalMonth);
+  assert.deepEqual(preserved.schedule,legacySchedule);
+  assert.equal(preserved.progressMonths[thisMonth].siteNote,'本月備註');
+  console.log('PASS: Firestore schedule map ordering, different-date merges, same-entry conflicts, re-read, scoped delete, and legacy preservation.');
   const snapshot=(await getDoc(adminProject)).data();
   await deny(updateDoc(adminProject,{progressLegacyClosedMonth:thisMonth}));
   const legacyRef=doc(admin,'projects','legacy-completed');

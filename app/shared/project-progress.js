@@ -159,7 +159,7 @@ function applyProgressCheckEdit(items,edit){
 }
 
 function progressCheckDataEqual(left,right){
-  if(left===right)return true;
+  if(left===right||(Number.isNaN(left)&&Number.isNaN(right)))return true;
   if(!left||!right||typeof left!=='object'||typeof right!=='object'||Array.isArray(left)!==Array.isArray(right))return false;
   const keys=Object.keys(left);
   return keys.length===Object.keys(right).length&&keys.every(key=>Object.hasOwn(right,key)&&progressCheckDataEqual(left[key],right[key]));
@@ -423,8 +423,37 @@ function progressMonthNote(project,month){
   return project.progressMonths?.[month]?.siteNote??project.siteNote??'';
 }
 
+function mergeProgressSchedule(stored,before,after,conflict){
+  if(progressCheckDataEqual(stored,before))return after;
+  const byDate=items=>{
+    const days=new Map();
+    for(const item of items){
+      if(!days.has(item.date))days.set(item.date,[]);
+      days.get(item.date).push(item);
+    }
+    return days;
+  };
+  const expected=byDate(before),requested=byDate(after),latest=byDate(stored);
+  const edits=new Map();
+  for(const date of new Set([...expected.keys(),...requested.keys()])){
+    const previous=expected.get(date)||[],next=requested.get(date)||[];
+    if(progressCheckDataEqual(previous,next))continue;
+    if(!progressCheckDataEqual(latest.get(date)||[],previous))throw conflict();
+    edits.set(date,next);
+  }
+  const merged=[];
+  for(const item of stored){
+    if(!edits.has(item.date)){merged.push(item);continue;}
+    merged.push(...edits.get(item.date));
+    // Later entries on this day have already been replaced as a group.
+    edits.set(item.date,[]);
+  }
+  for(const items of edits.values())merged.push(...items);
+  return merged;
+}
+
 // Each mutation carries the field value the editor saw. Compare it against the
-// latest document and merge only the requested months, including on retries.
+// latest document and merge only the edited dates or note, including on retries.
 async function writeProgressMonths(changes){
   const byProject=new Map();
   for(const change of changes){
@@ -436,21 +465,31 @@ async function writeProgressMonths(changes){
   function prepare(snapshot,{entries}){
     if(!snapshot.exists())throw new Error('找不到案件，未儲存工程進度。');
     const project=snapshot.data(),progressMonths={...project.progressMonths};
+    const latest={...project,progressMonths},saved=new Map();
     for(const {month,field,before,after} of entries){
-      const stored=field==='schedule'?progressMonthSchedule(project,month):progressMonthNote(project,month);
-      if(JSON.stringify(stored)!==JSON.stringify(before))throw new Error('工程進度已被更新，請重新整理後再試。');
-      progressMonths[month]={...progressMonths[month],[field]:after};
+      const conflict=()=>Object.assign(new Error('工程進度已被更新，請確認最新資料後再操作。'),{
+        progressLatest:{projectId:entries[0].projectId,project}
+      });
+      const stored=field==='schedule'?progressMonthSchedule(latest,month):progressMonthNote(latest,month);
+      const next=field==='schedule'?mergeProgressSchedule(stored,before,after,conflict):after;
+      if(field!=='schedule'&&!progressCheckDataEqual(stored,before))throw conflict();
+      progressMonths[month]={...progressMonths[month],[field]:next};
+      const key=month+':'+field,previous=saved.get(key);
+      saved.set(key,{kind:field,key:entries[0].projectId,month,before:previous?previous.before:stored,after:next});
     }
-    return {progressMonths,progressWriteMonths:[...new Set(entries.map(entry=>entry.month))]};
+    return {patch:{progressMonths,progressWriteMonths:[...new Set(entries.map(entry=>entry.month))]},
+      saved:[...saved.values()].filter(entry=>!progressCheckDataEqual(entry.before,entry.after))};
   }
   if(localTestMode){
     const snapshots=await Promise.all(writes.map(({ref})=>getDoc(ref)));
-    const patches=writes.map((write,index)=>prepare(snapshots[index],write));
-    for(let index=0;index<writes.length;index++)await updateDoc(writes[index].ref,patches[index]);
-  }else{
-    await fbRunTransaction(db,async transaction=>{
-      const snapshots=await Promise.all(writes.map(({ref})=>transaction.get(ref)));
-      writes.forEach((write,index)=>transaction.update(write.ref,prepare(snapshots[index],write)));
-    });
+    const results=writes.map((write,index)=>prepare(snapshots[index],write));
+    for(let index=0;index<writes.length;index++)await updateDoc(writes[index].ref,results[index].patch);
+    return results.flatMap(result=>result.saved);
   }
+  return fbRunTransaction(db,async transaction=>{
+    const snapshots=await Promise.all(writes.map(({ref})=>transaction.get(ref)));
+    const results=writes.map((write,index)=>prepare(snapshots[index],write));
+    writes.forEach((write,index)=>transaction.update(write.ref,results[index].patch));
+    return results.flatMap(result=>result.saved);
+  });
 }
