@@ -14,27 +14,171 @@ function ensureB1FSiteMaterialTestData(){
 }
 function b1fSiteMaterialListMarkup(){return b1fSiteMaterialListMarkupV1();}
 function b1fSiteMaterialListMarkupV1(){return `<section style="max-width:760px;border:1px solid #ddd5ee;border-radius:12px;background:#fff;padding:22px"><h2 style="margin:0;color:#503c78;font-size:18px">工地用料單</h2><p style="margin:8px 0 0;color:var(--text2);font-size:13px;line-height:1.65">這裡將集中管理各工地的用料規劃；B1F 商城的商品、庫存、領用與退貨流程維持在原本頁籤中。</p><div style="margin-top:18px;padding:16px;border:1px dashed #cfc3e4;border-radius:9px;background:#faf8ff;color:#705e92;font-size:13px">工地用料單已建立入口。五金預估、其他叫料、領用、退貨與表格功能會在後續分項加入。</div></section>`;}
-function renderB1FSiteMaterials(){const el=$('panel-b1f');if(!el)return;const cartLabel=`購物車${b1fCartCount()?` ${b1fCartCount()}`:''}`,tabs=[['entry','新增商品'],['products','商品'],['cart',cartLabel],['return','退貨'],['pending','待結案'],['history','紀錄']],views={entry:b1fEntryMarkup,products:b1fProductsMarkup,cart:b1fCartMarkup,return:b1fReturnMarkup,pending:b1fPendingMarkup,history:b1fHistoryMarkup};el.innerHTML=`<div class="b1f-shell"><div class="b1f-head"><div><h1>🛒 B1F 商城 <span class="help-wrap b1f-title-help"><button type="button" class="help-btn" aria-label="B1F 商城說明" onclick="toggleHelpPop(event,'b1f-intro-help')">?</button><span class="help-pop" id="b1f-intro-help" onclick="event.stopPropagation()">工程剩料、可再利用商品與常備五金；計價只記錄在 B1F 與工地使用紀錄。</span></span></h1></div><div class="b1f-head-controls" style="display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap"><div class="b1f-material-entry"><button type="button" aria-label="新增工地用料單" class="${b1fView==='site-material-list'?'active':''}" style="min-height:34px;border:0;border-radius:6px;background:${b1fView==='site-material-list'?'#fff':'transparent'};color:${b1fView==='site-material-list'?'#8d3030':'#9e5757'};font:600 13px inherit;padding:6px 10px;cursor:pointer" onclick="setB1FView('site-material-list')">＋新增工地用料單</button></div><div class="b1f-tabs">${tabs.map(([id,label])=>`<button class="${b1fView===id?'active':''}" onclick="setB1FView('${id}')">${label}</button>`).join('')}</div></div></div>${b1fFlash?`<div class="b1f-summary" style="margin-bottom:12px">${escAttr(b1fFlash)}</div>`:''}${b1fView==='site-material-list'?b1fSiteMaterialListMarkupV2():views[b1fView]()}</div>`;b1fFlash='';}
+function renderB1FSiteMaterials(){const el=$('panel-b1f');if(!el)return;const cartLabel=`購物車${b1fCartCount()?` ${b1fCartCount()}`:''}`,tabs=[['entry','新增商品'],['products','商品'],['cart',cartLabel],['return','退貨'],['pending','待結案'],['history','紀錄']],views={entry:b1fEntryMarkup,products:b1fProductsMarkup,cart:b1fCartMarkup,return:b1fReturnMarkup,pending:b1fPendingMarkup,history:b1fHistoryMarkup};el.innerHTML=`<div class="b1f-shell"><div class="b1f-head"><div><h1>🛒 B1F 商城 <span class="help-wrap b1f-title-help"><button type="button" class="help-btn" aria-label="B1F 商城說明" onclick="toggleHelpPop(event,'b1f-intro-help')">?</button><span class="help-pop" id="b1f-intro-help" onclick="event.stopPropagation()">工程剩料、可再利用商品與常備五金；計價只記錄在 B1F 與工地使用紀錄。</span></span></h1></div><div class="b1f-head-controls" style="display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap"><div class="b1f-material-entry"><button type="button" aria-label="新增工地用料單" class="${b1fView==='site-material-list'?'active':''}" style="min-height:34px;border:0;border-radius:6px;background:${b1fView==='site-material-list'?'#fff':'transparent'};color:${b1fView==='site-material-list'?'#8d3030':'#9e5757'};font:600 13px inherit;padding:6px 10px;cursor:pointer" onclick="setB1FView('site-material-list')">＋新增工地用料單</button></div><div class="b1f-tabs">${tabs.map(([id,label])=>`<button class="${b1fView===id?'active':''}" onclick="setB1FView('${id}')">${label}</button>`).join('')}</div></div></div>${b1fFlash?`<div class="b1f-summary" style="margin-bottom:12px">${escAttr(b1fFlash)}</div>`:''}${b1fView==='site-material-list'?b1fSiteMaterialStatusMarkup()+b1fSiteMaterialListMarkupV2():views[b1fView]()}</div>`;b1fFlash='';}
 renderB1F=renderB1FSiteMaterials;window.renderB1F=renderB1F;
 if(!document.getElementById('b1f-site-material-entry-style'))document.head.insertAdjacentHTML('beforeend','<style id="b1f-site-material-entry-style">#panel-b1f button[aria-label="新增工地用料單"]{background:#9e5757!important;color:#fff!important}</style>');
 
 // 工地用料單：預估需求獨立保存，只引用 B1F 商品作為欄位，不會異動庫存。
 let b1fSiteMaterialListId='';
-function b1fSiteMaterialLists(){const store=b1fData();return(store.siteMaterialLists||=([]));}
+let b1fSiteMaterialLoaded=false,b1fSiteMaterialReadError=false;
+let b1fSiteMaterialPending=[],b1fSiteMaterialTimer,b1fSiteMaterialSaving=false,b1fSiteMaterialFailed='',b1fSiteMaterialSaved=false;
+let b1fSiteMaterialRefreshPending=false,b1fSiteMaterialClosing=false;
+
+function b1fSiteMaterialLists(){
+  const saved=b1fData().siteMaterialLists||[];
+  if(!b1fSiteMaterialPending.length)return saved;
+  const lists=structuredClone(saved);
+  for(const edit of b1fSiteMaterialPending)edit(lists);
+  return lists;
+}
 function b1fSiteMaterialCurrent(){return b1fSiteMaterialLists().find(list=>list.id===b1fSiteMaterialListId)||null;}
-function b1fSiteMaterialSave(){b1fSave();}
+function b1fSiteMaterialStatusMarkup(){
+  const message=b1fSiteMaterialReadError?'無法讀取工地用料單，請重新整理後再試。'
+    :!localTestMode&&!b1fSiteMaterialLoaded?'正在載入工地用料單…'
+    :b1fSiteMaterialClosing?'用料單儲存中…'
+    :b1fSiteMaterialFailed||(b1fSiteMaterialPending.length?'用料單儲存中…'
+      :b1fSiteMaterialSaved?'用料單已儲存':'');
+  return `<div class="b1f-summary" data-b1f-material-status role="status" style="margin-bottom:10px" ${message?'':'hidden'}>${escAttr(message)}
+    ${b1fSiteMaterialFailed?'<button type="button" class="btn btn-sm" onclick="retryB1FSiteMaterialSave()">重試儲存</button>':''}</div>`;
+}
+function refreshB1FSiteMaterialStatus(){
+  const status=document.querySelector('[data-b1f-material-status]');
+  if(status)status.outerHTML=b1fSiteMaterialStatusMarkup();
+}
+function refreshB1FSiteMaterialFromSnapshot(){
+  if(activePanel!=='b1f'||b1fView!=='site-material-list')return;
+  if(document.activeElement?.matches('#panel-b1f [data-b1f-material-input]')||b1fSiteMaterialPending.length){
+    b1fSiteMaterialRefreshPending=true;
+    refreshB1FSiteMaterialStatus();
+    return;
+  }
+  b1fSiteMaterialRefreshPending=false;
+  renderB1F();
+}
+document.addEventListener('focusout',event=>{
+  if(!event.target.matches?.('#panel-b1f [data-b1f-material-input]'))return;
+  // A snapshot must not replace the next cell or button before it receives focus/click.
+  if(b1fSiteMaterialRefreshPending)setTimeout(()=>{
+    if(b1fSiteMaterialRefreshPending)refreshB1FSiteMaterialFromSnapshot();
+  },150);
+});
+window.addEventListener('beforeunload',event=>{
+  if(!b1fSiteMaterialPending.length&&!b1fSiteMaterialClosing)return;
+  event.preventDefault();
+  event.returnValue='';
+});
+
+function b1fQueueSiteMaterialEdit(edit){
+  b1fSiteMaterialPending.push(edit);
+  b1fSiteMaterialSaved=false;
+  clearTimeout(b1fSiteMaterialTimer);
+  b1fSiteMaterialTimer=setTimeout(retryB1FSiteMaterialSave,250);
+  refreshB1FSiteMaterialStatus();
+}
+window.retryB1FSiteMaterialSave=async function(){
+  if(b1fSiteMaterialSaving||!b1fSiteMaterialPending.length)return;
+  b1fSiteMaterialSaving=true;
+  b1fSiteMaterialFailed='';
+  const batch=b1fSiteMaterialPending.slice(),observed=b1fStore;
+  refreshB1FSiteMaterialStatus();
+  try{
+    const apply=raw=>{
+      const lists=Array.isArray(raw)?structuredClone(raw):[];
+      for(const edit of batch)if(edit(lists)===false)throw Object.assign(new Error('用料單項目已由其他人刪除或結案。'),{code:'b1f/material-conflict'});
+      return lists;
+    };
+    if(localTestMode){
+      const store=b1fDataV3(),lists=apply(store.siteMaterialLists);
+      localStorage.setItem(b1fStoreKeyV3(),JSON.stringify({...store,siteMaterialLists:lists}));
+      store.siteMaterialLists=lists;
+    }else{
+      const lists=await fbRunTransaction(db,async transaction=>{
+        const snapshot=await transaction.get(b1fSharedRef());
+        const latest=apply(snapshot.data()?.siteMaterialLists);
+        transaction.set(b1fSharedRef(),{siteMaterialLists:latest},{merge:true});
+        return latest;
+      });
+      if(b1fStore===observed)(b1fStore||=(b1fNormalizeShared(null))).siteMaterialLists=lists;
+    }
+    b1fSiteMaterialPending.splice(0,batch.length);
+    b1fSiteMaterialSaved=!b1fSiteMaterialPending.length;
+    if(b1fSiteMaterialSaved&&b1fSiteMaterialRefreshPending)refreshB1FSiteMaterialFromSnapshot();
+  }catch(error){
+    console.error('工地用料單儲存失敗',error);
+    b1fSiteMaterialFailed=error.code==='b1f/material-conflict'
+      ?'用料單尚未儲存。該項目已由其他人刪除或結案，請先核對畫面上的修改。'
+      :error.code==='permission-denied'?'用料單尚未儲存。這個帳號沒有寫入權限。'
+      :'用料單尚未儲存，請確認連線後重試。';
+  }finally{
+    b1fSiteMaterialSaving=false;
+    refreshB1FSiteMaterialStatus();
+    if(!b1fSiteMaterialFailed&&b1fSiteMaterialPending.length)void retryB1FSiteMaterialSave();
+  }
+};
+function b1fEditSiteMaterialList(id,edit){
+  const projectId=b1fSiteMaterialLists().find(row=>row.id===id)?.projectId;
+  const updatedAt=b1fNow();
+  b1fQueueSiteMaterialEdit(lists=>{
+    const list=lists.find(row=>row.id===id)||(projectId&&lists.find(row=>row.projectId===projectId));
+    if(!list||edit(list)===false)return false;
+    list.updatedAt=updatedAt;
+  });
+}
 function b1fSiteMaterialNumber(value){const number=Number(value);return Number.isFinite(number)&&number>0?number:0;}
 function b1fSiteMaterialTotal(list,itemId){return list.rows.reduce((total,row)=>total+(Number(row.quantities?.[itemId])||0),0);}
-function b1fSiteMaterialListMarkupV2(){const current=b1fSiteMaterialCurrent(),lists=b1fSiteMaterialLists();if(current)return b1fSiteMaterialDetailMarkup(current);const projects=S.projects.filter(project=>project.status==='prog');return '<section style="max-width:860px;border:1px solid #efd6d6;border-radius:12px;background:#fff;padding:22px"><h2 style="margin:0;color:#7d3030;font-size:18px">工地用料單</h2><p style="margin:8px 0 18px;color:var(--text2);font-size:13px;line-height:1.65">系統五金預估只記錄需求數量，不會扣除 B1F 庫存。請直接選擇施工中的案件查看用料單。</p><div><div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px">施工中的工地用料單</div><div style="display:grid;gap:8px">'+(projects.length?projects.map(project=>{const list=lists.find(row=>row.projectId===project.id);return '<button class="btn" type="button" style="justify-content:space-between;text-align:left" onclick="openOrCreateB1FSiteMaterialList(\''+escAttr(project.id)+'\')"><span>'+escAttr(project.name)+'</span><span style="color:var(--text2)">'+(list?list.rows.length+' 個圖紙頁數／項目':'尚未建立用料單')+'</span></button>';}).join(''):'<div class="b1f-empty">目前沒有施工中案件。</div>')+'</div></div></section>';}
-function b1fSiteMaterialDetailMarkup(list){const items=b1fSystemItemsForList(list);const header=items.map(item=>'<th style="min-width:132px;padding:10px;text-align:center;font-size:12px;color:#7d3030;border-bottom:1px solid #efdede">'+escAttr(item.name)+'<div style="margin-top:3px;font-weight:400;color:var(--text3)">預估數量</div></th>').join('');const rows=list.rows.map(row=>'<tr><td style="min-width:185px;padding:7px;border-bottom:1px solid #f2e6e6"><div style="display:flex;gap:6px"><input class="b1f-input" style="min-height:34px" value="'+escAttr(row.label)+'" aria-label="圖紙頁數或項目" onchange="updateB1FSiteMaterialRowLabel(\''+list.id+'\',\''+row.id+'\',this.value)"><button class="btn btn-sm btn-danger" type="button" aria-label="刪除此圖紙頁數或項目" onclick="deleteB1FSiteMaterialRow(\''+list.id+'\',\''+row.id+'\')">刪除</button></div></td>'+items.map(item=>'<td style="padding:7px;text-align:center;border-bottom:1px solid #f2e6e6"><input class="b1f-row-qty" style="min-width:92px" type="number" min="0" step="any" value="'+(Number(row.quantities?.[item.id])||0)+'" aria-label="'+escAttr(row.label)+' '+escAttr(item.name)+' 預估數量" oninput="updateB1FSiteMaterialQuantity(\''+list.id+'\',\''+row.id+'\',\''+item.id+'\',this.value)"></td>').join('')+'</tr>').join('');const totals=items.map(item=>'<td data-b1f-estimate-total="'+escAttr(item.id)+'" style="padding:10px;text-align:center;background:#fff8f8;color:#8d3030;font-weight:700;border-top:1px solid #efdede">'+b1fSiteMaterialTotal(list,item.id)+'</td>').join('');return '<section style="max-width:100%;border:1px solid #efd6d6;border-radius:12px;background:#fff;padding:22px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:start;flex-wrap:wrap"><div><button class="btn btn-sm" type="button" onclick="closeB1FSiteMaterialList()">← 所有工地用料單</button><h2 style="margin:12px 0 0;color:#7d3030;font-size:18px">'+escAttr(list.projectName)+'｜系統五金預估</h2><p style="margin:7px 0 0;color:var(--text2);font-size:13px">此表僅記錄設計／施工前的預估需求，修改不會影響 B1F 商品庫存、購物車、領用、退貨或金額。</p></div><button class="btn btn-p" type="button" onclick="addB1FSiteMaterialRow(\''+list.id+'\')">＋新增圖紙頁數／項目</button></div>'+(items.length?'<div style="margin-top:18px;overflow:auto;border:1px solid #efd6d6;border-radius:9px"><table style="border-collapse:collapse;width:max-content;min-width:100%"><thead><tr><th style="position:sticky;left:0;z-index:1;min-width:205px;padding:10px;text-align:left;background:#fff8f8;color:#7d3030;font-size:12px;border-bottom:1px solid #efdede">圖紙頁數／項目</th>'+header+'</tr></thead><tbody>'+rows+'</tbody><tfoot><tr><td style="position:sticky;left:0;z-index:1;padding:10px;background:#fff8f8;color:#7d3030;font-weight:700;border-top:1px solid #efdede">預估總數量</td>'+totals+'</tr></tfoot></table></div>':'<div class="b1f-empty" style="margin-top:18px">目前沒有單價至少 1 元的 B1F 商品，請先在「新增商品」建立可計價的系統五金品項後再填寫預估數量。</div>')+'</section>';}
-window.createB1FSiteMaterialList=function(){const projectId=$('b1f-site-project')?.value,project=S.projects.find(row=>row.id===projectId);if(!project)return alert('請先選擇施工中案件。');const existing=b1fSiteMaterialLists().find(list=>list.projectId===projectId);if(existing){b1fSiteMaterialListId=existing.id;renderB1F();return;}const list={id:b1fId('site_material'),projectId:project.id,projectName:project.name,rows:[],createdAt:b1fNow(),updatedAt:b1fNow()};b1fSiteMaterialLists().push(list);b1fSiteMaterialSave();b1fSiteMaterialListId=list.id;renderB1F();};
-window.openOrCreateB1FSiteMaterialList=function(projectId){const project=S.projects.find(row=>row.id===projectId);if(!project)return;const existing=b1fSiteMaterialLists().find(list=>list.projectId===projectId);if(existing){openB1FSiteMaterialList(existing.id);return;}const list={id:b1fId('site_material'),projectId:project.id,projectName:project.name,rows:[],createdAt:b1fNow(),updatedAt:b1fNow()};b1fSiteMaterialLists().push(list);b1fSiteMaterialSave();b1fSiteMaterialListId=list.id;renderB1F();};
+function b1fSiteMaterialListMarkupV2(){if(!localTestMode&&(!b1fSiteMaterialLoaded||b1fSiteMaterialReadError))return '';const current=b1fSiteMaterialCurrent(),lists=b1fSiteMaterialLists();if(current)return b1fSiteMaterialDetailMarkup(current);const projects=S.projects.filter(project=>project.status==='prog');return '<section style="max-width:860px;border:1px solid #efd6d6;border-radius:12px;background:#fff;padding:22px"><h2 style="margin:0;color:#7d3030;font-size:18px">工地用料單</h2><p style="margin:8px 0 18px;color:var(--text2);font-size:13px;line-height:1.65">系統五金預估只記錄需求數量，不會扣除 B1F 庫存。請直接選擇施工中的案件查看用料單。</p><div><div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px">施工中的工地用料單</div><div style="display:grid;gap:8px">'+(projects.length?projects.map(project=>{const list=lists.find(row=>row.projectId===project.id);return '<button class="btn" type="button" style="justify-content:space-between;text-align:left" onclick="openOrCreateB1FSiteMaterialList(\''+escAttr(project.id)+'\')"><span>'+escAttr(project.name)+'</span><span style="color:var(--text2)">'+(list?list.rows.length+' 個圖紙頁數／項目':'尚未建立用料單')+'</span></button>';}).join(''):'<div class="b1f-empty">目前沒有施工中案件。</div>')+'</div></div></section>';}
+function b1fSiteMaterialDetailMarkup(list){const items=b1fSystemItemsForList(list);const header=items.map(item=>'<th style="min-width:132px;padding:10px;text-align:center;font-size:12px;color:#7d3030;border-bottom:1px solid #efdede">'+escAttr(item.name)+'<div style="margin-top:3px;font-weight:400;color:var(--text3)">預估數量</div></th>').join('');const rows=list.rows.map(row=>'<tr><td style="min-width:185px;padding:7px;border-bottom:1px solid #f2e6e6"><div style="display:flex;gap:6px"><input data-b1f-material-input class="b1f-input" style="min-height:34px" value="'+escAttr(row.label)+'" aria-label="圖紙頁數或項目" oninput="updateB1FSiteMaterialRowLabel(\''+list.id+'\',\''+row.id+'\',this.value)"><button class="btn btn-sm btn-danger" type="button" aria-label="刪除此圖紙頁數或項目" onclick="deleteB1FSiteMaterialRow(\''+list.id+'\',\''+row.id+'\')">刪除</button></div></td>'+items.map(item=>'<td style="padding:7px;text-align:center;border-bottom:1px solid #f2e6e6"><input data-b1f-material-input class="b1f-row-qty" style="min-width:92px" type="number" min="0" step="any" value="'+(Number(row.quantities?.[item.id])||0)+'" aria-label="'+escAttr(row.label)+' '+escAttr(item.name)+' 預估數量" oninput="updateB1FSiteMaterialQuantity(\''+list.id+'\',\''+row.id+'\',\''+item.id+'\',this.value)"></td>').join('')+'</tr>').join('');const totals=items.map(item=>'<td data-b1f-estimate-total="'+escAttr(item.id)+'" style="padding:10px;text-align:center;background:#fff8f8;color:#8d3030;font-weight:700;border-top:1px solid #efdede">'+b1fSiteMaterialTotal(list,item.id)+'</td>').join('');return '<section style="max-width:100%;border:1px solid #efd6d6;border-radius:12px;background:#fff;padding:22px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:start;flex-wrap:wrap"><div><button class="btn btn-sm" type="button" onclick="closeB1FSiteMaterialList()">← 所有工地用料單</button><h2 style="margin:12px 0 0;color:#7d3030;font-size:18px">'+escAttr(list.projectName)+'｜系統五金預估</h2><p style="margin:7px 0 0;color:var(--text2);font-size:13px">此表僅記錄設計／施工前的預估需求，修改不會影響 B1F 商品庫存、購物車、領用、退貨或金額。</p></div><button class="btn btn-p" type="button" onclick="addB1FSiteMaterialRow(\''+list.id+'\')">＋新增圖紙頁數／項目</button></div>'+(items.length?'<div style="margin-top:18px;overflow:auto;border:1px solid #efd6d6;border-radius:9px"><table style="border-collapse:collapse;width:max-content;min-width:100%"><thead><tr><th style="position:sticky;left:0;z-index:1;min-width:205px;padding:10px;text-align:left;background:#fff8f8;color:#7d3030;font-size:12px;border-bottom:1px solid #efdede">圖紙頁數／項目</th>'+header+'</tr></thead><tbody>'+rows+'</tbody><tfoot><tr><td style="position:sticky;left:0;z-index:1;padding:10px;background:#fff8f8;color:#7d3030;font-weight:700;border-top:1px solid #efdede">預估總數量</td>'+totals+'</tr></tfoot></table></div>':'<div class="b1f-empty" style="margin-top:18px">目前沒有單價至少 1 元的 B1F 商品，請先在「新增商品」建立可計價的系統五金品項後再填寫預估數量。</div>')+'</section>';}
+window.createB1FSiteMaterialList=function(){
+  const projectId=$('b1f-site-project')?.value;
+  if(!projectId)return alert('請先選擇施工中案件。');
+  openOrCreateB1FSiteMaterialList(projectId);
+};
+window.openOrCreateB1FSiteMaterialList=function(projectId){
+  if(!localTestMode&&(!b1fSiteMaterialLoaded||b1fSiteMaterialReadError))return;
+  const project=S.projects.find(row=>row.id===projectId);
+  if(!project)return;
+  const existing=b1fSiteMaterialLists().find(list=>list.projectId===projectId);
+  if(existing){openB1FSiteMaterialList(existing.id);return;}
+  const now=b1fNow();
+  const list={id:'site_material_'+project.id,projectId:project.id,projectName:project.name,rows:[],
+    systemItemIds:b1fDefaultSystemItemIds(),createdAt:now,updatedAt:now};
+  b1fQueueSiteMaterialEdit(lists=>{
+    if(!lists.some(entry=>entry.projectId===projectId))lists.push(structuredClone(list));
+  });
+  openB1FSiteMaterialList(list.id);
+};
 window.openB1FSiteMaterialList=function(id){b1fSiteMaterialListId=id;renderB1F();};
 window.closeB1FSiteMaterialList=function(){b1fSiteMaterialListId='';renderB1F();};
-window.addB1FSiteMaterialRow=function(listId){const list=b1fSiteMaterialLists().find(row=>row.id===listId);if(!list)return;list.rows.push({id:b1fId('drawing'),label:'圖紙第 '+(list.rows.length+1)+' 頁',quantities:{}});list.updatedAt=b1fNow();b1fSiteMaterialSave();renderB1F();};
-window.deleteB1FSiteMaterialRow=function(listId,rowId){const list=b1fSiteMaterialLists().find(row=>row.id===listId);if(!list||!confirm('確定刪除此圖紙頁數／項目？'))return;list.rows=list.rows.filter(row=>row.id!==rowId);list.updatedAt=b1fNow();b1fSiteMaterialSave();renderB1F();};
-window.updateB1FSiteMaterialRowLabel=function(listId,rowId,value){const list=b1fSiteMaterialLists().find(row=>row.id===listId),row=list?.rows.find(item=>item.id===rowId);if(!row)return;row.label=value.trim()||'未命名項目';list.updatedAt=b1fNow();b1fSiteMaterialSave();};
-window.updateB1FSiteMaterialQuantity=function(listId,rowId,itemId,value){const list=b1fSiteMaterialLists().find(row=>row.id===listId),row=list?.rows.find(item=>item.id===rowId);if(!row)return;row.quantities||(row.quantities={});row.quantities[itemId]=b1fSiteMaterialNumber(value);list.updatedAt=b1fNow();b1fSiteMaterialSave();document.querySelectorAll('[data-b1f-estimate-total="'+CSS.escape(itemId)+'"]').forEach(cell=>cell.textContent=b1fSiteMaterialTotal(list,itemId));};
+window.addB1FSiteMaterialRow=function(listId){
+  const id=b1fId('drawing');
+  b1fEditSiteMaterialList(listId,list=>{
+    if(!list.rows.some(row=>row.id===id))list.rows.push({id,label:'圖紙第 '+(list.rows.length+1)+' 頁',quantities:{}});
+  });
+  renderB1F();
+};
+window.deleteB1FSiteMaterialRow=function(listId,rowId){
+  if(!confirm('確定刪除此圖紙頁數／項目？'))return;
+  b1fEditSiteMaterialList(listId,list=>{list.rows=list.rows.filter(row=>row.id!==rowId);});
+  renderB1F();
+};
+window.updateB1FSiteMaterialRowLabel=function(listId,rowId,value){
+  const label=value.trim()||'未命名項目';
+  b1fEditSiteMaterialList(listId,list=>{
+    const row=list.rows.find(entry=>entry.id===rowId);
+    if(!row)return false;
+    row.label=label;
+  });
+};
+window.updateB1FSiteMaterialQuantity=function(listId,rowId,itemId,value){
+  const quantity=b1fSiteMaterialNumber(value);
+  b1fEditSiteMaterialList(listId,list=>{
+    const row=list.rows.find(entry=>entry.id===rowId);
+    if(!row)return false;
+    (row.quantities||={})[itemId]=quantity;
+  });
+  const list=b1fSiteMaterialCurrent();
+  if(list)document.querySelectorAll('[data-b1f-estimate-total="'+CSS.escape(itemId)+'"]').forEach(cell=>cell.textContent=b1fSiteMaterialTotal(list,itemId));
+};
 
 // 其他叫料：只屬於單一工地用料單，保留日後完工處理／加入 B1F 的欄位，但目前不串接任何 B1F 流程。
 function b1fOtherOrders(list){return(list.otherOrders||=([]));}
@@ -53,9 +197,35 @@ function b1fOtherOrderMarkup(list){const rows=b1fOtherOrders(list);const rowHtml
 </tr>`;}).join('');
   return `<section style="margin-top:24px;padding-top:20px;border-top:2px solid #eadede"><div style="display:flex;justify-content:space-between;gap:12px;align-items:start;flex-wrap:wrap"><div><h3 style="margin:0;color:#7d3030;font-size:16px">其他叫料</h3><p style="margin:6px 0 0;color:var(--text2);font-size:13px">記錄此工地另外向廠商叫的材料或五金；不會建立或影響 B1F 商品資料。</p></div><button class="btn btn-p" type="button" onclick="addB1FOtherOrder('${list.id}')">＋新增其他叫料</button></div><div style="margin-top:14px;overflow:auto;border:1px solid #efd6d6;border-radius:9px"><table style="border-collapse:collapse;width:max-content;min-width:100%"><thead><tr>${['廠商','品名','數量','備註','計價狀態','單價','金額','操作'].map(label=>`<th style="padding:10px;text-align:left;white-space:nowrap;background:#fff8f8;color:#7d3030;font-size:12px;border-bottom:1px solid #efdede">${label}</th>`).join('')}</tr></thead><tbody>${rowHtml||'<tr><td colspan="8" style="padding:18px;text-align:center;color:var(--text3)">尚無其他叫料，請按右上角新增。</td></tr>'}</tbody><tfoot><tr><td colspan="6" style="padding:11px;background:#fff8f8;color:#7d3030;font-weight:700;text-align:right;border-top:1px solid #efdede">計價項目總金額</td><td data-b1f-other-total style="padding:11px;background:#fff8f8;color:#8d3030;font-weight:700;border-top:1px solid #efdede">${b1fMoney(b1fOtherOrderTotal(list))}</td><td style="background:#fff8f8;border-top:1px solid #efdede"></td></tr></tfoot></table></div></section>`;
 }
-window.addB1FOtherOrder=function(listId){const list=b1fSiteMaterialLists().find(row=>row.id===listId);if(!list)return;b1fOtherOrders(list).push({id:b1fId('other_order'),vendor:'',name:'',quantity:1,note:'',chargeable:false,unitPrice:0,status:'planned',completion:null,b1fItemId:null,createdAt:b1fNow(),updatedAt:b1fNow()});list.updatedAt=b1fNow();b1fSiteMaterialSave();renderB1F();};
-window.updateB1FOtherOrder=function(listId,rowId,key,value,live){const list=b1fSiteMaterialLists().find(row=>row.id===listId),row=b1fOtherOrders(list||{}).find(item=>item.id===rowId);if(!row)return;if(key==='chargeable')row.chargeable=value==='yes';else if(key==='quantity'||key==='unitPrice')row[key]=b1fOtherOrderNumber(value);else row[key]=String(value||'');row.updatedAt=b1fNow();list.updatedAt=b1fNow();b1fSiteMaterialSave();if(!live){renderB1F();return;}const amount=b1fOtherOrderAmount(row);document.querySelectorAll('[data-b1f-other-amount="'+CSS.escape(rowId)+'"]').forEach(cell=>cell.textContent=row.chargeable?b1fMoney(amount):'—');document.querySelectorAll('[data-b1f-other-total]').forEach(cell=>cell.textContent=b1fMoney(b1fOtherOrderTotal(list)));};
-window.deleteB1FOtherOrder=function(listId,rowId){const list=b1fSiteMaterialLists().find(row=>row.id===listId);if(!list||!confirm('確定刪除此筆其他叫料？'))return;list.otherOrders=b1fOtherOrders(list).filter(row=>row.id!==rowId);list.updatedAt=b1fNow();b1fSiteMaterialSave();renderB1F();};
+window.addB1FOtherOrder=function(listId){
+  const now=b1fNow(),id=b1fId('other_order');
+  b1fEditSiteMaterialList(listId,list=>{
+    const orders=b1fOtherOrders(list);
+    if(!orders.some(row=>row.id===id))orders.push({id,vendor:'',name:'',quantity:1,note:'',
+      chargeable:false,unitPrice:0,status:'planned',completion:null,b1fItemId:null,createdAt:now,updatedAt:now});
+  });
+  renderB1F();
+};
+window.updateB1FOtherOrder=function(listId,rowId,key,value,live){
+  const updatedAt=b1fNow();
+  const next=key==='chargeable'?value==='yes':key==='quantity'||key==='unitPrice'?b1fOtherOrderNumber(value):String(value||'');
+  b1fEditSiteMaterialList(listId,list=>{
+    const row=b1fOtherOrders(list).find(item=>item.id===rowId);
+    if(!row||['used','transferred'].includes(row.status))return false;
+    row[key]=next;
+    row.updatedAt=updatedAt;
+  });
+  if(!live&&key==='chargeable')renderB1F();
+};
+window.deleteB1FOtherOrder=function(listId,rowId){
+  if(!confirm('確定刪除此筆其他叫料？'))return;
+  b1fEditSiteMaterialList(listId,list=>{
+    const row=b1fOtherOrders(list).find(item=>item.id===rowId);
+    if(row&&['used','transferred'].includes(row.status))return false;
+    list.otherOrders=b1fOtherOrders(list).filter(item=>item.id!==rowId);
+  });
+  renderB1F();
+};
 function b1fSiteMaterialDetailMarkupV3(list){const systemMarkup=b1fSiteMaterialDetailMarkupV2?b1fSiteMaterialDetailMarkupV2(list):b1fSiteMaterialDetailMarkup(list);return systemMarkup.replace('</section>',b1fOtherOrderMarkup(list)+'</section>');}
 const b1fSiteMaterialDetailMarkupV2=b1fSiteMaterialDetailMarkup;
 b1fSiteMaterialDetailMarkup=b1fSiteMaterialDetailMarkupV3;
@@ -87,9 +257,78 @@ b1fOtherOrderMarkup=function(list){const rows=b1fOtherOrders(list);const rowHtml
 </tr>`;}).join('');return `<section style="margin-top:24px;padding-top:20px;border-top:2px solid #eadede"><div style="display:flex;justify-content:space-between;gap:12px;align-items:start;flex-wrap:wrap"><div><h3 style="margin:0;color:#7d3030;font-size:16px">其他叫料</h3><p style="margin:6px 0 0;color:var(--text2);font-size:13px">叫料完成後可標記使用完畢，或將剩料加入 B1F；已結案資料會鎖定以避免重複入庫。</p></div><button class="btn btn-p" type="button" onclick="addB1FOtherOrder('${list.id}')">＋新增其他叫料</button></div><div style="margin-top:14px;overflow:auto;border:1px solid #efd6d6;border-radius:9px"><table style="border-collapse:collapse;width:max-content;min-width:100%"><thead><tr>${['廠商','品名','數量','備註','計價狀態','單價','金額','完工狀態','操作'].map(label=>`<th style="padding:10px;text-align:left;white-space:nowrap;background:#fff8f8;color:#7d3030;font-size:12px;border-bottom:1px solid #efdede">${label}</th>`).join('')}</tr></thead><tbody>${rowHtml||'<tr><td colspan="9" style="padding:18px;text-align:center;color:var(--text3)">尚無其他叫料，請按右上角新增。</td></tr>'}</tbody><tfoot><tr><td colspan="7" style="padding:11px;background:#fff8f8;color:#7d3030;font-weight:700;text-align:right;border-top:1px solid #efdede">計價項目總金額</td><td data-b1f-other-total style="padding:11px;background:#fff8f8;color:#8d3030;font-weight:700;border-top:1px solid #efdede">${b1fMoney(b1fOtherOrderTotal(list))}</td><td style="background:#fff8f8;border-top:1px solid #efdede"></td></tr></tfoot></table></div></section>`;};
 function b1fOtherOrderRow(listId,rowId){const list=b1fSiteMaterialLists().find(row=>row.id===listId),row=b1fOtherOrders(list||{}).find(item=>item.id===rowId);return{list,row};}
 window.completeB1FOtherOrder=function(listId,rowId){const {list,row}=b1fOtherOrderRow(listId,rowId);if(!list||!row||['used','transferred'].includes(row.status))return;$('mo-content').innerHTML='<div class="mo-title">確認使用完畢</div><div class="mo-sub">「'+escAttr(row.name||'未命名其他叫料')+'」將標示為使用完畢並結案，之後無法重複處理。</div><div class="mo-footer"><button class="btn" type="button" onclick="closeMo()">取消</button><button class="btn btn-p" type="button" onclick="confirmB1FOtherOrderCompletion(\''+list.id+'\',\''+row.id+'\')">確定</button></div>';$('modal').style.display='flex';};
-window.confirmB1FOtherOrderCompletion=function(listId,rowId){const {list,row}=b1fOtherOrderRow(listId,rowId);if(!list||!row||['used','transferred'].includes(row.status))return;const qty=b1fOtherOrderNumber(row.quantity);row.status='used';row.completion={type:'used',orderedQty:qty,usedQty:qty,remainingQty:0,completedAt:b1fNow()};row.updatedAt=b1fNow();list.updatedAt=b1fNow();b1fLogIn(b1fData(),'site_material_other_used',{projectId:list.projectId,projectName:list.projectName,siteMaterialListId:list.id,itemName:row.name||'未命名其他叫料',quantity:qty,unit:row.unit||'',amount:null,note:'其他叫料使用完畢'});b1fSiteMaterialSave();closeMo();renderB1F();};
+async function b1fCommitOtherOrderClosure(listId,rowId,change){
+  if(b1fSiteMaterialClosing)return;
+  b1fSiteMaterialClosing=true;
+  b1fSiteMaterialSaved=false;
+  refreshB1FSiteMaterialStatus();
+  try{
+    await retryB1FSiteMaterialSave();
+    if(b1fSiteMaterialPending.length){
+      alert('用料單仍有未儲存的修改，請完成儲存後再結案。');
+      return;
+    }
+    if(b1fCommitBusy)throw b1fOtherOrderError('B1F 正在處理上一筆操作，請稍後再結案。');
+    const completedAt=b1fNow();
+    const result=await b1fCommit(store=>{
+      const list=store.siteMaterialLists?.find(entry=>entry.id===listId);
+      const row=list?.otherOrders?.find(entry=>entry.id===rowId);
+      if(!row||['used','transferred'].includes(row.status))throw b1fOtherOrderError('此筆叫料已刪除或結案。');
+      const result=change(store,list,row,completedAt);
+      row.updatedAt=list.updatedAt=completedAt;
+      return result;
+    },{siteMaterials:true});
+    closeMo();
+    if(result)b1fFlash=result;
+    b1fSiteMaterialSaved=true;
+  }catch(error){
+    console.error('其他叫料結案失敗',error);
+    if(localTestMode||error.code==='b1f/material-order')alert(error.message);
+  }finally{
+    b1fSiteMaterialClosing=false;
+    renderB1F();
+  }
+}
+function b1fOtherOrderError(message){return Object.assign(new Error(message),{code:'b1f/material-order'});}
+window.confirmB1FOtherOrderCompletion=function(listId,rowId){
+  return b1fCommitOtherOrderClosure(listId,rowId,(store,list,row,completedAt)=>{
+    const qty=b1fOtherOrderNumber(row.quantity);
+    row.status='used';
+    row.completion={type:'used',orderedQty:qty,usedQty:qty,remainingQty:0,completedAt};
+    b1fLogIn(store,'site_material_other_used',{projectId:list.projectId,projectName:list.projectName,
+      siteMaterialListId:list.id,itemName:row.name||'未命名其他叫料',quantity:qty,unit:row.unit||'',amount:null,note:'其他叫料使用完畢'});
+  });
+};
 window.openB1FOtherOrderTransfer=function(listId,rowId){const {list,row}=b1fOtherOrderRow(listId,rowId);if(!list||!row||['used','transferred'].includes(row.status))return;const existing=b1fData().items.find(item=>String(item.name||'').trim().toLocaleLowerCase()===String(row.name||'').trim().toLocaleLowerCase());const qty=b1fOtherOrderNumber(row.quantity),price=row.chargeable?b1fOtherOrderNumber(row.unitPrice):0;$('mo-content').innerHTML=`<div class="mo-title">其他叫料剩料加入 B1F</div><div class="mo-sub">${escAttr(list.projectName)}｜${escAttr(row.name||'未命名品項')}</div><div class="b1f-form"><label class="b1f-field">剩餘數量<input id="b1f-other-transfer-qty" type="number" min="0.01" max="${qty}" step="any" value="${qty}"></label>${existing?`<div class="b1f-summary"><div class="b1f-summary-row"><span>找到既有商品</span><strong>${escAttr(existing.name)}</strong></div><div class="b1f-summary-row"><span>目前庫存</span><span>${existing.stockQty}${escAttr(existing.unit)}</span></div></div>`:`<label class="b1f-field">B1F 單位<input id="b1f-other-transfer-unit" value="個" placeholder="例如：個、組、支"></label><label class="b1f-field">來源<input id="b1f-other-transfer-source" value="${escAttr(list.projectName)}｜其他叫料剩料"></label><label class="b1f-field">單價<input id="b1f-other-transfer-price" type="number" min="0" step="any" value="${price}"></label><div class="mo-sub">${row.chargeable?'已帶入原叫料單價。':'不計價叫料會建立為 0 元商品。'}</div>`}<div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="confirmB1FOtherOrderTransfer('${list.id}','${row.id}','${existing?.id||''}')">確認加入 B1F</button></div></div>`;$('modal').style.display='flex';};
-window.confirmB1FOtherOrderTransfer=function(listId,rowId,existingId){const {list,row}=b1fOtherOrderRow(listId,rowId);const remaining=b1fOtherOrderNumber($('b1f-other-transfer-qty')?.value),ordered=b1fOtherOrderNumber(row?.quantity);if(!list||!row||['used','transferred'].includes(row.status)||remaining<=0||remaining>ordered)return alert('剩餘數量必須大於 0，且不得超過叫料數量。');const used=ordered-remaining;let target=b1fData().items.find(item=>item.id===existingId);if(target){target.stockQty=(Number(target.stockQty)||0)+remaining;}else{const unit=$('b1f-other-transfer-unit')?.value.trim(),source=$('b1f-other-transfer-source')?.value.trim(),price=b1fOtherOrderNumber($('b1f-other-transfer-price')?.value);if(!row.name?.trim()||!unit)return alert('請補齊品名與 B1F 單位。');target={id:b1fId('item'),name:row.name.trim(),categoryIds:[],stockQty:remaining,unit,unitPrice:price,source:source||list.projectName+'｜其他叫料剩料',note:'由工地用料單其他叫料剩料轉入',createdAt:b1fNow()};b1fData().items.push(target);}row.status='transferred';row.completion={type:'b1f',orderedQty:ordered,usedQty:used,remainingQty:remaining,targetItemId:target.id,completedAt:b1fNow()};row.updatedAt=b1fNow();list.updatedAt=b1fNow();b1fLogIn(b1fData(),'site_material_other_to_b1f',{projectId:list.projectId,projectName:list.projectName,siteMaterialListId:list.id,itemId:target.id,itemName:row.name,quantity:remaining,unit:target.unit,amount:null,note:'其他叫料｜叫料 '+ordered+'｜實際使用 '+used+'｜加入 B1F '+remaining});b1fSiteMaterialSave();closeMo();b1fFlash='其他叫料剩料已加入 B1F：'+target.name+' ×'+remaining+target.unit;renderB1F();};
+window.confirmB1FOtherOrderTransfer=function(listId,rowId,existingId){
+  const remaining=b1fOtherOrderNumber($('b1f-other-transfer-qty')?.value);
+  const unit=$('b1f-other-transfer-unit')?.value.trim();
+  const source=$('b1f-other-transfer-source')?.value.trim();
+  const price=b1fOtherOrderNumber($('b1f-other-transfer-price')?.value);
+  const id=b1fId('item');
+  return b1fCommitOtherOrderClosure(listId,rowId,(store,list,row,completedAt)=>{
+    const ordered=b1fOtherOrderNumber(row.quantity);
+    if(remaining<=0||remaining>ordered)throw b1fOtherOrderError('剩餘數量必須大於 0，且不得超過叫料數量。');
+    const name=row.name?.trim(),used=ordered-remaining;
+    const targetName=name?.toLocaleLowerCase();
+    let target=store.items.find(item=>item.id===existingId)
+      ||(targetName&&store.items.find(item=>String(item.name||'').trim().toLocaleLowerCase()===targetName));
+    if(target){
+      target.stockQty=Number(((Number(target.stockQty)||0)+remaining).toFixed(9));
+    }else{
+      if(!name||!unit)throw b1fOtherOrderError('請補齊品名與 B1F 單位。');
+      target={id,name,categoryIds:[],stockQty:remaining,unit,unitPrice:price,source:source||list.projectName+'｜其他叫料剩料',
+        note:'由工地用料單其他叫料剩料轉入',createdAt:completedAt};
+      store.items.push(target);
+    }
+    row.status='transferred';
+    row.completion={type:'b1f',orderedQty:ordered,usedQty:used,remainingQty:remaining,targetItemId:target.id,completedAt};
+    b1fLogIn(store,'site_material_other_to_b1f',{projectId:list.projectId,projectName:list.projectName,siteMaterialListId:list.id,
+      itemId:target.id,itemName:row.name,quantity:remaining,unit:target.unit,amount:null,
+      note:'其他叫料｜叫料 '+ordered+'｜實際使用 '+used+'｜加入 B1F '+remaining});
+    return '其他叫料剩料已加入 B1F：'+target.name+' ×'+remaining+target.unit;
+  });
+};
 const b1fTypeLabelV8=b1fTypeLabel;
 b1fTypeLabel=function(type){return type==='site_material_other_used'?'其他叫料使用完畢':type==='site_material_other_to_b1f'?'其他叫料剩料加入 B1F':b1fTypeLabelV8(type);};
 
@@ -99,7 +338,6 @@ function filterB1FSiteMaterialColumns(){/* 表格在初次產生時已只包含�
 const b1fSiteMaterialDetailMarkupV5=b1fSiteMaterialDetailMarkup;
 b1fSiteMaterialDetailMarkup=function(list){const html=b1fSiteMaterialDetailMarkupV5(list).replace('</h2>','</h2><button class="btn btn-sm" type="button" style="margin-top:8px" onclick="editB1FSystemItems(\''+list.id+'\')">編輯系統五金項目</button>');setTimeout(()=>filterB1FSiteMaterialColumns(list),0);return html;};
 window.editB1FSystemItems=function(listId){const list=b1fSiteMaterialLists().find(row=>row.id===listId);if(!list)return;const chosen=new Set(Array.isArray(list.systemItemIds)?list.systemItemIds:b1fData().items.map(item=>item.id));$('mo-content').innerHTML='<div class="mo-title">編輯系統五金項目</div><div class="mo-sub">勾選此工地要顯示與預估的 B1F 商品。</div><div class="b1f-form">'+b1fData().items.map(item=>'<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="b1f-system-item" value="'+escAttr(item.id)+'" '+(chosen.has(item.id)?'checked':'')+'>'+escAttr(item.name)+'</label>').join('')+'<div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="saveB1FSystemItems(\''+list.id+'\')">儲存</button></div></div>';$('modal').style.display='flex';};
-window.saveB1FSystemItems=function(listId){const list=b1fSiteMaterialLists().find(row=>row.id===listId);if(!list)return;list.systemItemIds=[...document.querySelectorAll('input[name="b1f-system-item"]:checked')].map(input=>input.value);list.updatedAt=b1fNow();b1fSiteMaterialSave();closeMo();renderB1F();};
 b1fSiteMaterialUsageFooter=function(list){const items=b1fSystemItemsForList(list);return '<tr><td style="padding:10px;background:#fff8f8;color:#7d3030;font-weight:700;border-top:1px solid #efdede">已領數量<br>已退數量<br><span style="color:#8d3030">實際使用</span><br><button class="btn btn-sm btn-p" style="margin-top:7px" onclick="addAllB1FSiteMaterialToCart(\''+list.id+'\')">全部加入購物車</button></td>'+items.map(item=>{const s=b1fSiteMaterialUsageStats(list,item.id),disabled=Number(item.stockQty)<=0?'disabled':'';return '<td style="padding:10px;background:#fff8f8;border-top:1px solid #efdede;vertical-align:top;text-align:center"><div>'+s.issued+'</div><div>'+s.returned+'</div><div style="color:#8d3030;font-weight:700">'+s.used+'</div><div style="display:flex;gap:5px;margin-top:7px"><input id="b1f-site-cart-qty-'+escAttr(list.id)+'-'+escAttr(item.id)+'" class="b1f-row-qty" type="number" min="0" max="'+item.stockQty+'" step="any" value="0" aria-label="'+escAttr(item.name)+' 本次加入購物車數量" '+disabled+'><button class="btn btn-sm btn-p" type="button" '+disabled+' onclick="addB1FSiteMaterialToCart(\''+list.id+'\',\''+item.id+'\')">加入購物車</button></div></td>';}).join('')+'</tr>';};
 window.addAllB1FSiteMaterialToCart=function(listId){const list=b1fSiteMaterialLists().find(row=>row.id===listId),cart=b1fCart();if(!list)return;const inputs=b1fSystemItemsForList(list).map(item=>({item,qty:Number($('b1f-site-cart-qty-'+list.id+'-'+item.id)?.value)||0})).filter(row=>row.qty>0);if(!inputs.length)return alert('請先輸入至少一個要加入購物車的數量。');if(inputs.some(row=>row.qty>row.item.stockQty))return alert('部分數量超過目前 B1F 庫存。');const linked=cart.find(line=>line.siteMaterialListId);if((linked&&linked.siteMaterialListId!==list.id)||(cart.length&&b1fCartProjectId&&b1fCartProjectId!==list.projectId))return alert('購物車已有其他工地用料單的商品，請先完成或清空既有購物車。');for(const {item,qty} of inputs){const line=cart.find(row=>row.itemId===item.id);if(line&&line.siteMaterialListId!==list.id)return alert('購物車已有其他來源的相同商品。');if((line?.qty||0)+qty>item.stockQty)return alert(item.name+' 加入後會超過庫存。');if(line)line.qty+=qty;else cart.push({itemId:item.id,qty,siteMaterialListId:list.id,siteMaterialProjectId:list.projectId});}b1fCartProjectId=list.projectId;b1fSaveCartV5();b1fFlash='已將 '+inputs.length+' 項系統五金加入購物車（'+list.projectName+'）';b1fView='cart';renderB1F();};
 
@@ -110,8 +348,6 @@ window.closeMo=window.closeMo||function(){$('modal').style.display='none';$('mo-
 function b1fDefaultSystemItemIds(){return b1fData().items.filter(item=>Number(item.unitPrice)>=1).map(item=>item.id);}
 b1fSystemItemsForList=function(list){const paidItems=b1fData().items.filter(item=>Number(item.unitPrice)>=1);return Array.isArray(list.systemItemIds)?paidItems.filter(item=>list.systemItemIds.includes(item.id)):paidItems;};
 
-const b1fCreateSiteMaterialListV2=window.createB1FSiteMaterialList;
-window.createB1FSiteMaterialList=function(){const projectId=$('b1f-site-project')?.value,project=S.projects.find(row=>row.id===projectId);if(!project)return alert('請先選擇施工中案件。');const existing=b1fSiteMaterialLists().find(list=>list.projectId===projectId);if(existing){b1fSiteMaterialListId=existing.id;renderB1F();return;}const list={id:b1fId('site_material'),projectId:project.id,projectName:project.name,rows:[],systemItemIds:b1fDefaultSystemItemIds(),createdAt:b1fNow(),updatedAt:b1fNow()};b1fSiteMaterialLists().push(list);b1fSiteMaterialSave();b1fSiteMaterialListId=list.id;renderB1F();};
 
 const b1fDeleteSiteMaterialRowV2=window.deleteB1FSiteMaterialRow;
 window.deleteB1FSiteMaterialRow=function(listId,rowId){if(!b1fSiteMaterialEditMode)return;b1fDeleteSiteMaterialRowV2(listId,rowId);};
@@ -124,9 +360,19 @@ b1fSiteMaterialDetailMarkup=function(list){const editControl=b1fSiteMaterialEdit
 
 window.editB1FSystemItems=function(listId){const list=b1fSiteMaterialLists().find(row=>row.id===listId);if(!list)return;b1fSiteMaterialEditMode=true;const chosen=new Set(Array.isArray(list.systemItemIds)?list.systemItemIds:b1fDefaultSystemItemIds()),paidItems=b1fData().items.filter(item=>Number(item.unitPrice)>=1);$('mo-content').innerHTML='<div class="mo-title">編輯系統五金項目</div><div class="mo-sub">只列出單價至少 1 元的商品；取消勾選即代表此工地不需要該項目，不會刪除 B1F 商品。</div><div class="b1f-form">'+paidItems.map(item=>'<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="b1f-system-item" value="'+escAttr(item.id)+'" '+(chosen.has(item.id)?'checked':'')+'>'+escAttr(item.name)+'</label>').join('')+'<div class="mo-footer"><button class="btn" type="button" onclick="closeB1FSystemItemsEditor()">取消</button><button class="btn btn-p" type="button" onclick="saveB1FSystemItems(\''+list.id+'\')">儲存</button></div></div>';$('modal').style.display='flex';document.onkeydown=function(event){if(event.key==='Escape'&&$('modal')?.style.display==='flex')closeB1FSystemItemsEditor();};};
 window.closeB1FSystemItemsEditor=function(){document.onkeydown=null;closeMo();renderB1F();};
-window.saveB1FSystemItems=function(listId){const list=b1fSiteMaterialLists().find(row=>row.id===listId);if(!list)return;list.systemItemIds=[...document.querySelectorAll('input[name="b1f-system-item"]:checked')].map(input=>input.value);list.updatedAt=b1fNow();b1fSiteMaterialSave();document.onkeydown=null;closeMo();renderB1F();};
+window.saveB1FSystemItems=function(listId){
+  const itemIds=[...document.querySelectorAll('input[name="b1f-system-item"]:checked')].map(input=>input.value);
+  b1fEditSiteMaterialList(listId,list=>{list.systemItemIds=itemIds;});
+  document.onkeydown=null;closeMo();renderB1F();
+};
 
-window.sortB1FOtherOrdersByVendor=function(listId){const list=b1fSiteMaterialLists().find(row=>row.id===listId);if(!list)return;const collator=new Intl.Collator('zh-Hant-u-co-stroke',{numeric:true,sensitivity:'base'});list.otherOrders=b1fOtherOrders(list).map((row,index)=>({row,index})).sort((a,b)=>collator.compare(String(a.row.vendor||''),String(b.row.vendor||''))||a.index-b.index).map(entry=>entry.row);list.updatedAt=b1fNow();b1fSiteMaterialSave();renderB1F();};
+window.sortB1FOtherOrdersByVendor=function(listId){
+  const collator=new Intl.Collator('zh-Hant-u-co-stroke',{numeric:true,sensitivity:'base'});
+  b1fEditSiteMaterialList(listId,list=>{
+    b1fOtherOrders(list).sort((a,b)=>collator.compare(String(a.vendor||''),String(b.vendor||'')));
+  });
+  renderB1F();
+};
 
 // 用料單兩張表格固定在可視範圍內；欄位會依目前系統五金勾選數平均分配，不產生橫向捲軸。
 function fitB1FSiteMaterialTables(){
@@ -176,9 +422,9 @@ b1fSiteMaterialDetailMarkup=function(list){const html=b1fSiteMaterialDetailMarku
 
 // 其他叫料不再承擔計價用途：保留舊資料欄位以相容既有紀錄，但不顯示或編輯它們。
 b1fOtherOrderMarkup=function(list){const rows=b1fOtherOrders(list);const rowHtml=rows.map(row=>{const open=!['used','transferred'].includes(row.status);return `<tr>
-  <td><input class="b1f-input" value="${escAttr(row.vendor||'')}" placeholder="例如：XX 五金" aria-label="廠商" ${open?'':'disabled'} onchange="updateB1FOtherOrder('${list.id}','${row.id}','vendor',this.value)"></td>
-  <td><input class="b1f-input" value="${escAttr(row.name||'')}" placeholder="輸入品名" aria-label="品名" ${open?'':'disabled'} onchange="updateB1FOtherOrder('${list.id}','${row.id}','name',this.value)"></td>
-  <td><input class="b1f-row-qty" type="number" min="0" step="any" value="${b1fOtherOrderNumber(row.quantity)}" aria-label="${escAttr(row.name||'其他叫料')} 數量" ${open?'':'disabled'} oninput="updateB1FOtherOrder('${list.id}','${row.id}','quantity',this.value,true)"></td>
+  <td><input data-b1f-material-input class="b1f-input" value="${escAttr(row.vendor||'')}" placeholder="例如：XX 五金" aria-label="廠商" ${open?'':'disabled'} oninput="updateB1FOtherOrder('${list.id}','${row.id}','vendor',this.value,true)"></td>
+  <td><input data-b1f-material-input class="b1f-input" value="${escAttr(row.name||'')}" placeholder="輸入品名" aria-label="品名" ${open?'':'disabled'} oninput="updateB1FOtherOrder('${list.id}','${row.id}','name',this.value,true)"></td>
+  <td><input data-b1f-material-input class="b1f-row-qty" type="number" min="0" step="any" value="${b1fOtherOrderNumber(row.quantity)}" aria-label="${escAttr(row.name||'其他叫料')} 數量" ${open?'':'disabled'} oninput="updateB1FOtherOrder('${list.id}','${row.id}','quantity',this.value,true)"></td>
   <td>${b1fOtherOrderStatusMarkup(row)}</td>
   <td>${open?`<div style="display:flex;gap:5px;flex-wrap:nowrap;white-space:nowrap"><button class="btn btn-sm" type="button" onclick="completeB1FOtherOrder('${list.id}','${row.id}')">使用完畢</button><button class="btn btn-sm btn-p" type="button" onclick="openB1FOtherOrderTransfer('${list.id}','${row.id}')">加入 B1F</button><button class="btn btn-sm btn-danger" type="button" onclick="deleteB1FOtherOrder('${list.id}','${row.id}')">刪除</button></div>`:'<span style="font-size:11px;color:var(--text3)">已結案，避免重複處理</span>'}</td>
 </tr>`;}).join('');return `<section style="margin-top:24px;padding-top:20px;border-top:2px solid #eadede"><div><h3 style="margin:0;color:#7d3030;font-size:16px">其他叫料</h3><p style="margin:6px 0 0;color:var(--text2);font-size:13px">叫料完成後可標記使用完畢，或將剩料加入 B1F；已結案資料會鎖定以避免重複入庫。</p><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="btn btn-p" type="button" onclick="addB1FOtherOrder('${list.id}')">＋新增其他叫料</button></div></div><div style="margin-top:14px;overflow:hidden;border:1px solid #efd6d6;border-radius:9px"><table style="border-collapse:collapse;width:auto;min-width:0"><thead><tr>${['廠商','品名','數量','完工狀態','操作'].map(label=>`<th style="padding:10px;text-align:left;white-space:nowrap;background:#fff8f8;color:#7d3030;font-size:12px;border-bottom:1px solid #efdede">${label}</th>`).join('')}</tr></thead><tbody>${rowHtml||'<tr><td colspan="5" style="padding:18px;text-align:center;color:var(--text3)">尚無其他叫料，請按上方按鈕新增。</td></tr>'}</tbody></table></div></section>`;};

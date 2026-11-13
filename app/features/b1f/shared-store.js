@@ -4,7 +4,7 @@ const B1F_SHARED_VERSION=6,B1F_SHARED_DOC='company';
 let b1fPersonalCart=null;
 function b1fSharedRef(){return doc(db,'b1fStores',B1F_SHARED_DOC);}
 function b1fCartKeyV5(){return `b1fCartV5_${currentUser?.uid||'local'}`;}
-function b1fNormalizeShared(raw){const base=b1fSeedV3();return{...base,...(raw||{}),version:B1F_SHARED_VERSION,items:Array.isArray(raw?.items)?raw.items.map(item=>({...item,categoryIds:Array.isArray(item.categoryIds)?item.categoryIds:[]})):[],categories:Array.isArray(raw?.categories)?raw.categories:[],usages:Array.isArray(raw?.usages)?raw.usages:[],logs:Array.isArray(raw?.logs)?raw.logs:[],orders:Array.isArray(raw?.orders)?raw.orders:[],standaloneSites:Array.isArray(raw?.standaloneSites)?raw.standaloneSites:[],carts:{}};}
+function b1fNormalizeShared(raw){const base=b1fSeedV3();return{...base,...(raw||{}),version:B1F_SHARED_VERSION,items:Array.isArray(raw?.items)?raw.items.map(item=>({...item,categoryIds:Array.isArray(item.categoryIds)?item.categoryIds:[]})):[],categories:Array.isArray(raw?.categories)?raw.categories:[],usages:Array.isArray(raw?.usages)?raw.usages:[],logs:Array.isArray(raw?.logs)?raw.logs:[],orders:Array.isArray(raw?.orders)?raw.orders:[],standaloneSites:Array.isArray(raw?.standaloneSites)?raw.standaloneSites:[],siteMaterialLists:Array.isArray(raw?.siteMaterialLists)?raw.siteMaterialLists:[],carts:{}};}
 function b1fLoadPersonalCart(){if(b1fPersonalCart)return b1fPersonalCart;try{const rows=JSON.parse(localStorage.getItem(b1fCartKeyV5())||'null');b1fPersonalCart=Array.isArray(rows)?rows:[];}catch(error){b1fPersonalCart=[];}return b1fPersonalCart;}
 function b1fPersistPersonalCart(){try{localStorage.setItem(b1fCartKeyV5(),JSON.stringify(b1fLoadPersonalCart()));}catch(error){console.warn('B1F 購物車暫存失敗',error);}}
 function b1fDataV5(){if(localTestMode)return b1fDataV3();return b1fStore||b1fNormalizeShared(null);}
@@ -31,18 +31,51 @@ function b1fValidateInventory(store){
   for(const usage of store.usages||[])if(usage.inUseQty!=null&&(!Number.isFinite(Number(usage.inUseQty))||Number(usage.inUseQty)<0))throw new Error('工地領用中數量不正確，未儲存變更。');
 }
 let b1fCommitBusy=false;
-async function b1fCommit(change){
+async function b1fCommit(change,{siteMaterials=false}={}){
   if(b1fCommitBusy)throw new Error('B1F 正在處理上一筆操作，請勿重複送出。');
   b1fCommitBusy=true;
   if(localTestMode){try{await Promise.resolve();const store=JSON.parse(JSON.stringify(b1fDataV3()));b1fValidateInventory(store);const result=change(store);b1fValidateInventory(store);localStorage.setItem(b1fStoreKeyV3(),JSON.stringify(store));b1fStore=store;return result;}finally{b1fCommitBusy=false;}}
   setSyncing();
-  try{return await fbRunTransaction(db,async transaction=>{const snap=await transaction.get(b1fSharedRef()),store=b1fNormalizeShared(snap.exists()?snap.data():null);b1fValidateInventory(store);const result=change(store);b1fValidateInventory(store);transaction.set(b1fSharedRef(),{version:B1F_SHARED_VERSION,items:store.items,categories:store.categories,usages:store.usages,logs:store.logs,orders:store.orders,standaloneSites:b1fStandaloneSites(store),updatedAt:serverTimestamp()});return result;});}
-  catch(error){if(error?.code==='b1f/duplicate-site')throw error;console.error('B1F 同步失敗',error);setOffline();alert('B1F 商城同步失敗，請確認網路後再試。');throw error;}
+  try{
+    return await fbRunTransaction(db,async transaction=>{
+      const ref=b1fSharedRef(),snapshot=await transaction.get(ref);
+      const store=b1fNormalizeShared(snapshot.exists()?snapshot.data():null);
+      b1fValidateInventory(store);
+      const result=change(store);
+      b1fValidateInventory(store);
+      const patch={
+        version:B1F_SHARED_VERSION,items:store.items,categories:store.categories,
+        usages:store.usages,logs:store.logs,orders:store.orders,
+        standaloneSites:b1fStandaloneSites(store),updatedAt:serverTimestamp()
+      };
+      if(siteMaterials)patch.siteMaterialLists=store.siteMaterialLists;
+      transaction.set(ref,patch,{merge:true});
+      return result;
+    });
+  }
+  catch(error){if(error?.code==='b1f/duplicate-site'||error?.code==='b1f/material-order')throw error;console.error('B1F 同步失敗',error);setOffline();alert('B1F 商城同步失敗，請確認網路後再試。');throw error;}
   finally{b1fCommitBusy=false;if(!localTestMode)setSynced();}
 }
 function initB1FSharedStore(){
   if(localTestMode)return;
-  onSnapshot(b1fSharedRef(),snap=>{b1fStore=b1fNormalizeShared(snap.exists()?snap.data():null);if(activePanel==='b1f')renderB1F();},error=>{console.error('B1F 同步讀取失敗',error);setOffline();});
+  let lastData=null;
+  onSnapshot(b1fSharedRef(),{includeMetadataChanges:true},snap=>{
+    if(snap.metadata.hasPendingWrites)return;
+    const data=snap.data(),serialized=JSON.stringify(data);
+    const becameReady=!snap.metadata.fromCache&&!b1fSiteMaterialLoaded;
+    if(serialized===lastData&&!becameReady)return;
+    lastData=serialized;
+    b1fStore=b1fNormalizeShared(data);
+    if(!snap.metadata.fromCache)b1fSiteMaterialLoaded=true;
+    b1fSiteMaterialReadError=false;
+    if(activePanel!=='b1f')return;
+    if(b1fView==='site-material-list')refreshB1FSiteMaterialFromSnapshot();
+    else renderB1F();
+  },error=>{
+    console.error('B1F 同步讀取失敗',error);setOffline();
+    b1fSiteMaterialReadError=true;
+    if(activePanel==='b1f'&&b1fView==='site-material-list')refreshB1FSiteMaterialFromSnapshot();
+  });
 }
 b1fData=b1fDataV5;b1fCart=b1fCartV5;b1fSave=b1fSaveCartV5;
 window.addB1FToCart=function(itemId){const item=b1fItem(itemId),input=$(`b1f-product-qty-${itemId}`),qty=Number(input?.value);if(!item||!Number.isFinite(qty)||qty<=0||qty>item.stockQty)return alert('本次數量必須大於 0，且不得超過可領用數量。');const cart=b1fCart(),line=cart.find(x=>x.itemId===itemId),next=(line?.qty||0)+qty;if(next>item.stockQty)return alert(`${item.name} 加入後會超過目前可領用數量 ${item.stockQty}${item.unit}。`);if(line)line.qty=next;else cart.push({itemId,qty});b1fSaveCartV5();b1fFlash=`已加入購物車：${item.name} ×${qty}${item.unit}`;renderB1F();};
