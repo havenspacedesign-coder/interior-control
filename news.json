@@ -1,126 +1,126 @@
 {
-  "date": "2026-11-13",
-  "updatedAt": "2026-11-13T02:31:52.756Z",
+  "date": "2026-11-14",
+  "updatedAt": "2026-11-14T02:14:20.449Z",
   "news": [
     {
-      "id": "592d40c68ec31a41",
+      "id": "cf10c16b9d5a6b64",
       "source": "壹蘋",
       "category": "國際",
-      "title": "黃仁勳下台！川普：令人非常難過　討論撤換「台美關稅協商大將」",
-      "url": "https://news.nextapple.com/international/20261113/B62A72760B806EF4BBE6B9B143BF958F",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/B62A72760B806EF4BBE6B9B143BF958F/d0f5cd16c49344c54ace6327e9ae4bbe_1280.webp",
-      "publishedAt": "2026-11-13T01:39:52.000Z",
-      "fetchedAt": "2026-11-13T02:31:52.756Z"
+      "title": "黃仁勳垮台前談制度「我可能被開除...」　未料一語成讖",
+      "url": "https://news.nextapple.com/international/20261114/DF210FE896D08D36851E263C469150C5",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/DF210FE896D08D36851E263C469150C5/0069cffda096bd8e26440d5594b82870_1280.webp",
+      "publishedAt": "2026-11-14T01:40:09.000Z",
+      "fetchedAt": "2026-11-14T02:14:20.449Z"
     },
     {
-      "id": "e22981d464186f43",
+      "id": "b4386d437011eb32",
       "source": "壹蘋",
       "category": "生活",
-      "title": "黃仁勳來台逛夜市還有人潮？網曝1關鍵：根本沒人在意",
-      "url": "https://news.nextapple.com/life/20261113/8BE80046478434F6DDD6698106421499",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/8BE80046478434F6DDD6698106421499/53022f0a22580875baefe8631d4540d4_1280.webp",
-      "publishedAt": "2026-11-13T02:25:24.000Z",
-      "fetchedAt": "2026-11-13T02:31:52.756Z"
+      "title": "王品「西堤牛排」漲價了！套餐突破700元　1招可免費吃餐點",
+      "url": "https://news.nextapple.com/life/20261114/3E1729209BF69C0162E09DFC40235973",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/3E1729209BF69C0162E09DFC40235973/c9d8f01cf8c11db957d6594b323979d2_1280.webp",
+      "publishedAt": "2026-11-14T02:12:28.000Z",
+      "fetchedAt": "2026-11-14T02:14:20.449Z"
     },
     {
-      "id": "8b0c92418713303d",
+      "id": "45df08aa22f86d9e",
       "source": "壹蘋",
       "category": "社會",
-      "title": "一票最高1500元！嘉義新港大潭村長選舉疑買票　檢方聲押2人",
-      "url": "https://news.nextapple.com/local/20261113/FA6D87D0C36137A0694AE9358BF6DA65",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/FA6D87D0C36137A0694AE9358BF6DA65/3128044162e1088404eef91d423a4b71_1280.webp",
-      "publishedAt": "2026-11-13T02:20:35.000Z",
-      "fetchedAt": "2026-11-13T02:31:52.756Z"
+      "title": "台南爆裂聲響徹夜空！一把火吞噬20多輛車",
+      "url": "https://news.nextapple.com/local/20261114/4E39BD3BE3409D41C91A2435CEC372E8",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/4E39BD3BE3409D41C91A2435CEC372E8/9119d62c8d21a2a51e3852c1512e72dd_1280.webp",
+      "publishedAt": "2026-11-14T00:27:21.000Z",
+      "fetchedAt": "2026-11-14T02:14:20.449Z"
     },
     {
-      "id": "57a05469060679b0",
+      "id": "04d31963fd285293",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "「皮衣教主」掰了！前主播嘆：英雄終究不敵人性...謝謝你曾帶給台灣榮耀感",
-      "url": "https://news.nextapple.com/entertainment/20261113/99544F8C6E8CD7B476F04693FBB00BD3",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/99544F8C6E8CD7B476F04693FBB00BD3/739ef90ee0b2291b9f6fa3beffaa7783_1280.webp",
-      "publishedAt": "2026-11-13T02:21:20.000Z",
-      "fetchedAt": "2026-11-13T02:31:52.756Z"
+      "title": "《請回答1988》高庚杓酒駕出車禍！朴寶劍新節目恐受波及",
+      "url": "https://news.nextapple.com/entertainment/20261114/EC925007C6CB1F9A2F6D3085B80D338B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/EC925007C6CB1F9A2F6D3085B80D338B/c2dd7577e77bc28d831cf7c996ba49b4_1280.webp",
+      "publishedAt": "2026-11-14T02:07:32.000Z",
+      "fetchedAt": "2026-11-14T02:14:20.449Z"
     },
     {
-      "id": "adae9b770ccbe791",
+      "id": "9ebfe263c4c80703",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "Microsoft 365全球大當機！網友卻暖喊：慢慢修不用急",
-      "url": "https://news.nextapple.com/aitech/20261113/6CBC372DBB0981A9A1D90728D41298BF",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/6CBC372DBB0981A9A1D90728D41298BF/5fe11712edc311f62ba0e8103a928f15_1280.webp",
-      "publishedAt": "2026-11-13T01:10:41.000Z",
-      "fetchedAt": "2026-11-13T02:31:52.756Z"
+      "title": "MyGoPen攜LINE、Meta教防詐！玩遊戲拆話術、可疑訊息先查證",
+      "url": "https://news.nextapple.com/aitech/20261114/6922329A1A1BD96D2233D313A321A28C",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/6922329A1A1BD96D2233D313A321A28C/d514192fa474264b65cd93c8b62533e0_1280.webp",
+      "publishedAt": "2026-11-14T00:58:00.000Z",
+      "fetchedAt": "2026-11-14T02:14:20.449Z"
     },
     {
-      "id": "e98be515e000485d",
+      "id": "62e863571b81ff53",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "台股強彈逾千點！黃仁勳概念股翻紅　聯發科、創意攻漲停",
-      "url": "https://news.nextapple.com/finance/20261113/9D831CEB7D958FFDF690FEA27AB978E9",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/9D831CEB7D958FFDF690FEA27AB978E9/b9fa0e335bb126509c59dbd8a3a29eb5_1280.webp",
-      "publishedAt": "2026-11-13T02:18:09.000Z",
-      "fetchedAt": "2026-11-13T02:31:52.756Z"
+      "title": "輝達新掌門人曾被黃仁勳罵「像受驚的鹿」　他揭：有人刻意鞭屍",
+      "url": "https://news.nextapple.com/finance/20261114/C8717DC92ED5DFD87A09C596362F0317",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/C8717DC92ED5DFD87A09C596362F0317/994f4ff68b7428671e4badf69f180781_1280.webp",
+      "publishedAt": "2026-11-14T01:00:00.000Z",
+      "fetchedAt": "2026-11-14T02:14:20.449Z"
     },
     {
-      "id": "21e85ad2b27992f0",
+      "id": "344af4eafde1f40e",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "秦慧珠是傻了嗎？他拆解選票揭背後盤算：她不笨！",
-      "url": "https://news.nextapple.com/politics/20261113/AE9AB1D55B794CA1FD17BBEFF8376E8F",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/AE9AB1D55B794CA1FD17BBEFF8376E8F/1771fb1391f1fd7684f15f2bc450be17_1280.webp",
-      "publishedAt": "2026-11-13T02:14:00.000Z",
-      "fetchedAt": "2026-11-13T02:31:52.756Z"
+      "title": "超商把小偷做成「人形立牌」　網笑讚：太可怕了感覺很有效",
+      "url": "https://news.nextapple.com/international/20261114/9837B502DDF5047228FC8DF67E6524D4",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/9837B502DDF5047228FC8DF67E6524D4/81389489138a6f2e61faf53e8e7a47ff_1280.webp",
+      "publishedAt": "2026-11-14T01:11:00.000Z",
+      "fetchedAt": "2026-11-14T02:14:20.449Z"
     },
     {
-      "id": "685a424b42ec6263",
+      "id": "f01bde815f1116f0",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "「張善政選到一半中風」音檔曝光！莊瑞雄急道歉：我承擔",
-      "url": "https://news.nextapple.com/politics/20261113/F8CE11CE2B6B8F50BA3A0392141D369B",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/F8CE11CE2B6B8F50BA3A0392141D369B/537a8d8e0fa2ee8b95af731cadcdfb0b_1280.webp",
-      "publishedAt": "2026-11-13T02:11:03.000Z",
-      "fetchedAt": "2026-11-13T02:31:52.756Z"
+      "title": "買輝達股票遭連3擊　波蘭網紅崩潰！改投奔AMD",
+      "url": "https://news.nextapple.com/life/20261114/0F32BCEC6703CC04A3C7651FEF1B44EA",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/0F32BCEC6703CC04A3C7651FEF1B44EA/44c25884a31b98b7d1a7b9bcc3902a41_1280.webp",
+      "publishedAt": "2026-11-14T01:00:00.000Z",
+      "fetchedAt": "2026-11-14T02:14:20.449Z"
     },
     {
-      "id": "42b9212d3dd6bfa4",
-      "source": "壹蘋",
-      "category": "社會",
-      "title": "稱記者報導《鏡傳媒》資金後家中被放鐵釘　黃國昌挨告獲判無罪",
-      "url": "https://news.nextapple.com/local/20261113/C70630A00F64D4E14443A5C708D64917",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/C70630A00F64D4E14443A5C708D64917/84ed848204131259a1df9a7b4f732814_1280.webp",
-      "publishedAt": "2026-11-13T02:15:17.000Z",
-      "fetchedAt": "2026-11-13T02:31:52.756Z"
-    },
-    {
-      "id": "5b4080dbb087a82c",
-      "source": "壹蘋",
-      "category": "社會",
-      "title": "嘉義太保凌晨嚴重車禍！　混凝土車撞轎車失控側翻　2駕駛受傷送醫",
-      "url": "https://news.nextapple.com/local/20261113/EF8F9E61F18319E83BE1674C22AE2D23",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/EF8F9E61F18319E83BE1674C22AE2D23/e7fe68520817ab9f1e80794a533540e8_1280.webp",
-      "publishedAt": "2026-11-13T02:05:59.000Z",
-      "fetchedAt": "2026-11-13T02:31:52.756Z"
-    },
-    {
-      "id": "c1a5a26ab51299ad",
+      "id": "74be507f2f800622",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "本土劇男星逆風挺羅大佑　喊話「台灣不能只有一種聲音」",
-      "url": "https://news.nextapple.com/entertainment/20261113/55F58A7D8D7ADF7602886DF145A22EE5",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/55F58A7D8D7ADF7602886DF145A22EE5/1cde2d08e2ce1191b9fb7474f106b3ca_1280.webp",
-      "publishedAt": "2026-11-13T01:51:53.000Z",
-      "fetchedAt": "2026-11-13T02:31:52.756Z"
+      "title": "媽媽一句話促成同志婚！8點檔男星悲慟：失智母離世了",
+      "url": "https://news.nextapple.com/entertainment/20261114/8100EFF8D1701EE89033CBFD758753DF",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/8100EFF8D1701EE89033CBFD758753DF/0bb0a7d58b19e28ddae18b40d9e5c1d4_1280.webp",
+      "publishedAt": "2026-11-14T02:03:20.000Z",
+      "fetchedAt": "2026-11-14T02:14:20.449Z"
     },
     {
-      "id": "038483b48bc6996d",
+      "id": "92286259940c40c1",
+      "source": "壹蘋",
+      "category": "娛樂時尚",
+      "title": "本周新錶｜宇舶敲響冬日純粹　Big Bang大教堂三問陀飛輪震撼登場",
+      "url": "https://news.nextapple.com/entertainment/20261114/C9DD6B90936B5BD8A8B7EF039226E40C",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/C9DD6B90936B5BD8A8B7EF039226E40C/4be7ea0874978ce65f646e622802b882_1280.webp",
+      "publishedAt": "2026-11-14T02:02:00.000Z",
+      "fetchedAt": "2026-11-14T02:14:20.449Z"
+    },
+    {
+      "id": "ac695ed83a936b47",
+      "source": "壹蘋",
+      "category": "娛樂時尚",
+      "title": "42歲艾薇兒升格當媽！甜曬一家三口照　生父身份線索曝光",
+      "url": "https://news.nextapple.com/entertainment/20261114/DC95822D56F2EF84F38BACDA6399803C",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/DC95822D56F2EF84F38BACDA6399803C/d6944a5b3bc458a5969eb7028bc5d802_1280.webp",
+      "publishedAt": "2026-11-14T01:29:06.000Z",
+      "fetchedAt": "2026-11-14T02:14:20.449Z"
+    },
+    {
+      "id": "44bf2110774543e8",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "黃仁勳下台輝達繼續崩？投顧揭2種衝擊　國安風險恐重創AI產業",
-      "url": "https://news.nextapple.com/finance/20261113/E8C41CF91E6E205072D22564D8223D33",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/E8C41CF91E6E205072D22564D8223D33/bffb953508afc93e9a84213ec1313088_1280.webp",
-      "publishedAt": "2026-11-13T01:50:00.000Z",
-      "fetchedAt": "2026-11-13T02:31:52.756Z"
+      "title": "富邦媒Q3營業利益增11.1%　前三季EPS 7.02元",
+      "url": "https://news.nextapple.com/finance/20261114/2BF48DD9738E2FF0F4CE06327FCC33B7",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/2BF48DD9738E2FF0F4CE06327FCC33B7/b5dee167c6c7d382dbeeb0742ab75460_1280.webp",
+      "publishedAt": "2026-11-14T01:00:00.000Z",
+      "fetchedAt": "2026-11-14T02:14:20.449Z"
     }
   ]
 }
