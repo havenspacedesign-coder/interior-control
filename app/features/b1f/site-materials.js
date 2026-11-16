@@ -21,7 +21,7 @@ if(!document.getElementById('b1f-site-material-entry-style'))document.head.inser
 // 工地用料單：預估需求獨立保存，只引用 B1F 商品作為欄位，不會異動庫存。
 let b1fSiteMaterialListId='';
 let b1fSiteMaterialLoaded=false,b1fSiteMaterialReadError=false;
-let b1fSiteMaterialPending=[],b1fSiteMaterialTimer,b1fSiteMaterialSaving=false,b1fSiteMaterialFailed='',b1fSiteMaterialSaved=false;
+let b1fSiteMaterialPending=[],b1fSiteMaterialTimer,b1fSiteMaterialSaveInFlight=null,b1fSiteMaterialFailed='',b1fSiteMaterialSaved=false;
 let b1fSiteMaterialRefreshPending=false,b1fSiteMaterialClosing=false;
 
 function b1fSiteMaterialLists(){
@@ -75,31 +75,23 @@ function b1fQueueSiteMaterialEdit(edit){
   b1fSiteMaterialTimer=setTimeout(retryB1FSiteMaterialSave,250);
   refreshB1FSiteMaterialStatus();
 }
-window.retryB1FSiteMaterialSave=async function(){
-  if(b1fSiteMaterialSaving||!b1fSiteMaterialPending.length)return;
-  b1fSiteMaterialSaving=true;
+window.retryB1FSiteMaterialSave=function(){
+  if(b1fSiteMaterialSaveInFlight)return b1fSiteMaterialSaveInFlight;
+  if(!b1fSiteMaterialPending.length)return;
+  b1fSiteMaterialSaveInFlight=Promise.resolve().then(b1fSavePendingSiteMaterialEdits).finally(()=>{
+    b1fSiteMaterialSaveInFlight=null;
+    if(!b1fSiteMaterialFailed&&b1fSiteMaterialPending.length)void retryB1FSiteMaterialSave();
+  });
+  return b1fSiteMaterialSaveInFlight;
+};
+async function b1fSavePendingSiteMaterialEdits(){
   b1fSiteMaterialFailed='';
-  const batch=b1fSiteMaterialPending.slice(),observed=b1fStore;
+  const batch=b1fSiteMaterialPending.slice();
   refreshB1FSiteMaterialStatus();
   try{
-    const apply=raw=>{
-      const lists=Array.isArray(raw)?structuredClone(raw):[];
+    await b1fWriteSiteMaterialLists(lists=>{
       for(const edit of batch)if(edit(lists)===false)throw Object.assign(new Error('用料單項目已由其他人刪除或結案。'),{code:'b1f/material-conflict'});
-      return lists;
-    };
-    if(localTestMode){
-      const store=b1fDataV3(),lists=apply(store.siteMaterialLists);
-      localStorage.setItem(b1fStoreKeyV3(),JSON.stringify({...store,siteMaterialLists:lists}));
-      store.siteMaterialLists=lists;
-    }else{
-      const lists=await fbRunTransaction(db,async transaction=>{
-        const snapshot=await transaction.get(b1fSharedRef());
-        const latest=apply(snapshot.data()?.siteMaterialLists);
-        transaction.set(b1fSharedRef(),{siteMaterialLists:latest},{merge:true});
-        return latest;
-      });
-      if(b1fStore===observed)(b1fStore||=(b1fNormalizeShared(null))).siteMaterialLists=lists;
-    }
+    });
     b1fSiteMaterialPending.splice(0,batch.length);
     b1fSiteMaterialSaved=!b1fSiteMaterialPending.length;
     if(b1fSiteMaterialSaved&&b1fSiteMaterialRefreshPending)refreshB1FSiteMaterialFromSnapshot();
@@ -110,11 +102,30 @@ window.retryB1FSiteMaterialSave=async function(){
       :error.code==='permission-denied'?'用料單尚未儲存。這個帳號沒有寫入權限。'
       :'用料單尚未儲存，請確認連線後重試。';
   }finally{
-    b1fSiteMaterialSaving=false;
     refreshB1FSiteMaterialStatus();
-    if(!b1fSiteMaterialFailed&&b1fSiteMaterialPending.length)void retryB1FSiteMaterialSave();
   }
-};
+}
+async function b1fWriteSiteMaterialLists(change){
+  const apply=raw=>{
+    const lists=Array.isArray(raw)?structuredClone(raw):[];
+    change(lists);
+    return lists;
+  };
+  if(localTestMode){
+    const store=b1fDataV3(),lists=apply(store.siteMaterialLists);
+    localStorage.setItem(b1fStoreKeyV3(),JSON.stringify({...store,siteMaterialLists:lists}));
+    store.siteMaterialLists=lists;
+    return;
+  }
+  const observed=b1fStore,ref=b1fSharedRef();
+  const lists=await fbRunTransaction(db,async transaction=>{
+    const snapshot=await transaction.get(ref);
+    const latest=apply(snapshot.data()?.siteMaterialLists);
+    transaction.set(ref,{siteMaterialLists:latest},{merge:true});
+    return latest;
+  });
+  if(b1fStore===observed)(b1fStore||=(b1fNormalizeShared(null))).siteMaterialLists=lists;
+}
 function b1fEditSiteMaterialList(id,edit){
   const projectId=b1fSiteMaterialLists().find(row=>row.id===id)?.projectId;
   const updatedAt=b1fNow();
@@ -182,6 +193,9 @@ window.updateB1FSiteMaterialQuantity=function(listId,rowId,itemId,value){
 
 // 其他叫料：只屬於單一工地用料單，保留日後完工處理／加入 B1F 的欄位，但目前不串接任何 B1F 流程。
 function b1fOtherOrders(list){return(list.otherOrders||=([]));}
+function b1fOtherOrderIsClosed(order){
+  return order.status==='used'||order.status==='transferred'||order.status==='recordOnly';
+}
 function b1fOtherOrderNumber(value){const number=Number(value);return Number.isFinite(number)&&number>0?number:0;}
 function b1fOtherOrderAmount(row){return row.chargeable?(b1fOtherOrderNumber(row.quantity)*b1fOtherOrderNumber(row.unitPrice)):0;}
 function b1fOtherOrderTotal(list){return b1fOtherOrders(list).reduce((total,row)=>total+b1fOtherOrderAmount(row),0);}
@@ -211,7 +225,7 @@ window.updateB1FOtherOrder=function(listId,rowId,key,value,live){
   const next=key==='chargeable'?value==='yes':key==='quantity'||key==='unitPrice'?b1fOtherOrderNumber(value):String(value||'');
   b1fEditSiteMaterialList(listId,list=>{
     const row=b1fOtherOrders(list).find(item=>item.id===rowId);
-    if(!row||['used','transferred'].includes(row.status))return false;
+    if(!row||b1fOtherOrderIsClosed(row))return false;
     row[key]=next;
     row.updatedAt=updatedAt;
   });
@@ -221,7 +235,7 @@ window.deleteB1FOtherOrder=function(listId,rowId){
   if(!confirm('確定刪除此筆其他叫料？'))return;
   b1fEditSiteMaterialList(listId,list=>{
     const row=b1fOtherOrders(list).find(item=>item.id===rowId);
-    if(row&&['used','transferred'].includes(row.status))return false;
+    if(row&&b1fOtherOrderIsClosed(row))return false;
     list.otherOrders=b1fOtherOrders(list).filter(item=>item.id!==rowId);
   });
   renderB1F();
@@ -241,10 +255,10 @@ b1fCartMarkup=function(){const linked=b1fCart().find(line=>line.siteMaterialList
 window.confirmB1FCart=async function(){const project=b1fSiteById($('b1f-cart-project')?.value),cartLines=b1fCart().map(line=>({...line}));if(!project)return alert('請選擇使用工地／案件。');if(!cartLines.length)return alert('購物車目前沒有商品。');const linkedIds=[...new Set(cartLines.map(line=>line.siteMaterialListId).filter(Boolean))];if(linkedIds.length>1)return alert('同一張購物車一次只能處理一張工地用料單。');const linkedList=linkedIds.length?b1fSiteMaterialLists().find(row=>row.id===linkedIds[0]):null;if(linkedList&&project.id!==linkedList.projectId)return alert('此購物車已連結「'+linkedList.projectName+'」，請使用相同案件完成領用。');try{const result=await b1fCommit(store=>{const lines=cartLines.map(line=>({line,item:store.items.find(item=>item.id===line.itemId)})),invalid=lines.find(x=>!x.item||!Number.isFinite(x.line.qty)||x.line.qty<=0||x.line.qty>x.item.stockQty);if(invalid)throw new Error(invalid?.item?invalid.item.name+' 庫存不足，請調整數量後再確認。':'商品已不存在。');const batchId=b1fId('batch'),now=b1fNow(),order={id:b1fId('order'),batchId,orderNo:'B1F-'+new Date().toISOString().slice(0,10).replaceAll('-','')+'-'+String(store.orders.filter(o=>String(o.orderNo||'').startsWith('B1F-'+new Date().toISOString().slice(0,10).replaceAll('-',''))).length+1).padStart(3,'0'),projectId:project.id,projectName:project.name,projectSource:project.source,createdAt:now,actorId:currentUser?.uid||'',actorName:currentUser?.displayName||'',usageIds:[]};lines.forEach(({line,item})=>{item.stockQty=Number((item.stockQty-line.qty).toFixed(9));const amount=line.qty*item.unitPrice,record={id:b1fId('usage'),batchId,orderId:order.id,orderNo:order.orderNo,itemId:item.id,itemName:item.name,unit:item.unit,unitPrice:item.unitPrice,projectId:project.id,projectName:project.name,projectSource:project.source,siteMaterialListId:line.siteMaterialListId||'',siteMaterialProjectId:line.siteMaterialProjectId||'',issuedQty:line.qty,inUseQty:line.qty,returnedQty:0,usedQty:0,disposedQty:0,chargeAmount:amount,refundedAmount:0,status:'pending',issuedAt:now};store.usages.push(record);order.usageIds.push(record.id);b1fLogIn(store,'issue',{batchId,orderId:order.id,usageId:record.id,itemId:item.id,itemName:item.name,quantity:line.qty,unit:item.unit,projectId:project.id,projectName:project.name,projectSource:project.source,amount,siteMaterialListId:record.siteMaterialListId});if(amount>0)b1fLogIn(store,'charge',{batchId,orderId:order.id,usageId:record.id,itemId:item.id,itemName:item.name,quantity:line.qty,unit:item.unit,projectId:project.id,projectName:project.name,projectSource:project.source,amount,siteMaterialListId:record.siteMaterialListId});});store.orders.push(order);return{order,total:lines.reduce((sum,x)=>sum+x.line.qty*x.item.unitPrice,0)};});const cart=b1fCart();cart.splice(0,cart.length);if(!localTestMode)b1fPersonalCart=cart;b1fSaveCartV5();b1fFlash='訂單 '+result.order.orderNo+' 已完成｜本次總金額 '+b1fMoney(result.total);b1fView='pending';renderB1F();}catch(error){if(error?.message)alert(error.message);}};
 
 // 其他叫料完工處理：僅在確認時將剩料轉入 B1F，資料保留工地來源與處理明細以防止重複執行。
-function b1fOtherOrderStatus(row){return row.status==='used'?'使用完畢':row.status==='transferred'?'已加入 B1F':'未結案';}
-function b1fOtherOrderStatusMarkup(row){const status=row.status||'open',done=row.completion||{};if(status==='used')return '<div><span class="tag" style="background:#e5f5eb;color:#197044">使用完畢</span><div style="margin-top:5px;font-size:11px;color:var(--text3)">叫料 '+b1fOtherOrderNumber(row.quantity)+'｜未入 B1F</div></div>';if(status==='transferred')return '<div><span class="tag" style="background:#eee8ff;color:#5638a5">已加入 B1F</span><div style="margin-top:5px;font-size:11px;color:var(--text3)">叫料 '+b1fOtherOrderNumber(row.quantity)+'｜使用 '+b1fOtherOrderNumber(done.usedQty)+'｜加入 B1F '+b1fOtherOrderNumber(done.remainingQty)+'</div></div>';return '<span class="tag" style="background:#fff1d8;color:#9a5b00">未結案</span>';}
+function b1fOtherOrderStatus(row){return row.status==='recordOnly'?'僅紀錄':row.status==='used'?'使用完畢':row.status==='transferred'?'已加入 B1F':'未結案';}
+function b1fOtherOrderStatusMarkup(row){const status=row.status||'open',done=row.completion||{};if(status==='recordOnly')return '<span class="tag" style="background:#eeebfa;color:#5b438d">僅紀錄</span>';if(status==='used')return '<div><span class="tag" style="background:#e5f5eb;color:#197044">使用完畢</span><div style="margin-top:5px;font-size:11px;color:var(--text3)">叫料 '+b1fOtherOrderNumber(row.quantity)+'｜未入 B1F</div></div>';if(status==='transferred')return '<div><span class="tag" style="background:#eee8ff;color:#5638a5">已加入 B1F</span><div style="margin-top:5px;font-size:11px;color:var(--text3)">叫料 '+b1fOtherOrderNumber(row.quantity)+'｜使用 '+b1fOtherOrderNumber(done.usedQty)+'｜加入 B1F '+b1fOtherOrderNumber(done.remainingQty)+'</div></div>';return '<span class="tag" style="background:#fff1d8;color:#9a5b00">未結案</span>';}
 const b1fOtherOrderMarkupV1=b1fOtherOrderMarkup;
-b1fOtherOrderMarkup=function(list){const rows=b1fOtherOrders(list);const rowHtml=rows.map(row=>{const charged=!!row.chargeable,amount=b1fOtherOrderAmount(row),open=!['used','transferred'].includes(row.status);return `<tr>
+b1fOtherOrderMarkup=function(list){const rows=b1fOtherOrders(list);const rowHtml=rows.map(row=>{const charged=!!row.chargeable,amount=b1fOtherOrderAmount(row),open=!b1fOtherOrderIsClosed(row);return `<tr>
   <td><input class="b1f-input" value="${escAttr(row.vendor||'')}" placeholder="例如：XX 五金" aria-label="廠商" ${open?'':'disabled'} onchange="updateB1FOtherOrder('${list.id}','${row.id}','vendor',this.value)"></td>
   <td><input class="b1f-input" value="${escAttr(row.name||'')}" placeholder="輸入品名" aria-label="品名" ${open?'':'disabled'} onchange="updateB1FOtherOrder('${list.id}','${row.id}','name',this.value)"></td>
   <td><input class="b1f-row-qty" type="number" min="0" step="any" value="${b1fOtherOrderNumber(row.quantity)}" aria-label="${escAttr(row.name||'其他叫料')} 數量" ${open?'':'disabled'} oninput="updateB1FOtherOrder('${list.id}','${row.id}','quantity',this.value,true)"></td>
@@ -256,7 +270,7 @@ b1fOtherOrderMarkup=function(list){const rows=b1fOtherOrders(list);const rowHtml
   <td>${open?`<div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btn-sm" type="button" onclick="completeB1FOtherOrder('${list.id}','${row.id}')">使用完畢</button><button class="btn btn-sm btn-p" type="button" onclick="openB1FOtherOrderTransfer('${list.id}','${row.id}')">加入 B1F</button><button class="btn btn-sm btn-danger" type="button" onclick="deleteB1FOtherOrder('${list.id}','${row.id}')">刪除</button></div>`:'<span style="font-size:11px;color:var(--text3)">已結案，避免重複處理</span>'}</td>
 </tr>`;}).join('');return `<section style="margin-top:24px;padding-top:20px;border-top:2px solid #eadede"><div style="display:flex;justify-content:space-between;gap:12px;align-items:start;flex-wrap:wrap"><div><h3 style="margin:0;color:#7d3030;font-size:16px">其他叫料</h3><p style="margin:6px 0 0;color:var(--text2);font-size:13px">叫料完成後可標記使用完畢，或將剩料加入 B1F；已結案資料會鎖定以避免重複入庫。</p></div><button class="btn btn-p" type="button" onclick="addB1FOtherOrder('${list.id}')">＋新增其他叫料</button></div><div style="margin-top:14px;overflow:auto;border:1px solid #efd6d6;border-radius:9px"><table style="border-collapse:collapse;width:max-content;min-width:100%"><thead><tr>${['廠商','品名','數量','備註','計價狀態','單價','金額','完工狀態','操作'].map(label=>`<th style="padding:10px;text-align:left;white-space:nowrap;background:#fff8f8;color:#7d3030;font-size:12px;border-bottom:1px solid #efdede">${label}</th>`).join('')}</tr></thead><tbody>${rowHtml||'<tr><td colspan="9" style="padding:18px;text-align:center;color:var(--text3)">尚無其他叫料，請按右上角新增。</td></tr>'}</tbody><tfoot><tr><td colspan="7" style="padding:11px;background:#fff8f8;color:#7d3030;font-weight:700;text-align:right;border-top:1px solid #efdede">計價項目總金額</td><td data-b1f-other-total style="padding:11px;background:#fff8f8;color:#8d3030;font-weight:700;border-top:1px solid #efdede">${b1fMoney(b1fOtherOrderTotal(list))}</td><td style="background:#fff8f8;border-top:1px solid #efdede"></td></tr></tfoot></table></div></section>`;};
 function b1fOtherOrderRow(listId,rowId){const list=b1fSiteMaterialLists().find(row=>row.id===listId),row=b1fOtherOrders(list||{}).find(item=>item.id===rowId);return{list,row};}
-window.completeB1FOtherOrder=function(listId,rowId){const {list,row}=b1fOtherOrderRow(listId,rowId);if(!list||!row||['used','transferred'].includes(row.status))return;$('mo-content').innerHTML='<div class="mo-title">確認使用完畢</div><div class="mo-sub">「'+escAttr(row.name||'未命名其他叫料')+'」將標示為使用完畢並結案，之後無法重複處理。</div><div class="mo-footer"><button class="btn" type="button" onclick="closeMo()">取消</button><button class="btn btn-p" type="button" onclick="confirmB1FOtherOrderCompletion(\''+list.id+'\',\''+row.id+'\')">確定</button></div>';$('modal').style.display='flex';};
+window.completeB1FOtherOrder=function(listId,rowId){const {list,row}=b1fOtherOrderRow(listId,rowId);if(!list||!row||b1fOtherOrderIsClosed(row))return;$('mo-content').innerHTML='<div class="mo-title">確認使用完畢</div><div class="mo-sub">「'+escAttr(row.name||'未命名其他叫料')+'」將標示為使用完畢並結案，之後無法重複處理。</div><div class="mo-footer"><button class="btn" type="button" onclick="closeMo()">取消</button><button class="btn btn-p" type="button" onclick="confirmB1FOtherOrderCompletion(\''+list.id+'\',\''+row.id+'\')">確定</button></div>';$('modal').style.display='flex';};
 async function b1fCommitOtherOrderClosure(listId,rowId,change){
   if(b1fSiteMaterialClosing)return;
   b1fSiteMaterialClosing=true;
@@ -273,7 +287,7 @@ async function b1fCommitOtherOrderClosure(listId,rowId,change){
     const result=await b1fCommit(store=>{
       const list=store.siteMaterialLists?.find(entry=>entry.id===listId);
       const row=list?.otherOrders?.find(entry=>entry.id===rowId);
-      if(!row||['used','transferred'].includes(row.status))throw b1fOtherOrderError('此筆叫料已刪除或結案。');
+      if(!row||b1fOtherOrderIsClosed(row))throw b1fOtherOrderError('此筆叫料已刪除或結案。');
       const result=change(store,list,row,completedAt);
       row.updatedAt=list.updatedAt=completedAt;
       return result;
@@ -290,6 +304,35 @@ async function b1fCommitOtherOrderClosure(listId,rowId,change){
   }
 }
 function b1fOtherOrderError(message){return Object.assign(new Error(message),{code:'b1f/material-order'});}
+window.setB1FOtherOrderRecordOnly=async function(listId,rowId,recordOnly){
+  if(b1fSiteMaterialClosing)return;
+  b1fSiteMaterialClosing=true;
+  b1fSiteMaterialSaved=false;
+  refreshB1FSiteMaterialStatus();
+  try{
+    await retryB1FSiteMaterialSave();
+    while(b1fSiteMaterialPending.length&&!b1fSiteMaterialFailed)await retryB1FSiteMaterialSave();
+    if(b1fSiteMaterialPending.length)throw b1fOtherOrderError('請先完成用料單儲存，再變更「僅紀錄」狀態。');
+    const updatedAt=b1fNow();
+    await b1fWriteSiteMaterialLists(lists=>{
+      const list=lists.find(entry=>entry.id===listId);
+      const row=list?.otherOrders?.find(entry=>entry.id===rowId);
+      if(!row||(recordOnly?b1fOtherOrderIsClosed(row):row.status!=='recordOnly')){
+        throw b1fOtherOrderError('此筆叫料的狀態已變更或已刪除，請確認後再試。');
+      }
+      row.status=recordOnly?'recordOnly':'planned';
+      row.updatedAt=list.updatedAt=updatedAt;
+    });
+    b1fSiteMaterialSaved=true;
+  }catch(error){
+    console.error('僅紀錄狀態儲存失敗',error);
+    b1fSiteMaterialSaved=false;
+    alert(error.code==='b1f/material-order'?error.message:'「僅紀錄」狀態未儲存，請確認連線或權限後再試。');
+  }finally{
+    b1fSiteMaterialClosing=false;
+    refreshB1FSiteMaterialFromSnapshot();
+  }
+};
 window.confirmB1FOtherOrderCompletion=function(listId,rowId){
   return b1fCommitOtherOrderClosure(listId,rowId,(store,list,row,completedAt)=>{
     const qty=b1fOtherOrderNumber(row.quantity);
@@ -299,7 +342,7 @@ window.confirmB1FOtherOrderCompletion=function(listId,rowId){
       siteMaterialListId:list.id,itemName:row.name||'未命名其他叫料',quantity:qty,unit:row.unit||'',amount:null,note:'其他叫料使用完畢'});
   });
 };
-window.openB1FOtherOrderTransfer=function(listId,rowId){const {list,row}=b1fOtherOrderRow(listId,rowId);if(!list||!row||['used','transferred'].includes(row.status))return;const existing=b1fData().items.find(item=>String(item.name||'').trim().toLocaleLowerCase()===String(row.name||'').trim().toLocaleLowerCase());const qty=b1fOtherOrderNumber(row.quantity),price=row.chargeable?b1fOtherOrderNumber(row.unitPrice):0;$('mo-content').innerHTML=`<div class="mo-title">其他叫料剩料加入 B1F</div><div class="mo-sub">${escAttr(list.projectName)}｜${escAttr(row.name||'未命名品項')}</div><div class="b1f-form"><label class="b1f-field">剩餘數量<input id="b1f-other-transfer-qty" type="number" min="0.01" max="${qty}" step="any" value="${qty}"></label>${existing?`<div class="b1f-summary"><div class="b1f-summary-row"><span>找到既有商品</span><strong>${escAttr(existing.name)}</strong></div><div class="b1f-summary-row"><span>目前庫存</span><span>${existing.stockQty}${escAttr(existing.unit)}</span></div></div>`:`<label class="b1f-field">B1F 單位<input id="b1f-other-transfer-unit" value="個" placeholder="例如：個、組、支"></label><label class="b1f-field">來源<input id="b1f-other-transfer-source" value="${escAttr(list.projectName)}｜其他叫料剩料"></label><label class="b1f-field">單價<input id="b1f-other-transfer-price" type="number" min="0" step="any" value="${price}"></label><div class="mo-sub">${row.chargeable?'已帶入原叫料單價。':'不計價叫料會建立為 0 元商品。'}</div>`}<div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="confirmB1FOtherOrderTransfer('${list.id}','${row.id}','${existing?.id||''}')">確認加入 B1F</button></div></div>`;$('modal').style.display='flex';};
+window.openB1FOtherOrderTransfer=function(listId,rowId){const {list,row}=b1fOtherOrderRow(listId,rowId);if(!list||!row||b1fOtherOrderIsClosed(row))return;const existing=b1fData().items.find(item=>String(item.name||'').trim().toLocaleLowerCase()===String(row.name||'').trim().toLocaleLowerCase());const qty=b1fOtherOrderNumber(row.quantity),price=row.chargeable?b1fOtherOrderNumber(row.unitPrice):0;$('mo-content').innerHTML=`<div class="mo-title">其他叫料剩料加入 B1F</div><div class="mo-sub">${escAttr(list.projectName)}｜${escAttr(row.name||'未命名品項')}</div><div class="b1f-form"><label class="b1f-field">剩餘數量<input id="b1f-other-transfer-qty" type="number" min="0.01" max="${qty}" step="any" value="${qty}"></label>${existing?`<div class="b1f-summary"><div class="b1f-summary-row"><span>找到既有商品</span><strong>${escAttr(existing.name)}</strong></div><div class="b1f-summary-row"><span>目前庫存</span><span>${existing.stockQty}${escAttr(existing.unit)}</span></div></div>`:`<label class="b1f-field">B1F 單位<input id="b1f-other-transfer-unit" value="個" placeholder="例如：個、組、支"></label><label class="b1f-field">來源<input id="b1f-other-transfer-source" value="${escAttr(list.projectName)}｜其他叫料剩料"></label><label class="b1f-field">單價<input id="b1f-other-transfer-price" type="number" min="0" step="any" value="${price}"></label><div class="mo-sub">${row.chargeable?'已帶入原叫料單價。':'不計價叫料會建立為 0 元商品。'}</div>`}<div class="mo-footer"><button class="btn" onclick="closeMo()">取消</button><button class="btn btn-p" onclick="confirmB1FOtherOrderTransfer('${list.id}','${row.id}','${existing?.id||''}')">確認加入 B1F</button></div></div>`;$('modal').style.display='flex';};
 window.confirmB1FOtherOrderTransfer=function(listId,rowId,existingId){
   const remaining=b1fOtherOrderNumber($('b1f-other-transfer-qty')?.value);
   const unit=$('b1f-other-transfer-unit')?.value.trim();
@@ -396,11 +439,11 @@ function fitB1FSiteMaterialTables(){
   const otherTable=otherHeading?.closest('section')?.querySelector('table');
   if(!otherTable)return;
   const wrapper=otherTable.parentElement;
-  wrapper.style.overflow='hidden';
+  wrapper.style.overflowX='auto';
   otherTable.style.width='100%';
-  otherTable.style.minWidth='0';
+  otherTable.style.minWidth='620px';
   otherTable.style.tableLayout='fixed';
-  otherTable.querySelectorAll('th,td').forEach(cell=>{cell.style.minWidth='0';overflow='hidden';});
+  otherTable.querySelectorAll('th,td').forEach(cell=>{cell.style.minWidth='0';cell.style.overflow='hidden';});
   const widths=['114px','auto','124px','110px','220px'];
   let group=otherTable.querySelector('colgroup');
   if(!group){group=document.createElement('colgroup');otherTable.prepend(group);}
@@ -415,19 +458,19 @@ function fitB1FSiteMaterialTables(){
     else if(column===2)input.style.width='100px';
     else input.style.width='100%';
   });
-  otherTable.querySelectorAll('tbody td:last-child > div').forEach(actions=>{actions.style.flexWrap='nowrap';actions.style.whiteSpace='nowrap';actions.style.justifyContent='flex-start';});
+  otherTable.querySelectorAll('tbody td:last-child > div').forEach(actions=>{actions.style.flexWrap='wrap';actions.style.whiteSpace='nowrap';actions.style.justifyContent='flex-start';});
 }
 const b1fSiteMaterialDetailMarkupV7=b1fSiteMaterialDetailMarkup;
 b1fSiteMaterialDetailMarkup=function(list){const html=b1fSiteMaterialDetailMarkupV7(list);setTimeout(fitB1FSiteMaterialTables,0);return html;};
 
 // 其他叫料不再承擔計價用途：保留舊資料欄位以相容既有紀錄，但不顯示或編輯它們。
-b1fOtherOrderMarkup=function(list){const rows=b1fOtherOrders(list);const rowHtml=rows.map(row=>{const open=!['used','transferred'].includes(row.status);return `<tr>
+b1fOtherOrderMarkup=function(list){const rows=b1fOtherOrders(list);const rowHtml=rows.map(row=>{const open=!b1fOtherOrderIsClosed(row);return `<tr>
   <td><input data-b1f-material-input class="b1f-input" value="${escAttr(row.vendor||'')}" placeholder="例如：XX 五金" aria-label="廠商" ${open?'':'disabled'} oninput="updateB1FOtherOrder('${list.id}','${row.id}','vendor',this.value,true)"></td>
   <td><input data-b1f-material-input class="b1f-input" value="${escAttr(row.name||'')}" placeholder="輸入品名" aria-label="品名" ${open?'':'disabled'} oninput="updateB1FOtherOrder('${list.id}','${row.id}','name',this.value,true)"></td>
   <td><input data-b1f-material-input class="b1f-row-qty" type="number" min="0" step="any" value="${b1fOtherOrderNumber(row.quantity)}" aria-label="${escAttr(row.name||'其他叫料')} 數量" ${open?'':'disabled'} oninput="updateB1FOtherOrder('${list.id}','${row.id}','quantity',this.value,true)"></td>
   <td>${b1fOtherOrderStatusMarkup(row)}</td>
-  <td>${open?`<div style="display:flex;gap:5px;flex-wrap:nowrap;white-space:nowrap"><button class="btn btn-sm" type="button" onclick="completeB1FOtherOrder('${list.id}','${row.id}')">使用完畢</button><button class="btn btn-sm btn-p" type="button" onclick="openB1FOtherOrderTransfer('${list.id}','${row.id}')">加入 B1F</button><button class="btn btn-sm btn-danger" type="button" onclick="deleteB1FOtherOrder('${list.id}','${row.id}')">刪除</button></div>`:'<span style="font-size:11px;color:var(--text3)">已結案，避免重複處理</span>'}</td>
-</tr>`;}).join('');return `<section style="margin-top:24px;padding-top:20px;border-top:2px solid #eadede"><div><h3 style="margin:0;color:#7d3030;font-size:16px">其他叫料</h3><p style="margin:6px 0 0;color:var(--text2);font-size:13px">叫料完成後可標記使用完畢，或將剩料加入 B1F；已結案資料會鎖定以避免重複入庫。</p><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="btn btn-p" type="button" onclick="addB1FOtherOrder('${list.id}')">＋新增其他叫料</button></div></div><div style="margin-top:14px;overflow:hidden;border:1px solid #efd6d6;border-radius:9px"><table style="border-collapse:collapse;width:auto;min-width:0"><thead><tr>${['廠商','品名','數量','完工狀態','操作'].map(label=>`<th style="padding:10px;text-align:left;white-space:nowrap;background:#fff8f8;color:#7d3030;font-size:12px;border-bottom:1px solid #efdede">${label}</th>`).join('')}</tr></thead><tbody>${rowHtml||'<tr><td colspan="5" style="padding:18px;text-align:center;color:var(--text3)">尚無其他叫料，請按上方按鈕新增。</td></tr>'}</tbody></table></div></section>`;};
+  <td>${open?`<div style="display:flex;gap:5px;flex-wrap:wrap;white-space:nowrap"><button class="btn btn-sm" type="button" onclick="setB1FOtherOrderRecordOnly('${list.id}','${row.id}',true)">僅紀錄</button><button class="btn btn-sm" type="button" onclick="completeB1FOtherOrder('${list.id}','${row.id}')">使用完畢</button><button class="btn btn-sm btn-p" type="button" onclick="openB1FOtherOrderTransfer('${list.id}','${row.id}')">加入 B1F</button><button class="btn btn-sm btn-danger" type="button" onclick="deleteB1FOtherOrder('${list.id}','${row.id}')">刪除</button></div>`:(row.status==='recordOnly'?`<button class="btn btn-sm" type="button" onclick="setB1FOtherOrderRecordOnly('${list.id}','${row.id}',false)">取消僅紀錄</button>`:'<span style="font-size:11px;color:var(--text3)">已結案，避免重複處理</span>')}</td>
+</tr>`;}).join('');return `<section style="margin-top:24px;padding-top:20px;border-top:2px solid #eadede"><div><h3 style="margin:0;color:#7d3030;font-size:16px">其他叫料</h3><p style="margin:6px 0 0;color:var(--text2);font-size:13px">只需留存資料的項目可標記為僅紀錄。其他項目可標記使用完畢，或將剩料加入 B1F。</p><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="btn btn-p" type="button" onclick="addB1FOtherOrder('${list.id}')">＋新增其他叫料</button></div></div><div style="margin-top:14px;overflow:hidden;border:1px solid #efd6d6;border-radius:9px"><table style="border-collapse:collapse;width:auto;min-width:0"><thead><tr>${['廠商','品名','數量','完工狀態','操作'].map(label=>`<th style="padding:10px;text-align:left;white-space:nowrap;background:#fff8f8;color:#7d3030;font-size:12px;border-bottom:1px solid #efdede">${label}</th>`).join('')}</tr></thead><tbody>${rowHtml||'<tr><td colspan="5" style="padding:18px;text-align:center;color:var(--text3)">尚無其他叫料，請按上方按鈕新增。</td></tr>'}</tbody></table></div></section>`;};
 
 // 系統五金操作列放在說明文字下方、表格上方。
 const b1fSiteMaterialDetailMarkupV8=b1fSiteMaterialDetailMarkup;

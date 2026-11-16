@@ -181,7 +181,7 @@ function projectStageFingerprint(history){
     return Object.fromEntries(Object.keys(value).sort().map(key=>[key,value[key]]));
   });
 }
-async function writeProjectStageChange(project,patch,history){
+async function writeProjectStageChange(project,patch,history,validate){
   const ref=doc(db,'projects',project.id),expected=projectStageFingerprint(project.stageHistory);
   const check=fresh=>{
     if(!fresh||fresh.status!==project.status||projectStageFingerprint(fresh.stageHistory)!==expected)throw new Error('此案件狀態或階段紀錄已被更新，請重新整理後再試');
@@ -193,8 +193,16 @@ async function writeProjectStageChange(project,patch,history){
     check(fresh);
     return progressProjectWrite(fresh,data);
   };
-  if(localTestMode)await updateDoc(ref,prepare(await getDoc(ref)));
-  else await fbRunTransaction(db,async transaction=>transaction.update(ref,prepare(await transaction.get(ref))));
+  if(localTestMode){
+    if(validate)await validate();
+    await updateDoc(ref,prepare(await getDoc(ref)));
+  }else{
+    await fbRunTransaction(db,async transaction=>{
+      const data=prepare(await transaction.get(ref));
+      if(validate)await validate(transaction);
+      transaction.update(ref,data);
+    });
+  }
 }
 let projectStageRenderedDay=projectStageToday();
 function refreshProjectStageDay(){const day=projectStageToday();if(day!==projectStageRenderedDay){projectStageRenderedDay=day;if(activePanel==='overview'&&typeof renderOverview==='function')renderOverview();}}

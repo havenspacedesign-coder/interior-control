@@ -216,6 +216,7 @@ window.updateStatus=async function(projId,v,completionTypes,inspDate){
   const existing=S.projects.find(p=>p.id===projId);
   if(!existing||existing.status===v||projectStageBusy.has(projId))return;
   if(v==='done'&&!isAdmin())return;
+  const closingConstruction=existing.status==='prog'&&v==='done';
   if(existing?.status==='done'&&currentRole!=='manager')return alert('已完工案件僅限管理員變更狀態。');
   projectStageBusy.add(projId);
   try{
@@ -236,7 +237,11 @@ window.updateStatus=async function(projId,v,completionTypes,inspDate){
       patch.bibleSnapshot=snap;
     }
   }
-  await writeProjectStageChange(existing,patch,history);
+  await writeProjectStageChange(existing,patch,history,closingConstruction?async transaction=>{
+    const store=transaction?(await transaction.get(b1fSharedRef())).data()||{}:b1fData();
+    const result=checkB1FProjectCompletion(projId,store);
+    if(!result.passed)throw new Error(b1fProjectCompletionBlockedMessage(result));
+  }:undefined);
   setSynced();
   }catch(error){console.error('project status save failed',error);alert('案件狀態未儲存：'+error.message);renderOverview();}
   finally{projectStageBusy.delete(projId);}
@@ -309,12 +314,11 @@ function projectTradeBlockedMessage(checkResult){
   const lines=checkResult.hasCategories?checkResult.incompleteCategories.map(category=>`- ${category.name}`).join('\n'):'- 尚未建立工程分類';
   return `無法變更為「已完工」\n\n案件工班尚未完成設定：\n${lines}\n\n每個工程都必須勾選施工廠商，\n若沒有此工程，請勾選「無」。`;
 }
-function checkB1FProjectCompletion(projId){
-  const store=b1fData();
+function checkB1FProjectCompletion(projId,store=b1fData()){
   const pendingOtherOrders=(store.siteMaterialLists||[])
     .filter(list=>list.projectId===projId)
     .flatMap(list=>list.otherOrders||[])
-    .filter(order=>!['used','transferred'].includes(order.status));
+    .filter(order=>!b1fOtherOrderIsClosed(order));
   const pendingUsages=(store.usages||[])
     .filter(usage=>usage.projectId===projId&&(Number(usage.inUseQty)||0)>0);
   return{passed:pendingOtherOrders.length===0&&pendingUsages.length===0,pendingOtherOrders,pendingUsages};
