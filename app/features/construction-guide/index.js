@@ -117,6 +117,8 @@ function renderBibleWorksite(stage){
 }
 window.setBibleView=function(v){bibleView=v;renderBible();}
 window.setActiveStage=function(s){
+  // 重新繪製階段清單前保留左側清單與右側內容的捲動位置。
+  rememberBibleScrollPosition();
   activeBibleStage=s;renderBible();
   if(bibleView==='worksite')requestAnimationFrame(function(){
     const target=Array.from(document.querySelectorAll('[data-worksite-stage]')).find(function(el){return el.dataset.worksiteStage===s;});
