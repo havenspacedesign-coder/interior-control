@@ -1,126 +1,126 @@
 {
-  "date": "2026-11-17",
-  "updatedAt": "2026-11-17T04:25:10.949Z",
+  "date": "2026-11-18",
+  "updatedAt": "2026-11-18T03:37:15.734Z",
   "news": [
     {
-      "id": "ef08da541be52a32",
+      "id": "7268744aa6f6e31d",
       "source": "壹蘋",
       "category": "國際",
-      "title": "俄機「飛越台灣東部外海」侵犯日領空！南韓防空識別區也被闖",
-      "url": "https://news.nextapple.com/international/20261117/C484A4A1610FEF7543FF25CFD6CB8F67",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/C484A4A1610FEF7543FF25CFD6CB8F67/81e55428840e2b778b3d691325096ca9_1280.webp",
-      "publishedAt": "2026-11-17T03:19:44.000Z",
-      "fetchedAt": "2026-11-17T04:25:10.949Z"
+      "title": "黃仁勳路線喊卡？輝達揮刀斬斷對中業務　Hopper晶片「不賣中國了」",
+      "url": "https://news.nextapple.com/international/20261118/9836F114E0A60E0DC538E4323514678D",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/9836F114E0A60E0DC538E4323514678D/72f4880229613adbd8cd9cc4545a5358_1280.webp",
+      "publishedAt": "2026-11-18T03:27:25.000Z",
+      "fetchedAt": "2026-11-18T03:37:15.734Z"
     },
     {
-      "id": "a29620aab4ac24d5",
+      "id": "121d701096a7a060",
       "source": "壹蘋",
       "category": "生活",
-      "title": "中部侵襲性肺炎鏈球菌累計39例！醫示警肺阻塞、吸菸族恐併發心肌梗塞",
-      "url": "https://news.nextapple.com/life/20261117/8F434017CBD5BE8299A94AA4B4282503",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/8F434017CBD5BE8299A94AA4B4282503/326e8439553f0692f1d542236106581b_1280.webp",
-      "publishedAt": "2026-11-17T03:47:47.000Z",
-      "fetchedAt": "2026-11-17T04:25:10.949Z"
+      "title": "欣欣百貨總座爆性騷擾！最大股東證實　官方5點聲明",
+      "url": "https://news.nextapple.com/life/20261118/4BE9EB7D4A0F252F5C84166CDE3738BF",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/4BE9EB7D4A0F252F5C84166CDE3738BF/730add84dcfb25365e2921a7ca6d5a9c_1280.webp",
+      "publishedAt": "2026-11-18T03:07:17.000Z",
+      "fetchedAt": "2026-11-18T03:37:15.734Z"
     },
     {
-      "id": "3bef1793009e1b6b",
+      "id": "c16a793f04c8d7cc",
       "source": "壹蘋",
       "category": "社會",
-      "title": "基隆監獄又出包！算錯「縮刑分數」釀5人提早出獄",
-      "url": "https://news.nextapple.com/local/20261117/FCEF76C3CD30B07F09D3730515C62E03",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/FCEF76C3CD30B07F09D3730515C62E03/368d12e3596f69994969693cddf92a7d_1280.webp",
-      "publishedAt": "2026-11-17T04:13:53.000Z",
-      "fetchedAt": "2026-11-17T04:25:10.949Z"
+      "title": "屏東萬巒軍車撞斷電線桿！裝甲車行經途中發生事故　車長頭部受傷送醫",
+      "url": "https://news.nextapple.com/local/20261118/7278D6E1E7C51D5DA9CE4279B9D9FC3F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/7278D6E1E7C51D5DA9CE4279B9D9FC3F/88e25b886e5fa3a8049cd8433232f101_1280.webp",
+      "publishedAt": "2026-11-18T03:34:26.000Z",
+      "fetchedAt": "2026-11-18T03:37:15.734Z"
     },
     {
-      "id": "e7474e195d6a359c",
+      "id": "77c5de3ca9d08899",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "花花赴日當交換模特爾遭跟蹤　「他在找妳拍A片」揭可怕行徑",
-      "url": "https://news.nextapple.com/entertainment/20261117/441A8397A26A205CD7BEBCA8C81D6C1B",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/441A8397A26A205CD7BEBCA8C81D6C1B/14dbbc1395b3f344b8ff2fb0214b89f8_1280.webp",
-      "publishedAt": "2026-11-17T04:23:58.000Z",
-      "fetchedAt": "2026-11-17T04:25:10.949Z"
+      "title": "BALENCIAGA機車包25歲生日快樂　合作藝術大師經典波點、蝴蝶印上包",
+      "url": "https://news.nextapple.com/entertainment/20261118/A07F27592DAFB387092A72F8B03F1339",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A07F27592DAFB387092A72F8B03F1339/54db34c768330ca7f1449bda00e37b17_1280.webp",
+      "publishedAt": "2026-11-18T03:35:00.000Z",
+      "fetchedAt": "2026-11-18T03:37:15.734Z"
     },
     {
-      "id": "a180e24b67818d9e",
+      "id": "a2058da8fe3807a4",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "《哈利波特》手遊突宣布停止營運　這天起全平台下架",
-      "url": "https://news.nextapple.com/aitech/20261116/A8A8FF7E6CB35126CBECC0B3230773E3",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A8A8FF7E6CB35126CBECC0B3230773E3/d05feb7ef5f69bfe96f3769429471620_1280.webp",
-      "publishedAt": "2026-11-16T08:54:31.000Z",
-      "fetchedAt": "2026-11-17T04:25:10.949Z"
+      "title": "LINE電腦版支援螢幕閱讀器　看訊息、回覆都能用鍵盤",
+      "url": "https://news.nextapple.com/aitech/20261118/0E4438907DBD50AF381E1E0ED5EC05FD",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/0E4438907DBD50AF381E1E0ED5EC05FD/6845a6f37bb9ac83071d3b83a18842af_1280.webp",
+      "publishedAt": "2026-11-18T03:26:04.000Z",
+      "fetchedAt": "2026-11-18T03:37:15.734Z"
     },
     {
-      "id": "e180ca9924ca9e5c",
+      "id": "34058c4b580b10ef",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "00662完成1拆5！分割首日就溢價　分析師揭2大原因",
-      "url": "https://news.nextapple.com/finance/20261117/58F20548DE2C2C8619D3622093D82505",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/58F20548DE2C2C8619D3622093D82505/375c67b0b2806af0a6b4fe48e4496b22_1280.webp",
-      "publishedAt": "2026-11-17T04:23:20.000Z",
-      "fetchedAt": "2026-11-17T04:25:10.949Z"
+      "title": "台積電米玉傑、南亞科李培瑛都來了！科林研發竹南擴建研發重鎮",
+      "url": "https://news.nextapple.com/finance/20261118/D92137EB848C80527E7D7A54944BD6CA",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/D92137EB848C80527E7D7A54944BD6CA/f0acc91b997ceede26479ace11f2740b_1280.webp",
+      "publishedAt": "2026-11-18T03:23:52.000Z",
+      "fetchedAt": "2026-11-18T03:37:15.734Z"
     },
     {
-      "id": "e3daf36f89fbf721",
+      "id": "89cba05135124db3",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "蔣萬安不來了！取消社工客廳會　「連任後再來」掀熱議",
-      "url": "https://news.nextapple.com/politics/20261117/F149CE645956CFFA10232DBE57399102",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/F149CE645956CFFA10232DBE57399102/102a3dab53783a78962b4420a8006ba7_1280.webp",
-      "publishedAt": "2026-11-17T03:57:25.000Z",
-      "fetchedAt": "2026-11-17T04:25:10.949Z"
+      "title": "「情場浪子」康康翻車！坦承女友帶男人回家睡　摺疊機折斷丟窗外崩潰痛哭",
+      "url": "https://news.nextapple.com/entertainment/20261118/6561F2D2D85490B2429F441A144FD535",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/6561F2D2D85490B2429F441A144FD535/5f467ad2df2d730921ce2f1d8c5c8980_1280.webp",
+      "publishedAt": "2026-11-18T02:52:46.000Z",
+      "fetchedAt": "2026-11-18T03:37:15.734Z"
     },
     {
-      "id": "efb6237b059f3c8a",
+      "id": "0552e7f6816ce054",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "蔣辦諷「不敢反對翡翠水庫設光電？」　沈伯洋：昨天就SAY NO",
-      "url": "https://news.nextapple.com/politics/20261117/56A68E8DD0ACF6E9DCD1B007701EFBDB",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/56A68E8DD0ACF6E9DCD1B007701EFBDB/219e80bc473d340c139849f6ef468efb_1280.webp",
-      "publishedAt": "2026-11-17T03:54:27.000Z",
-      "fetchedAt": "2026-11-17T04:25:10.949Z"
+      "title": "張啓楷路邊撒尿被拍到！嘉義人傻眼：附近就有廁所",
+      "url": "https://news.nextapple.com/politics/20261118/E3BB3C3C63B20081597EE5E9250C6684",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/E3BB3C3C63B20081597EE5E9250C6684/0dbb9fdb0d39e421d312f0a0bb6cf2bb_1280.webp",
+      "publishedAt": "2026-11-18T02:52:30.000Z",
+      "fetchedAt": "2026-11-18T03:37:15.734Z"
     },
     {
-      "id": "e7c722befe5c4675",
-      "source": "壹蘋",
-      "category": "社會",
-      "title": "翻車片｜你累了嗎？苗栗男路口失控自撞翻車　警消破窗救援",
-      "url": "https://news.nextapple.com/local/20261117/812209099F21A8EC5FE31AE2F699AF48",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/812209099F21A8EC5FE31AE2F699AF48/b5560af7266c47c58bc838e259694d79_1280.webp",
-      "publishedAt": "2026-11-17T04:12:19.000Z",
-      "fetchedAt": "2026-11-17T04:25:10.949Z"
-    },
-    {
-      "id": "386bf022d1a5966a",
+      "id": "e74ce412d76a82fb",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "彭佳慧高雄巨蛋開唱倒數3天！練團突爆「有驚喜」",
-      "url": "https://news.nextapple.com/entertainment/20261117/01E33E804F99037D99ECCF926CB255EF",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/01E33E804F99037D99ECCF926CB255EF/fd666013c20a44a9a2761e4c69ce8053_1280.webp",
-      "publishedAt": "2026-11-17T04:10:58.000Z",
-      "fetchedAt": "2026-11-17T04:25:10.949Z"
+      "title": "Toyz曬照閃瞎網友　一句「三生有幸」告白筱崎泫",
+      "url": "https://news.nextapple.com/entertainment/20261118/C994658CB969AD77EAFB2C82E0B003FE",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/C994658CB969AD77EAFB2C82E0B003FE/95df25cc8b492cd3819c2c6e9bea6118_1280.webp",
+      "publishedAt": "2026-11-18T03:34:06.000Z",
+      "fetchedAt": "2026-11-18T03:37:15.734Z"
     },
     {
-      "id": "ba42c4482eefd928",
+      "id": "eba6e424629e6475",
       "source": "壹蘋",
-      "category": "財經股市",
-      "title": "貿協烏克蘭重建展　台灣館展出機器人、無人機等技術",
-      "url": "https://news.nextapple.com/finance/20261117/B777B8864D1509DD3F2646821C980788",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/B777B8864D1509DD3F2646821C980788/cda6f2e821b2db08733cfeea0deda4c0_1280.webp",
-      "publishedAt": "2026-11-17T03:54:37.000Z",
-      "fetchedAt": "2026-11-17T04:25:10.949Z"
+      "category": "社會",
+      "title": "金錢糾紛起殺機！男持鐵鎚、料理刀殺害2同事　國民法官判終身監禁",
+      "url": "https://news.nextapple.com/local/20261118/226E9BCDC2196F910BE9326262E19CF8",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/226E9BCDC2196F910BE9326262E19CF8/6a82bde33eebe53c6a750804d0c0b1d7_1280.webp",
+      "publishedAt": "2026-11-18T03:32:23.000Z",
+      "fetchedAt": "2026-11-18T03:37:15.734Z"
     },
     {
-      "id": "c507049da0b82e41",
+      "id": "09dd8ee57fd942d2",
+      "source": "壹蘋",
+      "category": "社會",
+      "title": "魚湯加整瓶米酒竟喝出酒駕！高雄66歲婦酒測值0.27　遭警送辦",
+      "url": "https://news.nextapple.com/local/20261118/DD6C3DAEABFEA55D17E0FEA5D7DA5566",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/DD6C3DAEABFEA55D17E0FEA5D7DA5566/9c5eeed5b199c561408aa6579b7cb186_1280.webp",
+      "publishedAt": "2026-11-18T03:19:00.000Z",
+      "fetchedAt": "2026-11-18T03:37:15.734Z"
+    },
+    {
+      "id": "18f35e288c5c0cc5",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "股王也撐不住！信驊跌破萬元大關　2月底來首見、距天價腰斬",
-      "url": "https://news.nextapple.com/finance/20261117/875ABD8AE8AD0930DD69B45FDC38C916",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/875ABD8AE8AD0930DD69B45FDC38C916/097c70007948242fcc751be498260ab7_1280.webp",
-      "publishedAt": "2026-11-17T03:41:45.000Z",
-      "fetchedAt": "2026-11-17T04:25:10.949Z"
+      "title": "惺惺相惜！OpenAI奧特曼聲援黃仁勳：英雄也有缺點",
+      "url": "https://news.nextapple.com/finance/20261118/53AAE16C35F8B20E6FCDD62972116FB7",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/53AAE16C35F8B20E6FCDD62972116FB7/fb13524eab9f51f81915af4314d26431_1280.webp",
+      "publishedAt": "2026-11-18T03:14:58.000Z",
+      "fetchedAt": "2026-11-18T03:37:15.734Z"
     }
   ]
 }
