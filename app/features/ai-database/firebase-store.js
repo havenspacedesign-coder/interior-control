@@ -41,9 +41,10 @@ export async function createEmulatorStore(options={}){
 
 function createFirebaseStore({db,auth,storage,fs,storageSdk,collections,metaCollection,prefix,mode,label,close}){
   const meta=fs.doc(db,metaCollection,'state');
-  async function identity(){
+  async function identity(onQuery=()=>{}){
     const uid=auth.currentUser?.uid;
     if(!uid)assertManager(null);
+    onQuery();
     const snapshot=await fs.getDocFromServer(fs.doc(db,'members',uid));
     if(auth.currentUser?.uid!==uid)assertManager(null);
     const member=snapshot.data();
@@ -71,6 +72,21 @@ function createFirebaseStore({db,auth,storage,fs,storageSdk,collections,metaColl
   }
   return {
     mode,label,load,filePath,identity,
+    createPhotoReadSession(){
+      const uid=auth.currentUser?.uid;
+      let permissionQueries=0;
+      const ready=identity(()=>permissionQueries++);
+      const check=()=>{if(!uid||auth.currentUser?.uid!==uid)assertManager(null);};
+      return {
+        ready,
+        get permissionQueries(){return permissionQueries;},
+        async getBlob(path){
+          await ready;check();
+          const blob=await storageSdk.getBlob(fileRef(path));
+          check();return blob;
+        },
+      };
+    },
     async commit(command,expectedRevision){
       const user=await identity(),before=await load();if(before.revision!==expectedRevision)throw Error('資料已由其他管理員修改，請重新載入後再儲存。');
       const next=applyCommand(before,command,user);

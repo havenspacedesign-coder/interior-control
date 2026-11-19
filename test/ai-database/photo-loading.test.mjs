@@ -62,7 +62,7 @@ const files=Array.from({length:12},(_,i)=>({storagePath:'original-'+i,thumbnailP
 const tasks=files.map(file=>loader.load(file));
 const duplicate=loader.load(files[0]);assert.equal(duplicate,tasks[0]);
 while(releases.length){releases.splice(0).forEach(resolve=>resolve());await new Promise(resolve=>setImmediate(resolve));}
-await Promise.all(tasks);assert.equal(peak,4);assert.equal(reads.length,12);assert.ok(reads.every(path=>path.startsWith('thumb-')));
+await Promise.all(tasks);assert.equal(peak,8);assert.equal(reads.length,12);assert.ok(reads.every(path=>path.startsWith('thumb-')));
 await loader.load(files[0]);assert.equal(reads.length,12);loader.dispose();
 const fallbackReads=[];
 const fallback=createPhotoLoader(async path=>{fallbackReads.push(path);if(path==='missing-thumb')throw Object.assign(Error(),{code:'storage/object-not-found'});return new Blob([path]);});
@@ -72,4 +72,4 @@ assert.deepEqual(fallbackReads,['old-original','missing-thumb','fallback-origina
 let deniedReads=0;
 const denied=createPhotoLoader(async()=>{deniedReads++;throw Object.assign(Error(),{code:'storage/unauthorized'});});
 await assert.rejects(denied.load({storagePath:'private-original',thumbnailPath:'private-thumb'}),{code:'storage/unauthorized'});assert.equal(deniedReads,1);denied.dispose();
-console.log('PASS: long-edge 480px, unchanged originals, durable thumbnail paths/captions, rollback, cleanup, original preview, cache metadata, max-4 concurrent reads, deduplication and legacy fallback. Image encoding/Storage mocked; local persistence uses IndexedDB.');
+console.log('PASS: long-edge 480px, unchanged originals, durable thumbnail paths/captions, rollback, cleanup, original preview, cache metadata, max-8 concurrent reads, deduplication and legacy fallback. Image encoding/Storage mocked; local persistence uses IndexedDB.');
