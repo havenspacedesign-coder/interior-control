@@ -1,17 +1,30 @@
 import {photoThumbnail} from './photo-thumbnail.js';
 
 const running=new WeakSet();
+export async function scanPhotoThumbnails(store){
+  const state=await store.load(),caseIds=new Set(state.cases.map(row=>row.id));
+  const photos=state.files.filter(file=>file.kind==='photo'&&caseIds.has(file.caseId));
+  const missing=photos.filter(file=>!file.thumbnailPath);
+  return {total:photos.length,existing:photos.length-missing.length,missing:missing.length,fileIds:missing.map(file=>file.id)};
+}
 // Explicit maintenance operation only; never runs during normal page loading.
 // A deterministic sibling path also allows an interrupted upload to be reused.
-export async function backfillPhotoThumbnails(store,{onProgress=()=>{}}={}){
+export async function backfillPhotoThumbnails(store,{onProgress=()=>{},fileIds,batchSize=5,shouldContinue=()=>true}={}){
   if(running.has(store))throw Error('縮圖補建已在執行中。');
   running.add(store);
   const report={found:0,success:0,skipped:0,failed:0,errors:[]};
   try{
     const snapshot=await store.load(),caseIds=new Set(snapshot.cases.map(row=>row.id));
-    const photos=snapshot.files.filter(file=>file.kind==='photo'&&caseIds.has(file.caseId));
+    const selected=fileIds?new Set(fileIds):null;
+    const photos=snapshot.files.filter(file=>file.kind==='photo'&&caseIds.has(file.caseId)&&(!selected||selected.has(file.id)));
     report.found=photos.length;
+    batchSize=Math.max(1,Math.min(5,Math.floor(Number(batchSize))||5));
+    onProgress(structuredClone(report));
+    let processed=0;
     for(const original of photos){
+      if(!shouldContinue()){report.paused=true;break;}
+      if(processed&&processed%batchSize===0){await new Promise(resolve=>setTimeout(resolve,0));if(!shouldContinue()){report.paused=true;break;}}
+      processed++;
       try{
         let state=await store.load();
         let file=state.files.find(row=>row.id===original.id&&row.caseId===original.caseId);

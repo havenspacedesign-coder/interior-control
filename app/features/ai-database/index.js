@@ -7,11 +7,12 @@ import {LEARNING_SCHEMA} from './learning-schema.js';
 import {uploadCaseFiles,cleanupFiles,openFile} from './files.js';
 import {createPhotoLoader} from './photo-loader.js';
 import {analyzeBasicCase} from './analysis-client.js';
+import {openThumbnailMaintenance} from './thumbnail-maintenance.js';
 export function mountAiDatabase(root,session){
   const emulatorMode=!session.createStore&&new URL(location.href).searchParams.get('aiStore')==='emulator';
   if(!document.querySelector('[data-ai-database-style]')){const link=document.createElement('link');link.rel='stylesheet';link.href=new URL('./ai-database.css',import.meta.url);link.dataset.aiDatabaseStyle='true';document.head.append(link);}
   let selectedCategory='cases',selectedCase='',collapsed=new Set(),dirty=false,busy=false,initializing=null,notice='',generation=0,denied=false;
-  let disposed=false,unsubscribe=null;
+  let disposed=false,unsubscribe=null,thumbnailMaintenance=null;
   const photoLoader=createPhotoLoader(path=>context.store.getBlob(path));
   const captionDrafts=new Map();
   const analyses=new Map();
@@ -113,11 +114,15 @@ export function mountAiDatabase(root,session){
   }
   function render(){
     if(disposed)return;
+    if(thumbnailMaintenance){
+      if(!denied&&session.canManage())return;
+      thumbnailMaintenance.dispose();thumbnailMaintenance=null;
+    }
     captionRenderPending=false;
     generation++;
     if(denied||!session.canManage()){photoLoader.dispose();root.innerHTML='<section class="card aidb-empty">沒有 AI 資料庫管理權限。</section>';return;}
     if(!context.state){root.innerHTML='<p class="aidb-loading">正在開啟 AI 資料庫…</p><p class="aidb-notice" role="status" hidden></p>';initialize();return;}
-    root.innerHTML=`<div class="aidb-header"><div><h1>AI 資料庫</h1><p class="aidb-muted">公司案件原始資料與設計知識管理</p></div><button class="btn btn-sm" data-action="reload">重新載入</button></div><p class="aidb-environment">${esc(context.store.label)}</p><p class="aidb-notice" role="status" ${notice?'':'hidden'}>${esc(notice)}</p>${context.state.cleanupPaths.length?'<p class="aidb-update-note">部分原始檔案尚待清理，資料已隱藏。<button class="btn btn-sm" data-action="cleanup">重試檔案清理</button></p>':''}<div class="aidb-layout"><aside class="aidb-sidebar card"><div class="aidb-sidebar-heading"><strong>知識分類</strong><button class="btn btn-sm" data-action="category.create">＋新增分類</button></div><nav aria-label="AI 資料庫分類與案件">${renderNavigation(context.state,{selectedCategory,selectedCase,collapsed})}</nav>${context.state.categories.some(c=>c.moduleType==='cases')?'':'<button class="btn btn-sm" data-action="category.restoreCases">建立案件資料庫</button>'}<p class="aidb-sort-hint">拖曳分類或案件可調整順序。<br>鍵盤：選取列後按 Alt＋↑／↓。</p></aside><main class="aidb-content">${renderCaseContent(context.state,{selectedCategory,selectedCase})}</main></div>`;
+    root.innerHTML=`<div class="aidb-header"><div><h1>AI 資料庫</h1><p class="aidb-muted">公司案件原始資料與設計知識管理</p></div><div class="aidb-actions"><button class="btn btn-sm" data-action="thumbnails.manage">照片縮圖工具</button><button class="btn btn-sm" data-action="reload">重新載入</button></div></div><p class="aidb-environment">${esc(context.store.label)}</p><p class="aidb-notice" role="status" ${notice?'':'hidden'}>${esc(notice)}</p>${context.state.cleanupPaths.length?'<p class="aidb-update-note">部分原始檔案尚待清理，資料已隱藏。<button class="btn btn-sm" data-action="cleanup">重試檔案清理</button></p>':''}<div class="aidb-layout"><aside class="aidb-sidebar card"><div class="aidb-sidebar-heading"><strong>知識分類</strong><button class="btn btn-sm" data-action="category.create">＋新增分類</button></div><nav aria-label="AI 資料庫分類與案件">${renderNavigation(context.state,{selectedCategory,selectedCase,collapsed})}</nav>${context.state.categories.some(c=>c.moduleType==='cases')?'':'<button class="btn btn-sm" data-action="category.restoreCases">建立案件資料庫</button>'}<p class="aidb-sort-hint">拖曳分類或案件可調整順序。<br>鍵盤：選取列後按 Alt＋↑／↓。</p></aside><main class="aidb-content">${renderCaseContent(context.state,{selectedCategory,selectedCase})}</main></div>`;
     updateAnalysis();
     previews();
   }
@@ -206,6 +211,15 @@ export function mountAiDatabase(root,session){
   root.addEventListener('click',event=>{
     const button=event.target.closest('[data-action]');if(!button||busy||captionSaving||!session.canManage())return;
     const key=button.dataset.action,id=button.dataset.id;
+    if(key==='thumbnails.manage'){
+      if(dirty||captionDrafts.size){error(Error('請先儲存目前編輯內容，再開啟縮圖工具。'));return;}
+      thumbnailMaintenance?.dispose();
+      thumbnailMaintenance=openThumbnailMaintenance(root,context.store,session,async()=>{
+        thumbnailMaintenance=null;
+        try{const state=await context.store.load();if(disposed||!session.canManage())return;context.state=state;render();}catch(e){error(e);}
+      });
+      return;
+    }
     if(key==='case.analyze'){void startAnalysis();return;}
     if(key==='collapse'){collapsed.has(id)?collapsed.delete(id):collapsed.add(id);if(!dirty&&!captionDrafts.size)render();else{root.querySelector(`[data-category-id="${CSS.escape(id)}"] .aidb-children`)?.toggleAttribute('hidden');button.textContent=collapsed.has(id)?'▸':'▾';button.setAttribute('aria-expanded',String(!collapsed.has(id)));}return;}
     if(key==='case.select'||key==='category.select'){if(!leaveDraft())return;dirty=false;selectedCase=key==='case.select'?id:'';selectedCategory=key==='case.select'?context.state.cases.find(c=>c.id===id).categoryId:id;notice='';render();return;}
@@ -242,6 +256,7 @@ export function mountAiDatabase(root,session){
       disposed=true;
       generation++;
       unsubscribe?.();
+      thumbnailMaintenance?.dispose();
       window.removeEventListener('beforeunload',warnBeforeUnload);
       photoLoader.dispose();
       analyses.clear();
