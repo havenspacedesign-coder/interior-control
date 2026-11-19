@@ -1,0 +1,28 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><title>本機既有照片縮圖補建</title>
+<style>body{font:16px system-ui;max-width:850px;margin:40px auto;padding:16px}button{padding:10px}pre{white-space:pre-wrap}</style>
+<h1>本機既有照片縮圖補建</h1>
+<p>只處理此瀏覽器的本機測試資料，不連線正式 Firebase。原圖、照片備註及案件資料保持不變。</p>
+<button id="run">掃描並補建本機既有照片縮圖</button><pre id="report" role="status">尚未執行</pre>
+<script type="module">
+import {createLocalStore} from '/app/features/ai-database/store.js';
+import {backfillPhotoThumbnails} from '/app/features/ai-database/thumbnail-backfill.js';
+const button=document.querySelector('#run'),report=document.querySelector('#report');
+if(!['127.0.0.1','localhost'].includes(location.hostname)){button.disabled=true;report.textContent='僅允許本機執行。';}
+else button.onclick=async()=>{
+  button.disabled=true;let store;
+  try{
+    store=await createLocalStore(()=>({uid:'local-thumbnail-maintenance',role:'manager',status:'active'}));
+    const before=await store.load(),hashes=new Map();
+    const hash=async blob=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer()))).map(v=>v.toString(16).padStart(2,'0')).join('');
+    for(const file of before.files.filter(f=>f.kind==='photo'))hashes.set(file.id,await hash(await store.getBlob(file.storagePath)));
+    const result=await backfillPhotoThumbnails(store,{onProgress:progress=>report.textContent=JSON.stringify(progress,null,2)});
+    const after=await store.load();
+    let originalsUnchanged=true;
+    for(const file of before.files.filter(f=>f.kind==='photo'))if(await hash(await store.getBlob(file.storagePath))!==hashes.get(file.id))originalsUnchanged=false;
+    const withoutAddedPaths=structuredClone(after);withoutAddedPaths.revision=before.revision;
+    for(const file of withoutAddedPaths.files){const old=before.files.find(row=>row.id===file.id);if(old&&!old.thumbnailPath)delete file.thumbnailPath;}
+    report.textContent=JSON.stringify({...result,originalsUnchanged,existingDataUnchanged:JSON.stringify(before)===JSON.stringify(withoutAddedPaths),scope:'本機瀏覽器資料；未讀寫正式 Firebase'},null,2);
+  }catch(error){report.textContent='補建未完成：'+error.message;}
+  finally{store?.close();button.disabled=false;}
+};
+</script></html>

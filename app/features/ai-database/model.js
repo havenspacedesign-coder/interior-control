@@ -3,6 +3,7 @@ export const SCOPES=['玄關','客廳','餐廳','廚房','主臥','次臥','書�
 export const FILE_TYPES={quote:'正式報價單 PDF',drawing:'施工圖 PDF',change:'追加減工程 PDF',photo:'完工照片'};
 export const clone=value=>structuredClone(value);
 export const newId=()=>crypto.randomUUID();
+const filePaths=file=>[file.storagePath,file.thumbnailPath].filter(Boolean);
 export function initialState(){return {schemaVersion:1,revision:0,categories:[{id:'cases',name:'案件資料庫',moduleType:'cases',sortOrder:0}],cases:[],files:[],knowledge:[],analysisRuns:[],questions:[],answerRevisions:[],cleanupPaths:[]};}
 export function assertManager(identity){if(!identity?.uid||!['manager','admin'].includes(identity.role)||identity.status!=='active'){const error=Error('沒有 AI 資料庫管理權限。');error.code='aidb/permission-denied';throw error;}}
 export function caseFields(input){
@@ -22,7 +23,7 @@ export function applyCommand(previous,command,user,now=new Date().toISOString())
   const stamp=value=>Object.assign(value,{updatedAt:now,updatedBy:user.uid});
   const touch=value=>{stamp(value);value.contentRevision=(value.contentRevision||0)+1;value.analysisState='not_enabled';};
   function discardCases(ids,keepGeneral){
-    const removed=state.files.filter(f=>ids.includes(f.caseId));state.cleanupPaths.push(...removed.map(f=>f.storagePath));
+    const removed=state.files.filter(f=>ids.includes(f.caseId));state.cleanupPaths.push(...removed.flatMap(filePaths));
     state.files=state.files.filter(f=>!ids.includes(f.caseId));state.cases=state.cases.filter(c=>!ids.includes(c.id));
     state.knowledge=state.knowledge.flatMap(k=>!ids.includes(k.caseId)?[k]:(keepGeneral&&k.scope==='company'&&k.confirmation==='confirmed'?[{...k,caseId:null,sourceCaseDeleted:true,sourceFiles:[],sourceCaseName:null}]:[]));
     const runIds=state.analysisRuns.filter(r=>ids.includes(r.caseId)).map(r=>r.id);
@@ -58,11 +59,18 @@ export function applyCommand(previous,command,user,now=new Date().toISOString())
     case 'file.add':{
       project();if(!FILE_TYPES[p.file.kind]||p.file.caseId!==id||state.files.some(f=>f.id===p.file.id))throw Error('檔案資料不正確。');
       const replaced=state.files.filter(f=>f.caseId===id&&((p.file.kind!=='photo'&&f.kind===p.file.kind)||f.id===p.replaceId));
-      state.cleanupPaths.push(...replaced.map(f=>f.storagePath));state.files=state.files.filter(f=>!replaced.includes(f));
+      state.cleanupPaths.push(...replaced.flatMap(filePaths));state.files=state.files.filter(f=>!replaced.includes(f));
       state.files.push({...p.file,uploadedAt:now,uploadedBy:user.uid});touch(project());break;
     }
     case 'file.caption':{const f=state.files.find(x=>x.id===p.fileId&&x.caseId===id);if(!f||f.kind!=='photo')throw Error('照片已不存在。');f.caption=String(p.caption||'');touch(project());break;}
-    case 'file.delete':{project();const f=state.files.find(x=>x.id===p.fileId&&x.caseId===id);if(!f)throw Error('檔案已不存在。');state.cleanupPaths.push(f.storagePath);state.files=state.files.filter(x=>x.id!==f.id);touch(project());break;}
+    case 'file.thumbnail':{
+      const f=state.files.find(x=>x.id===p.fileId&&x.caseId===id);
+      if(!f||f.kind!=='photo'||f.storagePath!==p.storagePath)throw Error('原照片資料已變更，請重新掃描。');
+      if(f.thumbnailPath)return state;
+      if(p.thumbnailPath!==f.storagePath+'_thumb.jpg')throw Error('縮圖路徑不正確。');
+      f.thumbnailPath=p.thumbnailPath;break;
+    }
+    case 'file.delete':{project();const f=state.files.find(x=>x.id===p.fileId&&x.caseId===id);if(!f)throw Error('檔案已不存在。');state.cleanupPaths.push(...filePaths(f));state.files=state.files.filter(x=>x.id!==f.id);touch(project());break;}
     case 'cleanup.done':state.cleanupPaths=state.cleanupPaths.filter(path=>!p.paths.includes(path));break;
     default:throw Error('不支援的操作。');
   }

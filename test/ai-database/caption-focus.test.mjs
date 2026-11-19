@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
+import {createPhotoLoader} from '../../app/features/ai-database/photo-loader.js';
 
 // Exercise the mounted event handlers with delayed shared-store notifications.
 const source=(await readFile(new URL('../../app/features/ai-database/index.js',import.meta.url),'utf8'))
@@ -29,7 +30,7 @@ const store={
   subscribe(callback){notify=callback;return()=>{};},
   async commit(command){state={...state,revision:state.revision+1,files:state.files.map(file=>file.id===command.payload.fileId?{...file,caption:command.payload.caption}:file)};return state;},
 };
-const sandbox={document,queueMicrotask,URL,Map,Set,console,
+const sandbox={document,queueMicrotask,URL,Map,Set,console,createPhotoLoader,
   window:{addEventListener(){},removeEventListener(){}},
   renderNavigation:()=>'',renderCaseContent:()=>'',esc:x=>x,
   cleanupFiles:async()=>{},LEARNING_SCHEMA:{version:1},

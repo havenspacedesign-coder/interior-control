@@ -19,7 +19,7 @@ export async function createLocalStore(identity){
       });
     },
     putBlob:writeBlob,
-    async getBlob(path){const blob=await read('blobs',path);if(!blob)throw Error('找不到原始檔案。');return blob;},
+    async getBlob(path){const blob=await read('blobs',path);if(!blob)throw Object.assign(Error('找不到原始檔案。'),{code:'storage/object-not-found'});return blob;},
     async deleteBlob(path){access();return new Promise((resolve,reject)=>{const tx=db.transaction('blobs','readwrite');tx.objectStore('blobs').delete(path);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});},
     subscribe(callback){if(channel)channel.onmessage=callback;return()=>{if(channel)channel.onmessage=null;};},
     close(){channel?.close();db.close();}

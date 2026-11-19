@@ -5,14 +5,14 @@ import {renderCaseContent} from './case-editor.js';
 import {esc} from './ui-utils.js';
 import {LEARNING_SCHEMA} from './learning-schema.js';
 import {uploadCaseFiles,cleanupFiles,openFile} from './files.js';
-import {photoThumbnail} from './photo-thumbnail.js';
+import {createPhotoLoader} from './photo-loader.js';
 import {analyzeBasicCase} from './analysis-client.js';
 export function mountAiDatabase(root,session){
   const emulatorMode=!session.createStore&&new URL(location.href).searchParams.get('aiStore')==='emulator';
   if(!document.querySelector('[data-ai-database-style]')){const link=document.createElement('link');link.rel='stylesheet';link.href=new URL('./ai-database.css',import.meta.url);link.dataset.aiDatabaseStyle='true';document.head.append(link);}
   let selectedCategory='cases',selectedCase='',collapsed=new Set(),dirty=false,busy=false,initializing=null,notice='',generation=0,denied=false;
   let disposed=false,unsubscribe=null;
-  const images=new Map();
+  const photoLoader=createPhotoLoader(path=>context.store.getBlob(path));
   const captionDrafts=new Map();
   const analyses=new Map();
   function updateAnalysis(){
@@ -100,28 +100,22 @@ export function mountAiDatabase(root,session){
   }
   async function previews(){
     const token=generation;
-    for(const img of root.querySelectorAll('[data-photo-id]')){
-      if(token!==generation||denied||!context.state)return;
-      const file=context.state.files.find(f=>f.id===img.dataset.photoId);if(!file)continue;
+    const current=()=>token===generation&&!disposed&&!denied&&!!context.state&&session.canManage();
+    photoLoader.prune(context.state.files);
+    await Promise.all([...root.querySelectorAll('[data-photo-id]')].map(async img=>{
+      if(!current())return;
+      const file=context.state.files.find(f=>f.id===img.dataset.photoId);if(!file)return;
       try{
-        if(!images.has(file.id)){
-          const blob=await context.store.getBlob(file.storagePath);
-          if(token!==generation||denied||!context.state||!session.canManage())return;
-          const thumbnail=await photoThumbnail(blob);
-          if(token!==generation||denied||!context.state||!session.canManage())return;
-          images.set(file.id,URL.createObjectURL(thumbnail));
-        }
-        if(token===generation&&!denied&&session.canManage())img.src=images.get(file.id);
-      }catch(e){if(token===generation){img.alt='照片暫時無法讀取';error(e);}if(denied||!context.state)return;}
-    }
-    if(token!==generation||denied||!context.state)return;
-    const live=new Set(context.state.files.map(f=>f.id));for(const [id,url] of images)if(!live.has(id)){URL.revokeObjectURL(url);images.delete(id);}
+        const url=await photoLoader.load(file,current);
+        if(current())img.src=url;
+      }catch(e){if(current()&&e.code!=='aidb/cancelled'){img.alt='照片暫時無法讀取';error(e);}}
+    }));
   }
   function render(){
     if(disposed)return;
     captionRenderPending=false;
     generation++;
-    if(denied||!session.canManage()){for(const url of images.values())URL.revokeObjectURL(url);images.clear();root.innerHTML='<section class="card aidb-empty">沒有 AI 資料庫管理權限。</section>';return;}
+    if(denied||!session.canManage()){photoLoader.dispose();root.innerHTML='<section class="card aidb-empty">沒有 AI 資料庫管理權限。</section>';return;}
     if(!context.state){root.innerHTML='<p class="aidb-loading">正在開啟 AI 資料庫…</p><p class="aidb-notice" role="status" hidden></p>';initialize();return;}
     root.innerHTML=`<div class="aidb-header"><div><h1>AI 資料庫</h1><p class="aidb-muted">公司案件原始資料與設計知識管理</p></div><button class="btn btn-sm" data-action="reload">重新載入</button></div><p class="aidb-environment">${esc(context.store.label)}</p><p class="aidb-notice" role="status" ${notice?'':'hidden'}>${esc(notice)}</p>${context.state.cleanupPaths.length?'<p class="aidb-update-note">部分原始檔案尚待清理，資料已隱藏。<button class="btn btn-sm" data-action="cleanup">重試檔案清理</button></p>':''}<div class="aidb-layout"><aside class="aidb-sidebar card"><div class="aidb-sidebar-heading"><strong>知識分類</strong><button class="btn btn-sm" data-action="category.create">＋新增分類</button></div><nav aria-label="AI 資料庫分類與案件">${renderNavigation(context.state,{selectedCategory,selectedCase,collapsed})}</nav>${context.state.categories.some(c=>c.moduleType==='cases')?'':'<button class="btn btn-sm" data-action="category.restoreCases">建立案件資料庫</button>'}<p class="aidb-sort-hint">拖曳分類或案件可調整順序。<br>鍵盤：選取列後按 Alt＋↑／↓。</p></aside><main class="aidb-content">${renderCaseContent(context.state,{selectedCategory,selectedCase})}</main></div>`;
     updateAnalysis();
@@ -249,8 +243,7 @@ export function mountAiDatabase(root,session){
       generation++;
       unsubscribe?.();
       window.removeEventListener('beforeunload',warnBeforeUnload);
-      for(const url of images.values())URL.revokeObjectURL(url);
-      images.clear();
+      photoLoader.dispose();
       analyses.clear();
       context.state=null;
       root.replaceChildren();

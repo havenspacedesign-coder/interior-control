@@ -1,4 +1,5 @@
 import {FILE_TYPES,newId} from './model.js';
+import {photoThumbnail} from './photo-thumbnail.js';
 export async function validateFile(file,kind){
   if(!FILE_TYPES[kind])throw Error('檔案類型不正確。');
   const bytes=new Uint8Array(await file.slice(0,12).arrayBuffer());
@@ -19,9 +20,14 @@ export async function uploadCaseFiles(context,caseId,kind,files,replaceId=''){
   for(let i=0;i<files.length;i++){
     const file=files[i],id=newId();
     const storagePath=context.store.filePath?.(caseId,id)??`aiDatabaseTest/cases/${caseId}/${id}`;
-    await context.store.putBlob(storagePath,file,types[i]);
-    try{await context.commit({type:'file.add',payload:{id:caseId,replaceId,file:{id,caseId,kind,storagePath,name:file.name,size:file.size,mime:types[i],caption:'',version:1}}});}
-    catch(error){try{await context.store.deleteBlob(storagePath);}catch{error.message+=' 上傳檔案清理失敗，請管理員檢查此路徑：'+storagePath;}throw error;}
+    const thumbnail=kind==='photo'?await photoThumbnail(file):null;
+    const thumbnailPath=thumbnail?storagePath+'_thumb.jpg':'';
+    const uploaded=[];
+    try{
+      await context.store.putBlob(storagePath,file,types[i]);uploaded.push(storagePath);
+      if(thumbnail){await context.store.putBlob(thumbnailPath,thumbnail,'image/jpeg');uploaded.push(thumbnailPath);}
+      await context.commit({type:'file.add',payload:{id:caseId,replaceId,file:{id,caseId,kind,storagePath,...(thumbnailPath?{thumbnailPath}:{}),name:file.name,size:file.size,mime:types[i],caption:'',version:1}}});
+    }catch(error){for(const path of uploaded){try{await context.store.deleteBlob(path);}catch{error.message+=' 上傳檔案清理失敗，請管理員檢查此路徑：'+path;}}throw error;}
   }
   await cleanupFiles(context);
 }

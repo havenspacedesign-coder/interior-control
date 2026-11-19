@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
+import {createPhotoLoader} from '../../app/features/ai-database/photo-loader.js';
 import handler from '../../api/ai-case-analyze.js';
 import {analyzeBasicCase} from '../../app/features/ai-database/analysis-client.js';
 
@@ -29,7 +30,7 @@ const root={innerHTML:'',contains:()=>false,
   querySelectorAll:()=>[],setAttribute(){},removeAttribute(){},
   addEventListener(name,callback){if(!handlers[name])handlers[name]=callback;},
 };
-const sandbox={document:{querySelector:()=>true,activeElement:null},URL,Map,Set,queueMicrotask,
+const sandbox={document:{querySelector:()=>true,activeElement:null},URL,Map,Set,queueMicrotask,createPhotoLoader,
   window:{addEventListener(){}},esc:x=>x,renderNavigation:()=>'',renderCaseContent:()=>'',cleanupFiles:async()=>{},LEARNING_SCHEMA:{version:1},
   analyzeBasicCase:()=>{requests++;return new Promise((yes,no)=>{resolve=yes;reject=no;});},
 };

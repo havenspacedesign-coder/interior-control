@@ -84,7 +84,7 @@ function createFirebaseStore({db,auth,storage,fs,storageSdk,collections,metaColl
         tx.set(meta,{schemaVersion:1,revision:next.revision,cleanupPaths:next.cleanupPaths,updatedBy:user.uid,updatedAt:fs.serverTimestamp()});
       });return next;
     },
-    async putBlob(path,blob,mime){await identity();await storageSdk.uploadBytes(fileRef(path),blob,{contentType:mime});},
+    async putBlob(path,blob,mime){await identity();await storageSdk.uploadBytes(fileRef(path),blob,{contentType:mime,cacheControl:'private, max-age=86400'});},
     async getBlob(path){await identity();return storageSdk.getBlob(fileRef(path));},
     async deleteBlob(path){await identity();try{await storageSdk.deleteObject(fileRef(path));}catch(e){if(e.code!=='storage/object-not-found')throw e;}},
     subscribe(callback){return fs.onSnapshot(meta,()=>callback(),()=>callback());},
