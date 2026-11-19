@@ -5,6 +5,7 @@ import {renderCaseContent} from './case-editor.js';
 import {esc} from './ui-utils.js';
 import {LEARNING_SCHEMA} from './learning-schema.js';
 import {uploadCaseFiles,cleanupFiles,openFile} from './files.js';
+import {photoThumbnail} from './photo-thumbnail.js';
 export function mountAiDatabase(root,session){
   const emulatorMode=!session.createStore&&new URL(location.href).searchParams.get('aiStore')==='emulator';
   if(!document.querySelector('[data-ai-database-style]')){const link=document.createElement('link');link.rel='stylesheet';link.href=new URL('./ai-database.css',import.meta.url);link.dataset.aiDatabaseStyle='true';document.head.append(link);}
@@ -52,9 +53,8 @@ export function mountAiDatabase(root,session){
         const file=context.state.files.find(file=>file.id===fileId);
         if(!file)throw Error('照片已不存在，備註尚未儲存。');
         await context.commit({type:'file.caption',payload:{id:file.caseId,fileId,caption:value}});
-        if(draft.value===value){
+        if(captionDrafts.get(fileId)===draft&&draft.value===value){
           captionDrafts.delete(fileId);
-          draft.input.readOnly=true;
         }
       }
       const status=root.querySelector('.aidb-notice');
@@ -82,7 +82,9 @@ export function mountAiDatabase(root,session){
         if(!images.has(file.id)){
           const blob=await context.store.getBlob(file.storagePath);
           if(token!==generation||denied||!context.state||!session.canManage())return;
-          images.set(file.id,URL.createObjectURL(blob));
+          const thumbnail=await photoThumbnail(blob);
+          if(token!==generation||denied||!context.state||!session.canManage())return;
+          images.set(file.id,URL.createObjectURL(thumbnail));
         }
         if(token===generation&&!denied&&session.canManage())img.src=images.get(file.id);
       }catch(e){if(token===generation){img.alt='照片暫時無法讀取';error(e);}if(denied||!context.state)return;}
@@ -109,37 +111,61 @@ export function mountAiDatabase(root,session){
   root.addEventListener('input',event=>{
     if(event.target.closest('#aidb-case-form')){dirty=true;root.querySelector('.aidb-draft').textContent='尚未儲存';}
     const input=event.target;
-    if(!input.matches('[data-caption]')||input.readOnly)return;
+    if(!input.matches('[data-caption]'))return;
     captionDrafts.set(input.dataset.caption,{input,value:input.value,ready:false});
   });
-  root.addEventListener('dblclick',event=>{
-    const input=event.target.closest('[data-caption]');
-    if(!input||busy||captionSaving||!session.canManage())return;
+  function editCaption(input){
+    if(!input||busy||!session.canManage())return false;
     if(dirty){
       notice='請先儲存基本資料，再編輯照片備註。';
       const status=root.querySelector('.aidb-notice');
       status.textContent=notice;status.hidden=false;
-      return;
+      return false;
     }
-    input.readOnly=false;
-    input.focus();
+    input.dataset.captionEditing='true';
+    return true;
+  }
+  root.addEventListener('mousedown',event=>{
+    const input=event.target.closest('[data-caption]');
+    if(input?.dataset.captionEditing==='false'&&event.detail>1)event.preventDefault();
   });
+  root.addEventListener('dblclick',event=>{
+    const input=event.target.closest('[data-caption]');
+    if(!input)return;
+    event.preventDefault();
+    if(editCaption(input)){
+      window.getSelection()?.removeAllRanges();
+      input.focus({preventScroll:true});
+      input.setSelectionRange(input.value.length,input.value.length);
+    }
+  });
+  root.addEventListener('beforeinput',event=>{const input=event.target.closest('[data-caption]');if(input&&!editCaption(input))event.preventDefault();});
+  root.addEventListener('paste',event=>{const input=event.target.closest('[data-caption]');if(input&&!editCaption(input))event.preventDefault();});
+  root.addEventListener('compositionstart',event=>{const input=event.target.closest('[data-caption]');if(input&&!editCaption(input))event.preventDefault();});
   root.addEventListener('focusout',event=>{
     const input=event.target;
-    if(!input.matches('[data-caption]')||input.readOnly)return;
+    if(!input.matches('[data-caption]'))return;
     const draft=captionDrafts.get(input.dataset.caption);
-    input.readOnly=true;
+    input.dataset.captionEditing='false';
     if(draft){draft.ready=true;void saveCaptionDrafts();}
   });
   root.addEventListener('keydown',event=>{
     const input=event.target;
-    if(!input.matches('[data-caption]')||input.readOnly||event.isComposing)return;
+    if(!input.matches('[data-caption]'))return;
+    if(event.key==='Tab'){
+      if(event.isComposing||event.keyCode===229){event.preventDefault();return;}
+      const inputs=[...root.querySelectorAll('[data-caption]')],next=inputs[inputs.indexOf(input)+(event.shiftKey?-1:1)];
+      if(next){event.preventDefault();input.blur();next.focus();}
+      return;
+    }
+    if(input.dataset.captionEditing==='false'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&(event.key.length===1||event.key==='Process'))editCaption(input);
+    if(input.dataset.captionEditing!=='true'||event.isComposing)return;
     if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();input.blur();}
     if(event.key==='Escape'&&!captionSaving){
       event.preventDefault();
       input.value=context.state.files.find(file=>file.id===input.dataset.caption)?.caption||'';
       captionDrafts.delete(input.dataset.caption);
-      input.readOnly=true;
+      input.dataset.captionEditing='false';
       input.blur();
     }
   });

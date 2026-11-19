@@ -62,8 +62,20 @@
   gap: 5px;
 }
 .aidb-photo-card .aidb-caption textarea { box-sizing: border-box; max-width: none; min-height: 96px; resize: vertical; }
-.aidb-caption textarea[readonly] { cursor: default; }
+.aidb-caption textarea[data-caption-editing="false"] { cursor: default; caret-color: transparent; }
 .aidb-caption textarea:focus { outline: 2px solid var(--purple); outline-offset: 1px; }
+.aidb-photo-card:focus-within { position: relative; z-index: 2; }
+#panel-ai-database .aidb-caption textarea[data-caption-editing="true"] {
+  position: relative;
+  z-index: 3;
+  transform: scale(1.08);
+  transform-origin: center;
+  background: #fff;
+  border-color: var(--purple);
+  outline: 2px solid var(--purple);
+  outline-offset: -1px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.85) inset;
+}
 .aidb-photo-card .aidb-actions { max-width: none; justify-content: flex-start; }
 .aidb-photo-card .btn { padding: 4px 7px; }
 
