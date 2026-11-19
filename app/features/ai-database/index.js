@@ -13,7 +13,11 @@ export function mountAiDatabase(root,session){
   let disposed=false,unsubscribe=null;
   const images=new Map();
   const captionDrafts=new Map();
-  let captionSaving=false;
+  let captionSaving=false,captionRenderPending=false;
+  const captionFocused=()=>root.contains(document.activeElement)&&document.activeElement.matches('[data-caption]');
+  function flushCaptionRender(){
+    if(captionRenderPending&&!disposed&&!dirty&&!busy&&!captionSaving&&!captionDrafts.size&&!captionFocused()&&!root.querySelector('dialog[open]'))render();
+  }
   const identity=()=>({...session.user(),role:session.canManage()?'manager':'staff',status:'active'});
   const context={state:null,store:null,async commit(command){const next=await context.store.commit(command,context.state.revision);context.state=next;return next;}};
   function error(error){if(disposed)return;if(['aidb/permission-denied','permission-denied','storage/unauthorized'].includes(error?.code)){denied=true;dirty=false;context.state=null;session.onDenied?.();render();return;}notice=error?.message||'操作失敗，請稍後重試。';const el=root.querySelector('.aidb-notice');if(el){el.textContent=notice;el.hidden=false;}}
@@ -27,7 +31,7 @@ export function mountAiDatabase(root,session){
       if(disposed||!session.canManage())return;
       context.state=state;
       session.onReady?.();
-      unsubscribe=context.store.subscribe(async()=>{try{if(disposed||!session.canManage())return;const next=await context.store.load();if(disposed||!session.canManage())return;if(dirty||busy||captionSaving||captionDrafts.size||root.querySelector('dialog[open]')){if(!busy&&!captionSaving)error(Error('其他管理員或視窗已更新資料。請先保留編輯內容，再按「重新載入」。'));return;}context.state=next;render();}catch(e){error(e);}});
+      unsubscribe=context.store.subscribe(async()=>{try{if(disposed||!session.canManage())return;const next=await context.store.load();if(disposed||!session.canManage())return;if(dirty||busy||captionSaving||captionDrafts.size||root.querySelector('dialog[open]')){if(!busy&&!captionSaving)error(Error('其他管理員或視窗已更新資料。請先保留編輯內容，再按「重新載入」。'));return;}context.state=next;if(captionFocused())captionRenderPending=true;else render();}catch(e){error(e);}});
       await cleanupFiles(context);render();
     })().catch(e=>{initializing=null;error(e);});
     return initializing;
@@ -71,6 +75,7 @@ export function mountAiDatabase(root,session){
     }finally{
       captionSaving=false;
       root.removeAttribute('aria-busy');
+      flushCaptionRender();
     }
   }
   async function previews(){
@@ -94,6 +99,7 @@ export function mountAiDatabase(root,session){
   }
   function render(){
     if(disposed)return;
+    captionRenderPending=false;
     generation++;
     if(denied||!session.canManage()){for(const url of images.values())URL.revokeObjectURL(url);images.clear();root.innerHTML='<section class="card aidb-empty">沒有 AI 資料庫管理權限。</section>';return;}
     if(!context.state){root.innerHTML='<p class="aidb-loading">正在開啟 AI 資料庫…</p><p class="aidb-notice" role="status" hidden></p>';initialize();return;}
@@ -148,6 +154,8 @@ export function mountAiDatabase(root,session){
     const draft=captionDrafts.get(input.dataset.caption);
     input.dataset.captionEditing='false';
     if(draft){draft.ready=true;void saveCaptionDrafts();}
+    // Tab focuses the next caption after blur; wait until that focus has settled.
+    queueMicrotask(flushCaptionRender);
   });
   root.addEventListener('keydown',event=>{
     const input=event.target;
