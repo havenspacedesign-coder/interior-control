@@ -11,6 +11,10 @@ if (window.__APP_UNIFIED_TEST__ === true) {
   const aiController = aiModule.mountAiDatabase(aiPanel, {
     canManage: () => !!currentUser && isAdmin(),
     user: () => ({uid:currentUser?.uid || '',name:currentUser?.displayName || '管理員'}),
+    getIdToken: async () => {
+      if(localTestMode||!auth.currentUser)throw Error('本機展示帳號無法呼叫雲端 AI。請在已部署 API 的測試網站使用 Firebase 管理員帳號登入。');
+      return auth.currentUser.getIdToken();
+    },
     onDenied: () => {aiTab.hidden=true;aiTab.classList.remove('show');},
     onReady: () => {if(currentUser&&isAdmin()){aiTab.hidden=false;aiTab.classList.add('show');}}
   });

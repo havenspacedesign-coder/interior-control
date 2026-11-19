@@ -6,6 +6,7 @@ import {esc} from './ui-utils.js';
 import {LEARNING_SCHEMA} from './learning-schema.js';
 import {uploadCaseFiles,cleanupFiles,openFile} from './files.js';
 import {photoThumbnail} from './photo-thumbnail.js';
+import {analyzeBasicCase} from './analysis-client.js';
 export function mountAiDatabase(root,session){
   const emulatorMode=!session.createStore&&new URL(location.href).searchParams.get('aiStore')==='emulator';
   if(!document.querySelector('[data-ai-database-style]')){const link=document.createElement('link');link.rel='stylesheet';link.href=new URL('./ai-database.css',import.meta.url);link.dataset.aiDatabaseStyle='true';document.head.append(link);}
@@ -13,6 +14,25 @@ export function mountAiDatabase(root,session){
   let disposed=false,unsubscribe=null;
   const images=new Map();
   const captionDrafts=new Map();
+  const analyses=new Map();
+  function updateAnalysis(){
+    if(disposed||!session.canManage())return;
+    const analysis=analyses.get(selectedCase)||{};
+    const result=root.querySelector('[data-analysis-result]'),alert=root.querySelector('[data-analysis-error]'),button=root.querySelector('[data-action="case.analyze"]');
+    if(result)result.textContent=analysis.summary||'';
+    if(alert){alert.textContent=analysis.error||'';alert.hidden=!analysis.error;}
+    if(button){button.disabled=!!analysis.loading;button.textContent=analysis.loading?'AI 分析中…':'開始 AI 分析';}
+  }
+  async function startAnalysis(){
+    const caseId=selectedCase,project=context.state.cases.find(row=>row.id===caseId);
+    if(!project||analyses.get(caseId)?.loading)return;
+    if(dirty){analyses.set(caseId,{...analyses.get(caseId),error:'請先儲存基本資料，再開始分析。'});updateAnalysis();return;}
+    const analysis={summary:analyses.get(caseId)?.summary||'',loading:true,error:''};
+    analyses.set(caseId,analysis);updateAnalysis();
+    try{analysis.summary=await analyzeBasicCase(project,session.getIdToken);}
+    catch(error){analysis.error=error.message||'AI 分析失敗，請重試。';}
+    finally{analysis.loading=false;updateAnalysis();}
+  }
   let captionSaving=false,captionRenderPending=false;
   const captionFocused=()=>root.contains(document.activeElement)&&document.activeElement.matches('[data-caption]');
   function flushCaptionRender(){
@@ -104,6 +124,7 @@ export function mountAiDatabase(root,session){
     if(denied||!session.canManage()){for(const url of images.values())URL.revokeObjectURL(url);images.clear();root.innerHTML='<section class="card aidb-empty">沒有 AI 資料庫管理權限。</section>';return;}
     if(!context.state){root.innerHTML='<p class="aidb-loading">正在開啟 AI 資料庫…</p><p class="aidb-notice" role="status" hidden></p>';initialize();return;}
     root.innerHTML=`<div class="aidb-header"><div><h1>AI 資料庫</h1><p class="aidb-muted">公司案件原始資料與設計知識管理</p></div><button class="btn btn-sm" data-action="reload">重新載入</button></div><p class="aidb-environment">${esc(context.store.label)}</p><p class="aidb-notice" role="status" ${notice?'':'hidden'}>${esc(notice)}</p>${context.state.cleanupPaths.length?'<p class="aidb-update-note">部分原始檔案尚待清理，資料已隱藏。<button class="btn btn-sm" data-action="cleanup">重試檔案清理</button></p>':''}<div class="aidb-layout"><aside class="aidb-sidebar card"><div class="aidb-sidebar-heading"><strong>知識分類</strong><button class="btn btn-sm" data-action="category.create">＋新增分類</button></div><nav aria-label="AI 資料庫分類與案件">${renderNavigation(context.state,{selectedCategory,selectedCase,collapsed})}</nav>${context.state.categories.some(c=>c.moduleType==='cases')?'':'<button class="btn btn-sm" data-action="category.restoreCases">建立案件資料庫</button>'}<p class="aidb-sort-hint">拖曳分類或案件可調整順序。<br>鍵盤：選取列後按 Alt＋↑／↓。</p></aside><main class="aidb-content">${renderCaseContent(context.state,{selectedCategory,selectedCase})}</main></div>`;
+    updateAnalysis();
     previews();
   }
   function inputDialog(title,label,value,onSave){
@@ -191,6 +212,7 @@ export function mountAiDatabase(root,session){
   root.addEventListener('click',event=>{
     const button=event.target.closest('[data-action]');if(!button||busy||captionSaving||!session.canManage())return;
     const key=button.dataset.action,id=button.dataset.id;
+    if(key==='case.analyze'){void startAnalysis();return;}
     if(key==='collapse'){collapsed.has(id)?collapsed.delete(id):collapsed.add(id);if(!dirty&&!captionDrafts.size)render();else{root.querySelector(`[data-category-id="${CSS.escape(id)}"] .aidb-children`)?.toggleAttribute('hidden');button.textContent=collapsed.has(id)?'▸':'▾';button.setAttribute('aria-expanded',String(!collapsed.has(id)));}return;}
     if(key==='case.select'||key==='category.select'){if(!leaveDraft())return;dirty=false;selectedCase=key==='case.select'?id:'';selectedCategory=key==='case.select'?context.state.cases.find(c=>c.id===id).categoryId:id;notice='';render();return;}
     if(key==='category.create')return inputDialog('新增大分類','分類名稱','',async name=>{await context.commit({type:key,payload:{id:newId(),name}});});
@@ -229,6 +251,7 @@ export function mountAiDatabase(root,session){
       window.removeEventListener('beforeunload',warnBeforeUnload);
       for(const url of images.values())URL.revokeObjectURL(url);
       images.clear();
+      analyses.clear();
       context.state=null;
       root.replaceChildren();
     },
