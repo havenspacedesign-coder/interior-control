@@ -134,7 +134,7 @@ export function mountAiDatabase(root,session){
   root.addEventListener('keydown',event=>{
     const input=event.target;
     if(!input.matches('[data-caption]')||input.readOnly||event.isComposing)return;
-    if(event.key==='Enter'){event.preventDefault();input.blur();}
+    if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();input.blur();}
     if(event.key==='Escape'&&!captionSaving){
       event.preventDefault();
       input.value=context.state.files.find(file=>file.id===input.dataset.caption)?.caption||'';
