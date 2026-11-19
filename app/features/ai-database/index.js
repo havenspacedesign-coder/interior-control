@@ -72,9 +72,9 @@ export function mountAiDatabase(root,session){
   });
   root.addEventListener('change',event=>{
     const input=event.target;if(!input.matches('[data-upload]')||!input.files.length)return;
-    const files=Array.from(input.files),kind=input.dataset.upload,replaceId=input.dataset.replace||'',caseId=selectedCase;input.value='';
+    const files=Array.from(input.files),kind=input.dataset.upload,caseId=selectedCase;input.value='';
     if(!leaveDraft())return;dirty=false;
-    action(async()=>{await uploadCaseFiles(context,caseId,kind,files,replaceId);});
+    action(async()=>{await uploadCaseFiles(context,caseId,kind,files);});
   });
   root.addEventListener('click',event=>{
     const button=event.target.closest('[data-action]');if(!button||busy||!session.canManage())return;
@@ -89,7 +89,7 @@ export function mountAiDatabase(root,session){
     if(key==='cleanup')return action(()=>cleanupFiles(context));
     if(key==='category.restoreCases')return action(async()=>{const categoryId=newId();await context.commit({type:key,payload:{id:categoryId}});selectedCategory=categoryId;selectedCase='';});
     const file=context.state.files.find(f=>f.id===id);if(!file)return;
-    if(key==='file.open'||key==='file.download'){openFile(context.store,file,key==='file.download',()=>!disposed&&session.canManage()).catch(error);return;}
+    if(key==='file.open'){openFile(context.store,file,false,()=>!disposed&&session.canManage()).catch(error);return;}
     if(!leaveDraft())return;
     if(key==='file.caption'){const value=root.querySelector(`[data-caption="${CSS.escape(id)}"]`).value;return action(()=>context.commit({type:key,payload:{id:file.caseId,fileId:id,caption:value}}));}
     if(key==='file.delete'&&confirm(`確定刪除原始檔案「${file.name}」？此操作會移除儲存的檔案。`))return action(async()=>{await context.commit({type:key,payload:{id:file.caseId,fileId:id}});await cleanupFiles(context);});
