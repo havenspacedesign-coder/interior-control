@@ -6,11 +6,10 @@ export function renderFile(file){
     ${photo?`<img class="aidb-photo" data-photo-id="${esc(file.id)}" alt="${esc(file.caption||file.name)}">`:''}
     <div class="aidb-file-info">
       <strong>${esc(file.name)}</strong>
-      <div class="aidb-muted aidb-small">${size(file.size)} · ${date(file.uploadedAt)}</div>
-      ${photo?`<label class="aidb-caption">照片備註
-        <input maxlength="2000" data-caption="${esc(file.id)}" value="${esc(file.caption)}" placeholder="例如：客廳電視牆">
-      </label>
-      <button class="btn btn-sm aidb-caption-save" type="button" data-action="file.caption" data-id="${esc(file.id)}">儲存備註</button>`:''}
+      ${photo?'':`<div class="aidb-muted aidb-small">${size(file.size)} · ${date(file.uploadedAt)}</div>`}
+      ${photo?`<label class="aidb-caption">照片備註說明
+        <input maxlength="2000" data-caption="${esc(file.id)}" value="${esc(file.caption)}" placeholder="雙擊輸入說明" readonly>
+      </label>`:''}
     </div>
     <div class="aidb-actions">
       <button class="btn btn-sm" type="button" data-action="file.open" data-id="${esc(file.id)}">預覽</button>
