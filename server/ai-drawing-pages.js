@@ -1,7 +1,3 @@
-import {createRequire} from 'node:module';
-const require=createRequire(import.meta.url);
-const {PDFDocument}=require('pdf-lib');
-
 const BATCH_SIZE=4;
 const CONCURRENT_BATCHES=3;
 const PDF_LIMIT=50_000_000;
@@ -31,7 +27,7 @@ export function responseText(data){
     .filter(part=>part.type==='output_text').map(part=>part.text).join('\n')||'').trim();
 }
 
-async function reviewBatch(document,requested,ask,signal){
+async function reviewBatch(PDFDocument,document,requested,ask,signal){
   const reviewed=[],input=[],included=new Set();
   let bytes=0;
   for(const page of requested){
@@ -89,6 +85,7 @@ async function sendPages(input,included,ask,signal){
 }
 
 export async function reviewDrawing(bytes,ask,signal){
+  const {PDFDocument}=await import('pdf-lib');
   const document=await PDFDocument.load(bytes);
   const totalPages=document.getPageCount();
   if(!totalPages)throw new Error('Drawing PDF has no pages');
@@ -98,7 +95,7 @@ export async function reviewDrawing(bytes,ask,signal){
     while(next<totalPages&&!signal.aborted){
       const batch=pages.slice(next,next+BATCH_SIZE).map(({page})=>page);
       next+=BATCH_SIZE;
-      for(const result of await reviewBatch(document,batch,ask,signal))pages[result.page-1]=result;
+      for(const result of await reviewBatch(PDFDocument,document,batch,ask,signal))pages[result.page-1]=result;
     }
   }
   await Promise.all(Array.from({length:Math.min(CONCURRENT_BATCHES,Math.ceil(totalPages/BATCH_SIZE))},worker));

@@ -55,7 +55,11 @@ export default async function handler(request,response){
     if(pdfs?.drawingBytes){
       try{
         drawingReview=await reviewDrawing(pdfs.drawingBytes,ask,AbortSignal.any([budget,AbortSignal.timeout(60000)]));
-      }catch{
+      }catch(error){
+        if(['ERR_MODULE_NOT_FOUND','MODULE_NOT_FOUND'].includes(error.code)){
+          console.error(error);
+          throw failure(503,'施工圖 PDF 分頁模組未能載入，請聯繫管理員。');
+        }
         throw failure(422,'無法讀取施工圖 PDF 的頁數，請確認檔案未加密且可正常開啟。');
       }
     }
