@@ -72,6 +72,28 @@ function createFirebaseStore({db,auth,storage,fs,storageSdk,collections,metaColl
   }
   return {
     mode,label,load,filePath,identity,
+    ...(mode==='production'?{async loadCaseAnalysis(caseId){
+      const {uid}=await identity();
+      const latest=await fs.getDocFromServer(fs.doc(db,collections.cases,caseId,'aiKnowledge','latest'));
+      if(!latest.exists())return null;
+      const {latestRunId}=latest.data();
+      if(typeof latestRunId!=='string'||!latestRunId||latestRunId.includes('/'))throw Error('無法讀取案件 AI 知識版本。');
+      const runPath=[collections.cases,caseId,'aiKnowledgeRuns',latestRunId];
+      const run=await fs.getDocFromServer(fs.doc(db,...runPath));
+      if(!run.exists())throw Error('無法讀取案件 AI 知識版本。');
+      const {sections,sources,missing,drawing,analyzedAt}=run.data();
+      let drawingReview;
+      if(drawing){
+        const snapshot=await fs.getDocsFromServer(fs.collection(db,...runPath,'drawingPages'));
+        const pages=snapshot.docs.map(doc=>doc.data()).sort((a,b)=>a.page-b.page);
+        if(pages.length!==drawing.totalPages)throw Error('無法讀取完整的施工圖逐頁紀錄。');
+        drawingReview={totalPages:drawing.totalPages,reviewedPages:drawing.reviewedPages,pages};
+      }
+      if(auth.currentUser?.uid!==uid)assertManager(null);
+      return {sections,sources,missing,knowledgeSave:{analyzedAt:analyzedAt?.toDate().toISOString()},
+        ...(drawingReview?{drawingReview}:{}),
+      };
+    }}:{}),
     createPhotoReadSession(){
       const uid=auth.currentUser?.uid;
       let permissionQueries=0;

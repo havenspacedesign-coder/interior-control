@@ -1,4 +1,5 @@
 import {SUMMARY_SECTIONS,BASIC_LABEL,formatCitation,emptySection} from '../app/features/ai-database/summary-format.js';
+import {knowledgeSchema} from './ai-case-knowledge-fields.js';
 
 const MAX_POINTS={overview:3,costs:5,work:5,materials:5,drawings:5,changes:4,issues:5};
 
@@ -12,7 +13,7 @@ export const summaryInstructions=[
   '每點均附支持該敘述的 citations。source 使用 basic（案件基本資料）、drawing（施工圖）、quote（正式報價單）、change（追加減工程）。basic 的 page 填 null，PDF 的 page 必須是從封面起算、從 1 開始的檔案頁序，不是圖號、表內頁碼或項次。涉及兩份來源就引用兩份。頁序或內容無法核對時，把不確定之處寫在 issues。issues 可用空 citations 表示無法指到特定頁的缺失。',
 ].join('\n');
 
-export function summaryFormat(sources){
+export function summaryFormat(sources,includeKnowledge=false){
   const citation={
     type:'object',additionalProperties:false,required:['source','page'],
     properties:{
@@ -24,13 +25,14 @@ export function summaryFormat(sources){
     type:'object',additionalProperties:false,required:['text','citations'],
     properties:{text:{type:'string'},citations:{type:'array',items:citation}},
   };
+  const properties=Object.fromEntries(Object.entries(SUMMARY_SECTIONS).map(([key,title])=>[
+    key,{type:'array',description:title,items:point},
+  ]));
+  if(includeKnowledge)properties.knowledge=knowledgeSchema(citation);
   return {
     type:'json_schema',name:'case_summary',strict:true,
     schema:{
-      type:'object',additionalProperties:false,required:Object.keys(SUMMARY_SECTIONS),
-      properties:Object.fromEntries(Object.entries(SUMMARY_SECTIONS).map(([key,title])=>[
-        key,{type:'array',description:title,items:point},
-      ])),
+      type:'object',additionalProperties:false,required:Object.keys(properties),properties,
     },
   };
 }

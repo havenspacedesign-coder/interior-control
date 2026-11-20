@@ -263,10 +263,33 @@ service cloud.firestore {
       allow write: if isActiveMember();
     }
 
+    function aiCaseExists(caseId) {
+      return exists(/databases/$(database)/documents/aiDbCases/$(caseId));
+    }
+
+    match /aiDbCases/{caseId} {
+      allow read, write: if isAdmin();
+
+      match /aiKnowledge/latest {
+        allow read, create, update: if isAdmin() && aiCaseExists(caseId);
+        allow delete: if isAdmin();
+      }
+
+      match /aiKnowledgeRuns/{runId} {
+        allow read, create: if isAdmin() && aiCaseExists(caseId);
+        allow delete: if isAdmin();
+
+        match /drawingPages/{pageNumber} {
+          allow read, create: if isAdmin() && aiCaseExists(caseId);
+          allow delete: if isAdmin();
+        }
+      }
+    }
+
     // Keep legacy access except for AI paths and the role-bearing member documents.
     match /{collection}/{document=**} {
-      allow read: if isAiCollection(collection) ? isAdmin() : isActiveMember();
-      allow write: if !(collection in ['members', 'projects', 'meetingLogs', 'settings', 'checks'])
+      allow read: if collection != 'aiDbCases' && (isAiCollection(collection) ? isAdmin() : isActiveMember());
+      allow write: if !(collection in ['members', 'projects', 'meetingLogs', 'settings', 'checks', 'aiDbCases'])
         && (isAiCollection(collection) ? isAdmin() : isActiveMember());
     }
 

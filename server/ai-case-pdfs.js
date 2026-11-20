@@ -1,4 +1,5 @@
 import {PDF_LABELS as LABELS} from '../app/features/ai-database/summary-format.js';
+import {createHash} from 'node:crypto';
 
 const ROOT='https://firestore.googleapis.com/v1/projects/have000/databases/(default)/documents';
 const BUCKET='have000.firebasestorage.app';
@@ -30,12 +31,15 @@ export async function readCasePdfs(caseId,token,signal){
   const headers={authorization:`Bearer ${token}`};
   const projectResponse=await fetch(`${ROOT}/aiDbCases/${encodeURIComponent(caseId)}`,{headers,signal});
   if(!projectResponse.ok)throw fail(projectResponse.status===404?404:403,'無法讀取此案件，請確認案件仍存在及管理員權限。');
-  const project=fields(await projectResponse.json());
+  const caseDocument=await projectResponse.json();
+  const project=fields(caseDocument);
   const listResponse=await fetch(`${ROOT}:runQuery`,{method:'POST',headers:{...headers,'content-type':'application/json'},signal,
     body:JSON.stringify({structuredQuery:{from:[{collectionId:'aiDbFiles'}],where:{fieldFilter:{field:{fieldPath:'caseId'},op:'EQUAL',value:{stringValue:caseId}}}}})});
   if(!listResponse.ok)throw fail(403,'無法讀取案件 PDF 清單，請確認管理員權限。');
   const documents=await listResponse.json();
-  const files=documents.filter(row=>row.document).map(row=>fields(row.document)).filter(file=>Object.hasOwn(LABELS,file.kind));
+  const files=documents.filter(row=>row.document).map(({document})=>({
+    ...fields(document),documentId:document.name?.split('/').at(-1),recordUpdatedAt:document.updateTime??null,
+  })).filter(file=>Object.hasOwn(LABELS,file.kind));
   const kinds=new Set();let declaredSize=0;
   for(const file of files){
     const parts=typeof file.storagePath==='string'?file.storagePath.split('/'):[];
@@ -55,7 +59,12 @@ export async function readCasePdfs(caseId,token,signal){
       {type:'input_file',filename:label+'.pdf',file_data:'data:application/pdf;base64,'+bytes.toString('base64'),
         ...(kind==='drawing'?{detail:'high'}:{}),
       });
-    sources.push({kind,label,name:String(file.name||label+'.pdf'),bytes:bytes.length});
+    sources.push({kind,label,name:String(file.name||label+'.pdf'),bytes:bytes.length,
+      fileId:file.documentId||file.id||kind,recordUpdatedAt:file.recordUpdatedAt,
+      sha256:createHash('sha256').update(bytes).digest('hex'),
+    });
   }
-  return {project,content,sources,drawingBytes,missing:Object.entries(LABELS).filter(([kind])=>!kinds.has(kind)).map(([,label])=>label)};
+  return {project,caseUpdatedAt:caseDocument.updateTime??null,content,sources,drawingBytes,
+    missing:Object.entries(LABELS).filter(([kind])=>!kinds.has(kind)).map(([,label])=>label),
+  };
 }

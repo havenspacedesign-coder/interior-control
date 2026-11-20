@@ -25,13 +25,29 @@ export function mountAiDatabase(root,session){
     if(alert){alert.textContent=analysis.error||'';alert.hidden=!analysis.error;}
     if(button){button.disabled=!!analysis.loading;button.textContent=analysis.loading?'AI 分析中…':'開始 AI 分析';}
   }
+  async function loadSavedAnalysis(){
+    const caseId=selectedCase;
+    if(!caseId||!context.store.loadCaseAnalysis||analyses.has(caseId))return;
+    const analysis={};
+    analyses.set(caseId,analysis);
+    try{
+      const report=await context.store.loadCaseAnalysis(caseId);
+      if(analyses.get(caseId)===analysis)analysis.report=report;
+    }catch{
+      if(analyses.get(caseId)===analysis)analysis.error='無法讀取已儲存的 AI 理解摘要，請重新載入。';
+    }
+    updateAnalysis();
+  }
   async function startAnalysis(){
     const caseId=selectedCase,project=context.state.cases.find(row=>row.id===caseId);
     if(!project||analyses.get(caseId)?.loading)return;
     if(dirty){analyses.set(caseId,{...analyses.get(caseId),error:'請先儲存基本資料，再開始分析。'});updateAnalysis();return;}
     const analysis={report:analyses.get(caseId)?.report,loading:true,error:''};
     analyses.set(caseId,analysis);updateAnalysis();
-    try{analysis.report=await analyzeBasicCase(project,session.getIdToken);}
+    try{
+      analysis.report=await analyzeBasicCase(project,session.getIdToken);
+      analysis.error=analysis.report.knowledgeSave?.error||'';
+    }
     catch(error){analysis.error=error.message||'AI 分析失敗，請重試。';}
     finally{analysis.loading=false;updateAnalysis();}
   }
@@ -131,6 +147,7 @@ export function mountAiDatabase(root,session){
     if(!context.state){root.innerHTML='<p class="aidb-loading">正在開啟 AI 資料庫…</p><p class="aidb-notice" role="status" hidden></p>';initialize();return;}
     root.innerHTML=`<div class="aidb-header"><div><h1>AI 資料庫</h1><p class="aidb-muted">公司案件原始資料與設計知識管理</p></div><div class="aidb-actions"><button class="btn btn-sm" data-action="thumbnails.manage">照片縮圖工具</button><button class="btn btn-sm" data-action="reload">重新載入</button></div></div><p class="aidb-environment">${esc(context.store.label)}</p><p class="aidb-notice" role="status" ${notice?'':'hidden'}>${esc(notice)}</p>${context.state.cleanupPaths.length?'<p class="aidb-update-note">部分原始檔案尚待清理，資料已隱藏。<button class="btn btn-sm" data-action="cleanup">重試檔案清理</button></p>':''}<div class="aidb-layout"><aside class="aidb-sidebar card"><div class="aidb-sidebar-heading"><strong>知識分類</strong><button class="btn btn-sm" data-action="category.create">＋新增分類</button></div><nav aria-label="AI 資料庫分類與案件">${renderNavigation(context.state,{selectedCategory,selectedCase,collapsed})}</nav>${context.state.categories.some(c=>c.moduleType==='cases')?'':'<button class="btn btn-sm" data-action="category.restoreCases">建立案件資料庫</button>'}<p class="aidb-sort-hint">拖曳分類或案件可調整順序。<br>鍵盤：選取列後按 Alt＋↑／↓。</p></aside><main class="aidb-content">${renderCaseContent(context.state,{selectedCategory,selectedCase})}</main></div>`;
     updateAnalysis();
+    void loadSavedAnalysis();
     previews();
   }
   function inputDialog(title,label,value,onSave){
@@ -234,7 +251,10 @@ export function mountAiDatabase(root,session){
     if(key==='category.rename')return inputDialog('重新命名分類','分類名稱',context.state.categories.find(c=>c.id===id).name,async name=>{await context.commit({type:key,payload:{id,name}});});
     if(key==='case.create'){if(!leaveDraft())return;return inputDialog('新增案件','案件名稱','',async name=>{const caseId=newId();await context.commit({type:key,payload:{id:caseId,categoryId:id,fields:{name}}});selectedCategory=id;selectedCase=caseId;dirty=false;});}
     if(key==='case.delete'||key==='category.delete'){if(!leaveDraft())return;return deleteDialog(key.split('.')[0],id);}
-    if(key==='reload'){if(!leaveDraft())return;return action(async()=>{context.state=await context.store.load();});}
+    if(key==='reload'){if(!leaveDraft())return;return action(async()=>{
+      context.state=await context.store.load();
+      for(const [id,analysis] of analyses)if(!analysis.loading&&!analysis.report?.knowledgeSave?.error)analyses.delete(id);
+    });}
     if(key==='cleanup')return action(()=>cleanupFiles(context));
     if(key==='category.restoreCases')return action(async()=>{const categoryId=newId();await context.commit({type:key,payload:{id:categoryId}});selectedCategory=categoryId;selectedCase='';});
     const file=context.state.files.find(f=>f.id===id);if(!file)return;

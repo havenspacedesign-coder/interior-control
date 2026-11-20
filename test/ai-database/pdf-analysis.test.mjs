@@ -19,20 +19,36 @@ const sections={
   changes:[point('新增玄關櫃。','change')],
   issues:[{text:'無法確認主臥櫃體尺寸。',citations:[]}],
 };
+const money={amount:0,currency:'TWD',tax:'included'};
+const knowledge={
+  quotedTotal:{...money,citations:[{source:'quote',page:1}]},changeNet:null,
+  workItems:[{name:'櫃體',category:'木作',description:'玄關櫃',...money,citations:[{source:'quote',page:1}]}],
+  materials:[{name:'鉸鍊',material:null,brand:'BLUM',model:null,specification:null,citations:[{source:'quote',page:1}]}],
+  spaces:[{name:'客廳',layout:'開放式',relationships:['連接餐廳'],citations:[{source:'drawing',page:1}]}],
+  changes:[],
+};
 const fixture=await readFile(new URL('./fixtures/verification.pdf',import.meta.url));
 const {PDFDocument}=createRequire(import.meta.url)('pdf-lib');
 const reviewedPage=page=>page===4
   ?{page,readable:true,drawingType:'天花配置圖',content:'天花局部降板。'}
-  :{page,readable:true,drawingType:'平面配置圖',content:'客廳與餐廳相連。'};
+  :{page,readable:true,drawingType:'平面配置圖',content:'客廳與餐廳相連。',spaceNames:['客廳'],dimensions:['走道 900 mm']};
 const fields=object=>Object.fromEntries(Object.entries(object).map(([key,value])=>[key,Array.isArray(value)?{arrayValue:{values:value.map(x=>({stringValue:x}))}}:{stringValue:String(value)}]));
 const record=kind=>({document:{fields:fields({id:kind,caseId:'case',kind,storagePath:'aiDatabase/cases/case/'+kind,name:kind+'.pdf',size:fixture.length})}});
 const ok=value=>new Response(JSON.stringify(value),{headers:{'content-type':'application/json'}});
-async function run({files=['drawing','quote','change'].map(record),mediaStatus=200,bytes=fixture,output=sections,pageResults=pages=>pages.map(reviewedPage)}={}){
+const commitTime='2026-11-20T05:00:00.000Z';
+async function run({files=['drawing','quote','change'].map(record),mediaStatus=200,bytes=fixture,output=sections,
+  pageResults=pages=>pages.map(reviewedPage),saveFailed=false,readDenied=false,newerRun=false}={}){
   const calls=[],pageRequests=[];let responseBody;
   globalThis.fetch=async(url,options)=>{
     calls.push({url,options});
     if(url.includes('accounts:lookup'))return ok({users:[{localId:'manager'}]});
     if(url.includes('/members/'))return ok({fields:fields({role:'manager',status:'active'})});
+    if(url.endsWith('/aiKnowledge/latest')&&readDenied)return new Response(null,{status:403});
+    if(url.endsWith('/aiKnowledge/latest'))return newerRun?ok({updateTime:commitTime,fields:{
+      startedAt:{timestampValue:'2099-01-01T00:00:00Z'},latestRunId:{stringValue:'newer-run'},
+    }}):new Response(null,{status:404});
+    if(url.endsWith(':commit'))return saveFailed
+      ?new Response(JSON.stringify({error:{status:'PERMISSION_DENIED'}}),{status:403}):ok({commitTime});
     if(url.includes('/aiDbCases/'))return ok({fields:fields(basic)});
     if(url.endsWith(':runQuery'))return ok(files);
     if(url.includes('firebasestorage.googleapis.com'))return new Response(bytes,{status:mediaStatus});
@@ -50,7 +66,7 @@ async function run({files=['drawing','quote','change'].map(record),mediaStatus=2
       return ok({status:'completed',output_text:JSON.stringify({pages:pageResults(pages.map(item=>item.page))})});
     }
     responseBody=body;
-    return ok({status:'completed',output_text:JSON.stringify(output)});
+    return ok({status:'completed',output_text:JSON.stringify({knowledge,...output})});
   };
   const response={setHeader(){},status(code){this.code=code;return this;},json(data){this.data=data;return this;}};
   await handler({method:'POST',headers:{authorization:'Bearer user-token'},body:{basic,caseId:'case',files:[{storagePath:'https://evil.invalid'}]}},response);
@@ -68,6 +84,37 @@ try{
   assert.ok(content.every(item=>item.type!=='input_image'));
   assert.ok(result.responseBody.instructions.includes('主要材料／設備／品牌／型號'));
   assert.ok(result.responseBody.instructions.includes('不分析完工照片'));
+  assert.ok(result.responseBody.text.format.schema.required.includes('knowledge'));
+  const saved=result.response.data.knowledgeSave;
+  assert.equal(saved.analyzedAt,commitTime);
+  assert.equal(saved.isLatest,true);
+  const writes=JSON.parse(result.calls.find(call=>call.url.endsWith(':commit')).options.body).writes;
+  const latest=writes.find(write=>write.update?.name.endsWith('/aiKnowledge/latest')).update.fields;
+  const runDoc=writes.find(write=>write.update?.name.endsWith('/aiKnowledgeRuns/'+saved.runId)).update.fields;
+  const pageDoc=writes.find(write=>write.update?.name.endsWith('/drawingPages/1')).update.fields;
+  assert.equal(latest.latestRunId.stringValue,saved.runId);
+  assert.equal(latest.caseFacts.mapValue.fields.areaPing.integerValue,'30');
+  assert.equal(latest.financials.mapValue.fields.quotedTotal.mapValue.fields.amount.integerValue,'0');
+  assert.equal(latest.financials.mapValue.fields.completedSettlement.mapValue.fields.amount.integerValue,'200');
+  assert.equal(latest.drawing.mapValue.fields.pages,undefined);
+  assert.equal(runDoc.drawing.mapValue.fields.pages,undefined);
+  assert.equal(pageDoc.sourceFileId.stringValue,'drawing');
+  assert.equal(pageDoc.spaceNames.arrayValue.values[0].stringValue,'客廳');
+  assert.equal(pageDoc.dimensions.arrayValue.values[0].stringValue,'走道 900 mm');
+  assert.ok(writes.every(write=>write.update.name.includes('/aiDbCases/case/')&&
+    !write.update.name.endsWith('/aiDbCases/case')));
+  const failed=await run({saveFailed:true});
+  assert.equal(failed.response.code,200);
+  assert.equal(failed.response.data.knowledgeSave.code,'PERMISSION_DENIED');
+  assert.match(failed.response.data.knowledgeSave.error,/Firestore 拒絕儲存.*權限不足/);
+  const readDenied=await run({readDenied:true});
+  assert.equal(readDenied.response.code,200);
+  assert.equal(readDenied.response.data.knowledgeSave.code,'PERMISSION_DENIED');
+  assert.ok(!readDenied.calls.some(call=>call.url.endsWith(':commit')));
+  const older=await run({newerRun:true});
+  assert.equal(older.response.data.knowledgeSave.isLatest,false);
+  assert.ok(JSON.parse(older.calls.find(call=>call.url.endsWith(':commit')).options.body).writes
+    .every(write=>!write.update?.name.endsWith('/aiKnowledge/latest')));
   assert.deepEqual(result.response.data.sections.drawings,[sections.drawings[0]]);
   const rendered=renderAnalysisResult(result.response.data);
   assert.ok(rendered.includes('正式報價單｜第 1 頁')&&rendered.includes('施工圖｜第 1 頁'));
@@ -136,5 +183,5 @@ try{
   globalThis.fetch=async(url,options)=>{sent=JSON.parse(options.body);return ok(missing.response.data);};
   const summary=await analyzeBasicCase({id:'case',...basic,files:['never supplied by frontend']},async()=>'user-token');
   assert.equal(sent.caseId,'case');assert.equal(sent.files,undefined);assert.deepEqual(summary,missing.response.data);
-  console.log('PASS: backend resolves case PDFs, actual bytes/base64 for all 3 sources, absent PDFs skipped, photos excluded, missing/corrupt/oversized/foreign/duplicate PDF errors, no Firebase writes. OpenAI and Firebase requests mocked.');
+  console.log('PASS: PDFs, separate drawing page documents, structured case knowledge, retained latest version and save failures. OpenAI and Firebase requests mocked.');
 }finally{globalThis.fetch=savedFetch;if(savedKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=savedKey;}

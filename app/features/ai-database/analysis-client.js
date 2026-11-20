@@ -69,7 +69,10 @@ export function renderAnalysisResult(report){
     const references=pages.length?`<small class="aidb-muted">${kind==='drawing'?'施工圖重點':''}引用頁碼：${pages.join('、')}</small>`:'';
     return `<li>${esc(label)}｜${esc(name)}${kind==='drawing'?renderDrawingReview(drawingReview):''}${references}</li>`;
   });
-  blocks.push(`<section class="aidb-analysis-block"><h4>8. 資料來源</h4><ul><li>${BASIC_LABEL}</li>${files.join('')}${missing.map(label=>`<li class="aidb-muted">${esc(label)}｜未提供</li>`).join('')}</ul></section>`);
+  const analyzedAt=report.knowledgeSave?.analyzedAt;
+  const time=analyzedAt&&Number.isFinite(Date.parse(analyzedAt))
+    ?new Intl.DateTimeFormat('zh-TW',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Taipei'}).format(new Date(analyzedAt)):'';
+  blocks.push(`<section class="aidb-analysis-block"><h4>8. 資料來源</h4>${time?`<p class="aidb-muted">分析時間 ${esc(time)}</p>`:''}<ul><li>${BASIC_LABEL}</li>${files.join('')}${missing.map(label=>`<li class="aidb-muted">${esc(label)}｜未提供</li>`).join('')}</ul></section>`);
   return blocks.join('');
 }
 
