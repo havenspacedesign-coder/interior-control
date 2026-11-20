@@ -14,21 +14,42 @@ function parserFailure(indexCode,cause){
   return Object.assign(new Error(indexCode,{cause}),{indexCode});
 }
 
-async function loadEvidenceParser(){
+export async function loadEvidenceParser(onStage){
+  let canvasLoaded=false;
   try{
     // Load the platform binding from the application before PDF.js evaluates its
     // top-level DOMMatrix. PDF.js's optional, internal require can be missed by tracing.
     const {default:canvas}=await import('@napi-rs/canvas');
+    if(onStage){
+      const context=canvas.createCanvas(1,1).getContext('2d');
+      context.fillRect(0,0,1,1);
+      onStage('canvas');
+      canvasLoaded=true;
+    }
     for(const name of ['DOMMatrix','ImageData','Path2D']){
       if(typeof globalThis[name]!=='function')globalThis[name]=canvas[name];
       if(typeof globalThis[name]!=='function')throw new ReferenceError(name+' is not defined');
     }
-  }catch(error){throw parserFailure('PDF_CANVAS_INIT_FAILED',error);}
+  }catch(error){throw parserFailure(canvasLoaded?'PDF_DOMMATRIX_TEST_FAILED':'PDF_CANVAS_INIT_FAILED',error);}
+  if(onStage){
+    try{
+      const matrix=new globalThis.DOMMatrix();
+      matrix.translateSelf(2,3);
+      if(matrix.e!==2||matrix.f!==3)throw new Error('DOMMatrix translation returned unexpected coordinates');
+      onStage('domMatrix');
+    }catch(error){throw parserFailure('PDF_DOMMATRIX_TEST_FAILED',error);}
+  }
   const parser=await import('pdfjs-dist/legacy/build/pdf.mjs');
+  if(onStage){
+    if(typeof parser.getDocument!=='function')throw new TypeError('PDF.js getDocument is unavailable');
+    onStage('pdfjs');
+  }
   try{
     const worker=pathToFileURL(require.resolve('pdfjs-dist/legacy/build/pdf.worker.mjs')).href;
-    await import(worker);
+    const workerModule=await import(worker);
+    if(onStage&&typeof workerModule.WorkerMessageHandler?.setup!=='function')throw new TypeError('PDF.js Worker handler is unavailable');
     parser.GlobalWorkerOptions.workerSrc=worker;
+    onStage?.('worker');
   }catch(error){throw parserFailure('PDF_WORKER_INIT_FAILED',error);}
   return parser;
 }

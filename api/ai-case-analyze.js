@@ -9,6 +9,7 @@ import {saveCaseKnowledge,saveFailedCaseRun} from '../server/ai-case-knowledge.j
 import {finishValidation,logAnalysisTrace,recordParsedAnalysis,traceVerification} from '../server/ai-case-diagnostics.js';
 import {evidenceInstructions,inspectPdfEvidence} from '../server/ai-case-evidence.js';
 import {EVIDENCE_POLICY_VERSION} from '../app/features/ai-database/summary-format.js';
+import {runPdfParserSelfTest} from '../server/ai-pdf-self-test.js';
 const PROJECT='have000';
 const WEB_API_KEY='AIzaSyA6W_C2H84heiVwDe_a6ElMwuEjvbR0aRo';
 export const maxDuration=180;
@@ -50,6 +51,12 @@ export default async function handler(request,response){
     });
     const fields=(await member.json())?.fields;
     if(!member.ok||!['admin','manager'].includes(fields?.role?.stringValue)||(fields?.status?.stringValue??'active')!=='active')throw failure(403,'只有有效的管理員帳號可以進行 AI 分析。');
+    if(request.body?.operation==='pdf-parser-self-test'){
+      if(fields.role.stringValue!=='admin')throw failure(403,'只有管理員可以執行 PDF 解析器自測。');
+      if(Object.keys(request.body).length!==1)throw failure(400,'PDF 自測只接受固定操作。');
+      const pdfSelfTest=await runPdfParserSelfTest();
+      return response.status(pdfSelfTest.ok?200:503).json({pdfSelfTest});
+    }
     let basic=basicText(request.body),pdfs=null;
     const startedAt=new Date().toISOString();
     const {drawingMode,sessionId}=request.body;

@@ -10,6 +10,7 @@ import {analyzeBasicCase,renderAnalysisResult} from './analysis-client.js';
 import {renderAnalysisDiagnostics,renderAnalysisHistory} from './analysis-diagnostics.js';
 import {openThumbnailMaintenance} from './thumbnail-maintenance.js';
 import {observePhotoCards} from './photo-view.js';
+import {renderPdfSelfTest,requestPdfSelfTest} from './pdf-self-test.js';
 export function mountAiDatabase(root,session){
   const emulatorMode=!session.createStore&&new URL(location.href).searchParams.get('aiStore')==='emulator';
   if(!document.querySelector('[data-ai-database-style]')){const link=document.createElement('link');link.rel='stylesheet';link.href=new URL('./ai-database.css',import.meta.url);link.dataset.aiDatabaseStyle='true';document.head.append(link);}
@@ -18,6 +19,22 @@ export function mountAiDatabase(root,session){
   const photoLoader=createPhotoLoader(path=>context.store.getBlob(path));
   const captionDrafts=new Map();
   const analyses=new Map();
+  let pdfSelfTest={};
+  async function startPdfSelfTest(){
+    if(!session.canRunPdfSelfTest?.()||pdfSelfTest.running)return;
+    const panel=root.querySelector('[data-pdf-self-test]');
+    if(!panel)return;
+    const run=pdfSelfTest={running:true};
+    const refresh=()=>{
+      if(disposed||!session.canRunPdfSelfTest?.())return;
+      const current=root.querySelector('[data-pdf-self-test]');
+      if(current)current.innerHTML=renderPdfSelfTest(run);
+    };
+    refresh();
+    try{run.result=await requestPdfSelfTest(session.getIdToken);}
+    catch(error){run.error=error.message;}
+    finally{run.running=false;refresh();}
+  }
   function updateAnalysis(){
     if(disposed||!session.canManage())return;
     const analysis=analyses.get(selectedCase)||{};
@@ -170,6 +187,13 @@ export function mountAiDatabase(root,session){
     root.innerHTML=`<div class="aidb-header"><div><h1>AI 資料庫</h1><p class="aidb-muted">公司案件原始資料與設計知識管理</p></div><div class="aidb-actions"><button class="btn btn-sm" data-action="thumbnails.manage">照片縮圖工具</button><button class="btn btn-sm" data-action="reload">重新載入</button></div></div><p class="aidb-environment">${esc(context.store.label)}</p><p class="aidb-notice" role="status" ${notice?'':'hidden'}>${esc(notice)}</p>${context.state.cleanupPaths.length?'<p class="aidb-update-note">部分原始檔案尚待清理，資料已隱藏。<button class="btn btn-sm" data-action="cleanup">重試檔案清理</button></p>':''}<div class="aidb-layout"><aside class="aidb-sidebar card"><div class="aidb-sidebar-heading"><strong>知識分類</strong><button class="btn btn-sm" data-action="category.create">＋新增分類</button></div><nav aria-label="AI 資料庫分類與案件">${renderNavigation(context.state,{selectedCategory,selectedCase,collapsed})}</nav>${context.state.categories.some(c=>c.moduleType==='cases')?'':'<button class="btn btn-sm" data-action="category.restoreCases">建立案件資料庫</button>'}<p class="aidb-sort-hint">拖曳分類或案件可調整順序。<br>鍵盤：選取列後按 Alt＋↑／↓。</p></aside><main class="aidb-content">${renderCaseContent(context.state,{selectedCategory,selectedCase})}</main></div>`;
     updateAnalysis();
     void loadSavedAnalysis();
+    if(session.canRunPdfSelfTest?.()){
+      const panel=document.createElement('section');
+      panel.dataset.pdfSelfTest='';
+      panel.className='aidb-analysis-block';
+      panel.innerHTML=renderPdfSelfTest(pdfSelfTest);
+      root.querySelector('.aidb-header')?.after(panel);
+    }
     previews();
   }
   function inputDialog(title,label,value,onSave){
@@ -267,6 +291,7 @@ export function mountAiDatabase(root,session){
       return;
     }
     if(key==='case.analyze'){void startAnalysis();return;}
+    if(key==='pdf.selfTest'){void startPdfSelfTest();return;}
     if(['case.analysisHistory','case.analysisHistoryMore','case.analysisRun'].includes(key)){
       void loadAnalysisHistory(key==='case.analysisRun'?id:null,key==='case.analysisHistoryMore');return;
     }

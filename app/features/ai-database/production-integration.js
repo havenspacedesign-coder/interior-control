@@ -61,6 +61,7 @@
         ownerUid=uid;
         controller=mountAiDatabase(panel,{
           canManage:()=>canManageAi()&&auth.currentUser?.uid===uid,
+          canRunPdfSelfTest:()=>canManageAi()&&auth.currentUser?.uid===uid&&S.members.some(member=>member.id===uid&&member.role==='admin'),
           user:()=>({uid,name:currentUser?.displayName||'管理員'}),
           getIdToken:()=>auth.currentUser?.uid===uid?auth.currentUser.getIdToken():Promise.reject(Error('登入已變更，請重新登入。')),
           createStore:()=>createProductionStore({db,auth,storage,...aiDatabaseSdk}),
