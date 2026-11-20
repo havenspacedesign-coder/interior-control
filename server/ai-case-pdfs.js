@@ -1,6 +1,7 @@
+import {PDF_LABELS as LABELS} from '../app/features/ai-database/summary-format.js';
+
 const ROOT='https://firestore.googleapis.com/v1/projects/have000/databases/(default)/documents';
 const BUCKET='have000.firebasestorage.app';
-const LABELS={drawing:'施工圖',quote:'正式報價單',change:'追加減工程'};
 const LIMIT=50_000_000;
 const fail=(status,message)=>Object.assign(new Error(message),{status});
 function decode(value){
@@ -49,7 +50,7 @@ export async function readCasePdfs(caseId,token,signal){
     const response=await fetch(`https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o/${encodeURIComponent(file.storagePath)}?alt=media`,{headers:{authorization:`Firebase ${token}`},signal});
     if(!response.ok)throw fail(response.status===404?404:502,`${label} PDF 讀取失敗，尚未完成分析。請確認檔案存在及讀取權限後重試。`);
     const bytes=await pdfBytes(response,LIMIT-total,label);total+=bytes.length;
-    content.push({type:'input_text',text:`以下 PDF 的資訊來源標籤為「來源：${label}」。請引用此標籤，能辨識時附頁碼。`},
+    content.push({type:'input_text',text:`下一份 PDF 為「${label}」，引用的 source 為 ${kind}。`},
       {type:'input_file',filename:label+'.pdf',file_data:'data:application/pdf;base64,'+bytes.toString('base64')});
     sources.push({kind,label,name:String(file.name||label+'.pdf'),bytes:bytes.length});
   }

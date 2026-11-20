@@ -94,3 +94,10 @@
 @container (max-width: 279px) {
   .aidb-photo-grid { grid-template-columns: minmax(0, 1fr); }
 }
+.aidb-analysis-result:not(:empty){display:grid;gap:12px;margin:0 0 14px;overflow-wrap:anywhere}
+.aidb-analysis-block{padding:12px 14px;border:1px solid var(--border);border-radius:8px}
+.aidb-analysis-block h4{margin:0 0 6px;font-size:inherit}
+.aidb-analysis-block ul{margin:0;padding-inline-start:20px}
+.aidb-analysis-block li+li{margin-top:6px}
+.aidb-analysis-block p{margin:0}
+.aidb-analysis-block small{display:block;margin-top:2px}

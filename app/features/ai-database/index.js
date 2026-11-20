@@ -6,7 +6,7 @@ import {esc} from './ui-utils.js';
 import {LEARNING_SCHEMA} from './learning-schema.js';
 import {uploadCaseFiles,cleanupFiles,openFile} from './files.js';
 import {createPhotoLoader} from './photo-loader.js';
-import {analyzeBasicCase} from './analysis-client.js';
+import {analyzeBasicCase,renderAnalysisResult} from './analysis-client.js';
 import {openThumbnailMaintenance} from './thumbnail-maintenance.js';
 import {observePhotoCards} from './photo-view.js';
 export function mountAiDatabase(root,session){
@@ -21,7 +21,7 @@ export function mountAiDatabase(root,session){
     if(disposed||!session.canManage())return;
     const analysis=analyses.get(selectedCase)||{};
     const result=root.querySelector('[data-analysis-result]'),alert=root.querySelector('[data-analysis-error]'),button=root.querySelector('[data-action="case.analyze"]');
-    if(result)result.textContent=analysis.summary||'';
+    if(result)result.innerHTML=renderAnalysisResult(analysis.report);
     if(alert){alert.textContent=analysis.error||'';alert.hidden=!analysis.error;}
     if(button){button.disabled=!!analysis.loading;button.textContent=analysis.loading?'AI 分析中…':'開始 AI 分析';}
   }
@@ -29,9 +29,9 @@ export function mountAiDatabase(root,session){
     const caseId=selectedCase,project=context.state.cases.find(row=>row.id===caseId);
     if(!project||analyses.get(caseId)?.loading)return;
     if(dirty){analyses.set(caseId,{...analyses.get(caseId),error:'請先儲存基本資料，再開始分析。'});updateAnalysis();return;}
-    const analysis={summary:analyses.get(caseId)?.summary||'',loading:true,error:''};
+    const analysis={report:analyses.get(caseId)?.report,loading:true,error:''};
     analyses.set(caseId,analysis);updateAnalysis();
-    try{analysis.summary=await analyzeBasicCase(project,session.getIdToken);}
+    try{analysis.report=await analyzeBasicCase(project,session.getIdToken);}
     catch(error){analysis.error=error.message||'AI 分析失敗，請重試。';}
     finally{analysis.loading=false;updateAnalysis();}
   }
