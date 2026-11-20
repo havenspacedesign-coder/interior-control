@@ -4,12 +4,12 @@ import handler from '../../api/ai-case-analyze.js';
 import {runPdfParserSelfTest} from '../../server/ai-pdf-self-test.js';
 import {renderPdfSelfTest,requestPdfSelfTest} from '../../app/features/ai-database/pdf-self-test.js';
 
-test('PDF self-test permits only active admins and works without OpenAI or case access',async()=>{
+test('PDF self-test permits only active managers and works without OpenAI or case access',async()=>{
   const originalFetch=globalThis.fetch;
   const originalKey=process.env.OPENAI_API_KEY;
   delete process.env.OPENAI_API_KEY;
   const operation='pdf-parser-self-test';
-  async function request({token='mock-firebase-token',role='admin',status='active',body={operation}}={}){
+  async function request({token='mock-firebase-token',role='manager',status='active',body={operation}}={}){
     const urls=[];
     globalThis.fetch=async input=>{
       const url=new URL(input);
@@ -25,7 +25,7 @@ test('PDF self-test permits only active admins and works without OpenAI or case 
   }
   try{
     assert.equal((await request({token:null})).response.code,401);
-    for(const options of [{role:'manager'},{role:'staff'},{status:'resigned'}]){
+    for(const options of [{role:'admin'},{role:'staff'},{status:'resigned'}]){
       assert.equal((await request(options)).response.code,403);
     }
     for(const extra of [{caseId:'forbidden'},{url:'https://example.com/file.pdf'},{files:[]}]){

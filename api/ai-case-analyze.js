@@ -52,7 +52,7 @@ export default async function handler(request,response){
     const fields=(await member.json())?.fields;
     if(!member.ok||!['admin','manager'].includes(fields?.role?.stringValue)||(fields?.status?.stringValue??'active')!=='active')throw failure(403,'只有有效的管理員帳號可以進行 AI 分析。');
     if(request.body?.operation==='pdf-parser-self-test'){
-      if(fields.role.stringValue!=='admin')throw failure(403,'只有管理員可以執行 PDF 解析器自測。');
+      if(fields.role.stringValue!=='manager')throw failure(403,'只有管理員可以執行 PDF 解析器自測。');
       if(Object.keys(request.body).length!==1)throw failure(400,'PDF 自測只接受固定操作。');
       const pdfSelfTest=await runPdfParserSelfTest();
       return response.status(pdfSelfTest.ok?200:503).json({pdfSelfTest});

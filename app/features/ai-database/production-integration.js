@@ -20,6 +20,10 @@
       &&(member.status??'active')==='active';
   }
 
+  function canRunPdfSelfTest(uid){
+    return canManageAi()&&auth.currentUser?.uid===uid&&S.members.find(member=>member.id===uid)?.role==='manager';
+  }
+
   function clearAiRoute(){
     if(location.hash==='#ai-database')history.replaceState(null,'',location.pathname+location.search);
   }
@@ -61,7 +65,7 @@
         ownerUid=uid;
         controller=mountAiDatabase(panel,{
           canManage:()=>canManageAi()&&auth.currentUser?.uid===uid,
-          canRunPdfSelfTest:()=>canManageAi()&&auth.currentUser?.uid===uid&&S.members.some(member=>member.id===uid&&member.role==='admin'),
+          canRunPdfSelfTest:()=>canRunPdfSelfTest(uid),
           user:()=>({uid,name:currentUser?.displayName||'管理員'}),
           getIdToken:()=>auth.currentUser?.uid===uid?auth.currentUser.getIdToken():Promise.reject(Error('登入已變更，請重新登入。')),
           createStore:()=>createProductionStore({db,auth,storage,...aiDatabaseSdk}),

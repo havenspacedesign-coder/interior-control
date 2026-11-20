@@ -21,7 +21,8 @@ function testShell({role,status='active',hash='',signedIn=true,localTestMode=fal
       querySelectorAll(){return [existing,tab];},
     },
   };
-  vm.runInNewContext(source,context,{
+  const testSource=source.replace(/\}\s*$/,'globalThis.canRunPdfSelfTestForTest=canRunPdfSelfTest;\n}');
+  vm.runInNewContext(testSource,context,{
     importModuleDynamically(){imports++;throw new Error('Unexpected protected module load');},
   });
   context.renderActive();
@@ -29,18 +30,21 @@ function testShell({role,status='active',hash='',signedIn=true,localTestMode=fal
 }
 
 for(const role of ['admin','manager']){
-  const {tab}=testShell({role});
+  const {tab,context}=testShell({role});
   assert.equal(tab.hidden,false);
+  assert.equal(context.canRunPdfSelfTestForTest('account'),role==='manager');
+  assert.equal(context.canRunPdfSelfTestForTest('other-account'),false);
 }
 for(const account of [
   {role:'staff'},{role:'supervisor'},{role:'pending'},
-  {role:'admin',status:'resigned'},{role:'admin',signedIn:false},{role:'manager',localTestMode:true},
+  {role:'manager',status:'resigned'},{role:'manager',signedIn:false},{role:'manager',localTestMode:true},
 ]){
   const shell=testShell({...account,hash:'#ai-database'});
   assert.equal(shell.tab.hidden,true);
   shell.handlers.click();
   assert.equal(shell.panels(),0);
   assert.equal(shell.imports(),0);
+  assert.equal(shell.context.canRunPdfSelfTestForTest('account'),false);
 }
 const shell=testShell({role:'admin'});
 shell.context.S.members[0].role='staff';
