@@ -95,7 +95,10 @@ try{
   }
   for(const role of ['manager','admin']){
     result=await run({body:{basic:{...basic,files:['do-not-send'],photo:'do-not-send'}},replies:[account(),member(role),ok({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(sections)}]}]})]});
-    assert.equal(result.response.code,200);assert.deepEqual(result.response.data.sections,sections);
+    assert.equal(result.response.code,200);
+    assert.equal(result.response.data.sections.overview[0].text,sections.overview[0].text);
+    assert.equal(result.response.data.sections.overview[0].verificationStatus,'ai_inference');
+    assert.deepEqual(result.response.data.sections.issues,[]);
     assert.ok(result.response.data.summary.includes('8. 資料來源'));
     const outbound=JSON.parse(result.calls[2].options.body);
     assert.deepEqual(JSON.parse(outbound.input),Object.fromEntries(Object.entries(basic).map(([k,v])=>[k,k==='scopes'?v:String(v)])));

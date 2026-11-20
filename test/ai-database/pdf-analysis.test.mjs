@@ -203,8 +203,13 @@ try{
   const runDoc=writes.find(write=>write.update?.name.endsWith('/aiKnowledgeRuns/'+saved.runId)).update.fields;
   const pageDoc=writes.find(write=>write.update?.name.endsWith('/drawingPages/1')).update.fields;
   assert.equal(latest.latestRunId.stringValue,saved.runId);
+  assert.equal(latest.evidencePolicyVersion.integerValue,'1');
+  assert.deepEqual(latest.issues.arrayValue.values,[]);
+  assert.deepEqual(runDoc.sections.mapValue.fields.issues.arrayValue.values,[]);
   assert.equal(latest.caseFacts.mapValue.fields.areaPing.integerValue,'30');
-  assert.equal(latest.financials.mapValue.fields.quotedTotal.mapValue.fields.amount.integerValue,'0');
+  assert.equal(latest.financials.mapValue.fields.quotedTotal.nullValue,null);
+  assert.equal(runDoc.financials.mapValue.fields.quotedTotal.mapValue.fields.amount.integerValue,'0');
+  assert.equal(runDoc.financials.mapValue.fields.quotedTotal.mapValue.fields.referenceEligible.booleanValue,false);
   assert.equal(latest.financials.mapValue.fields.completedSettlement.mapValue.fields.amount.integerValue,'200');
   assert.equal(latest.drawing.mapValue.fields.pages,undefined);
   assert.equal(runDoc.drawing.mapValue.fields.pages,undefined);
@@ -225,13 +230,14 @@ try{
   assert.equal(older.response.data.knowledgeSave.isLatest,false);
   assert.ok(JSON.parse(older.calls.find(call=>call.url.endsWith(':commit')).options.body).writes
     .every(write=>!write.update?.name.endsWith('/aiKnowledge/latest')));
-  assert.deepEqual(result.response.data.sections.drawings,[sections.drawings[0]]);
+  assert.deepEqual(result.response.data.sections.drawings.map(({text})=>text),[sections.drawings[0].text]);
   const rendered=renderAnalysisResult(result.response.data);
   assert.ok(rendered.includes('正式報價單｜第 1 頁')&&rendered.includes('施工圖｜第 1 頁'));
   assert.ok(rendered.includes('施工圖｜drawing.pdf')&&rendered.includes('引用頁碼：1'));
   assert.ok(rendered.includes('施工圖共 1 頁，已分析 1 頁'));
   assert.ok(rendered.includes('逐頁分析紀錄'));
-  assert.ok(rendered.includes('無法確認主臥櫃體尺寸'));
+  assert.ok(!rendered.includes('無法確認主臥櫃體尺寸'));
+  assert.ok(rendered.includes('本次未發現具充分證據支持的矛盾或缺失'));
   const unreadable=await run({output:{...sections,drawings:sections.drawings.slice(1)}});
   assert.equal(unreadable.response.code,200);
   assert.ok(renderAnalysisResult(unreadable.response.data).includes('無法確認施工圖中的空間、配置、尺寸或施工資訊。'));
@@ -255,7 +261,7 @@ try{
   assert.equal(mixed.response.data.drawingReview.pages[1].status,'unreadable');
   assert.equal(mixed.response.data.drawingReview.pages[2].status,'request_failed');
   assert.equal(mixed.response.data.drawingReview.pages[2].reasonCode,'MISSING_PAGE');
-  assert.deepEqual(mixed.response.data.sections.drawings,[sections.drawings[0],extraPoint]);
+  assert.deepEqual(mixed.response.data.sections.drawings.map(({text})=>text),[sections.drawings[0].text,extraPoint.text]);
   const reviewHtml=renderAnalysisResult(mixed.response.data);
   assert.ok(reviewHtml.includes('施工圖共 13 頁，已分析 12 頁'));
   assert.ok(reviewHtml.includes('第 2 頁無法可靠辨識'));

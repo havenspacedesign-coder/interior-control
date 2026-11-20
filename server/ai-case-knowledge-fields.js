@@ -1,3 +1,5 @@
+import {locateCitation} from './ai-case-evidence.js';
+
 const string={type:'string'};
 const nullableString={type:['string','null']};
 const amount={type:['number','null']};
@@ -7,13 +9,12 @@ const LISTS={
   workItems:{category:nullableString,name:string,description:string,...money},
   materials:{name:string,material:nullableString,brand:nullableString,model:nullableString,specification:nullableString},
   spaces:{name:string,layout:string,relationships:{type:'array',items:string}},
-  changes:{name:string,description:string,direction:{type:'string',enum:['addition','deduction','neutral','unknown']},...money},
 };
 const object=properties=>({type:'object',additionalProperties:false,required:Object.keys(properties),properties});
 
 export const knowledgeInstructions=[
   'knowledge 是案件知識欄位，與畫面用摘要分開。只保存能由來源支持的資訊，各陣列最多 8 筆。金額用文件原幣別的數字，不轉幣、不加總猜測、不把未列金額填 0。未標明的金額、品牌、型號、幣別或規格填 null，含稅狀態不明填 unknown。',
-  'quotedTotal 只取正式報價單明載的工程總額；changeNet 只取追加減工程文件明載的淨額；完工實際結算由系統讀取基本資料。workItems 保存代表性工項與可核對的小計。materials 保存材料、品牌、型號與規格。spaces 保存施工圖可確認的空間、配置、相鄰關係，只引用已辨識的施工圖頁面。changes 保存變更項目及方向與金額。各項均引用實際支持的檔案與頁碼，缺少資料回傳空陣列或 null。',
+  'quotedTotal 只取正式報價單明載的工程總額；changeNet 只取追加減工程文件明載的淨額；完工實際結算由系統讀取基本資料。workItems 保存代表性工項與可核對的小計。materials 保存材料、品牌、型號與規格。spaces 保存施工圖可確認的空間、配置、相鄰關係，只引用已辨識的施工圖頁面。結構化追加減由系統從已核對的 changes 摘錄建立。各項均引用實際支持的檔案與頁碼，缺少資料回傳空陣列或 null。',
 ].join('\n');
 
 export function knowledgeSchema(citation){
@@ -25,25 +26,24 @@ export function knowledgeSchema(citation){
   });
 }
 
-export function readKnowledge(value,sources,drawingPages=[]){
+export function readKnowledge(value,documents,drawingPages=[],verifiedChanges=[]){
   if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Missing structured case knowledge');
-  const byKind=new Map(sources.map(source=>[source.kind,source]));
   const recognized=new Set(drawingPages.map(({page})=>page));
   function item(row,fields,allowed){
     if(!row||typeof row!=='object'||!Array.isArray(row.citations))return null;
     const citations=[];
     for(const entry of row.citations){
       const {source,page}=entry??{};
-      const document=byKind.get(source);
       if(!allowed.includes(source))continue;
       if(source==='basic'){
         if(page===null)citations.push({source,sourceId:'basic',page:null});
-      }else if(document&&Number.isSafeInteger(page)&&page>0&&(source!=='drawing'||recognized.has(page))){
-        citations.push({source,sourceId:document.fileId,page});
+      }else if(source!=='drawing'||recognized.has(page)){
+        const reference=locateCitation(entry,documents);
+        if(reference)citations.push(reference);
       }
     }
     if(!citations.length)return null;
-    const result={citations};
+    const result={citations,verificationStatus:'ai_inference',referenceEligible:false};
     for(const [key,schema] of Object.entries(fields)){
       const field=row[key];
       if(schema.type==='array'){
@@ -59,7 +59,7 @@ export function readKnowledge(value,sources,drawingPages=[]){
     }
     return result;
   }
-  const allowed={workItems:['basic','quote','change','drawing'],materials:['basic','quote','change','drawing'],spaces:['drawing'],changes:['change']};
+  const allowed={workItems:['basic','quote','change','drawing'],materials:['basic','quote','change','drawing'],spaces:['drawing']};
   const total=(row,source)=>{
     const result=item(row,money,[source]);
     return result?.amount!=null?result:null;
@@ -69,5 +69,9 @@ export function readKnowledge(value,sources,drawingPages=[]){
     ...Object.fromEntries(Object.entries(LISTS).map(([key,fields])=>[
       key,(Array.isArray(value[key])?value[key]:[]).map(row=>item(row,fields,allowed[key])).filter(Boolean).slice(0,8),
     ])),
+    changes:verifiedChanges.map(({item,direction,amount,currency,citations,evidence,verificationStatus,referenceEligible})=>({
+      name:item,description:evidence[0].quote,direction,amount,currency,tax:'unknown',citations,evidence,verificationStatus,referenceEligible,
+    })),
   };
 }
+

@@ -1,5 +1,5 @@
 import {esc} from './ui-utils.js';
-import {SUMMARY_SECTIONS,BASIC_LABEL,formatCitation,emptySection} from './summary-format.js';
+import {SUMMARY_SECTIONS,BASIC_LABEL,formatCitation,emptySection,verifiedKnowledgeItems,EVIDENCE_POLICY_VERSION} from './summary-format.js';
 
 export async function analyzeBasicCase(project,getIdToken){
   if(!getIdToken)throw Error('本機展示帳號無法呼叫雲端 AI。請在已部署 API 的測試網站使用 Firebase 管理員帳號登入。');
@@ -59,6 +59,20 @@ export function renderAnalysisResult(report){
   if(!report)return '';
   const {sections,sources,missing,drawingReview}=report;
   const blocks=Object.entries(SUMMARY_SECTIONS).map(([key,title],index)=>{
+    if(key==='issues'){
+      const issues=sections.issues;
+      if(report.evidencePolicyVersion!==EVIDENCE_POLICY_VERSION&&issues.length){
+        return `<section class="aidb-analysis-block"><h4>${index+1}. ${title}</h4><p class="aidb-muted">此為舊版分析，原有問題尚未驗證。</p><details><summary>查看歷史分析紀錄</summary><ul>${issues.map(row=>`<li>${esc(cleanText(row.text))}</li>`).join('')}</ul></details></section>`;
+      }
+      const confirmed=verifiedKnowledgeItems(issues,report.evidencePolicyVersion).filter(row=>row.category==='confirmed');
+      const groups=[['已確認的矛盾或缺失',confirmed],['需要人工確認的疑問',issues.filter(row=>row.category==='review')],
+        ['無法可靠辨識的資訊',issues.filter(row=>row.category==='unreadable')]];
+      const content=groups.filter(([,rows])=>rows.length).map(([label,rows])=>`<p><strong>${label}</strong></p><ul>${rows.map(row=>{
+        const refs=(row.evidence??[]).map(ref=>[ref.sourceName||formatCitation(ref),ref.sourceName?`第 ${ref.page} 頁`:'',ref.quote||''].filter(Boolean).join('｜'));
+        return `<li>${esc(row.text)}${refs.map(ref=>`<small class="aidb-muted">${esc(ref)}</small>`).join('')}</li>`;
+      }).join('')}</ul>`).join('');
+      return `<section class="aidb-analysis-block"><h4>${index+1}. ${title}</h4>${confirmed.length?'':`<p class="aidb-muted">${esc(emptySection(key,sources))}</p>`}${content}</section>`;
+    }
     const items=sections[key].map(({text,citations})=>{
       const content=cleanText(text);
       if(!content)return '';
@@ -69,6 +83,7 @@ export function renderAnalysisResult(report){
   });
   const pagesBySource=new Map(sources.map(({kind})=>[kind,new Set()]));
   for(const [section,points] of Object.entries(sections)){
+    if(section==='issues'&&report.evidencePolicyVersion!==EVIDENCE_POLICY_VERSION)continue;
     for(const {citations} of points){
       for(const {source,page} of citations){
         if(source!=='drawing'||section==='drawings')pagesBySource.get(source)?.add(page);

@@ -81,7 +81,7 @@ function createFirebaseStore({db,auth,storage,fs,storageSdk,collections,metaColl
       const runPath=[collections.cases,caseId,'aiKnowledgeRuns',latestRunId];
       const run=await fs.getDocFromServer(fs.doc(db,...runPath));
       if(!run.exists())throw Error('無法讀取案件 AI 知識版本。');
-      const {sections,sources,missing,drawing,analyzedAt}=run.data();
+      const {sections,sources,missing,drawing,analyzedAt,evidencePolicyVersion}=run.data();
       let drawingReview;
       if(drawing){
         const snapshot=await fs.getDocsFromServer(fs.collection(db,...runPath,'drawingPages'));
@@ -91,7 +91,7 @@ function createFirebaseStore({db,auth,storage,fs,storageSdk,collections,metaColl
         drawingReview={totalPages,reviewedPages,recognizedPages,unreadablePages,incompletePages,failedPages,isComplete,pages};
       }
       if(auth.currentUser?.uid!==uid)assertManager(null);
-      return {sections,sources,missing,knowledgeSave:{analyzedAt:analyzedAt?.toDate().toISOString()},
+      return {sections,sources,missing,evidencePolicyVersion,knowledgeSave:{analyzedAt:analyzedAt?.toDate().toISOString()},
         ...(drawingReview?{drawingReview}:{}),
       };
     }}:{}),

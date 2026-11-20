@@ -1,3 +1,5 @@
+import {EVIDENCE_POLICY_VERSION,verifiedKnowledgeItems} from '../app/features/ai-database/summary-format.js';
+
 export const DOCUMENTS='projects/have000/databases/(default)/documents';
 export const ROOT='https://firestore.googleapis.com/v1/'+DOCUMENTS;
 const SCHEMA_VERSION=1;
@@ -30,19 +32,21 @@ export async function saveCaseKnowledge({caseId,caseUpdatedAt,token,uid,runId,st
   const runPath=casePath+'/aiKnowledgeRuns/'+runId;
   const drawingSource=sources.find(source=>source.kind==='drawing');
   const sourceId=new Map(sources.map(source=>[source.kind,source.fileId]));
-  const cited=points=>points.map(({text,citations})=>({text,citations:citations.map(ref=>({
+  const cited=points=>points.map(({citations,...point})=>({...point,citations:citations.map(ref=>({
     ...ref,sourceId:ref.source==='basic'?'basic':sourceId.get(ref.source),
   }))}));
   const {quotedTotal,changeNet,...items}=structured;
   const actualAmount=number(basic.amount);
   const knowledge={
-    caseId,schemaVersion:SCHEMA_VERSION,analysisVersion:ANALYSIS_VERSION,model,startedBy:uid,caseUpdatedAt,
+    caseId,schemaVersion:SCHEMA_VERSION,analysisVersion:ANALYSIS_VERSION,evidencePolicyVersion:EVIDENCE_POLICY_VERSION,model,startedBy:uid,caseUpdatedAt,
     status:drawingReview&&!drawingReview.isComplete?'partial':'complete',
     overview:cited(sections.overview),issues:cited(sections.issues),
-    caseFacts:{name:basic.name,areaPing:number(basic.area),houseType:basic.houseType||null,year:number(basic.year),scopes:basic.scopes},
+    caseFacts:{name:basic.name,areaPing:number(basic.area),houseType:basic.houseType||null,year:number(basic.year),scopes:basic.scopes,
+      verificationStatus:'verified',referenceEligible:true,citations:[{source:'basic',sourceId:'basic',page:null}]},
     financials:{
       quotedTotal,changeNet,
-      completedSettlement:actualAmount===null?null:{amount:actualAmount,currency:'TWD',tax:'unknown',citations:[{source:'basic',sourceId:'basic',page:null}]},
+      completedSettlement:actualAmount===null?null:{amount:actualAmount,currency:'TWD',tax:'unknown',
+        verificationStatus:'verified',referenceEligible:true,citations:[{source:'basic',sourceId:'basic',page:null}]},
     },
     ...items,
     sources,missing,
@@ -55,6 +59,13 @@ export async function saveCaseKnowledge({caseId,caseUpdatedAt,token,uid,runId,st
   };
   const run=update(runPath,{...knowledge,runId,sections},{exists:false},true);
   run.update.fields.startedAt=timestamp(startedAt);
+  const verified=rows=>verifiedKnowledgeItems(rows,EVIDENCE_POLICY_VERSION);
+  const latestKnowledge={
+    ...knowledge,
+    ...Object.fromEntries(['overview','issues','workItems','materials','spaces','changes'].map(key=>[key,verified(knowledge[key])])),
+    financials:Object.fromEntries(Object.entries(knowledge.financials).map(([key,row])=>[key,verified([row])[0]??null])),
+    drawing:knowledge.drawing?{...knowledge.drawing,summary:verified(knowledge.drawing.summary)}:null,
+  };
   const runWrites=[
     run,
     ...(drawingReview?.pages??[]).map(row=>update(runPath+'/drawingPages/'+row.page,{
@@ -63,6 +74,8 @@ export async function saveCaseKnowledge({caseId,caseUpdatedAt,token,uid,runId,st
       cabinetry:row.cabinetry??[],ceilings:row.ceilings??[],sourceFileId:drawingSource.fileId,
       plans:row.plans??[],elevations:row.elevations??[],materials:row.materials??[],
       reasonCode:row.reasonCode??null,reason:row.reason??null,attempts:row.attempts??null,
+      verificationStatus:row.status==='unreadable'?'unreadable':row.status==='recognized'?'ai_inference':'needs_review',
+      referenceEligible:false,
       lastFailureCode:row.lastFailureCode??null,lastFailureReason:row.lastFailureReason??null,
     },{exists:false})),
   ];
@@ -79,7 +92,7 @@ export async function saveCaseKnowledge({caseId,caseUpdatedAt,token,uid,runId,st
     const newLatest=!Number.isFinite(currentStartedAt)||newStartedAt>currentStartedAt||(newStartedAt===currentStartedAt&&runId>currentRun);
     const writes=[...runWrites];
     if(newLatest){
-      const latest=update(latestPath,{...knowledge,latestRunId:runId},
+      const latest=update(latestPath,{...latestKnowledge,latestRunId:runId},
         current?{updateTime:current.updateTime}:{exists:false},true);
       latest.update.fields.startedAt=timestamp(startedAt);
       writes.push(latest);
@@ -98,3 +111,4 @@ export async function saveCaseKnowledge({caseId,caseUpdatedAt,token,uid,runId,st
   }
   throw Error('Case knowledge changed before commit');
 }
+

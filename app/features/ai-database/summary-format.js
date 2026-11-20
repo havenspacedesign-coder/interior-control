@@ -18,6 +18,12 @@ export function emptySection(key,sources){
     ?'無法確認施工圖中的空間、配置、尺寸或施工資訊。'
     :'未提供施工圖，無法確認圖面資訊。';
   if(key==='changes'&&!sources.some(source=>source.kind==='change'))return '未提供追加減工程 PDF。';
-  if(key==='issues')return '本次分析未列出可辨識的資料矛盾或缺失。';
+  if(key==='issues')return '本次未發現具充分證據支持的矛盾或缺失';
   return '現有資料無法確認。';
+}
+export const EVIDENCE_POLICY_VERSION=1;
+export function verifiedKnowledgeItems(rows,policyVersion){
+  if(policyVersion!==EVIDENCE_POLICY_VERSION||!Array.isArray(rows))return [];
+  return rows.filter(row=>row?.verificationStatus==='verified'&&row.referenceEligible===true&&row.revoked!==true&&
+    Array.isArray(row.citations)&&row.citations.length>0);
 }
