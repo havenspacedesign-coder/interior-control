@@ -1,126 +1,126 @@
 {
-  "date": "2026-11-19",
-  "updatedAt": "2026-11-19T03:11:09.172Z",
+  "date": "2026-11-20",
+  "updatedAt": "2026-11-20T02:59:04.222Z",
   "news": [
     {
-      "id": "f7686c066ee24686",
+      "id": "503fe4f0ac2a3274",
       "source": "壹蘋",
       "category": "國際",
-      "title": "中國給高市早苗穿小鞋？下機驚見「40公分落差」　日本政界炸鍋",
-      "url": "https://news.nextapple.com/international/20261119/DAC201C849B4A1AAE74FA89704D52CD8",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/DAC201C849B4A1AAE74FA89704D52CD8/587f820d8d7e4dcc01b48c53e9d2273a_1280.webp",
-      "publishedAt": "2026-11-19T02:27:30.000Z",
-      "fetchedAt": "2026-11-19T03:11:09.172Z"
+      "title": "防堵中國研發輝達替代品！傳台積電出手：即起停供1類產品",
+      "url": "https://news.nextapple.com/international/20261120/0BFBF0032F45D2AC524D05A4D71A8788",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/0BFBF0032F45D2AC524D05A4D71A8788/e70f51b615c861a7c8ed83ba81c75b44_1280.webp",
+      "publishedAt": "2026-11-20T02:32:06.000Z",
+      "fetchedAt": "2026-11-20T02:59:04.222Z"
     },
     {
-      "id": "86fdf480e656797f",
+      "id": "d138c6203207785f",
       "source": "壹蘋",
       "category": "生活",
-      "title": "環境部今發放「可抵200元」維修券！3步驟就拿到",
-      "url": "https://news.nextapple.com/life/20261119/5811188E0CF4DB0E6CD8A348C3AE6B44",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/5811188E0CF4DB0E6CD8A348C3AE6B44/a17834b562499ae41152b7e126978a12_1280.webp",
-      "publishedAt": "2026-11-19T02:58:36.000Z",
-      "fetchedAt": "2026-11-19T03:11:09.172Z"
+      "title": "何止水庫！作家揭露「水域光電12宗罪」：好事變爛事",
+      "url": "https://news.nextapple.com/life/20261120/C5FD635F102D3D5ACBD33AE03558F27B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/C5FD635F102D3D5ACBD33AE03558F27B/23bf24417102d2dc46a45731f4426c0a_1280.webp",
+      "publishedAt": "2026-11-20T02:57:14.000Z",
+      "fetchedAt": "2026-11-20T02:59:04.222Z"
     },
     {
-      "id": "bcefe3d8bbd91973",
+      "id": "6c3118744950624d",
       "source": "壹蘋",
       "category": "社會",
-      "title": "新莊社區驚傳墜樓！新北警局交通隊小隊長倒臥地面身亡　同仁震驚不捨",
-      "url": "https://news.nextapple.com/local/20261119/7B70F31562A0F2DEFD0E09F9B3646610",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/7B70F31562A0F2DEFD0E09F9B3646610/42cd55432a535fc058cfbf7d790c4c53_1280.webp",
-      "publishedAt": "2026-11-19T03:01:27.000Z",
-      "fetchedAt": "2026-11-19T03:11:09.172Z"
+      "title": "新北警破毒品分裝場　查獲大量原料可製2500顆喪屍煙彈",
+      "url": "https://news.nextapple.com/local/20261120/FC4BBF6FAC9BF83DA782DDC384E0BC87",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/FC4BBF6FAC9BF83DA782DDC384E0BC87/613a963442f98e957aea26647edce034_1280.webp",
+      "publishedAt": "2026-11-20T02:33:02.000Z",
+      "fetchedAt": "2026-11-20T02:59:04.222Z"
     },
     {
-      "id": "b1e3f269ca804431",
+      "id": "33d079f79be2544d",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "女粉絲變小三！薔薔揭荒謬情史　私約泡湯、互傳鹹濕對話全都來",
-      "url": "https://news.nextapple.com/entertainment/20261119/B87B20543766AFAAAA3EE13096D568A0",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/B87B20543766AFAAAA3EE13096D568A0/58abb07dd0b319c3b38e2852f11c155c_1280.webp",
-      "publishedAt": "2026-11-19T03:06:00.000Z",
-      "fetchedAt": "2026-11-19T03:11:09.172Z"
+      "title": "Valextra秋冬太軟萌！　羊毛皮革拼接打造摸得到的高級感",
+      "url": "https://news.nextapple.com/entertainment/20261120/0C176B34C2EC4EF63A9237AA6AF1277D",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/0C176B34C2EC4EF63A9237AA6AF1277D/807f32d210f0d1ee2fc3f1ad974e58a3_1280.webp",
+      "publishedAt": "2026-11-20T02:37:00.000Z",
+      "fetchedAt": "2026-11-20T02:59:04.222Z"
     },
     {
-      "id": "d841a29273b0cb29",
+      "id": "707b85a5cf4e1045",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "小米18 Pro雙旗艦登台　翻到背面就能用主鏡頭自拍",
-      "url": "https://news.nextapple.com/aitech/20261118/58DDD21F52157CEDE3A593D55CE73197",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/58DDD21F52157CEDE3A593D55CE73197/75dcf347785b5f1df9141a18128cf514_1280.webp",
-      "publishedAt": "2026-11-18T07:52:00.000Z",
-      "fetchedAt": "2026-11-19T03:11:09.172Z"
+      "title": "川普認可能開放輝達Blackwell晶片賣中國　但有一前提",
+      "url": "https://news.nextapple.com/aitech/20261119/7B7C298F0AA37C6C065C44183D9F000E",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/7B7C298F0AA37C6C065C44183D9F000E/78efcb4e44f23e2797c4a44b4259e873_1280.webp",
+      "publishedAt": "2026-11-19T08:15:00.000Z",
+      "fetchedAt": "2026-11-20T02:59:04.222Z"
     },
     {
-      "id": "abd9a7d9961fec85",
+      "id": "2db9def8d4b43a9f",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "台糖健康易購網疑遭駭　虛假訂單郵件是詐騙",
-      "url": "https://news.nextapple.com/finance/20261119/8EE18E6E8DF4E7129F68BB8DFADEED74",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/8EE18E6E8DF4E7129F68BB8DFADEED74/c68cd34d0676f9ea44824ac65b3c2f64_1280.webp",
-      "publishedAt": "2026-11-19T02:48:31.000Z",
-      "fetchedAt": "2026-11-19T03:11:09.172Z"
+      "title": "輝達財報亮眼台股卻狂崩！分析師揭3大隱憂　緊盯4大止跌訊號",
+      "url": "https://news.nextapple.com/finance/20261120/C6827FE115A1871343041D2D6C378C47",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/C6827FE115A1871343041D2D6C378C47/ba4645015c0188e2b8caf05b26c1af74_1280.webp",
+      "publishedAt": "2026-11-20T02:40:05.000Z",
+      "fetchedAt": "2026-11-20T02:59:04.222Z"
     },
     {
-      "id": "7a007e5ee1d1209a",
+      "id": "1c9e4f9ad6efdc4c",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "獨家爆料｜高雄民間救護車濫用警鳴器、閃光燈！只為接送「她」上下班？　衛生局要查了",
-      "url": "https://news.nextapple.com/local/20261119/9B21373CFED68C7DEAB5076E2DB28AB8",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/9B21373CFED68C7DEAB5076E2DB28AB8/42dacc7f6b17999212ab5deb8a1fb1a5_1280.webp",
-      "publishedAt": "2026-11-19T02:47:00.000Z",
-      "fetchedAt": "2026-11-19T03:11:09.172Z"
+      "title": "高市早苗想找川普搭話　拍背疑遭冷落！眼尖網：他甚至走更快",
+      "url": "https://news.nextapple.com/international/20261120/641479DD82302150D2BAFC5367F026B4",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/641479DD82302150D2BAFC5367F026B4/fcf2acd9796454d91360b3aa29ea7d2a_1280.webp",
+      "publishedAt": "2026-11-20T02:21:40.000Z",
+      "fetchedAt": "2026-11-20T02:59:04.222Z"
     },
     {
-      "id": "d56496a215f25d8e",
+      "id": "ddcebc36d00befd2",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "獨家｜綠能董座硬上傳播妹竟無罪！在場調查官說詞兜不攏　二審逆轉改判4年",
-      "url": "https://news.nextapple.com/local/20261119/27D2EB2EBA970535A13CEF745A67B33F",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/27D2EB2EBA970535A13CEF745A67B33F/93f70e6554737ea44f55845451389525_1280.webp",
-      "publishedAt": "2026-11-19T02:47:00.000Z",
-      "fetchedAt": "2026-11-19T03:11:09.172Z"
+      "title": "女網友抹黃沈伯洋「跟女性上摩鐵」　檢方只辦5天用這罪名火速起訴",
+      "url": "https://news.nextapple.com/local/20261120/47D9A85D342E93C694CCA28C5591AD51",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/47D9A85D342E93C694CCA28C5591AD51/deb5b928f7d8081ab3c9b193cd477e26_1280.webp",
+      "publishedAt": "2026-11-20T02:17:37.000Z",
+      "fetchedAt": "2026-11-20T02:59:04.222Z"
     },
     {
-      "id": "03d9dc71614c4390",
+      "id": "1ba35b17c32be801",
       "source": "壹蘋",
-      "category": "娛樂時尚",
-      "title": "男星淡出演藝圈24年！賣酒、做糕餅再回歸　53歲首度叩關金馬",
-      "url": "https://news.nextapple.com/entertainment/20261119/AE00986DAC97662D1E0FB691C9F8EBE6",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/AE00986DAC97662D1E0FB691C9F8EBE6/85e5bda4dbe105ce0a0291576e862e31_1280.webp",
-      "publishedAt": "2026-11-19T03:02:23.000Z",
-      "fetchedAt": "2026-11-19T03:11:09.172Z"
+      "category": "生活",
+      "title": "公費新冠疫苗缺貨！增購16.9萬劑Novavax到貨今起配送",
+      "url": "https://news.nextapple.com/life/20261120/8CBFF74D17CC392733E5FC08C088FF19",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/8CBFF74D17CC392733E5FC08C088FF19/c13ffe22883fde6250d6dced93aec32d_1280.webp",
+      "publishedAt": "2026-11-20T02:56:00.000Z",
+      "fetchedAt": "2026-11-20T02:59:04.222Z"
     },
     {
-      "id": "d67b8262cc5d654e",
+      "id": "9fc73c2a33412131",
       "source": "壹蘋",
-      "category": "社會",
-      "title": "屏東監獄管理員收賄10萬夾帶違禁品入監　7人遭屏檢起訴",
-      "url": "https://news.nextapple.com/local/20261119/3EA43BB49E1AB460CF84FEFA48BBFF18",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/3EA43BB49E1AB460CF84FEFA48BBFF18/b3bb2cbda926e2f8c06392d02bbccf47_1280.webp",
-      "publishedAt": "2026-11-19T02:58:54.000Z",
-      "fetchedAt": "2026-11-19T03:11:09.172Z"
+      "category": "生活",
+      "title": "鳳凰旅遊個資外洩！4天前遭駭客攻擊　出團、營運現況曝",
+      "url": "https://news.nextapple.com/life/20261120/4AF2DB41B80D98C9B624165DDEC53E56",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/4AF2DB41B80D98C9B624165DDEC53E56/1871673c507e0c0371c188752a17016b_1280.webp",
+      "publishedAt": "2026-11-20T02:40:43.000Z",
+      "fetchedAt": "2026-11-20T02:59:04.222Z"
     },
     {
-      "id": "3faa07278421b333",
-      "source": "壹蘋",
-      "category": "娛樂時尚",
-      "title": "BTS今晚開唱！阿米先來看柾國CK帥照　連換5套丹寧裝放電",
-      "url": "https://news.nextapple.com/entertainment/20261119/FFAD5F15DB6AF39E94764F298FD64F2A",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/FFAD5F15DB6AF39E94764F298FD64F2A/163034a58c4561473a823c112a12a879_1280.webp",
-      "publishedAt": "2026-11-19T02:57:39.000Z",
-      "fetchedAt": "2026-11-19T03:11:09.172Z"
-    },
-    {
-      "id": "960f6f80e3842d5b",
+      "id": "f3b7f89fadbe5fac",
       "source": "壹蘋",
       "category": "社會",
-      "title": "嘉義無人機產業重鎮出事啦！亞創中心4樓起火　10人不適就醫",
-      "url": "https://news.nextapple.com/local/20261119/1B1ED49496B7BACE8F323507D7589392",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/1B1ED49496B7BACE8F323507D7589392/e571d4b2c99bd9eafc7c4db445e3a09c_1280.webp",
-      "publishedAt": "2026-11-19T02:51:04.000Z",
-      "fetchedAt": "2026-11-19T03:11:09.172Z"
+      "title": "假「姪子」推投資保單！77歲婦險遭騙25萬　警銀聯手攔阻",
+      "url": "https://news.nextapple.com/local/20261120/B574BAFCF338B58B4C3E98415594B3C4",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/B574BAFCF338B58B4C3E98415594B3C4/5066257153db59193981eb231a715657_1280.webp",
+      "publishedAt": "2026-11-20T02:26:27.000Z",
+      "fetchedAt": "2026-11-20T02:59:04.222Z"
+    },
+    {
+      "id": "74567b40dcf23a8f",
+      "source": "壹蘋",
+      "category": "社會",
+      "title": "斑馬線不走直接穿越馬路　台中行人遭小黃撞飛",
+      "url": "https://news.nextapple.com/local/20261120/F17041E73EDE8B5BDB1C4BD8465BD999",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/F17041E73EDE8B5BDB1C4BD8465BD999/37b64910a8325b2f96c29fa9e1fe4f6b_1280.webp",
+      "publishedAt": "2026-11-20T02:24:06.000Z",
+      "fetchedAt": "2026-11-20T02:59:04.222Z"
     }
   ]
 }
