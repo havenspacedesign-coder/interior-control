@@ -45,6 +45,9 @@ try{
   assert.equal(attachments.length,3);
   for(const file of attachments)assert.deepEqual(Buffer.from(file.file_data.split(',')[1],'base64'),fixture,'actual PDF bytes must reach OpenAI');
   assert.deepEqual(attachments.map(file=>file.filename),['施工圖.pdf','正式報價單.pdf','追加減工程.pdf']);
+  assert.equal(attachments[0].detail,'high');
+  assert.ok(attachments.slice(1).every(file=>!Object.hasOwn(file,'detail')));
+  assert.ok(content.every(item=>item.type!=='input_image'));
   assert.ok(result.responseBody.instructions.includes('主要材料／設備／品牌／型號'));
   assert.ok(result.responseBody.instructions.includes('不分析完工照片'));
   assert.deepEqual(result.response.data.sections.drawings,[sections.drawings[0]]);

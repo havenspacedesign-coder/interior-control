@@ -51,7 +51,9 @@ export async function readCasePdfs(caseId,token,signal){
     if(!response.ok)throw fail(response.status===404?404:502,`${label} PDF 讀取失敗，尚未完成分析。請確認檔案存在及讀取權限後重試。`);
     const bytes=await pdfBytes(response,LIMIT-total,label);total+=bytes.length;
     content.push({type:'input_text',text:`下一份 PDF 為「${label}」，引用的 source 為 ${kind}。`},
-      {type:'input_file',filename:label+'.pdf',file_data:'data:application/pdf;base64,'+bytes.toString('base64')});
+      {type:'input_file',filename:label+'.pdf',file_data:'data:application/pdf;base64,'+bytes.toString('base64'),
+        ...(kind==='drawing'?{detail:'high'}:{}),
+      });
     sources.push({kind,label,name:String(file.name||label+'.pdf'),bytes:bytes.length});
   }
   return {project,content,sources,missing:Object.entries(LABELS).filter(([kind])=>!kinds.has(kind)).map(([,label])=>label)};
