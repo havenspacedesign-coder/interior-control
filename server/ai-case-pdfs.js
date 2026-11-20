@@ -26,7 +26,7 @@ async function pdfBytes(response,remaining,label){
 }
 
 // Uses the caller's Firebase token and existing rules. No Admin SDK or writes.
-export async function readCasePdfs(caseId,token,signal){
+export async function readCasePdfs(caseId,token,signal,{drawingOnly=false,skipDrawingInput=false}={}){
   if(typeof caseId!=='string'||!(/^[a-zA-Z0-9_-]{1,120}$/).test(caseId))throw fail(400,'案件 ID 格式不正確。');
   const headers={authorization:`Bearer ${token}`};
   const projectResponse=await fetch(`${ROOT}/aiDbCases/${encodeURIComponent(caseId)}`,{headers,signal});
@@ -49,13 +49,14 @@ export async function readCasePdfs(caseId,token,signal){
   if(declaredSize>=LIMIT)throw fail(413,'本次 PDF 合計需小於 50 MB，請縮小檔案後再分析。');
   const content=[],sources=[];let total=0,drawingBytes=null;
   for(const kind of ['drawing','quote','change']){
+    if(drawingOnly&&kind!=='drawing')continue;
     const file=files.find(row=>row.kind===kind);if(!file)continue;
     const label=LABELS[kind];
     const response=await fetch(`https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o/${encodeURIComponent(file.storagePath)}?alt=media`,{headers:{authorization:`Firebase ${token}`},signal});
     if(!response.ok)throw fail(response.status===404?404:502,`${label} PDF 讀取失敗，尚未完成分析。請確認檔案存在及讀取權限後重試。`);
     const bytes=await pdfBytes(response,LIMIT-total,label);total+=bytes.length;
     if(kind==='drawing')drawingBytes=bytes;
-    content.push({type:'input_text',text:`下一份 PDF 為「${label}」，引用的 source 為 ${kind}。`},
+    if(!drawingOnly&&!(skipDrawingInput&&kind==='drawing'))content.push({type:'input_text',text:`下一份 PDF 為「${label}」，引用的 source 為 ${kind}。`},
       {type:'input_file',filename:label+'.pdf',file_data:'data:application/pdf;base64,'+bytes.toString('base64'),
         ...(kind==='drawing'?{detail:'high'}:{}),
       });

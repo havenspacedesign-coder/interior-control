@@ -87,7 +87,8 @@ function createFirebaseStore({db,auth,storage,fs,storageSdk,collections,metaColl
         const snapshot=await fs.getDocsFromServer(fs.collection(db,...runPath,'drawingPages'));
         const pages=snapshot.docs.map(doc=>doc.data()).sort((a,b)=>a.page-b.page);
         if(pages.length!==drawing.totalPages)throw Error('無法讀取完整的施工圖逐頁紀錄。');
-        drawingReview={totalPages:drawing.totalPages,reviewedPages:drawing.reviewedPages,pages};
+        const {totalPages,reviewedPages,recognizedPages,unreadablePages,incompletePages,failedPages,isComplete}=drawing;
+        drawingReview={totalPages,reviewedPages,recognizedPages,unreadablePages,incompletePages,failedPages,isComplete,pages};
       }
       if(auth.currentUser?.uid!==uid)assertManager(null);
       return {sections,sources,missing,knowledgeSave:{analyzedAt:analyzedAt?.toDate().toISOString()},

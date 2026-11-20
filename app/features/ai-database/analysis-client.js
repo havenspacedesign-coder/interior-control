@@ -6,16 +6,23 @@ export async function analyzeBasicCase(project,getIdToken){
   const token=await getIdToken();
   if(!token)throw Error('請先登入管理員帳號。');
   const basic=Object.fromEntries(['name','area','amount','year','houseType','scopes','url','note'].map(key=>[key,project[key]??(key==='scopes'?[]:'')]));
-  let response;
-  try{
-    response=await fetch('/api/ai-case-analyze',{
-      method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${token}`},
-      body:JSON.stringify({basic,...(project.id?{caseId:project.id}:{})}),signal:AbortSignal.timeout(185000),
-    });
-  }catch(error){throw Error(['TimeoutError','AbortError'].includes(error.name)?'AI 分析逾時，請重試。':'無法連線 AI 分析服務，請檢查網路後重試。');}
+  const sessionId=project.id?crypto.randomUUID():null;
+  let mode=sessionId?'step':null;
   let data;
-  try{data=await response.json();}catch{throw Error('AI 分析 API 尚未啟用或回覆格式不正確。');}
-  if(!response.ok)throw Error(data.message||'AI 分析失敗，請稍後重試。');
+  for(;;){
+    let response;
+    try{
+      response=await fetch('/api/ai-case-analyze',{
+      method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${token}`},
+        body:JSON.stringify({basic,...(sessionId?{caseId:project.id,drawingMode:mode,sessionId}:{})}),signal:AbortSignal.timeout(185000),
+      });
+    }catch(error){throw Error(['TimeoutError','AbortError'].includes(error.name)?'AI 分析逾時，請重試。':'無法連線 AI 分析服務，請檢查網路後重試。');}
+    try{data=await response.json();}catch{throw Error('AI 分析 API 尚未啟用或回覆格式不正確。');}
+    if(!response.ok)throw Error(data.message||'AI 分析失敗，請稍後重試。');
+    if(!data.drawingStep)break;
+    if(data.drawingStep.busy)throw Error('這份施工圖的分析正在進行，請稍後再按「開始 AI 分析」接續。');
+    mode=data.drawingStep.done?'finalize':'step';
+  }
   if(!Object.keys(SUMMARY_SECTIONS).every(key=>Array.isArray(data.sections?.[key]))||
     !Array.isArray(data.sources)||!Array.isArray(data.missing))throw Error('AI 服務未回傳分區摘要，請稍後重試。');
   return data;
@@ -36,9 +43,13 @@ function renderDrawingReview(review){
   const pending=totalPages-reviewedPages;
   const unreadable=pages.filter(({status})=>status==='unreadable').length;
   const status=[pending?`${pending} 頁尚未完成分析`:'',unreadable?`${unreadable} 頁無法可靠辨識`:''].filter(Boolean).join('、');
-  const items=pages.map(({page,status,drawingType,content})=>{
-    if(status==='unreadable')return `<li>第 ${esc(page)} 頁無法可靠辨識</li>`;
-    if(status==='unreviewed')return `<li>第 ${esc(page)} 頁尚未完成分析</li>`;
+  const items=pages.map(({page,status,drawingType,content,reason,lastFailureReason})=>{
+    const note=[reason,lastFailureReason].filter(Boolean).map(esc).join('；');
+    const detail=note?`<small class="aidb-muted">${note}</small>`:'';
+    if(status==='unreadable')return `<li>第 ${esc(page)} 頁無法可靠辨識${detail}</li>`;
+    if(status==='unreviewed')return `<li>第 ${esc(page)} 頁尚未完成分析${detail}</li>`;
+    if(status==='request_failed')return `<li>第 ${esc(page)} 頁請求失敗${detail}</li>`;
+    if(status==='incomplete')return `<li>第 ${esc(page)} 頁辨識不完整｜${esc(cleanText(drawingType))}<small class="aidb-muted">${esc(cleanText(content))}</small>${detail}</li>`;
     return `<li>第 ${esc(page)} 頁｜${esc(cleanText(drawingType))}<small class="aidb-muted">${esc(cleanText(content))}</small></li>`;
   });
   return `<small>施工圖共 ${esc(totalPages)} 頁，已分析 ${esc(reviewedPages)} 頁${status?`（${status}）`:''}</small><details class="aidb-drawing-review"><summary>逐頁分析紀錄</summary><ol>${items.join('')}</ol></details>`;

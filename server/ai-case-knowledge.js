@@ -1,5 +1,5 @@
-const DOCUMENTS='projects/have000/databases/(default)/documents';
-const ROOT='https://firestore.googleapis.com/v1/'+DOCUMENTS;
+export const DOCUMENTS='projects/have000/databases/(default)/documents';
+export const ROOT='https://firestore.googleapis.com/v1/'+DOCUMENTS;
 const SCHEMA_VERSION=1;
 const ANALYSIS_VERSION=1;
 const timestamp=value=>({timestampValue:value});
@@ -17,7 +17,7 @@ function field(value){
 
 const fields=object=>Object.fromEntries(Object.entries(object).map(([key,value])=>[key,field(value)]));
 
-function update(path,content,currentDocument,recordTime=false){
+export function update(path,content,currentDocument,recordTime=false){
   return {
     update:{name:DOCUMENTS+'/'+path,fields:fields(content)},currentDocument,
     ...(recordTime?{updateTransforms:[{fieldPath:'analyzedAt',setToServerValue:'REQUEST_TIME'}]}:{}),
@@ -37,6 +37,7 @@ export async function saveCaseKnowledge({caseId,caseUpdatedAt,token,uid,runId,st
   const actualAmount=number(basic.amount);
   const knowledge={
     caseId,schemaVersion:SCHEMA_VERSION,analysisVersion:ANALYSIS_VERSION,model,startedBy:uid,caseUpdatedAt,
+    status:drawingReview&&!drawingReview.isComplete?'partial':'complete',
     overview:cited(sections.overview),issues:cited(sections.issues),
     caseFacts:{name:basic.name,areaPing:number(basic.area),houseType:basic.houseType||null,year:number(basic.year),scopes:basic.scopes},
     financials:{
@@ -47,6 +48,8 @@ export async function saveCaseKnowledge({caseId,caseUpdatedAt,token,uid,runId,st
     sources,missing,
     drawing:drawingReview?{
       totalPages:drawingReview.totalPages,reviewedPages:drawingReview.reviewedPages,
+      recognizedPages:drawingReview.recognizedPages,unreadablePages:drawingReview.unreadablePages,
+      incompletePages:drawingReview.incompletePages,failedPages:drawingReview.failedPages,isComplete:drawingReview.isComplete,
       sourceId:drawingSource.fileId,summary:cited(sections.drawings),
     }:null,
   };
@@ -58,6 +61,9 @@ export async function saveCaseKnowledge({caseId,caseUpdatedAt,token,uid,runId,st
       page:row.page,status:row.status,drawingType:row.drawingType??null,content:row.content??null,
       spaceNames:row.spaceNames??[],dimensions:row.dimensions??[],equipment:row.equipment??[],
       cabinetry:row.cabinetry??[],ceilings:row.ceilings??[],sourceFileId:drawingSource.fileId,
+      plans:row.plans??[],elevations:row.elevations??[],materials:row.materials??[],
+      reasonCode:row.reasonCode??null,reason:row.reason??null,attempts:row.attempts??null,
+      lastFailureCode:row.lastFailureCode??null,lastFailureReason:row.lastFailureReason??null,
     },{exists:false})),
   ];
   const headers={authorization:`Bearer ${token}`,'content-type':'application/json'};

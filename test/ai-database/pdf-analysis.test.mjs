@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
 import handler from '../../api/ai-case-analyze.js';
 import {analyzeBasicCase,renderAnalysisResult} from '../../app/features/ai-database/analysis-client.js';
 const savedFetch=globalThis.fetch,savedKey=process.env.OPENAI_API_KEY;
@@ -30,8 +31,8 @@ const knowledge={
 const fixture=await readFile(new URL('./fixtures/verification.pdf',import.meta.url));
 const {PDFDocument}=createRequire(import.meta.url)('pdf-lib');
 const reviewedPage=page=>page===4
-  ?{page,readable:true,drawingType:'天花配置圖',content:'天花局部降板。'}
-  :{page,readable:true,drawingType:'平面配置圖',content:'客廳與餐廳相連。',spaceNames:['客廳'],dimensions:['走道 900 mm']};
+  ?{page,readable:true,complete:true,drawingType:'天花配置圖',content:'天花局部降板。'}
+  :{page,readable:true,complete:true,drawingType:'平面配置圖',content:'客廳與餐廳相連。',spaceNames:['客廳'],dimensions:['走道 900 mm']};
 const fields=object=>Object.fromEntries(Object.entries(object).map(([key,value])=>[key,Array.isArray(value)?{arrayValue:{values:value.map(x=>({stringValue:x}))}}:{stringValue:String(value)}]));
 const record=kind=>({document:{fields:fields({id:kind,caseId:'case',kind,storagePath:'aiDatabase/cases/case/'+kind,name:kind+'.pdf',size:fixture.length})}});
 const ok=value=>new Response(JSON.stringify(value),{headers:{'content-type':'application/json'}});
@@ -72,8 +73,117 @@ async function run({files=['drawing','quote','change'].map(record),mediaStatus=2
   await handler({method:'POST',headers:{authorization:'Bearer user-token'},body:{basic,caseId:'case',files:[{storagePath:'https://evil.invalid'}]}},response);
   return{response,calls,responseBody,pageRequests};
 }
+
+async function checkSegmentedDrawing(){
+  const pdf=await PDFDocument.create();
+  for(let page=1;page<=32;page++)pdf.addPage();
+  const bytes=await pdf.save();
+  const hash=createHash('sha256').update(bytes).digest('hex');
+  const base='projects/have000/databases/(default)/documents';
+  const casePath=base+'/aiDbCases/case';
+  const docs=new Map();
+  let sequence=0;
+  const put=(name,fields)=>docs.set(name,{name,fields,updateTime:new Date(Date.UTC(2025,0,1)+sequence++).toISOString()});
+  put(casePath+'/aiKnowledge/latest',{
+    latestRunId:{stringValue:'previous'},sources:{arrayValue:{values:[{mapValue:{fields:fields({kind:'drawing',sha256:hash})}}]}},
+    startedAt:{timestampValue:'2025-01-01T00:00:00Z'},
+  });
+  for(let page=1;page<=25;page++){
+    put(casePath+'/aiKnowledgeRuns/previous/drawingPages/'+page,{
+      ...fields({status:'recognized',drawingType:'平面配置圖',content:'已保存的頁面',plans:['原紀錄']}),
+      page:{integerValue:String(page)},
+    });
+  }
+  const calls=[],pageAttempts=new Map();
+  let canFinishLastPage=false;
+  globalThis.fetch=async(url,options)=>{
+    if(url.includes('accounts:lookup'))return ok({users:[{localId:'manager'}]});
+    if(url.includes('/members/'))return ok({fields:fields({role:'manager',status:'active'})});
+    if(url.endsWith(':runQuery'))return ok([record('drawing')]);
+    if(url.includes('firebasestorage.googleapis.com'))return new Response(bytes);
+    if(url===`https://firestore.googleapis.com/v1/${casePath}`)return ok({fields:fields(basic)});
+    if(url.endsWith(':commit')){
+      const {writes}=JSON.parse(options.body);
+      for(const {update,currentDocument} of writes){
+        const existing=docs.get(update.name);
+        if((currentDocument?.exists===false&&existing)||(currentDocument?.updateTime&&existing?.updateTime!==currentDocument.updateTime)){
+          return new Response(JSON.stringify({error:{status:'FAILED_PRECONDITION'}}),{status:400});
+        }
+      }
+      for(const {update} of writes)put(update.name,update.fields);
+      return ok({commitTime,writeResults:writes.map(({update})=>({updateTime:docs.get(update.name).updateTime}))});
+    }
+    if(url.startsWith('https://firestore.googleapis.com/v1/')){
+      const path=url.slice('https://firestore.googleapis.com/v1/'.length);
+      if(path.includes('?pageSize=')){
+        const prefix=path.split('?')[0]+'/';
+        return ok({documents:[...docs.values()].filter(({name})=>name.startsWith(prefix)&&!name.slice(prefix.length).includes('/'))});
+      }
+      return docs.has(path)?ok(docs.get(path)):new Response(null,{status:404});
+    }
+    assert.equal(url,'https://api.openai.com/v1/responses');
+    const request=JSON.parse(options.body);
+    if(request.text.format.name==='construction_drawing_pages'){
+      const pages=request.input[0].content.filter(({type})=>type==='input_file')
+        .map(({filename})=>Number(filename.match(/\d+/)[0]));
+      calls.push(pages);
+      for(const page of pages)pageAttempts.set(page,(pageAttempts.get(page)||0)+1);
+      if(pages.includes(26)&&pageAttempts.get(26)===1){
+        return ok({status:'incomplete',incomplete_details:{reason:'max_output_tokens'}});
+      }
+      return ok({status:'completed',output_text:JSON.stringify({
+        pages:pages.filter(page=>page!==32||canFinishLastPage).map(page=>({
+          ...reviewedPage(page),complete:page!==31||pageAttempts.get(31)>1,
+          reason:page===31&&pageAttempts.get(31)===1?'部分標註無法確認':'',
+          materials:['木皮'],elevations:['櫃體立面'],plans:['配置'],
+        })),
+      })});
+    }
+    assert.ok(request.input[0].content.every(({type})=>type!=='input_file'),'summary must not reread drawings');
+    return ok({status:'completed',output_text:JSON.stringify({...sections,knowledge})});
+  };
+  const invoke=async(drawingMode,sessionId)=>{
+    const response={setHeader(){},status(code){this.code=code;return this;},json(data){this.data=data;return this;}};
+    await handler({method:'POST',headers:{authorization:'Bearer user-token'},body:{basic,caseId:'case',drawingMode,sessionId}},response);
+    assert.equal(response.code,200,JSON.stringify(response.data));
+    return response.data;
+  };
+  async function runSession(sessionId){
+    for(let step=0;step<16;step++){
+      const result=await invoke('step',sessionId);
+      if(result.drawingStep.done)return invoke('finalize',sessionId);
+    }
+    assert.fail('Drawing session did not complete');
+  }
+  const first=await runSession('11111111-1111-4111-8111-111111111111');
+  assert.equal(first.drawingReview.recognizedPages,31);
+  assert.equal(first.drawingReview.failedPages,1);
+  assert.equal(first.drawingReview.isComplete,false);
+  assert.equal(first.drawingReview.pages[31].reasonCode,'MISSING_PAGE');
+  assert.equal(first.drawingReview.pages[25].lastFailureCode,'OUTPUT_LIMIT');
+  assert.equal(first.drawingReview.pages[30].lastFailureCode,'PARTIAL_CONTENT');
+  assert.equal(pageAttempts.get(32),3);
+  assert.ok(calls.flat().every(page=>page>=26));
+  assert.ok(calls.every(batch=>batch.length<=2));
+  const firstRun=casePath+'/aiKnowledgeRuns/'+first.knowledgeSave.runId;
+  assert.equal(docs.get(firstRun).fields.status.stringValue,'partial');
+  assert.equal([...docs.keys()].filter(path=>path.startsWith(firstRun+'/drawingPages/')).length,32);
+  assert.equal(docs.get(firstRun+'/drawingPages/32').fields.content.nullValue,null);
+  const before=calls.length;
+  canFinishLastPage=true;
+  const next=await runSession('22222222-2222-4222-8222-222222222222');
+  assert.deepEqual(calls.slice(before),[[32]]);
+  assert.equal(next.drawingReview.recognizedPages,32);
+  assert.equal(next.drawingReview.failedPages,0);
+  assert.equal(next.drawingReview.isComplete,true);
+  const nextRun=casePath+'/aiKnowledgeRuns/'+next.knowledgeSave.runId;
+  assert.equal(docs.get(nextRun).fields.status.stringValue,'complete');
+  assert.equal(docs.get(nextRun+'/drawingPages/32').fields.materials.arrayValue.values[0].stringValue,'木皮');
+  assert.equal(docs.get(firstRun).fields.status.stringValue,'partial');
+}
 try{
   process.env.OPENAI_API_KEY='mock-only';
+  await checkSegmentedDrawing();
   const result=await run();assert.equal(result.response.code,200);
   const content=result.responseBody.input[0].content,attachments=content.filter(item=>item.type==='input_file');
   assert.equal(attachments.length,3);
@@ -143,12 +253,13 @@ try{
   assert.equal(mixed.response.data.drawingReview.totalPages,13);
   assert.equal(mixed.response.data.drawingReview.reviewedPages,12);
   assert.equal(mixed.response.data.drawingReview.pages[1].status,'unreadable');
-  assert.equal(mixed.response.data.drawingReview.pages[2].status,'unreviewed');
+  assert.equal(mixed.response.data.drawingReview.pages[2].status,'request_failed');
+  assert.equal(mixed.response.data.drawingReview.pages[2].reasonCode,'MISSING_PAGE');
   assert.deepEqual(mixed.response.data.sections.drawings,[sections.drawings[0],extraPoint]);
   const reviewHtml=renderAnalysisResult(mixed.response.data);
   assert.ok(reviewHtml.includes('施工圖共 13 頁，已分析 12 頁'));
   assert.ok(reviewHtml.includes('第 2 頁無法可靠辨識'));
-  assert.ok(reviewHtml.includes('第 3 頁尚未完成分析'));
+  assert.ok(reviewHtml.includes('第 3 頁請求失敗'));
   assert.ok(reviewHtml.includes('第 13 頁｜平面配置圖'));
   assert.ok(reviewHtml.includes('施工圖重點引用頁碼：1、4'));
   assert.ok(reviewHtml.includes('確認天花局部降板。<small class="aidb-muted">施工圖｜第 4 頁</small>'));
