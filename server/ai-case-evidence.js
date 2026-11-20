@@ -30,27 +30,49 @@ export function evidenceSchema(sources){
 }
 
 // Use the original PDF text layer. Model output, page summaries and guessed OCR are never evidence.
-export async function inspectPdfEvidence(pdfBytes,output,sources){
+export async function inspectPdfEvidence(pdfBytes,output,sources,loadParser=()=>import('pdfjs-dist/legacy/build/pdf.mjs')){
   const result=new Map();
+  result.diagnostics=[];
+  result.files=[];
   if(!sources.length)return result;
-  let getDocument,assets;
-  try{
-    ({getDocument}=await import('pdfjs-dist/legacy/build/pdf.mjs'));
-    assets=dirname(require.resolve('pdfjs-dist/package.json'));
-  }catch{return result;}
+  const report=(source,code,page=null,error=null)=>result.diagnostics.push({
+    source:source.kind,sourceId:source.fileId,code,page,
+    errorType:String(error?.code??error?.name??'').replace(/[^\w-]/g,'').slice(0,80)||null,
+  });
   const requested=new Map();
-  const candidates=[...(Array.isArray(output.issues)?output.issues.slice(0,5):[]),
-    ...(Array.isArray(output.changes)?output.changes.slice(0,4):[])];
-  for(const {evidence} of candidates.filter(value=>value&&typeof value==='object')){
-    for(const ref of (Array.isArray(evidence)?evidence.slice(0,2):[evidence])){
+  const rows=value=>Array.isArray(value)?value.slice(0,8):[];
+  const knowledge=output.knowledge??{};
+  const candidates=[...['overview','costs','work','materials','drawings','issues','changes'].flatMap(key=>rows(output[key])),
+    ...['workItems','materials','spaces'].flatMap(key=>rows(knowledge[key])),knowledge.quotedTotal,knowledge.changeNet];
+  for(const candidate of candidates.filter(value=>value&&typeof value==='object')){
+    const {evidence,citations}=candidate;
+    const refs=[...rows(citations),...(Array.isArray(evidence)?evidence.slice(0,2):[evidence])];
+    for(const ref of refs){
       if(!Number.isSafeInteger(ref?.page)||ref.page<1)continue;
       if(!requested.has(ref.source))requested.set(ref.source,new Set());
       requested.get(ref.source).add(ref.page);
     }
   }
+  const fileResult=source=>{
+    const doc=result.get(source.kind);
+    const diagnostics=result.diagnostics.filter(row=>row.source===source.kind);
+    return {source:source.kind,sourceId:source.fileId,open:doc?'opened':'failed',pageCount:doc?.pageCount??null,
+      requestedPages:[...(requested.get(source.kind)??[])].sort((a,b)=>a-b),
+      extractedPages:doc?[...doc.texts].filter(([,value])=>Boolean(value)).map(([page])=>page).sort((a,b)=>a-b):[],
+      diagnostics};
+  };
+  let getDocument,assets;
+  try{
+    ({getDocument}=await loadParser());
+    assets=dirname(require.resolve('pdfjs-dist/package.json'));
+  }catch(error){
+    for(const source of sources)report(source,'PARSER_LOAD_FAILED',null,error);
+    result.files=sources.map(fileResult);
+    return result;
+  }
   await Promise.all(sources.map(async source=>{
-    const bytes=pdfBytes.get(source.kind);
-    if(!bytes)return;
+    const bytes=pdfBytes?.get(source.kind);
+    if(!bytes){report(source,'PDF_BYTES_MISSING');return;}
     let loading;
     const deadline=AbortSignal.timeout(10_000);
     const abort=()=>{void loading?.destroy().catch(()=>{});};
@@ -64,7 +86,8 @@ export async function inspectPdfEvidence(pdfBytes,output,sources){
       const texts=new Map();
       result.set(source.kind,{...source,pageCount:document.numPages,texts});
       for(const number of requested.get(source.kind)??[]){
-        if(deadline.aborted||number>document.numPages)continue;
+        if(number>document.numPages){report(source,'PAGE_OUT_OF_RANGE',number);continue;}
+        if(deadline.aborted){report(source,'INDEX_TIMEOUT',number);continue;}
         try{
           const page=await document.getPage(number);
           const {items}=await page.getTextContent();
@@ -76,16 +99,22 @@ export async function inspectPdfEvidence(pdfBytes,output,sources){
             if(item.hasEOL){lines.push(clean(line.join(' ')));line=[];}
           }
           if(line.length)lines.push(clean(line.join(' ')));
-          texts.set(number,lines.filter(Boolean).join('\n'));
-        }catch{texts.set(number,null);}
+          const original=lines.filter(Boolean).join('\n');
+          texts.set(number,original);
+          if(!original)report(source,'NO_TEXT_LAYER',number);
+        }catch(error){
+          texts.set(number,null);
+          report(source,deadline.aborted?'INDEX_TIMEOUT':'PAGE_TEXT_FAILED',number,error);
+        }
       }
-    }catch{
-      // An unreadable original must not cause a proposed citation to be accepted.
+    }catch(error){
+      report(source,deadline.aborted?'INDEX_TIMEOUT':'PDF_OPEN_FAILED',null,error);
     }finally{
       deadline.removeEventListener('abort',abort);
       await loading?.destroy().catch(()=>{});
     }
   }));
+  result.files=sources.map(fileResult);
   return result;
 }
 
@@ -96,6 +125,77 @@ export function locateCitation(citation,documents){
   return {source,page,sourceId:document.fileId,sourceName:document.name};
 }
 
+// Keep issue verification on the original lines. Ordinary facts can span nearby wrapped lines.
+function normalizeFact(value){
+  return value.normalize('NFKC').replace(/[−–]/gu,'-').replace(/(?<=\d)\s*,\s*(?=\d{3}(?:\D|$))/gu,'')
+    .replace(/\s*([./+$-])\s*/gu,'$1').replace(/[|｜:：;；，、]/gu,' ')
+    .replace(/(\p{Script=Han})\s+(?=\p{Script=Han})/gu,'$1')
+    .replace(/\s+/gu,' ').trim().toLowerCase();
+}
+
+function factContains(original,value){
+  const expected=normalizeFact(value).replace(/[。.!！]$/u,'');
+  if(!expected)return false;
+  const start=/^[a-z0-9+-]/u.test(expected)?'(?<![a-z0-9.+-])':'';
+  const end=/[a-z0-9]$/u.test(expected)?'(?![a-z0-9.]|,\\d)':'';
+  return new RegExp(start+esc(expected)+end,'u').test(original);
+}
+
+const originalLines=(reference,documents)=>documents.get(reference.source)?.texts.get(reference.page)?.split('\n')??[];
+export function factBlocks(reference,documents,check,maxLines=3){
+  const lines=originalLines(reference,documents);
+  for(let length=1;length<=Math.min(maxLines,lines.length);length++){
+    for(let start=0;start<=lines.length-length;start++){
+      const excerpt=lines.slice(start,start+length).join('\n');
+      if(excerpt.length>1600)continue;
+      const normalized=normalizeFact(excerpt);
+      if(check(normalized,length))return excerpt;
+    }
+  }
+  return null;
+}
+
+export function factTextMatches(original,value){return factContains(original,value);}
+
+// A wrapped row must account for its text with the proposed fields and known column
+// labels. Otherwise adjacent items could lend each other a brand or an amount.
+export function wrappedRowMatches(block,fields,columnLabels){
+  let remaining=block;
+  const parts=fields.filter(Boolean).map(normalizeFact).sort((a,b)=>b.length-a.length);
+  for(const part of parts)remaining=remaining.replace(part,' ');
+  return !remaining.replace(columnLabels,' ').replace(/[\s()./+\-$]+/gu,'');
+}
+
+export function markOrdinaryFact(proposed,citations,documents,findEvidence){
+  const evidence=citations.flatMap(reference=>{
+    if(reference.source==='basic')return [];
+    const excerpt=findEvidence(reference);
+    return excerpt?[{...reference,quote:excerpt}]:[];
+  });
+  if(evidence.length){
+    return {citations:evidence.map(({quote,...reference})=>reference),evidence,...status('verified',true)};
+  }
+  const citationChecks=proposed.map(ref=>{
+    const diagnostic=documents.diagnostics?.find(entry=>entry.source===ref.source&&(entry.page===null||entry.page===ref.page));
+    const doc=documents.get(ref.source);
+    const located=citations.some(link=>link.source===ref.source&&link.page===ref.page);
+    const reason=diagnostic?.code??(ref.source==='basic'?'BASIC_PARAPHRASE_NOT_VERIFIED':!doc?'SOURCE_NOT_AVAILABLE'
+      :!locateCitation(ref,documents)?'PAGE_OUT_OF_RANGE':!located
+        ?ref.source==='drawing'?'DRAWING_PAGE_NOT_RECOGNIZED':'SOURCE_NOT_ALLOWED'
+        :'SOURCE_CONTENT_NOT_CONFIRMED');
+    return {...ref,reason};
+  });
+  const verificationReason=citationChecks.find(ref=>[
+    'PDF_OPEN_FAILED','PARSER_LOAD_FAILED','PAGE_TEXT_FAILED','INDEX_TIMEOUT','PDF_BYTES_MISSING',
+  ].includes(ref.reason))?'PDF_EVIDENCE_UNAVAILABLE':citationChecks[0]?.reason??'NO_VALID_CITATION';
+  return {citations,proposedCitations:proposed,citationChecks,verificationReason,...status('needs_review')};
+}
+
+export function proposedReferences(citations){
+  return citations.slice(0,8).flatMap(ref=>typeof ref?.source==='string'&&ref.source.length<=30
+    ?[{source:ref.source,page:ref.page===null||Number.isSafeInteger(ref.page)?ref.page:'invalid'}]:[]);
+}
+
 function verifyQuote(candidate,documents){
   const reference=locateCitation(candidate,documents);
   if(!reference)return null;
@@ -103,6 +203,14 @@ function verifyQuote(candidate,documents){
   const original=documents.get(reference.source).texts.get(reference.page);
   if(quote.length<4||quote.length>550||!original?.split('\n').some(line=>line.includes(quote)))return null;
   return {...reference,quote,value:clean(candidate.value)||null,unit:clean(candidate.unit)||null};
+}
+
+export function issueExclusionReason(candidate,documents){
+  const evidence=candidate?.evidence;
+  if(!Array.isArray(evidence)||evidence.length<(candidate?.type==='conflict'?2:1))return 'ISSUE_REQUIRED_EVIDENCE_MISSING';
+  if(evidence.some(ref=>!locateCitation(ref,documents)))return 'ISSUE_INVALID_SOURCE_PAGE';
+  if(candidate.type!=='unreadable'&&evidence.some(ref=>!verifyQuote(ref,documents)))return 'ISSUE_ORIGINAL_QUOTE_NOT_FOUND';
+  return 'ISSUE_COMPARISON_NOT_SUPPORTED';
 }
 
 const RAW_NUMBER=/^[+\-−]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?$/;
@@ -157,10 +265,10 @@ export function verifyIssues(candidates,documents,drawingReview){
   });
 }
 
-export function verifyChanges(candidates,documents){
+export function verifyChanges(candidates,documents,verify=verifyQuote,readAmount=proof=>measured(proof,'金額')??measured(proof,'Amount')){
   return candidates.slice(0,4).flatMap(candidate=>{
     if(!candidate)return [];
-    const item=clean(candidate.item),proof=verifyQuote(candidate.evidence,documents);
+    const item=clean(candidate.item),proof=verify(candidate.evidence,documents);
     if(item.length<2||item.length>80||proof?.source!=='change'||!proof.quote.includes(item)||hypothetical.test(proof.quote))return [];
     const direction=candidate.direction;
     const addition=/追加|加作|新增|增加|\+\s*\d/u.test(proof.quote);
@@ -168,11 +276,43 @@ export function verifyChanges(candidates,documents){
     const neutral=/不增減|無增減|零元調整|等價變更/u.test(proof.quote);
     if((direction==='addition'&&(!addition||deduction))||(direction==='deduction'&&(!deduction||addition))||
       (direction==='neutral'&&(!neutral||addition||deduction))||!['addition','deduction','neutral'].includes(direction))return [];
-    const amountMatch=proof.value===null?null:measured(proof,'金額')??measured(proof,'Amount');
+    const amountMatch=proof.value===null?null:readAmount(proof);
     if(proof.value!==null&&amountMatch===null)return [];
     const amount=amountMatch===null?null:direction==='deduction'?-Math.abs(amountMatch):amountMatch;
     if(direction==='addition'&&amount!==null&&amount<0)return [];
     return [summaryPoint(`${item}｜原文：${proof.quote}`,[proof],{item,direction,amount,
       currency:proof.unit==='NT$'||proof.unit==='新台幣'?'TWD':null,...status('verified',true)})];
+  });
+}
+
+export function readOrdinaryChanges(candidates,documents){
+  return candidates.slice(0,4).flatMap(candidate=>{
+    const item=clean(candidate?.item),direction=candidate?.direction;
+    if(item.length<2||item.length>80||hypothetical.test(item)||!['addition','deduction','neutral'].includes(direction))return [];
+    if(!documents.has('change')&&!documents.diagnostics?.some(row=>row.source==='change'))return [];
+    const verified=verifyChanges([candidate],documents,(proof,index)=>{
+      const strict=verifyQuote(proof,index);
+      if(strict)return strict;
+      const reference=locateCitation(proof,index);
+      const quote=clean(proof?.quote);
+      if(!reference||quote.length<4||quote.length>550)return null;
+      const original=factBlocks(reference,index,block=>factContains(block,quote));
+      return original?{...reference,quote:clean(original),value:clean(proof.value)||null,unit:clean(proof.unit)||null}:null;
+    },proof=>{
+      if(!proof.unit)return null;
+      const raw=normalizeFact(proof.value);
+      if(!RAW_NUMBER.test(raw))return null;
+      const value=esc(raw),unit=esc(normalizeFact(proof.unit));
+      const label='(?:金額|amount)';
+      const numberEnd='(?![0-9.]|,\\d)';
+      const pattern=new RegExp(label+'\\s*(?:'+unit+'\\s*'+value+numberEnd+'|'+value+numberEnd+'\\s*'+unit+')','u');
+      return pattern.test(normalizeFact(proof.quote))?Number(raw):null;
+    });
+    if(verified.length)return verified;
+    const proposed=proposedReferences([candidate.evidence]);
+    const reference=proposed[0]?.source==='change'?locateCitation(proposed[0],documents):null;
+    const quote=clean(candidate.evidence?.quote).slice(0,550);
+    return [{item,direction,amount:null,currency:null,text:quote||item,
+      ...markOrdinaryFact(proposed,reference?[reference]:[],documents,()=>null)}];
   });
 }

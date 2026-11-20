@@ -22,6 +22,13 @@ export function emptySection(key,sources){
   return '現有資料無法確認。';
 }
 export const EVIDENCE_POLICY_VERSION=1;
+export const KNOWLEDGE_PUBLICATION_VERSION=1;
+export function publishedKnowledgeRun(knowledge){
+  return knowledge?.evidencePolicyVersion===EVIDENCE_POLICY_VERSION&&
+    knowledge.publicationPolicyVersion===KNOWLEDGE_PUBLICATION_VERSION&&
+    typeof knowledge.latestRunId==='string'&&/^[a-zA-Z0-9_-]{1,120}$/.test(knowledge.latestRunId)
+    ?knowledge.latestRunId:null;
+}
 export function verifiedKnowledgeItems(rows,policyVersion){
   if(policyVersion!==EVIDENCE_POLICY_VERSION||!Array.isArray(rows))return [];
   return rows.filter(row=>row?.verificationStatus==='verified'&&row.referenceEligible===true&&row.revoked!==true&&

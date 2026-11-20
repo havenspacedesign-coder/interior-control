@@ -1,5 +1,6 @@
 import {esc} from './ui-utils.js';
 import {SUMMARY_SECTIONS,BASIC_LABEL,formatCitation,emptySection,verifiedKnowledgeItems,EVIDENCE_POLICY_VERSION} from './summary-format.js';
+import {diagnosticReason,renderAnalysisDiagnostics,renderAnalysisVersion} from './analysis-diagnostics.js';
 
 export async function analyzeBasicCase(project,getIdToken){
   if(!getIdToken)throw Error('本機展示帳號無法呼叫雲端 AI。請在已部署 API 的測試網站使用 Firebase 管理員帳號登入。');
@@ -18,7 +19,7 @@ export async function analyzeBasicCase(project,getIdToken){
       });
     }catch(error){throw Error(['TimeoutError','AbortError'].includes(error.name)?'AI 分析逾時，請重試。':'無法連線 AI 分析服務，請檢查網路後重試。');}
     try{data=await response.json();}catch{throw Error('AI 分析 API 尚未啟用或回覆格式不正確。');}
-    if(!response.ok)throw Error(data.message||'AI 分析失敗，請稍後重試。');
+    if(!response.ok)throw Object.assign(Error(data.message||'AI 分析失敗，請稍後重試。'),{analysisDiagnostics:data.diagnostics});
     if(!data.drawingStep)break;
     if(data.drawingStep.busy)throw Error('這份施工圖的分析正在進行，請稍後再按「開始 AI 分析」接續。');
     mode=data.drawingStep.done?'finalize':'step';
@@ -58,6 +59,8 @@ function renderDrawingReview(review){
 export function renderAnalysisResult(report){
   if(!report)return '';
   const {sections,sources,missing,drawingReview}=report;
+  const metadata=renderAnalysisVersion(report)+renderAnalysisDiagnostics(report.diagnostics,report.modelOutput);
+  if(!sections)return metadata;
   const blocks=Object.entries(SUMMARY_SECTIONS).map(([key,title],index)=>{
     if(key==='issues'){
       const issues=sections.issues;
@@ -73,10 +76,13 @@ export function renderAnalysisResult(report){
       }).join('')}</ul>`).join('');
       return `<section class="aidb-analysis-block"><h4>${index+1}. ${title}</h4>${confirmed.length?'':`<p class="aidb-muted">${esc(emptySection(key,sources))}</p>`}${content}</section>`;
     }
-    const items=sections[key].map(({text,citations})=>{
+    const items=sections[key].map(({text,citations,verificationStatus,verificationReason})=>{
       const content=cleanText(text);
       if(!content)return '';
-      const refs=citations.length?`<small class="aidb-muted">${esc(citations.map(formatCitation).join('、'))}</small>`:'';
+      const links=citations.map(formatCitation).join('、');
+      const label=verificationStatus==='needs_review'
+        ?['待驗證',links&&`待核對來源 ${links}`,verificationReason&&diagnosticReason(verificationReason)].filter(Boolean).join('｜'):links;
+      const refs=label?`<small class="aidb-muted">${esc(label)}</small>`:'';
       return `<li>${esc(content)}${refs}</li>`;
     }).filter(Boolean);
     return `<section class="aidb-analysis-block"><h4>${index+1}. ${title}</h4>${items.length?`<ul>${items.join('')}</ul>`:`<p class="aidb-muted">${esc(emptySection(key,sources))}</p>`}</section>`;
@@ -84,7 +90,8 @@ export function renderAnalysisResult(report){
   const pagesBySource=new Map(sources.map(({kind})=>[kind,new Set()]));
   for(const [section,points] of Object.entries(sections)){
     if(section==='issues'&&report.evidencePolicyVersion!==EVIDENCE_POLICY_VERSION)continue;
-    for(const {citations} of points){
+    for(const {citations,verificationStatus} of points){
+      if(section!=='issues'&&verificationStatus==='needs_review')continue;
       for(const {source,page} of citations){
         if(source!=='drawing'||section==='drawings')pagesBySource.get(source)?.add(page);
       }
@@ -93,15 +100,19 @@ export function renderAnalysisResult(report){
   const files=sources.map(({kind,label,name})=>{
     const pages=[...pagesBySource.get(kind)].sort((a,b)=>a-b);
     const references=pages.length?`<small class="aidb-muted">${kind==='drawing'?'施工圖重點':''}引用頁碼：${pages.join('、')}</small>`:'';
-    return `<li>${esc(label)}｜${esc(name)}${kind==='drawing'?renderDrawingReview(drawingReview):''}${references}</li>`;
+    const unavailable=(report.evidenceDiagnostics??[]).filter(row=>row.source===kind&&row.code!=='NO_TEXT_LAYER');
+    const noText=(report.evidenceDiagnostics??[]).some(row=>row.source===kind&&row.code==='NO_TEXT_LAYER');
+    const warning=unavailable.length?'<small class="aidb-muted">PDF 證據索引讀取失敗，受影響內容列為待驗證。</small>'
+      :noText?'<small class="aidb-muted">部分引用頁缺少可核對的文字，相關內容列為待驗證。</small>':'';
+    return `<li>${esc(label)}｜${esc(name)}${kind==='drawing'?renderDrawingReview(drawingReview):''}${references}${warning}</li>`;
   });
   const analyzedAt=report.knowledgeSave?.analyzedAt;
   const time=analyzedAt&&Number.isFinite(Date.parse(analyzedAt))
     ?new Intl.DateTimeFormat('zh-TW',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Taipei'}).format(new Date(analyzedAt)):'';
   blocks.push(`<section class="aidb-analysis-block"><h4>8. 資料來源</h4>${time?`<p class="aidb-muted">分析時間 ${esc(time)}</p>`:''}<ul><li>${BASIC_LABEL}</li>${files.join('')}${missing.map(label=>`<li class="aidb-muted">${esc(label)}｜未提供</li>`).join('')}</ul></section>`);
-  return blocks.join('');
+  return metadata+blocks.join('');
 }
 
 export function renderAnalysis(analysis={}){
-  return `<p class="aidb-muted">根據案件基本資料、施工圖、正式報價單及追加減工程 PDF 整理案件重點。摘要暫存於本次頁面。</p><div data-analysis-result class="aidb-analysis-result" role="status" aria-live="polite"></div><p data-analysis-error role="alert" hidden></p><button class="btn btn-p" data-action="case.analyze" ${analysis.loading?'disabled':''}>${analysis.loading?'AI 分析中…':'開始 AI 分析'}</button>`;
+  return `<p class="aidb-muted">根據案件基本資料、施工圖、正式報價單及追加減工程 PDF 整理案件重點。</p><button type="button" class="btn" data-action="case.analysisHistory" hidden>查看分析歷史</button><div data-analysis-history></div><div data-analysis-result class="aidb-analysis-result" role="status" aria-live="polite"></div><p data-analysis-error role="alert" hidden></p><button class="btn btn-p" data-action="case.analyze" ${analysis.loading?'disabled':''}>${analysis.loading?'AI 分析中…':'開始 AI 分析'}</button>`;
 }

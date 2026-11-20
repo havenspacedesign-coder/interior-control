@@ -7,6 +7,7 @@ import {LEARNING_SCHEMA} from './learning-schema.js';
 import {uploadCaseFiles,cleanupFiles,openFile} from './files.js';
 import {createPhotoLoader} from './photo-loader.js';
 import {analyzeBasicCase,renderAnalysisResult} from './analysis-client.js';
+import {renderAnalysisDiagnostics,renderAnalysisHistory} from './analysis-diagnostics.js';
 import {openThumbnailMaintenance} from './thumbnail-maintenance.js';
 import {observePhotoCards} from './photo-view.js';
 export function mountAiDatabase(root,session){
@@ -21,9 +22,30 @@ export function mountAiDatabase(root,session){
     if(disposed||!session.canManage())return;
     const analysis=analyses.get(selectedCase)||{};
     const result=root.querySelector('[data-analysis-result]'),alert=root.querySelector('[data-analysis-error]'),button=root.querySelector('[data-action="case.analyze"]');
-    if(result)result.innerHTML=renderAnalysisResult(analysis.report);
+    if(result)result.innerHTML=renderAnalysisDiagnostics(analysis.failure)+renderAnalysisResult(analysis.report);
+    const historyButton=root.querySelector('[data-action="case.analysisHistory"]');
+    if(historyButton){historyButton.hidden=!context.store.listCaseAnalysis;historyButton.disabled=!!analysis.loading;}
+    const history=root.querySelector('[data-analysis-history]');
+    if(history)history.innerHTML=renderAnalysisHistory(analysis.history);
     if(alert){alert.textContent=analysis.error||'';alert.hidden=!analysis.error;}
     if(button){button.disabled=!!analysis.loading;button.textContent=analysis.loading?'AI 分析中…':'開始 AI 分析';}
+  }
+  async function loadAnalysisHistory(runId,more=false){
+    const caseId=selectedCase,analysis=analyses.get(caseId);
+    if(!analysis||analysis.loading||analysis.historyLoading||!context.store.listCaseAnalysis)return;
+    analysis.historyLoading=true;
+    try{
+      if(runId){
+        analysis.report=await context.store.loadCaseAnalysis(caseId,runId);
+        analysis.failure=null;
+      }else{
+        const next=await context.store.listCaseAnalysis(caseId,more?analysis.history?.cursor:null);
+        analysis.history=more?{...next,runs:[...analysis.history.runs,...next.runs]}:next;
+      }
+      analysis.error='';
+    }catch{analysis.error='無法讀取分析歷史，請稍後重試。';}
+    finally{analysis.historyLoading=false;}
+    updateAnalysis();
   }
   async function loadSavedAnalysis(){
     const caseId=selectedCase;
@@ -48,7 +70,7 @@ export function mountAiDatabase(root,session){
       analysis.report=await analyzeBasicCase(project,session.getIdToken);
       analysis.error=analysis.report.knowledgeSave?.error||'';
     }
-    catch(error){analysis.error=error.message||'AI 分析失敗，請重試。';}
+    catch(error){analysis.error=error.message||'AI 分析失敗，請重試。';analysis.failure=error.analysisDiagnostics;}
     finally{analysis.loading=false;updateAnalysis();}
   }
   let captionSaving=false,captionRenderPending=false;
@@ -245,6 +267,9 @@ export function mountAiDatabase(root,session){
       return;
     }
     if(key==='case.analyze'){void startAnalysis();return;}
+    if(['case.analysisHistory','case.analysisHistoryMore','case.analysisRun'].includes(key)){
+      void loadAnalysisHistory(key==='case.analysisRun'?id:null,key==='case.analysisHistoryMore');return;
+    }
     if(key==='collapse'){collapsed.has(id)?collapsed.delete(id):collapsed.add(id);if(!dirty&&!captionDrafts.size)render();else{root.querySelector(`[data-category-id="${CSS.escape(id)}"] .aidb-children`)?.toggleAttribute('hidden');button.textContent=collapsed.has(id)?'▸':'▾';button.setAttribute('aria-expanded',String(!collapsed.has(id)));}return;}
     if(key==='case.select'||key==='category.select'){if(!leaveDraft())return;dirty=false;selectedCase=key==='case.select'?id:'';selectedCategory=key==='case.select'?context.state.cases.find(c=>c.id===id).categoryId:id;notice='';render();return;}
     if(key==='category.create')return inputDialog('新增大分類','分類名稱','',async name=>{await context.commit({type:key,payload:{id:newId(),name}});});

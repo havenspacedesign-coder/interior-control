@@ -29,7 +29,7 @@ const knowledge={
   changes:[],
 };
 const fixture=await readFile(new URL('./fixtures/verification.pdf',import.meta.url));
-const {PDFDocument}=createRequire(import.meta.url)('pdf-lib');
+const {PDFDocument,StandardFonts}=createRequire(import.meta.url)('pdf-lib');
 const reviewedPage=page=>page===4
   ?{page,readable:true,complete:true,drawingType:'天花配置圖',content:'天花局部降板。'}
   :{page,readable:true,complete:true,drawingType:'平面配置圖',content:'客廳與餐廳相連。',spaceNames:['客廳'],dimensions:['走道 900 mm']};
@@ -38,7 +38,7 @@ const record=kind=>({document:{fields:fields({id:kind,caseId:'case',kind,storage
 const ok=value=>new Response(JSON.stringify(value),{headers:{'content-type':'application/json'}});
 const commitTime='2026-11-20T05:00:00.000Z';
 async function run({files=['drawing','quote','change'].map(record),mediaStatus=200,bytes=fixture,output=sections,
-  pageResults=pages=>pages.map(reviewedPage),saveFailed=false,readDenied=false,newerRun=false}={}){
+  pageResults=pages=>pages.map(reviewedPage),saveFailed=false,readDenied=false,newerRun=false,rawOutput=null}={}){
   const calls=[],pageRequests=[];let responseBody;
   globalThis.fetch=async(url,options)=>{
     calls.push({url,options});
@@ -67,7 +67,7 @@ async function run({files=['drawing','quote','change'].map(record),mediaStatus=2
       return ok({status:'completed',output_text:JSON.stringify({pages:pageResults(pages.map(item=>item.page))})});
     }
     responseBody=body;
-    return ok({status:'completed',output_text:JSON.stringify({knowledge,...output})});
+    return ok({status:'completed',output_text:rawOutput??JSON.stringify({knowledge,...output})});
   };
   const response={setHeader(){},status(code){this.code=code;return this;},json(data){this.data=data;return this;}};
   await handler({method:'POST',headers:{authorization:'Bearer user-token'},body:{basic,caseId:'case',files:[{storagePath:'https://evil.invalid'}]}},response);
@@ -197,21 +197,19 @@ try{
   assert.ok(result.responseBody.text.format.schema.required.includes('knowledge'));
   const saved=result.response.data.knowledgeSave;
   assert.equal(saved.analyzedAt,commitTime);
-  assert.equal(saved.isLatest,true);
+  assert.equal(saved.isLatest,false);
+  assert.equal(saved.publication.reason,'NO_VERIFIED_PDF_KNOWLEDGE');
   const writes=JSON.parse(result.calls.find(call=>call.url.endsWith(':commit')).options.body).writes;
-  const latest=writes.find(write=>write.update?.name.endsWith('/aiKnowledge/latest')).update.fields;
+  assert.ok(!writes.some(write=>write.update?.name.endsWith('/aiKnowledge/latest')));
   const runDoc=writes.find(write=>write.update?.name.endsWith('/aiKnowledgeRuns/'+saved.runId)).update.fields;
   const pageDoc=writes.find(write=>write.update?.name.endsWith('/drawingPages/1')).update.fields;
-  assert.equal(latest.latestRunId.stringValue,saved.runId);
-  assert.equal(latest.evidencePolicyVersion.integerValue,'1');
-  assert.deepEqual(latest.issues.arrayValue.values,[]);
+  assert.equal(result.response.data.runId,saved.runId);
+  assert.equal(runDoc.diagnostics.mapValue.fields.runId.stringValue,saved.runId);
   assert.deepEqual(runDoc.sections.mapValue.fields.issues.arrayValue.values,[]);
-  assert.equal(latest.caseFacts.mapValue.fields.areaPing.integerValue,'30');
-  assert.equal(latest.financials.mapValue.fields.quotedTotal.nullValue,null);
+  assert.equal(runDoc.caseFacts.mapValue.fields.areaPing.integerValue,'30');
   assert.equal(runDoc.financials.mapValue.fields.quotedTotal.mapValue.fields.amount.integerValue,'0');
   assert.equal(runDoc.financials.mapValue.fields.quotedTotal.mapValue.fields.referenceEligible.booleanValue,false);
-  assert.equal(latest.financials.mapValue.fields.completedSettlement.mapValue.fields.amount.integerValue,'200');
-  assert.equal(latest.drawing.mapValue.fields.pages,undefined);
+  assert.equal(runDoc.financials.mapValue.fields.completedSettlement.mapValue.fields.amount.integerValue,'200');
   assert.equal(runDoc.drawing.mapValue.fields.pages,undefined);
   assert.equal(pageDoc.sourceFileId.stringValue,'drawing');
   assert.equal(pageDoc.spaceNames.arrayValue.values[0].stringValue,'客廳');
@@ -222,6 +220,26 @@ try{
   assert.equal(failed.response.code,200);
   assert.equal(failed.response.data.knowledgeSave.code,'PERMISSION_DENIED');
   assert.match(failed.response.data.knowledgeSave.error,/Firestore 拒絕儲存.*權限不足/);
+  assert.equal(failed.response.data.diagnostics.firestore.state,'failed');
+  assert.equal(failed.response.data.diagnostics.firestore.reason,'PERMISSION_DENIED');
+  const captured=[];
+  const originalInfo=console.info;
+  let invalid;
+  try{
+    console.info=(...entries)=>captured.push(entries);
+    invalid=await run({rawOutput:'{"private":"CONFIDENTIAL QUOTE",'});
+  }finally{console.info=originalInfo;}
+  assert.equal(invalid.response.code,502);
+  const trace=invalid.response.data.diagnostics;
+  assert.equal(trace.json.state,'invalid_json');
+  assert.equal(trace.openAI.state,'completed');
+  assert.equal(trace.firestore.latestUpdated,false);
+  const failedWrites=JSON.parse(invalid.calls.find(call=>call.url.endsWith(':commit')).options.body).writes;
+  assert.equal(failedWrites.length,1);
+  assert.ok(failedWrites[0].update.name.endsWith('/aiKnowledgeRuns/'+trace.runId));
+  assert.match(failedWrites[0].update.fields.modelOutput.stringValue,/CONFIDENTIAL QUOTE/);
+  assert.doesNotMatch(JSON.stringify(captured),/CONFIDENTIAL QUOTE|user-token|mock-only/);
+  assert.equal(JSON.parse(captured.find(row=>row[0]==='ai_case_analysis')[1]).runId,trace.runId);
   const readDenied=await run({readDenied:true});
   assert.equal(readDenied.response.code,200);
   assert.equal(readDenied.response.data.knowledgeSave.code,'PERMISSION_DENIED');
@@ -230,25 +248,30 @@ try{
   assert.equal(older.response.data.knowledgeSave.isLatest,false);
   assert.ok(JSON.parse(older.calls.find(call=>call.url.endsWith(':commit')).options.body).writes
     .every(write=>!write.update?.name.endsWith('/aiKnowledge/latest')));
-  assert.deepEqual(result.response.data.sections.drawings.map(({text})=>text),[sections.drawings[0].text]);
+  assert.deepEqual(result.response.data.sections.drawings.map(({text})=>text),sections.drawings.map(row=>row.text));
   const rendered=renderAnalysisResult(result.response.data);
   assert.ok(rendered.includes('正式報價單｜第 1 頁')&&rendered.includes('施工圖｜第 1 頁'));
-  assert.ok(rendered.includes('施工圖｜drawing.pdf')&&rendered.includes('引用頁碼：1'));
+  assert.ok(rendered.includes('施工圖｜drawing.pdf')&&rendered.includes('待核對來源 施工圖｜第 1 頁'));
+  assert.ok(!rendered.includes('施工圖重點引用頁碼：'));
   assert.ok(rendered.includes('施工圖共 1 頁，已分析 1 頁'));
   assert.ok(rendered.includes('逐頁分析紀錄'));
   assert.ok(!rendered.includes('無法確認主臥櫃體尺寸'));
   assert.ok(rendered.includes('本次未發現具充分證據支持的矛盾或缺失'));
   const unreadable=await run({output:{...sections,drawings:sections.drawings.slice(1)}});
   assert.equal(unreadable.response.code,200);
-  assert.ok(renderAnalysisResult(unreadable.response.data).includes('無法確認施工圖中的空間、配置、尺寸或施工資訊。'));
+  assert.ok(unreadable.response.data.sections.drawings.every(row=>row.verificationStatus==='needs_review'));
   const multipage=await PDFDocument.create();
-  for(let page=1;page<=13;page++)multipage.addPage([600+page,800]);
+  const font=await multipage.embedFont(StandardFonts.Helvetica);
+  for(let page=1;page<=13;page++){
+    const sheet=multipage.addPage([600+page,800]);
+    if(page===2||page===4)sheet.drawText('Elevated ceiling',{x:40,y:650,size:11,font});
+  }
   const drawing=await multipage.save();
-  const extraPoint=point('確認天花局部降板。','drawing',4);
+  const extraPoint=point('Elevated ceiling','drawing',4);
   const mixed=await run({bytes:drawing,files:[record('drawing')],
     pageResults:pages=>pages.filter(page=>page!==3).map(page=>page===2
       ?{page,readable:false,drawingType:'',content:''}:reviewedPage(page)),
-    output:{...sections,drawings:[sections.drawings[0],extraPoint,point('引用不可辨識頁。','drawing',2),
+    output:{...sections,drawings:[sections.drawings[0],extraPoint,point('Elevated ceiling','drawing',2),
       point('引用未回報頁。','drawing',3),point('引用不存在的頁。','drawing',14),
       {text:'結論的一部分缺少證據。',citations:[{source:'drawing',page:1},{source:'drawing',page:3}]},
     ]},
@@ -261,14 +284,26 @@ try{
   assert.equal(mixed.response.data.drawingReview.pages[1].status,'unreadable');
   assert.equal(mixed.response.data.drawingReview.pages[2].status,'request_failed');
   assert.equal(mixed.response.data.drawingReview.pages[2].reasonCode,'MISSING_PAGE');
-  assert.deepEqual(mixed.response.data.sections.drawings.map(({text})=>text),[sections.drawings[0].text,extraPoint.text]);
+  assert.equal(mixed.response.data.sections.drawings.length,5);
+  assert.equal(mixed.response.data.sections.drawings[1].verificationStatus,'verified');
+  assert.equal(mixed.response.data.sections.drawings[2].verificationReason,'DRAWING_PAGE_NOT_RECOGNIZED');
+  assert.equal(mixed.response.data.sections.drawings[4].verificationReason,'PAGE_OUT_OF_RANGE');
+  assert.equal(mixed.response.data.diagnostics.validationCounts['summary.drawings'].pending,4);
+  assert.equal(mixed.response.data.knowledgeSave.isLatest,true);
+  assert.deepEqual(mixed.response.data.diagnostics.pdf[0].extractedPages,[2,4]);
+  assert.equal(mixed.response.data.diagnostics.firestore.latestWritten.groups.drawing,1);
+  const published=JSON.parse(mixed.calls.find(call=>call.url.endsWith(':commit')).options.body).writes
+    .find(write=>write.update.name.endsWith('/aiKnowledge/latest')).update.fields;
+  assert.equal(published.latestRunId.stringValue,mixed.response.data.runId);
+  assert.equal(published.diagnostics,undefined);
+  assert.equal(published.modelOutput,undefined);
   const reviewHtml=renderAnalysisResult(mixed.response.data);
   assert.ok(reviewHtml.includes('施工圖共 13 頁，已分析 12 頁'));
   assert.ok(reviewHtml.includes('第 2 頁無法可靠辨識'));
   assert.ok(reviewHtml.includes('第 3 頁請求失敗'));
   assert.ok(reviewHtml.includes('第 13 頁｜平面配置圖'));
-  assert.ok(reviewHtml.includes('施工圖重點引用頁碼：1、4'));
-  assert.ok(reviewHtml.includes('確認天花局部降板。<small class="aidb-muted">施工圖｜第 4 頁</small>'));
+  assert.ok(reviewHtml.includes('施工圖重點引用頁碼：4'));
+  assert.ok(reviewHtml.includes('Elevated ceiling<small class="aidb-muted">施工圖｜第 4 頁</small>'));
   const coverage=JSON.parse(mixed.responseBody.input[0].content[0].text).drawingPages;
   assert.deepEqual(coverage.map(({page})=>page),[1,4,5,6,7,8,9,10,11,12,13]);
   const complete=await run({bytes:drawing,files:[record('drawing')],
@@ -276,7 +311,7 @@ try{
   });
   const completeHtml=renderAnalysisResult(complete.response.data);
   assert.ok(completeHtml.includes('施工圖共 13 頁，已分析 13 頁'));
-  assert.ok(completeHtml.includes('施工圖重點引用頁碼：1、4'));
+  assert.ok(completeHtml.includes('施工圖重點引用頁碼：4'));
   assert.equal(result.calls.filter(call=>call.url.includes('firebasestorage.googleapis.com')).length,3);
   assert.ok(result.calls.filter(call=>call.url.includes('firebasestorage.googleapis.com')).every(call=>call.options.headers.authorization==='Firebase user-token'&&!call.options.method));
   assert.ok(result.calls.every(call=>!['PATCH','DELETE','PUT'].includes(call.options.method)));

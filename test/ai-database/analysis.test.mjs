@@ -4,6 +4,7 @@ import vm from 'node:vm';
 import {createPhotoLoader} from '../../app/features/ai-database/photo-loader.js';
 import handler from '../../api/ai-case-analyze.js';
 import {analyzeBasicCase,renderAnalysisResult} from '../../app/features/ai-database/analysis-client.js';
+import {renderAnalysisDiagnostics,renderAnalysisHistory} from '../../app/features/ai-database/analysis-diagnostics.js';
 import {SUMMARY_SECTIONS} from '../../app/features/ai-database/summary-format.js';
 import {createProductionStore} from '../../app/features/ai-database/firebase-store.js';
 
@@ -19,13 +20,17 @@ const store=createProductionStore({
   db:{},auth:{currentUser:{uid:'manager'}},storage:{},storageSdk:{},
   fs:{
     doc:(_db,...path)=>path.join('/'),collection:(_db,...path)=>path.join('/'),
+    query:path=>path,orderBy:()=>null,limit:()=>null,
     getDocFromServer:async path=>getSnapshot({
       'members/manager':{role:'manager',status:'active'},
       [casePath+'/aiKnowledge/latest']:{latestRunId:'saved-run'},
       [runPath]:{...report,drawing:{totalPages:2,reviewedPages:2},
         analyzedAt:{toDate:()=>new Date('2026-11-20T05:00:00Z')}},
+      [casePath+'/aiKnowledgeRuns/failed-run']:{status:'failed',modelOutput:'<script>private</script>',
+        publication:{state:'history_only',reason:'INVALID_MODEL_JSON'}},
     }[path]),
     getDocsFromServer:async path=>{
+      if(path===casePath+'/aiKnowledgeRuns')return {docs:[{id:'failed-run',...getSnapshot({status:'failed'})}]};
       assert.equal(path,runPath+'/drawingPages');
       return {docs:[getSnapshot({page:2,status:'unreadable'}),getSnapshot({page:1,status:'recognized'})]};
     },
@@ -34,6 +39,12 @@ const store=createProductionStore({
 const restored=await store.loadCaseAnalysis('case');
 assert.deepEqual(restored.drawingReview.pages.map(({page})=>page),[1,2]);
 assert.equal(restored.knowledgeSave.analyzedAt,'2026-11-20T05:00:00.000Z');
+assert.equal(restored.knowledgeSave.publication.trustedRunId,null);
+assert.equal((await store.listCaseAnalysis('case')).runs[0].runId,'failed-run');
+const failedHistory=await store.loadCaseAnalysis('case','failed-run');
+assert.equal(failedHistory.knowledgeSave.publication.trustedRunId,null);
+assert.match(renderAnalysisResult(failedHistory),/&lt;script&gt;private&lt;\/script&gt;/);
+assert.doesNotMatch(renderAnalysisResult(failedHistory),/<script>/);
 const ok=data=>({ok:true,status:200,json:async()=>data});
 const account=()=>ok({users:[{localId:'manager-id'}]});
 const member=(role='manager',status='active')=>ok({fields:{role:{stringValue:role},status:{stringValue:status}}});
@@ -59,7 +70,8 @@ const root={innerHTML:'',contains:()=>false,
 };
 const sandbox={document:{querySelector:()=>true,activeElement:null},URL,Map,Set,queueMicrotask,createPhotoLoader,
   window:{addEventListener(){}},esc:x=>x,renderNavigation:()=>'',renderCaseContent:()=>'',cleanupFiles:async()=>{},LEARNING_SCHEMA:{version:1},
-  renderAnalysisResult,analyzeBasicCase:()=>{requests++;return new Promise((yes,no)=>{resolve=yes;reject=no;});},
+  renderAnalysisResult,renderAnalysisDiagnostics,renderAnalysisHistory,
+  analyzeBasicCase:()=>{requests++;return new Promise((yes,no)=>{resolve=yes;reject=no;});},
 };
 vm.createContext(sandbox);vm.runInContext(source,sandbox);
 sandbox.mountAiDatabase(root,{canManage:()=>true,user:()=>({}),createStore:()=>({label:'test',load:async()=>state,subscribe:()=>()=>{},
@@ -97,7 +109,7 @@ try{
     result=await run({body:{basic:{...basic,files:['do-not-send'],photo:'do-not-send'}},replies:[account(),member(role),ok({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(sections)}]}]})]});
     assert.equal(result.response.code,200);
     assert.equal(result.response.data.sections.overview[0].text,sections.overview[0].text);
-    assert.equal(result.response.data.sections.overview[0].verificationStatus,'ai_inference');
+    assert.equal(result.response.data.sections.overview[0].verificationStatus,'needs_review');
     assert.deepEqual(result.response.data.sections.issues,[]);
     assert.ok(result.response.data.summary.includes('8. 資料來源'));
     const outbound=JSON.parse(result.calls[2].options.body);

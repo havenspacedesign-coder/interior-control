@@ -1,4 +1,5 @@
 import {initialState,applyCommand,assertManager} from './model.js';
+import {publishedKnowledgeRun} from './summary-format.js';
 export const EMULATOR_PROJECT='demo-haven-ai';
 export const COLLECTIONS={categories:'aiDbTestCategories',cases:'aiDbTestCases',files:'aiDbTestFiles',knowledge:'aiDbTestKnowledge',analysisRuns:'aiDbTestAnalysisRuns',questions:'aiDbTestQuestions',answerRevisions:'aiDbTestAnswerRevisions'};
 const productionCollections={
@@ -72,16 +73,34 @@ function createFirebaseStore({db,auth,storage,fs,storageSdk,collections,metaColl
   }
   return {
     mode,label,load,filePath,identity,
-    ...(mode==='production'?{async loadCaseAnalysis(caseId){
+    ...(mode==='production'?{async listCaseAnalysis(caseId,cursor=null){
+      const {uid}=await identity();
+      const path=[collections.cases,caseId];
+      const pageSize=20;
+      const constraints=[fs.orderBy('analyzedAt','desc'),...(cursor?[fs.startAfter(cursor)]:[]),fs.limit(pageSize)];
+      const [latest,runs]=await Promise.all([
+        fs.getDocFromServer(fs.doc(db,...path,'aiKnowledge','latest')),
+        fs.getDocsFromServer(fs.query(fs.collection(db,...path,'aiKnowledgeRuns'),...constraints)),
+      ]);
+      if(auth.currentUser?.uid!==uid)assertManager(null);
+      return {trustedRunId:publishedKnowledgeRun(latest.data()),cursor:runs.docs.length===pageSize?runs.docs.at(-1):null,
+        runs:runs.docs.map(doc=>{
+          const {analyzedAt,publication,status}=doc.data();
+          return {runId:doc.id,analyzedAt:analyzedAt?.toDate().toISOString(),publication:publication??null,status};
+        }),
+      };
+    },async loadCaseAnalysis(caseId,runId=null){
       const {uid}=await identity();
       const latest=await fs.getDocFromServer(fs.doc(db,collections.cases,caseId,'aiKnowledge','latest'));
-      if(!latest.exists())return null;
-      const {latestRunId}=latest.data();
-      if(typeof latestRunId!=='string'||!latestRunId||latestRunId.includes('/'))throw Error('無法讀取案件 AI 知識版本。');
-      const runPath=[collections.cases,caseId,'aiKnowledgeRuns',latestRunId];
+      if(!latest.exists()&&!runId)return null;
+      const pointer=latest.data();
+      const selectedRun=runId??pointer?.latestRunId;
+      if(typeof selectedRun!=='string'||!/^[a-zA-Z0-9_-]{1,120}$/.test(selectedRun))throw Error('無法讀取案件 AI 知識版本。');
+      const trustedRunId=publishedKnowledgeRun(pointer);
+      const runPath=[collections.cases,caseId,'aiKnowledgeRuns',selectedRun];
       const run=await fs.getDocFromServer(fs.doc(db,...runPath));
       if(!run.exists())throw Error('無法讀取案件 AI 知識版本。');
-      const {sections,sources,missing,drawing,analyzedAt,evidencePolicyVersion}=run.data();
+      const {sections,sources,missing,drawing,analyzedAt,evidencePolicyVersion,evidenceDiagnostics,diagnostics,publication,modelOutput}=run.data();
       let drawingReview;
       if(drawing){
         const snapshot=await fs.getDocsFromServer(fs.collection(db,...runPath,'drawingPages'));
@@ -91,7 +110,9 @@ function createFirebaseStore({db,auth,storage,fs,storageSdk,collections,metaColl
         drawingReview={totalPages,reviewedPages,recognizedPages,unreadablePages,incompletePages,failedPages,isComplete,pages};
       }
       if(auth.currentUser?.uid!==uid)assertManager(null);
-      return {sections,sources,missing,evidencePolicyVersion,knowledgeSave:{analyzedAt:analyzedAt?.toDate().toISOString()},
+      return {sections,sources,missing,evidencePolicyVersion,evidenceDiagnostics,diagnostics,runId:selectedRun,
+        ...(runId&&modelOutput?{modelOutput}:{}),
+        knowledgeSave:{analyzedAt:analyzedAt?.toDate().toISOString(),publication:{...publication,trustedRunId}},
         ...(drawingReview?{drawingReview}:{}),
       };
     }}:{}),
