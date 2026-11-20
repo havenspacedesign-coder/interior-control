@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {test} from 'node:test';
 import {PDFDocument,StandardFonts} from 'pdf-lib';
 import {inspectPdfEvidence,locateCitation,verifyChanges,verifyIssues} from '../../server/ai-case-evidence.js';
@@ -142,6 +144,53 @@ test('wrapped PDF tables verify totals, materials and change amounts against sou
   assert.equal(paraphrased.workItems[0].description,null);
 });
 
+test('reproduces the PDF.js cold-start ReferenceError and indexes three PDFs with explicit Canvas and Worker setup',()=>{
+  const program=`
+    import assert from 'node:assert/strict';
+    import Module from 'node:module';
+    import {readFile} from 'node:fs/promises';
+    import {inspectPdfEvidence,locateCitation} from './server/ai-case-evidence.js';
+    const legacy=process.argv[1]==='legacy';
+    for(const name of ['DOMMatrix','ImageData','Path2D'])delete globalThis[name];
+    const load=Module._load;
+    Module._load=function(name,parent,...args){
+      if(name==='@napi-rs/canvas'&&parent?.filename.includes('pdfjs-dist')){
+        throw Object.assign(new Error('Optional package missing from PDF.js bundle'),{code:'MODULE_NOT_FOUND'});
+      }
+      return load.call(this,name,parent,...args);
+    };
+    const sourceNames=['drawing','quote','change'];
+    const sources=sourceNames.map(kind=>({kind,fileId:kind,name:kind+'.pdf'}));
+    const bytes=await readFile('./test/ai-database/fixtures/verification.pdf');
+    const output={work:sourceNames.map(source=>({citations:[{source,page:1}]}))};
+    const input=new Map(sourceNames.map(kind=>[kind,bytes]));
+    const indexed=await inspectPdfEvidence(input,output,sources,legacy?()=>import('pdfjs-dist/legacy/build/pdf.mjs'):undefined);
+    if(legacy){
+      assert.equal(indexed.size,0);
+      assert.equal(indexed.diagnostics.length,3);
+      for(const error of indexed.diagnostics){
+        assert.equal(error.code,'PARSER_LOAD_FAILED');
+        assert.equal(error.errorMessage,'DOMMatrix is not defined');
+        assert.ok(error.errorStack.includes('pdfjs-dist/legacy/build/pdf.mjs:17027:22'),error.errorStack);
+        assert.ok(!error.errorStack.includes(process.cwd()));
+      }
+    }else{
+      assert.equal(typeof globalThis.DOMMatrix,'function');
+      assert.equal(indexed.size,3);
+      assert.deepEqual(indexed.diagnostics,[]);
+      for(const kind of sourceNames){
+        assert.match(indexed.get(kind).texts.get(1),/AI Database Upload Verification/);
+        assert.equal(locateCitation({source:kind,page:1},indexed).sourceId,kind);
+        assert.equal(locateCitation({source:kind,page:2},indexed),null);
+      }
+    }
+  `;
+  const cwd=fileURLToPath(new URL('../../',import.meta.url));
+  for(const mode of ['legacy','fixed']){
+    execFileSync(process.execPath,['--input-type=module','-e',program,mode],{cwd,stdio:'pipe',timeout:15000});
+  }
+});
+
 test('index failures leave an admin summary with pending evidence and a concrete failure code',async()=>{
   const indexed=await inspectPdfEvidence(tableBytes,originalModel,tableSources,async()=>{
     throw Object.assign(Error('test error'),{code:'ERR_MODULE_NOT_FOUND'});
@@ -149,7 +198,7 @@ test('index failures leave an admin summary with pending evidence and a concrete
   const summary=readSummary(originalModel,indexed);
   assert.equal(summary.costs[0].text,originalModel.costs[0].text);
   assert.equal(summary.materials[0].text,originalModel.materials[0].text);
-  assert.equal(summary.costs[0].verificationReason,'PDF_EVIDENCE_UNAVAILABLE');
+  assert.equal(summary.costs[0].verificationReason,'PARSER_LOAD_FAILED');
   assert.equal(summary.costs[0].verificationStatus,'needs_review');
   assert.equal(summary.materials[0].referenceEligible,false);
   assert.equal(summary.changes[0].verificationStatus,'needs_review');
@@ -157,12 +206,24 @@ test('index failures leave an admin summary with pending evidence and a concrete
   assert.ok(indexed.diagnostics.every(row=>row.code==='PARSER_LOAD_FAILED'&&row.errorType==='ERR_MODULE_NOT_FOUND'));
   const rendered=renderAnalysisResult({sections:summary,sources:tableSources,missing:[],evidenceDiagnostics:indexed.diagnostics});
   assert.match(rendered,/待驗證/);
-  assert.match(rendered,/PDF 證據索引讀取失敗/);
+  assert.match(rendered,/無法載入 PDF 解析模組/);
   const unreadable=await inspectPdfEvidence(new Map(tableBytes).set('quote',Buffer.from('%PDF-1.4\nbroken')),originalModel,tableSources);
   assert.ok(unreadable.diagnostics.some(row=>row.source==='quote'&&row.code==='PDF_OPEN_FAILED'));
   const partiallyVerified=readSummary(originalModel,unreadable);
   assert.equal(partiallyVerified.costs[0].verificationStatus,'needs_review');
   assert.equal(partiallyVerified.changes[0].verificationStatus,'verified');
+  const missing=await inspectPdfEvidence(new Map(),originalModel,tableSources);
+  assert.ok(missing.diagnostics.every(row=>row.code==='PDF_BYTES_MISSING'));
+  const textFailure=await inspectPdfEvidence(tableBytes,originalModel,tableSources,async()=>({
+    getDocument:()=>({destroy:async()=>{},promise:Promise.resolve({
+      numPages:1,async getPage(){return {async getTextContent(){throw new ReferenceError('TestVariable is not defined');}};},
+    })}),
+  }));
+  assert.ok(textFailure.diagnostics.every(row=>row.code==='PAGE_TEXT_FAILED'&&row.errorMessage==='TestVariable is not defined'));
+  const report=renderAnalysisResult({sections:readSummary(originalModel,textFailure),sources:tableSources,missing:[],
+    diagnostics:{runId:'test',openAI:{state:'completed'},json:{state:'parsed'},pdf:textFailure.files}});
+  assert.match(report,/頁面文字抽取失敗.*TestVariable is not defined/);
+  assert.match(report,/技術詳細資訊/);
 });
 
 test('Firestore keeps raw history but rejects degraded latest and excludes pending items from published knowledge',async()=>{
@@ -211,6 +272,15 @@ test('Firestore keeps raw history but rejects degraded latest and excludes pendi
     assert.equal(writes.length,1);
     assert.match(writes[0].update.name,/aiKnowledgeRuns\/failed$/);
     writes.length=0;
+    for(const code of ['PDF_CANVAS_INIT_FAILED','PDF_WORKER_INIT_FAILED']){
+      const unavailable=await inspectPdfEvidence(tableBytes,model,tableSources,async()=>{
+        throw Object.assign(new Error(code,{cause:new ReferenceError('DOMMatrix is not defined')}),{indexCode:code});
+      });
+      assert.equal((await save(code,model,unavailable)).publication.reason,'PDF_EVIDENCE_INDEX_FAILED');
+      assert.equal(writes.length,1);
+      assert.match(writes[0].update.name,/aiKnowledgeRuns\//);
+      writes.length=0;
+    }
     const blankModel={...originalModel,knowledge:{...originalModel.knowledge,materials:[],quotedTotal:null}};
     assert.equal((await save('degraded',blankModel,indexed)).publication.reason,'VERIFIED_COVERAGE_REGRESSION');
     assert.equal(writes.length,1);

@@ -29,7 +29,8 @@ export function update(path,content,currentDocument,recordTime=false){
 
 const coveredLists=['workItems','materials','spaces','changes'];
 const ordinarySections=['overview','costs','work','materials','drawings','changes'];
-const failedIndexCodes=new Set(['PARSER_LOAD_FAILED','PDF_BYTES_MISSING','PDF_OPEN_FAILED','INDEX_TIMEOUT','PAGE_TEXT_FAILED']);
+const failedIndexCodes=new Set(['PARSER_LOAD_FAILED','PDF_CANVAS_INIT_FAILED','PDF_WORKER_INIT_FAILED',
+  'PDF_BYTES_MISSING','PDF_OPEN_FAILED','INDEX_TIMEOUT','PAGE_TEXT_FAILED']);
 const safeReference=(ref,sources)=>ref&&(ref.source==='basic'?ref.sourceId==='basic'&&ref.page===null
   :Array.isArray(sources)&&sources.some(source=>source?.kind===ref.source&&source.fileId===ref.sourceId)&&
     Number.isSafeInteger(ref.page)&&ref.page>0);

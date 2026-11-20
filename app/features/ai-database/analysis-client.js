@@ -100,9 +100,10 @@ export function renderAnalysisResult(report){
   const files=sources.map(({kind,label,name})=>{
     const pages=[...pagesBySource.get(kind)].sort((a,b)=>a-b);
     const references=pages.length?`<small class="aidb-muted">${kind==='drawing'?'施工圖重點':''}引用頁碼：${pages.join('、')}</small>`:'';
-    const unavailable=(report.evidenceDiagnostics??[]).filter(row=>row.source===kind&&row.code!=='NO_TEXT_LAYER');
+    const unavailable=[...new Set((report.evidenceDiagnostics??[]).filter(row=>row.source===kind&&
+      !['NO_TEXT_LAYER','PAGE_OUT_OF_RANGE'].includes(row.code)).map(row=>diagnosticReason(row.code)))];
     const noText=(report.evidenceDiagnostics??[]).some(row=>row.source===kind&&row.code==='NO_TEXT_LAYER');
-    const warning=unavailable.length?'<small class="aidb-muted">PDF 證據索引讀取失敗，受影響內容列為待驗證。</small>'
+    const warning=unavailable.length?`<small class="aidb-muted">${esc(unavailable.join('、'))}，受影響內容列為待驗證。</small>`
       :noText?'<small class="aidb-muted">部分引用頁缺少可核對的文字，相關內容列為待驗證。</small>':'';
     return `<li>${esc(label)}｜${esc(name)}${kind==='drawing'?renderDrawingReview(drawingReview):''}${references}${warning}</li>`;
   });

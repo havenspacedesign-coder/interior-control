@@ -1,5 +1,6 @@
 import {createRequire} from 'node:module';
 import {dirname,join} from 'node:path';
+import {pathToFileURL} from 'node:url';
 
 const require=createRequire(import.meta.url);
 const string={type:'string'};
@@ -8,6 +9,46 @@ const shape=properties=>({type:'object',additionalProperties:false,required:Obje
 const status=(verificationStatus,referenceEligible=false)=>({verificationStatus,referenceEligible});
 const clean=value=>typeof value==='string'?value.normalize('NFC').replace(/\s+/g,' ').trim():'';
 const esc=value=>value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+
+function parserFailure(indexCode,cause){
+  return Object.assign(new Error(indexCode,{cause}),{indexCode});
+}
+
+async function loadEvidenceParser(){
+  try{
+    // Load the platform binding from the application before PDF.js evaluates its
+    // top-level DOMMatrix. PDF.js's optional, internal require can be missed by tracing.
+    const {default:canvas}=await import('@napi-rs/canvas');
+    for(const name of ['DOMMatrix','ImageData','Path2D']){
+      if(typeof globalThis[name]!=='function')globalThis[name]=canvas[name];
+      if(typeof globalThis[name]!=='function')throw new ReferenceError(name+' is not defined');
+    }
+  }catch(error){throw parserFailure('PDF_CANVAS_INIT_FAILED',error);}
+  const parser=await import('pdfjs-dist/legacy/build/pdf.mjs');
+  try{
+    const worker=pathToFileURL(require.resolve('pdfjs-dist/legacy/build/pdf.worker.mjs')).href;
+    await import(worker);
+    parser.GlobalWorkerOptions.workerSrc=worker;
+  }catch(error){throw parserFailure('PDF_WORKER_INIT_FAILED',error);}
+  return parser;
+}
+
+function diagnosticError(error){
+  const errorType=String(error?.code??error?.name??'').replace(/[^\w-]/g,'').slice(0,80)||null;
+  // Keep engine locations without private paths, PDF text or raw upstream messages.
+  const reference=error?.name==='ReferenceError'&&/^[a-zA-Z_$][\w$]{0,63} is not defined$/.test(error.message);
+  const errorMessage=reference?error.message:null;
+  const frames=(typeof error?.stack==='string'?error.stack.split('\n').slice(1,13):[]).flatMap(line=>{
+    const internal=line.trim().match(/^at (?:[\w.<> ]+ \()?node:internal\/[\w/:.-]+\)?$/);
+    if(internal)return [internal[0]];
+    const location=line.match(/(?:[/\\])([\w.-]+\.(?:[cm]?js|ts))(:\d+:\d+)\)?\s*$/);
+    if(!location)return [];
+    const library=/[/\\]pdfjs-dist[/\\]/.test(line)?'pdfjs-dist/legacy/build/':'';
+    return ['at '+library+location[1]+location[2]];
+  });
+  const errorStack=frames.length?[errorType+(errorMessage?': '+errorMessage:''),...frames].join('\n'):null;
+  return {errorType,errorMessage,errorStack};
+}
 
 export const evidenceInstructions=[
   'issues 只回傳可定位到本案原始 PDF 的候選項目。不要提供一般施工建議、假設風險或沒有具體項目的提醒。沒有候選項目就填空陣列。',
@@ -30,15 +71,18 @@ export function evidenceSchema(sources){
 }
 
 // Use the original PDF text layer. Model output, page summaries and guessed OCR are never evidence.
-export async function inspectPdfEvidence(pdfBytes,output,sources,loadParser=()=>import('pdfjs-dist/legacy/build/pdf.mjs')){
+export async function inspectPdfEvidence(pdfBytes,output,sources,loadParser=loadEvidenceParser){
   const result=new Map();
   result.diagnostics=[];
   result.files=[];
   if(!sources.length)return result;
-  const report=(source,code,page=null,error=null)=>result.diagnostics.push({
-    source:source.kind,sourceId:source.fileId,code,page,
-    errorType:String(error?.code??error?.name??'').replace(/[^\w-]/g,'').slice(0,80)||null,
-  });
+  const report=(source,code,page=null,error=null)=>{
+    const detail=diagnosticError(error);
+    if(result.diagnostics.some(row=>row.source===source.kind&&row.code===code&&row.errorType===detail.errorType)){
+      detail.errorStack=null;
+    }
+    result.diagnostics.push({source:source.kind,sourceId:source.fileId,code,page,...detail});
+  };
   const requested=new Map();
   const rows=value=>Array.isArray(value)?value.slice(0,8):[];
   const knowledge=output.knowledge??{};
@@ -66,7 +110,7 @@ export async function inspectPdfEvidence(pdfBytes,output,sources,loadParser=()=>
     ({getDocument}=await loadParser());
     assets=dirname(require.resolve('pdfjs-dist/package.json'));
   }catch(error){
-    for(const source of sources)report(source,'PARSER_LOAD_FAILED',null,error);
+    for(const source of sources)report(source,error.indexCode??'PARSER_LOAD_FAILED',null,error.cause??error);
     result.files=sources.map(fileResult);
     return result;
   }
@@ -185,9 +229,7 @@ export function markOrdinaryFact(proposed,citations,documents,findEvidence){
         :'SOURCE_CONTENT_NOT_CONFIRMED');
     return {...ref,reason};
   });
-  const verificationReason=citationChecks.find(ref=>[
-    'PDF_OPEN_FAILED','PARSER_LOAD_FAILED','PAGE_TEXT_FAILED','INDEX_TIMEOUT','PDF_BYTES_MISSING',
-  ].includes(ref.reason))?'PDF_EVIDENCE_UNAVAILABLE':citationChecks[0]?.reason??'NO_VALID_CITATION';
+  const verificationReason=citationChecks[0]?.reason??'NO_VALID_CITATION';
   return {citations,proposedCitations:proposed,citationChecks,verificationReason,...status('needs_review')};
 }
 

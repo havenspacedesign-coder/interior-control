@@ -8,6 +8,8 @@ const REASONS={
   PAGE_OUT_OF_RANGE:'頁碼無效或超出檔案頁數',DRAWING_PAGE_NOT_RECOGNIZED:'引用的施工圖頁尚無可靠辨識紀錄',
   PDF_EVIDENCE_UNAVAILABLE:'PDF 證據無法讀取',NO_TEXT_LAYER:'頁面缺少可核對的文字',
   PDF_OPEN_FAILED:'無法開啟 PDF',PARSER_LOAD_FAILED:'無法載入 PDF 解析模組',PAGE_TEXT_FAILED:'頁面文字抽取失敗',
+  PDF_CANVAS_INIT_FAILED:'PDF 解析器的 Canvas 原生模組初始化失敗',
+  PDF_WORKER_INIT_FAILED:'PDF 解析 Worker 初始化失敗',
   PDF_BYTES_MISSING:'未取得 PDF 檔案',INDEX_TIMEOUT:'PDF 索引逾時',
   ISSUE_REQUIRED_EVIDENCE_MISSING:'缺少所需的雙方證據',ISSUE_INVALID_SOURCE_PAGE:'矛盾證據的來源或頁碼無效',
   ISSUE_ORIGINAL_QUOTE_NOT_FOUND:'原始文件找不到所引文字',ISSUE_COMPARISON_NOT_SUPPORTED:'原文未支持這項比較',
@@ -40,9 +42,11 @@ const fileLabel=key=>PDF_LABELS[key]??key;
 export function renderAnalysisDiagnostics(trace,modelOutput){
   if(!trace&&!modelOutput)return '';
   const files=(trace?.pdf??[]).map(file=>{
-    const diagnostics=file.diagnostics.map(entry=>[entry.page? `第 ${entry.page} 頁`:'',diagnosticReason(entry.code),entry.errorType]
+    const diagnostics=file.diagnostics.map(entry=>[entry.page? `第 ${entry.page} 頁`:'',diagnosticReason(entry.code),entry.errorMessage??entry.errorType]
       .filter(Boolean).join('｜'));
-    return `<li>${esc(fileLabel(file.source))}｜${esc(state(file.open))}｜共 ${esc(file.pageCount??'未知')} 頁｜引用 ${esc(file.requestedPages.length)} 頁｜已抽取 ${esc(file.extractedPages.length)} 頁${diagnostics.length?`<small>${esc(diagnostics.join('、'))}</small>`:''}</li>`;
+    const stacks=[...new Set(file.diagnostics.map(entry=>entry.errorStack).filter(Boolean))];
+    const details=stacks.length?`<details><summary>技術詳細資訊</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(stacks.join('\n\n'))}</pre></details>`:'';
+    return `<li>${esc(fileLabel(file.source))}｜${esc(state(file.open))}｜共 ${esc(file.pageCount??'未知')} 頁｜引用 ${esc(file.requestedPages.length)} 頁｜已抽取 ${esc(file.extractedPages.length)} 頁${diagnostics.length?`<small>${esc(diagnostics.join('、'))}</small>`:''}${details}</li>`;
   });
   const counts=Object.entries(trace?.validationCounts??{}).map(([key,value])=>{
     const [group,section]=key.split('.');
