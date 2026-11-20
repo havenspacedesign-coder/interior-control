@@ -35,20 +35,22 @@ export function summaryFormat(sources){
   };
 }
 
-export function readSummary(output,sources){
+export function readSummary(output,sources,drawingPages){
   const parsed=JSON.parse(output);
   const sourceKinds=new Set(sources.map(source=>source.kind));
+  const reviewedDrawingPages=new Set(drawingPages?.map(({page})=>page));
   const sections={};
   for(const key of Object.keys(SUMMARY_SECTIONS)){
     if(!Array.isArray(parsed?.[key]))throw new Error('Invalid summary section');
     const points=[];
     for(const point of parsed[key]){
       if(typeof point?.text!=='string'||!point.text.trim()||!Array.isArray(point.citations))throw new Error('Invalid summary point');
+      if(key==='drawings'&&point.citations.some(citation=>citation?.source!=='drawing'||!reviewedDrawingPages.has(citation.page)))continue;
       const citations=[];
       for(const citation of point.citations){
         const {source,page}=citation??{};
         const supported=source==='basic'?page===null:sourceKinds.has(source)&&Number.isSafeInteger(page)&&page>0;
-        if(!supported||(key==='drawings'&&source!=='drawing')||(key==='changes'&&source!=='change'))continue;
+        if(!supported||(key==='changes'&&source!=='change'))continue;
         if(!citations.some(existing=>existing.source===source&&existing.page===page))citations.push({source,page});
       }
       if(key==='issues'||citations.length)points.push({text:point.text.trim(),citations});

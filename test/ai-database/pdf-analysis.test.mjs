@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
 import handler from '../../api/ai-case-analyze.js';
 import {analyzeBasicCase,renderAnalysisResult} from '../../app/features/ai-database/analysis-client.js';
 const savedFetch=globalThis.fetch,savedKey=process.env.OPENAI_API_KEY;
@@ -19,11 +20,15 @@ const sections={
   issues:[{text:'無法確認主臥櫃體尺寸。',citations:[]}],
 };
 const fixture=await readFile(new URL('./fixtures/verification.pdf',import.meta.url));
+const {PDFDocument}=createRequire(import.meta.url)('pdf-lib');
+const reviewedPage=page=>page===4
+  ?{page,readable:true,drawingType:'天花配置圖',content:'天花局部降板。'}
+  :{page,readable:true,drawingType:'平面配置圖',content:'客廳與餐廳相連。'};
 const fields=object=>Object.fromEntries(Object.entries(object).map(([key,value])=>[key,Array.isArray(value)?{arrayValue:{values:value.map(x=>({stringValue:x}))}}:{stringValue:String(value)}]));
 const record=kind=>({document:{fields:fields({id:kind,caseId:'case',kind,storagePath:'aiDatabase/cases/case/'+kind,name:kind+'.pdf',size:fixture.length})}});
 const ok=value=>new Response(JSON.stringify(value),{headers:{'content-type':'application/json'}});
-async function run({files=['drawing','quote','change'].map(record),mediaStatus=200,bytes=fixture,output=sections}={}){
-  const calls=[];let responseBody;
+async function run({files=['drawing','quote','change'].map(record),mediaStatus=200,bytes=fixture,output=sections,pageResults=pages=>pages.map(reviewedPage)}={}){
+  const calls=[],pageRequests=[];let responseBody;
   globalThis.fetch=async(url,options)=>{
     calls.push({url,options});
     if(url.includes('accounts:lookup'))return ok({users:[{localId:'manager'}]});
@@ -31,12 +36,25 @@ async function run({files=['drawing','quote','change'].map(record),mediaStatus=2
     if(url.includes('/aiDbCases/'))return ok({fields:fields(basic)});
     if(url.endsWith(':runQuery'))return ok(files);
     if(url.includes('firebasestorage.googleapis.com'))return new Response(bytes,{status:mediaStatus});
-    assert.equal(url,'https://api.openai.com/v1/responses');responseBody=JSON.parse(options.body);
+    assert.equal(url,'https://api.openai.com/v1/responses');
+    const body=JSON.parse(options.body);
+    if(body.text.format.name==='construction_drawing_pages'){
+      const input=body.input[0].content;
+      const pages=[];
+      for(const item of input.filter(({type})=>type==='input_file')){
+        const page=Number(item.filename.match(/^drawing-page-(\d+)\.pdf$/)?.[1]);
+        const doc=await PDFDocument.load(Buffer.from(item.file_data.split(',')[1],'base64'));
+        pages.push({page,detail:item.detail,count:doc.getPageCount(),width:doc.getPage(0).getWidth()});
+      }
+      pageRequests.push(...pages);
+      return ok({status:'completed',output_text:JSON.stringify({pages:pageResults(pages.map(item=>item.page))})});
+    }
+    responseBody=body;
     return ok({status:'completed',output_text:JSON.stringify(output)});
   };
   const response={setHeader(){},status(code){this.code=code;return this;},json(data){this.data=data;return this;}};
   await handler({method:'POST',headers:{authorization:'Bearer user-token'},body:{basic,caseId:'case',files:[{storagePath:'https://evil.invalid'}]}},response);
-  return{response,calls,responseBody};
+  return{response,calls,responseBody,pageRequests};
 }
 try{
   process.env.OPENAI_API_KEY='mock-only';
@@ -54,10 +72,47 @@ try{
   const rendered=renderAnalysisResult(result.response.data);
   assert.ok(rendered.includes('正式報價單｜第 1 頁')&&rendered.includes('施工圖｜第 1 頁'));
   assert.ok(rendered.includes('施工圖｜drawing.pdf')&&rendered.includes('引用頁碼：1'));
+  assert.ok(rendered.includes('施工圖共 1 頁，已分析 1 頁'));
+  assert.ok(rendered.includes('逐頁分析紀錄'));
   assert.ok(rendered.includes('無法確認主臥櫃體尺寸'));
   const unreadable=await run({output:{...sections,drawings:sections.drawings.slice(1)}});
   assert.equal(unreadable.response.code,200);
   assert.ok(renderAnalysisResult(unreadable.response.data).includes('無法確認施工圖中的空間、配置、尺寸或施工資訊。'));
+  const multipage=await PDFDocument.create();
+  for(let page=1;page<=13;page++)multipage.addPage([600+page,800]);
+  const drawing=await multipage.save();
+  const extraPoint=point('確認天花局部降板。','drawing',4);
+  const mixed=await run({bytes:drawing,files:[record('drawing')],
+    pageResults:pages=>pages.filter(page=>page!==3).map(page=>page===2
+      ?{page,readable:false,drawingType:'',content:''}:reviewedPage(page)),
+    output:{...sections,drawings:[sections.drawings[0],extraPoint,point('引用不可辨識頁。','drawing',2),
+      point('引用未回報頁。','drawing',3),point('引用不存在的頁。','drawing',14),
+      {text:'結論的一部分缺少證據。',citations:[{source:'drawing',page:1},{source:'drawing',page:3}]},
+    ]},
+  });
+  assert.equal(mixed.response.code,200);
+  assert.deepEqual(mixed.pageRequests.sort((a,b)=>a.page-b.page),
+    Array.from({length:13},(_,index)=>({page:index+1,detail:'high',count:1,width:601+index})));
+  assert.equal(mixed.response.data.drawingReview.totalPages,13);
+  assert.equal(mixed.response.data.drawingReview.reviewedPages,12);
+  assert.equal(mixed.response.data.drawingReview.pages[1].status,'unreadable');
+  assert.equal(mixed.response.data.drawingReview.pages[2].status,'unreviewed');
+  assert.deepEqual(mixed.response.data.sections.drawings,[sections.drawings[0],extraPoint]);
+  const reviewHtml=renderAnalysisResult(mixed.response.data);
+  assert.ok(reviewHtml.includes('施工圖共 13 頁，已分析 12 頁'));
+  assert.ok(reviewHtml.includes('第 2 頁無法可靠辨識'));
+  assert.ok(reviewHtml.includes('第 3 頁尚未完成分析'));
+  assert.ok(reviewHtml.includes('第 13 頁｜平面配置圖'));
+  assert.ok(reviewHtml.includes('施工圖重點引用頁碼：1、4'));
+  assert.ok(reviewHtml.includes('確認天花局部降板。<small class="aidb-muted">施工圖｜第 4 頁</small>'));
+  const coverage=JSON.parse(mixed.responseBody.input[0].content[0].text).drawingPages;
+  assert.deepEqual(coverage.map(({page})=>page),[1,4,5,6,7,8,9,10,11,12,13]);
+  const complete=await run({bytes:drawing,files:[record('drawing')],
+    output:{...sections,drawings:[sections.drawings[0],extraPoint]},
+  });
+  const completeHtml=renderAnalysisResult(complete.response.data);
+  assert.ok(completeHtml.includes('施工圖共 13 頁，已分析 13 頁'));
+  assert.ok(completeHtml.includes('施工圖重點引用頁碼：1、4'));
   assert.equal(result.calls.filter(call=>call.url.includes('firebasestorage.googleapis.com')).length,3);
   assert.ok(result.calls.filter(call=>call.url.includes('firebasestorage.googleapis.com')).every(call=>call.options.headers.authorization==='Firebase user-token'&&!call.options.method));
   assert.ok(result.calls.every(call=>!['PATCH','DELETE','PUT'].includes(call.options.method)));
@@ -66,6 +121,8 @@ try{
   const missing=await run({files:[record('quote'),record('photo')]});
   assert.equal(missing.response.code,200);assert.deepEqual(missing.response.data.missing,['施工圖','追加減工程']);assert.equal(missing.responseBody.input[0].content.filter(item=>item.type==='input_file').length,1);
   assert.deepEqual(missing.response.data.sections.drawings,[]);
+  assert.equal(missing.response.data.drawingReview,undefined);
+  assert.deepEqual(missing.pageRequests,[]);
   assert.deepEqual(missing.response.data.sections.changes,[]);
   assert.ok(renderAnalysisResult(missing.response.data).includes('追加減工程｜未提供'));
   const none=await run({files:[]});assert.equal(none.response.code,200);assert.equal(none.calls.some(call=>call.url.includes('firebasestorage.googleapis.com')),false);

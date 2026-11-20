@@ -101,3 +101,5 @@
 .aidb-analysis-block li+li{margin-top:6px}
 .aidb-analysis-block p{margin:0}
 .aidb-analysis-block small{display:block;margin-top:2px}
+.aidb-section .aidb-drawing-review>summary{padding:4px 0;border:0;font-weight:500}
+.aidb-drawing-review ol{margin:2px 0 8px;padding-inline-start:20px;list-style:none}

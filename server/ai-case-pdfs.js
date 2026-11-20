@@ -43,18 +43,19 @@ export async function readCasePdfs(caseId,token,signal){
     kinds.add(file.kind);declaredSize+=Number(file.size)||0;
   }
   if(declaredSize>=LIMIT)throw fail(413,'本次 PDF 合計需小於 50 MB，請縮小檔案後再分析。');
-  const content=[],sources=[];let total=0;
+  const content=[],sources=[];let total=0,drawingBytes=null;
   for(const kind of ['drawing','quote','change']){
     const file=files.find(row=>row.kind===kind);if(!file)continue;
     const label=LABELS[kind];
     const response=await fetch(`https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o/${encodeURIComponent(file.storagePath)}?alt=media`,{headers:{authorization:`Firebase ${token}`},signal});
     if(!response.ok)throw fail(response.status===404?404:502,`${label} PDF 讀取失敗，尚未完成分析。請確認檔案存在及讀取權限後重試。`);
     const bytes=await pdfBytes(response,LIMIT-total,label);total+=bytes.length;
+    if(kind==='drawing')drawingBytes=bytes;
     content.push({type:'input_text',text:`下一份 PDF 為「${label}」，引用的 source 為 ${kind}。`},
       {type:'input_file',filename:label+'.pdf',file_data:'data:application/pdf;base64,'+bytes.toString('base64'),
         ...(kind==='drawing'?{detail:'high'}:{}),
       });
     sources.push({kind,label,name:String(file.name||label+'.pdf'),bytes:bytes.length});
   }
-  return {project,content,sources,missing:Object.entries(LABELS).filter(([kind])=>!kinds.has(kind)).map(([,label])=>label)};
+  return {project,content,sources,drawingBytes,missing:Object.entries(LABELS).filter(([kind])=>!kinds.has(kind)).map(([,label])=>label)};
 }

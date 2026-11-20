@@ -30,9 +30,23 @@ function cleanText(value){
     .trim();
 }
 
+function renderDrawingReview(review){
+  if(!review)return '';
+  const {totalPages,reviewedPages,pages}=review;
+  const pending=totalPages-reviewedPages;
+  const unreadable=pages.filter(({status})=>status==='unreadable').length;
+  const status=[pending?`${pending} 頁尚未完成分析`:'',unreadable?`${unreadable} 頁無法可靠辨識`:''].filter(Boolean).join('、');
+  const items=pages.map(({page,status,drawingType,content})=>{
+    if(status==='unreadable')return `<li>第 ${esc(page)} 頁無法可靠辨識</li>`;
+    if(status==='unreviewed')return `<li>第 ${esc(page)} 頁尚未完成分析</li>`;
+    return `<li>第 ${esc(page)} 頁｜${esc(cleanText(drawingType))}<small class="aidb-muted">${esc(cleanText(content))}</small></li>`;
+  });
+  return `<small>施工圖共 ${esc(totalPages)} 頁，已分析 ${esc(reviewedPages)} 頁${status?`（${status}）`:''}</small><details class="aidb-drawing-review"><summary>逐頁分析紀錄</summary><ol>${items.join('')}</ol></details>`;
+}
+
 export function renderAnalysisResult(report){
   if(!report)return '';
-  const {sections,sources,missing}=report;
+  const {sections,sources,missing,drawingReview}=report;
   const blocks=Object.entries(SUMMARY_SECTIONS).map(([key,title],index)=>{
     const items=sections[key].map(({text,citations})=>{
       const content=cleanText(text);
@@ -43,15 +57,17 @@ export function renderAnalysisResult(report){
     return `<section class="aidb-analysis-block"><h4>${index+1}. ${title}</h4>${items.length?`<ul>${items.join('')}</ul>`:`<p class="aidb-muted">${esc(emptySection(key,sources))}</p>`}</section>`;
   });
   const pagesBySource=new Map(sources.map(({kind})=>[kind,new Set()]));
-  for(const points of Object.values(sections)){
+  for(const [section,points] of Object.entries(sections)){
     for(const {citations} of points){
-      for(const {source,page} of citations)pagesBySource.get(source)?.add(page);
+      for(const {source,page} of citations){
+        if(source!=='drawing'||section==='drawings')pagesBySource.get(source)?.add(page);
+      }
     }
   }
   const files=sources.map(({kind,label,name})=>{
     const pages=[...pagesBySource.get(kind)].sort((a,b)=>a-b);
-    const references=pages.length?`<small class="aidb-muted">引用頁碼：${pages.join('、')}</small>`:'';
-    return `<li>${esc(label)}｜${esc(name)}${references}</li>`;
+    const references=pages.length?`<small class="aidb-muted">${kind==='drawing'?'施工圖重點':''}引用頁碼：${pages.join('、')}</small>`:'';
+    return `<li>${esc(label)}｜${esc(name)}${kind==='drawing'?renderDrawingReview(drawingReview):''}${references}</li>`;
   });
   blocks.push(`<section class="aidb-analysis-block"><h4>8. 資料來源</h4><ul><li>${BASIC_LABEL}</li>${files.join('')}${missing.map(label=>`<li class="aidb-muted">${esc(label)}｜未提供</li>`).join('')}</ul></section>`);
   return blocks.join('');
