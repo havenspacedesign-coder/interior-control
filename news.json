@@ -1,126 +1,126 @@
 {
-  "date": "2026-11-20",
-  "updatedAt": "2026-11-20T02:59:04.222Z",
+  "date": "2026-11-21",
+  "updatedAt": "2026-11-21T03:06:01.634Z",
   "news": [
     {
-      "id": "503fe4f0ac2a3274",
+      "id": "f34f3dd4a175c412",
       "source": "壹蘋",
       "category": "國際",
-      "title": "防堵中國研發輝達替代品！傳台積電出手：即起停供1類產品",
-      "url": "https://news.nextapple.com/international/20261120/0BFBF0032F45D2AC524D05A4D71A8788",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/0BFBF0032F45D2AC524D05A4D71A8788/e70f51b615c861a7c8ed83ba81c75b44_1280.webp",
-      "publishedAt": "2026-11-20T02:32:06.000Z",
-      "fetchedAt": "2026-11-20T02:59:04.222Z"
+      "title": "打落水狗？共同創辦人哽咽批黃仁勳：背叛輝達核心價值",
+      "url": "https://news.nextapple.com/international/20261121/A345A0142E99EC97211C8F6A5531E262",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A345A0142E99EC97211C8F6A5531E262/d140db775e908ac1da93c60011a6448b_1280.webp",
+      "publishedAt": "2026-11-21T02:17:32.000Z",
+      "fetchedAt": "2026-11-21T03:06:01.634Z"
     },
     {
-      "id": "d138c6203207785f",
+      "id": "5e4f5abe28fc1528",
       "source": "壹蘋",
       "category": "生活",
-      "title": "何止水庫！作家揭露「水域光電12宗罪」：好事變爛事",
-      "url": "https://news.nextapple.com/life/20261120/C5FD635F102D3D5ACBD33AE03558F27B",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/C5FD635F102D3D5ACBD33AE03558F27B/23bf24417102d2dc46a45731f4426c0a_1280.webp",
-      "publishedAt": "2026-11-20T02:57:14.000Z",
-      "fetchedAt": "2026-11-20T02:59:04.222Z"
+      "title": "沈伯洋提公務員4大承諾　北市府舉4事件反擊！",
+      "url": "https://news.nextapple.com/life/20261121/E9034A137900D41380ED66963734235A",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/E9034A137900D41380ED66963734235A/ff049f25d89402a58634180443ab9eae_1280.webp",
+      "publishedAt": "2026-11-21T02:44:00.000Z",
+      "fetchedAt": "2026-11-21T03:06:01.634Z"
     },
     {
-      "id": "6c3118744950624d",
+      "id": "5626812aad51cafa",
       "source": "壹蘋",
       "category": "社會",
-      "title": "新北警破毒品分裝場　查獲大量原料可製2500顆喪屍煙彈",
-      "url": "https://news.nextapple.com/local/20261120/FC4BBF6FAC9BF83DA782DDC384E0BC87",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/FC4BBF6FAC9BF83DA782DDC384E0BC87/613a963442f98e957aea26647edce034_1280.webp",
-      "publishedAt": "2026-11-20T02:33:02.000Z",
-      "fetchedAt": "2026-11-20T02:59:04.222Z"
+      "title": "雷霆除暴強勢掃蕩！大園警鷹眼識破假車牌　揪毒駕男依法沒入車輛",
+      "url": "https://news.nextapple.com/local/20261121/4D0F499403BA82A165489E982B70FCF0",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/4D0F499403BA82A165489E982B70FCF0/530c1b39a12fb4b41eb39923cbf36c23_1280.webp",
+      "publishedAt": "2026-11-21T02:43:06.000Z",
+      "fetchedAt": "2026-11-21T03:06:01.634Z"
     },
     {
-      "id": "33d079f79be2544d",
+      "id": "628a7599dcc4d73d",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "Valextra秋冬太軟萌！　羊毛皮革拼接打造摸得到的高級感",
-      "url": "https://news.nextapple.com/entertainment/20261120/0C176B34C2EC4EF63A9237AA6AF1277D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/0C176B34C2EC4EF63A9237AA6AF1277D/807f32d210f0d1ee2fc3f1ad974e58a3_1280.webp",
-      "publishedAt": "2026-11-20T02:37:00.000Z",
-      "fetchedAt": "2026-11-20T02:59:04.222Z"
+      "title": "「奶茶妹妹」章澤天生日派對合照曝光　王力宏、黃曉明雙男神罕見同框",
+      "url": "https://news.nextapple.com/entertainment/20261121/33C023868944B56152818EE8F31E8023",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/33C023868944B56152818EE8F31E8023/71e7b86c89b2ec413879d2ee3ff76c29_1280.webp",
+      "publishedAt": "2026-11-21T02:49:02.000Z",
+      "fetchedAt": "2026-11-21T03:06:01.634Z"
     },
     {
-      "id": "707b85a5cf4e1045",
+      "id": "8ee99fad4e9f0a77",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "川普認可能開放輝達Blackwell晶片賣中國　但有一前提",
-      "url": "https://news.nextapple.com/aitech/20261119/7B7C298F0AA37C6C065C44183D9F000E",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/7B7C298F0AA37C6C065C44183D9F000E/78efcb4e44f23e2797c4a44b4259e873_1280.webp",
-      "publishedAt": "2026-11-19T08:15:00.000Z",
-      "fetchedAt": "2026-11-20T02:59:04.222Z"
+      "title": "iPhone Air 2模型機曝光　傳增超廣角鏡頭",
+      "url": "https://news.nextapple.com/aitech/20261121/BE001F0F2C4F5E9267679560EF32C3B6",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/BE001F0F2C4F5E9267679560EF32C3B6/8b32f0e96965110b5cd501ca1d2c6284_1280.webp",
+      "publishedAt": "2026-11-21T02:46:08.000Z",
+      "fetchedAt": "2026-11-21T03:06:01.634Z"
     },
     {
-      "id": "2db9def8d4b43a9f",
+      "id": "cc801da7ce1a48cb",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "輝達財報亮眼台股卻狂崩！分析師揭3大隱憂　緊盯4大止跌訊號",
-      "url": "https://news.nextapple.com/finance/20261120/C6827FE115A1871343041D2D6C378C47",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/C6827FE115A1871343041D2D6C378C47/ba4645015c0188e2b8caf05b26c1af74_1280.webp",
-      "publishedAt": "2026-11-20T02:40:05.000Z",
-      "fetchedAt": "2026-11-20T02:59:04.222Z"
+      "title": "台股一週重挫7641點　上市市值蒸發近25兆元",
+      "url": "https://news.nextapple.com/finance/20261121/ACD20D356AA66E47B558957BADEA98B4",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/ACD20D356AA66E47B558957BADEA98B4/8c8bd77679ad4f2a80ea675556837379_1280.webp",
+      "publishedAt": "2026-11-21T02:01:19.000Z",
+      "fetchedAt": "2026-11-21T03:06:01.634Z"
     },
     {
-      "id": "1c9e4f9ad6efdc4c",
+      "id": "188f6db640d0ebe2",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "高市早苗想找川普搭話　拍背疑遭冷落！眼尖網：他甚至走更快",
-      "url": "https://news.nextapple.com/international/20261120/641479DD82302150D2BAFC5367F026B4",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/641479DD82302150D2BAFC5367F026B4/fcf2acd9796454d91360b3aa29ea7d2a_1280.webp",
-      "publishedAt": "2026-11-20T02:21:40.000Z",
-      "fetchedAt": "2026-11-20T02:59:04.222Z"
+      "title": "沈伯洋喪母「哭奔台中」　是何欣純接住他！一段話惹淚",
+      "url": "https://news.nextapple.com/politics/20261121/38B2DDE040BC3124042A3BF7BD46709C",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/38B2DDE040BC3124042A3BF7BD46709C/0a3db4bf5166bb06987e498f7b24f6e2_1280.webp",
+      "publishedAt": "2026-11-21T02:00:24.000Z",
+      "fetchedAt": "2026-11-21T03:06:01.634Z"
     },
     {
-      "id": "ddcebc36d00befd2",
+      "id": "8905339dc6660616",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "女網友抹黃沈伯洋「跟女性上摩鐵」　檢方只辦5天用這罪名火速起訴",
-      "url": "https://news.nextapple.com/local/20261120/47D9A85D342E93C694CCA28C5591AD51",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/47D9A85D342E93C694CCA28C5591AD51/deb5b928f7d8081ab3c9b193cd477e26_1280.webp",
-      "publishedAt": "2026-11-20T02:17:37.000Z",
-      "fetchedAt": "2026-11-20T02:59:04.222Z"
+      "title": "大陸冷氣團發威！今晨剩11.1℃　這天鋒面雨＋冷空氣夾擊",
+      "url": "https://news.nextapple.com/life/20261121/1C8D91E25C573A2C5AB80004DAFB5A01",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/1C8D91E25C573A2C5AB80004DAFB5A01/028776021230aa742855a4e7f3fd5e80_1280.webp",
+      "publishedAt": "2026-11-21T01:58:56.000Z",
+      "fetchedAt": "2026-11-21T03:06:01.634Z"
     },
     {
-      "id": "1ba35b17c32be801",
+      "id": "0d8696405346316e",
       "source": "壹蘋",
-      "category": "生活",
-      "title": "公費新冠疫苗缺貨！增購16.9萬劑Novavax到貨今起配送",
-      "url": "https://news.nextapple.com/life/20261120/8CBFF74D17CC392733E5FC08C088FF19",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/8CBFF74D17CC392733E5FC08C088FF19/c13ffe22883fde6250d6dced93aec32d_1280.webp",
-      "publishedAt": "2026-11-20T02:56:00.000Z",
-      "fetchedAt": "2026-11-20T02:59:04.222Z"
+      "category": "娛樂時尚",
+      "title": "中島美嘉、徐若瑄都唱過！台北頂級音樂殿堂滿週歲　雙金級卡司飆唱2小時抽機票",
+      "url": "https://news.nextapple.com/entertainment/20261121/1745DE1B788831C6590550BC518BBD92",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/1745DE1B788831C6590550BC518BBD92/befcbf64cc2acf53a094749102b10c35_1280.webp",
+      "publishedAt": "2026-11-21T02:27:53.000Z",
+      "fetchedAt": "2026-11-21T03:06:01.634Z"
     },
     {
-      "id": "9fc73c2a33412131",
-      "source": "壹蘋",
-      "category": "生活",
-      "title": "鳳凰旅遊個資外洩！4天前遭駭客攻擊　出團、營運現況曝",
-      "url": "https://news.nextapple.com/life/20261120/4AF2DB41B80D98C9B624165DDEC53E56",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/4AF2DB41B80D98C9B624165DDEC53E56/1871673c507e0c0371c188752a17016b_1280.webp",
-      "publishedAt": "2026-11-20T02:40:43.000Z",
-      "fetchedAt": "2026-11-20T02:59:04.222Z"
-    },
-    {
-      "id": "f3b7f89fadbe5fac",
+      "id": "12b549d8b23c5a48",
       "source": "壹蘋",
       "category": "社會",
-      "title": "假「姪子」推投資保單！77歲婦險遭騙25萬　警銀聯手攔阻",
-      "url": "https://news.nextapple.com/local/20261120/B574BAFCF338B58B4C3E98415594B3C4",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/B574BAFCF338B58B4C3E98415594B3C4/5066257153db59193981eb231a715657_1280.webp",
-      "publishedAt": "2026-11-20T02:26:27.000Z",
-      "fetchedAt": "2026-11-20T02:59:04.222Z"
+      "title": "高雄六龜人氣農遊景點陷火海　餐廳毀損嚴重饕客要哭了",
+      "url": "https://news.nextapple.com/local/20261121/F37E6F42E1D503337DFFBA48F39251EE",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/F37E6F42E1D503337DFFBA48F39251EE/5c0362f2b0f6a2f5a6dac02f0a78f82a_1280.webp",
+      "publishedAt": "2026-11-21T02:26:07.000Z",
+      "fetchedAt": "2026-11-21T03:06:01.634Z"
     },
     {
-      "id": "74567b40dcf23a8f",
+      "id": "80304c5977d5862b",
       "source": "壹蘋",
-      "category": "社會",
-      "title": "斑馬線不走直接穿越馬路　台中行人遭小黃撞飛",
-      "url": "https://news.nextapple.com/local/20261120/F17041E73EDE8B5BDB1C4BD8465BD999",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/F17041E73EDE8B5BDB1C4BD8465BD999/37b64910a8325b2f96c29fa9e1fe4f6b_1280.webp",
-      "publishedAt": "2026-11-20T02:24:06.000Z",
-      "fetchedAt": "2026-11-20T02:59:04.222Z"
+      "category": "娛樂時尚",
+      "title": "郁方替老公珠寶事業徵才　「年薪百萬」7大優點曝光",
+      "url": "https://news.nextapple.com/entertainment/20261121/452848F1B0839C9AEC15E02B33D8C987",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/452848F1B0839C9AEC15E02B33D8C987/86bce30a075b3fa531d0e8f769e0d3ea_1280.webp",
+      "publishedAt": "2026-11-21T02:22:51.000Z",
+      "fetchedAt": "2026-11-21T03:06:01.634Z"
+    },
+    {
+      "id": "ec206e40b9d825e8",
+      "source": "壹蘋",
+      "category": "生活",
+      "title": "寶可夢「飆車皮卡丘」夜排直擊！千人擠爆3棟百貨　鬧口角互毆",
+      "url": "https://news.nextapple.com/life/20261121/AB42C7655FA4085196D669283DE13300",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/AB42C7655FA4085196D669283DE13300/d70d5abb74be7da7489951b3d5ffb927_1280.webp",
+      "publishedAt": "2026-11-21T02:22:36.000Z",
+      "fetchedAt": "2026-11-21T03:06:01.634Z"
     }
   ]
 }
