@@ -1,126 +1,126 @@
 {
-  "date": "2026-11-22",
-  "updatedAt": "2026-11-22T02:04:12.375Z",
+  "date": "2026-11-23",
+  "updatedAt": "2026-11-23T02:30:30.352Z",
   "news": [
     {
-      "id": "b44768d806709970",
+      "id": "2bb755547caca38d",
       "source": "壹蘋",
       "category": "國際",
-      "title": "拿輝達投資卻幫對手打天下？AI新創Decart傳2470億賣給亞馬遜",
-      "url": "https://news.nextapple.com/international/20261122/D09ACA2534E9B5105025FF80A034E248",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/D09ACA2534E9B5105025FF80A034E248/def2a17c3ccb9d358affa1bfa2f68a71_1280.webp",
-      "publishedAt": "2026-11-22T01:20:29.000Z",
-      "fetchedAt": "2026-11-22T02:04:12.375Z"
+      "title": "開門驚見「雪牆封死」！立山黑部-12℃徒手挖雪畫面曝",
+      "url": "https://news.nextapple.com/international/20261123/1D9767001F4943887314BD59AC0FF6A2",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/1D9767001F4943887314BD59AC0FF6A2/e0a7561be275474b5cec460cac0b0b21_1280.webp",
+      "publishedAt": "2026-11-23T01:30:19.000Z",
+      "fetchedAt": "2026-11-23T02:30:30.352Z"
     },
     {
-      "id": "70422801275e04b4",
+      "id": "fb488af856163d3b",
       "source": "壹蘋",
       "category": "生活",
-      "title": "交往8年不結婚＝不負責任？女CEO點破婚姻迷思",
-      "url": "https://news.nextapple.com/life/20261122/6A14CA665889525CED78422362F8B11B",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/6A14CA665889525CED78422362F8B11B/05c7c5d1d3828e30a8a0c0806aab72bb_1280.webp",
-      "publishedAt": "2026-11-22T01:21:01.000Z",
-      "fetchedAt": "2026-11-22T02:04:12.375Z"
+      "title": "好市多「黑色購物節」今開跑！首日商品最高省2萬3000元",
+      "url": "https://news.nextapple.com/life/20261123/F33E1E469BEAD53459315D7C6170B27A",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/F33E1E469BEAD53459315D7C6170B27A/4f98a7d328dfab0134d393829c4d7f3f_1280.webp",
+      "publishedAt": "2026-11-23T01:14:45.000Z",
+      "fetchedAt": "2026-11-23T02:30:30.352Z"
     },
     {
-      "id": "84962ab828f6dd3f",
+      "id": "4c9bb3f631f63199",
       "source": "壹蘋",
       "category": "社會",
-      "title": "嘉義新港村長選舉每票1500元買票！樁腳疑教唆下線頂罪　檢方聲押",
-      "url": "https://news.nextapple.com/local/20261122/CBA0EC9560ABB740B9EAD968453D327A",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/CBA0EC9560ABB740B9EAD968453D327A/93eb76a6140cfc24e0d42f46ea8f7d68_1280.webp",
-      "publishedAt": "2026-11-21T16:01:00.000Z",
-      "fetchedAt": "2026-11-22T02:04:12.375Z"
+      "title": "小貨車追撞電動代步車再波及行人！82歲騎士送醫不治　中埔警調查肇因",
+      "url": "https://news.nextapple.com/local/20261123/A8CAB17D4FF2671B26F865A1CB5E2B20",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A8CAB17D4FF2671B26F865A1CB5E2B20/c42b042c167583bcd545b69abd536a26_1280.webp",
+      "publishedAt": "2026-11-23T02:21:18.000Z",
+      "fetchedAt": "2026-11-23T02:30:30.352Z"
     },
     {
-      "id": "6ef86ff16693c187",
+      "id": "d78d87a5352147c9",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "湘瑩升格二寶媽！雙胞胎女兒平安出生",
-      "url": "https://news.nextapple.com/entertainment/20261122/515156259A2C5E877923FEE11C5206FC",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/515156259A2C5E877923FEE11C5206FC/830efb7f341eefa99f1c93b807e1ff3c_1280.webp",
-      "publishedAt": "2026-11-22T01:36:14.000Z",
-      "fetchedAt": "2026-11-22T02:04:12.375Z"
+      "title": "彭佳慧、閻奕格、畢書盡加入高雄跨年卡司　金曲級唱將打造演唱會規格",
+      "url": "https://news.nextapple.com/entertainment/20261123/249EE87240150B9C4C17AFE2632C847F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/249EE87240150B9C4C17AFE2632C847F/cdb84397070cb1c522f7e3b06807059b_1280.webp",
+      "publishedAt": "2026-11-23T02:08:37.000Z",
+      "fetchedAt": "2026-11-23T02:30:30.352Z"
     },
     {
-      "id": "a3555e7ac56b43f2",
+      "id": "48b196bf164e5051",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "Sony復刻初代Walkman耳機　換上USB-C重新上市",
-      "url": "https://news.nextapple.com/aitech/20261121/7CB09F3033926CD4DC4DB50EE5E6D5FE",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/7CB09F3033926CD4DC4DB50EE5E6D5FE/b2e356a609619ae1802c5b269de41524_1280.webp",
-      "publishedAt": "2026-11-21T09:42:06.000Z",
-      "fetchedAt": "2026-11-22T02:04:12.375Z"
+      "title": "果粉哭哭！這款iPhone被爆「最不保值」　驚人跳水價曝光",
+      "url": "https://news.nextapple.com/aitech/20261123/CD8AEB300B9C113E078BF192347DD26C",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/CD8AEB300B9C113E078BF192347DD26C/9b9ba5112bd46a67dab26470321d6517_1280.webp",
+      "publishedAt": "2026-11-23T02:01:45.000Z",
+      "fetchedAt": "2026-11-23T02:30:30.352Z"
     },
     {
-      "id": "9e4a3edaba5f60e6",
+      "id": "f2e0abd5a6d8784c",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "後黃仁勳時代｜33年AI帝國誰接班？川普點名庫克　5大人選優劣勢一次看",
-      "url": "https://news.nextapple.com/finance/20261122/19D66E04684571C30B692A2673D48B3A",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/19D66E04684571C30B692A2673D48B3A/1e6b2d848335905246ea961c1f746282_1280.webp",
-      "publishedAt": "2026-11-22T01:50:00.000Z",
-      "fetchedAt": "2026-11-22T02:04:12.375Z"
+      "title": "台股漲逾400點3萬6失而復得　多空震盪逾1200點",
+      "url": "https://news.nextapple.com/finance/20261123/E1FCECD398E917595C4505538897F3A2",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/E1FCECD398E917595C4505538897F3A2/72e939c158675ebe67421ee54447267e_1280.webp",
+      "publishedAt": "2026-11-23T02:13:39.000Z",
+      "fetchedAt": "2026-11-23T02:30:30.352Z"
     },
     {
-      "id": "894bf5ea4c8ce824",
+      "id": "0c81a9ba8a07ee1c",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "林淑芬轟藍白3人「臭俗仔」　喊話地方包圍中央",
-      "url": "https://news.nextapple.com/politics/20261122/1B8DD82D157C07AE986A2EFBF087D7F1",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/1B8DD82D157C07AE986A2EFBF087D7F1/79a7ebfd012f9bb84293d28d3fdaebfd_1280.webp",
-      "publishedAt": "2026-11-22T01:38:45.000Z",
-      "fetchedAt": "2026-11-22T02:04:12.375Z"
+      "title": "比婚外情更大危機！黃仁勳與台積電合作30年竟沒簽合約？",
+      "url": "https://news.nextapple.com/finance/20261123/2451DA13634AEC9713DECABF9397CCF2",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/2451DA13634AEC9713DECABF9397CCF2/b17364cc0582c85e948acfb90f4bb4b3_1280.webp",
+      "publishedAt": "2026-11-23T01:53:30.000Z",
+      "fetchedAt": "2026-11-23T02:30:30.352Z"
     },
     {
-      "id": "dee6ade8b7cdf552",
+      "id": "190a013cd56d5cb0",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "黃仁勳接掌英特爾？　分析師：陳立武可退居幕後",
-      "url": "https://news.nextapple.com/finance/20261122/AACE6F8133B7CB2B58D4023F671E3314",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/AACE6F8133B7CB2B58D4023F671E3314/fa8fa775d91d96f0a8afe1dee4f08c71_1280.webp",
-      "publishedAt": "2026-11-22T00:52:51.000Z",
-      "fetchedAt": "2026-11-22T02:04:12.375Z"
+      "title": "獨家｜靠AI打贏官司！解凍帳戶遭拒理由超瞎　一人獨戰郵局 (壹蘋10點強打)",
+      "url": "https://news.nextapple.com/local/20261123/ADA234041E0B0B4BDC96E3277B401BD4",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/ADA234041E0B0B4BDC96E3277B401BD4/9553df6cfd00314e2fc1ff64d850d7d9_1280.webp",
+      "publishedAt": "2026-11-23T01:50:00.000Z",
+      "fetchedAt": "2026-11-23T02:30:30.352Z"
     },
     {
-      "id": "47fdbf9d58ce4e04",
+      "id": "d0009b63254ca678",
       "source": "壹蘋",
-      "category": "財經股市",
-      "title": "後黃仁勳時代｜美中AI晶片戰變天？黃仁勳退場　華府國安角力浮上檯面",
-      "url": "https://news.nextapple.com/finance/20261122/233F3DE472EF3DD4E5718868CF6A5B32",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/233F3DE472EF3DD4E5718868CF6A5B32/48823bf690a6621eefbc769f2dd68413_1280.webp",
-      "publishedAt": "2026-11-22T01:50:00.000Z",
-      "fetchedAt": "2026-11-22T02:04:12.375Z"
+      "category": "社會",
+      "title": "蔣萬安車掃「紅綠燈烏龍」誰的鍋？ 大安分局：警員疏失將申誡",
+      "url": "https://news.nextapple.com/local/20261123/B0F70464CEFA45139C4831188897E82B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/B0F70464CEFA45139C4831188897E82B/fd33d834aa9287bf1793ec87054f9db8_1280.webp",
+      "publishedAt": "2026-11-23T02:15:13.000Z",
+      "fetchedAt": "2026-11-23T02:30:30.352Z"
     },
     {
-      "id": "96f09625b4dce737",
+      "id": "164c1ce665b063fc",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "後黃仁勳時代｜兆元宴誰來揪？夜市旋風不再　沒有黃仁勳的COMPUTEX你還聽嗎？",
-      "url": "https://news.nextapple.com/finance/20261122/EB0CB60DFE63B0693E7A7B3585C979E9",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/EB0CB60DFE63B0693E7A7B3585C979E9/837e47fbf0bb969159e9cbdd255a0df6_1280.webp",
-      "publishedAt": "2026-11-22T01:50:00.000Z",
-      "fetchedAt": "2026-11-22T02:04:12.375Z"
+      "title": "2檔人氣ETF接力分割！00830明年2月上路　00757投票倒數7天",
+      "url": "https://news.nextapple.com/finance/20261123/4940C04F8A1FADA4290E274E330D9FD0",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/4940C04F8A1FADA4290E274E330D9FD0/e63bafd4aa817a7da55107827bdad597_1280.webp",
+      "publishedAt": "2026-11-23T02:12:57.000Z",
+      "fetchedAt": "2026-11-23T02:30:30.352Z"
     },
     {
-      "id": "e5615d9aeb114d3d",
+      "id": "e97441675350e364",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "後黃仁勳時代｜GPU霸權迎挑戰！ASIC大軍崛起　台積電仍是最大贏家",
-      "url": "https://news.nextapple.com/finance/20261122/9954DD285048F30AD9B8B8C85A286C13",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/9954DD285048F30AD9B8B8C85A286C13/15550afcbd417b3721c166044d9af370_1280.webp",
-      "publishedAt": "2026-11-22T01:50:00.000Z",
-      "fetchedAt": "2026-11-22T02:04:12.375Z"
+      "title": "TEL台灣機器人大賽落幕！崑山科大奪冠　11年吸引逾600隊參賽",
+      "url": "https://news.nextapple.com/finance/20261123/3D3BE7AE264D70BAB2AB0BAE12A3F649",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/3D3BE7AE264D70BAB2AB0BAE12A3F649/9ef63b8db1c2a47dfb5bbb15f5a0f34d_1280.webp",
+      "publishedAt": "2026-11-23T02:09:46.000Z",
+      "fetchedAt": "2026-11-23T02:30:30.352Z"
     },
     {
-      "id": "0199bb98f3dba22f",
+      "id": "201f3d87b65d8e39",
       "source": "壹蘋",
-      "category": "財經股市",
-      "title": "台灣首座6G實驗網啟用！18家產學研聯手　攜歐盟搶875億美元商機",
-      "url": "https://news.nextapple.com/finance/20261122/4DF70C7B158B83FD6D7E77FC63A3F2F6",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/4DF70C7B158B83FD6D7E77FC63A3F2F6/1c7fe0cfd009e45d3b3f738e4ccc405c_1280.webp",
-      "publishedAt": "2026-11-22T01:31:22.000Z",
-      "fetchedAt": "2026-11-22T02:04:12.375Z"
+      "category": "社會",
+      "title": "製毒工廠擺「孝童」偽裝禮儀社　內藏3千萬毒品！3人落網",
+      "url": "https://news.nextapple.com/local/20261123/84BB55B1558DD9FF395DE71C13611E7F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/84BB55B1558DD9FF395DE71C13611E7F/1c26ae6951b6059d6042bc0472ec9610_1280.webp",
+      "publishedAt": "2026-11-23T02:01:04.000Z",
+      "fetchedAt": "2026-11-23T02:30:30.352Z"
     }
   ]
 }
