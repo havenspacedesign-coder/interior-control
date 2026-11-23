@@ -85,7 +85,7 @@ export function evidenceSchema(sources){
     quote:string,value:nullableString,unit:nullableString,
   });
   return {
-    changes:shape({item:string,direction:{type:'string',enum:['addition','deduction','neutral']},evidence:proof}),
+    changes:shape({item:string,originalItem:nullableString,direction:{type:'string',enum:['addition','deduction','neutral']},evidence:proof}),
     issues:shape({type:{type:'string',enum:['conflict','missing','review','unreadable']},item:string,metric:string,
       scope:string,evidence:{type:'array',items:proof}}),
   };
@@ -148,8 +148,8 @@ export async function inspectPdfEvidence(pdfBytes,output,sources,loadParser=load
       });
       deadline.addEventListener('abort',abort,{once:true});
       const document=await loading.promise;
-      const texts=new Map();
-      result.set(source.kind,{...source,pageCount:document.numPages,texts});
+      const texts=new Map(),layoutRows=new Map();
+      result.set(source.kind,{...source,pageCount:document.numPages,texts,layoutRows});
       for(const number of requested.get(source.kind)??[]){
         if(number>document.numPages){report(source,'PAGE_OUT_OF_RANGE',number);continue;}
         if(deadline.aborted){report(source,'INDEX_TIMEOUT',number);continue;}
@@ -166,6 +166,7 @@ export async function inspectPdfEvidence(pdfBytes,output,sources,loadParser=load
           if(line.length)lines.push(clean(line.join(' ')));
           const original=lines.filter(Boolean).join('\n');
           texts.set(number,original);
+          layoutRows.set(number,readLayoutRows(items));
           if(!original)report(source,'NO_TEXT_LAYER',number);
         }catch(error){
           texts.set(number,null);
@@ -191,11 +192,40 @@ export function locateCitation(citation,documents){
 }
 
 // Keep issue verification on the original lines. Ordinary facts can span nearby wrapped lines.
-function normalizeFact(value){
+export function normalizeFact(value){
   return value.normalize('NFKC').replace(/[−–]/gu,'-').replace(/(?<=\d)\s*,\s*(?=\d{3}(?:\D|$))/gu,'')
     .replace(/\s*([./+$-])\s*/gu,'$1').replace(/[|｜:：;；，、]/gu,' ')
     .replace(/(\p{Script=Han})\s+(?=\p{Script=Han})/gu,'$1')
     .replace(/\s+/gu,' ').trim().toLowerCase();
+}
+
+function readLayoutRows(items){
+  const cells=items.flatMap(({str,transform,width})=>{
+    if(typeof str!=='string'||!str.trim()||!Array.isArray(transform)||!Number.isFinite(width)||width<=0)return [];
+    const [a,b,c,d,x,y]=transform;
+    return [a,b,c,d,x,y].every(Number.isFinite)&&a>0&&d>0&&Math.abs(b)<0.01&&Math.abs(c)<0.01
+      ?[{text:clean(str),x,y,end:x+width}]:[];
+  }).sort((a,b)=>b.y-a.y||a.x-b.x);
+  const rows=[];
+  for(const cell of cells){
+    const row=rows.at(-1);
+    if(row&&Math.abs(row[0].y-cell.y)<=0.75)row.push(cell);
+    else rows.push([cell]);
+  }
+  const signatures=new Map();
+  const signature=row=>row.map(cell=>Math.round(cell.x/2)).join(',');
+  for(const row of rows){
+    row.sort((a,b)=>a.x-b.x);
+    if(row.length<2)continue;
+    const key=signature(row);
+    signatures.set(key,(signatures.get(key)??0)+1);
+  }
+  return rows.flatMap(row=>{
+    if(row.length<2||row.some((cell,index)=>index>0&&cell.x<row[index-1].end-0.75))return [];
+    const splitColumns=row.some((cell,index)=>index>0&&cell.x-row[index-1].end>36);
+    if(splitColumns&&signatures.get(signature(row))<2)return [];
+    return [row.map(cell=>cell.text).join(' ')];
+  });
 }
 
 function factContains(original,value){
@@ -207,8 +237,12 @@ function factContains(original,value){
 }
 
 const originalLines=(reference,documents)=>documents.get(reference.source)?.texts.get(reference.page)?.split('\n')??[];
-export function factBlocks(reference,documents,check,maxLines=3){
+export function factBlocks(reference,documents,check,maxLines=3,useLayout=false){
   const lines=originalLines(reference,documents);
+  const visualRows=useLayout?documents.get(reference.source)?.layoutRows?.get(reference.page)??[]:[];
+  for(const row of visualRows){
+    if(row.length<=1600&&check(normalizeFact(row),2))return row;
+  }
   for(let length=1;length<=Math.min(maxLines,lines.length);length++){
     for(let start=0;start<=lines.length-length;start++){
       const excerpt=lines.slice(start,start+length).join('\n');
@@ -353,25 +387,27 @@ export function readOrdinaryChanges(candidates,documents){
     const item=clean(candidate?.item),direction=candidate?.direction;
     if(item.length<2||item.length>80||hypothetical.test(item)||!['addition','deduction','neutral'].includes(direction))return [];
     if(!documents.has('change')&&!documents.diagnostics?.some(row=>row.source==='change'))return [];
-    const verified=verifyChanges([candidate],documents,(proof,index)=>{
-      const strict=verifyQuote(proof,index);
+    const originalItem=clean(candidate.originalItem)||item;
+    const verified=verifyChanges([{...candidate,item:originalItem}],documents,(proof,index)=>{
+      const hasOriginalItem=typeof candidate.originalItem==='string'&&!!candidate.originalItem.trim();
+      const strict=hasOriginalItem?null:verifyQuote(proof,index);
       if(strict)return strict;
       const reference=locateCitation(proof,index);
       const quote=clean(proof?.quote);
       if(!reference||quote.length<4||quote.length>550)return null;
-      const original=factBlocks(reference,index,block=>factContains(block,quote));
+      const original=factBlocks(reference,index,block=>hasOriginalItem?block===normalizeFact(quote):factContains(block,quote),3,hasOriginalItem);
       return original?{...reference,quote:clean(original),value:clean(proof.value)||null,unit:clean(proof.unit)||null}:null;
     },proof=>{
       if(!proof.unit)return null;
       const raw=normalizeFact(proof.value);
       if(!RAW_NUMBER.test(raw))return null;
-      const value=esc(raw),unit=esc(normalizeFact(proof.unit));
+      const value=(/^\d/u.test(raw)?'\\+?':'')+esc(raw),unit=esc(normalizeFact(proof.unit));
       const label='(?:金額|amount)';
       const numberEnd='(?![0-9.]|,\\d)';
       const pattern=new RegExp(label+'\\s*(?:'+unit+'\\s*'+value+numberEnd+'|'+value+numberEnd+'\\s*'+unit+')','u');
       return pattern.test(normalizeFact(proof.quote))?Number(raw):null;
     });
-    if(verified.length)return verified;
+    if(verified.length)return verified.map(row=>({...row,summaryText:item}));
     const proposed=proposedReferences([candidate.evidence]);
     const reference=proposed[0]?.source==='change'?locateCitation(proposed[0],documents):null;
     const quote=clean(candidate.evidence?.quote).slice(0,550);

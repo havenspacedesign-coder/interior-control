@@ -144,7 +144,7 @@ export default async function handler(request,response){
     trace.pdf=documents.files;
     try{
       trace.failure='SUMMARY_SCHEMA_INVALID';
-      sections=readSummary(parsed,documents,drawingPages,drawingReview,traceVerification(trace,'summary'));
+      sections=readSummary(parsed,documents,drawingPages,drawingReview,traceVerification(trace,'summary'),pdfs?basic:null);
       if(pdfs){
         trace.failure='KNOWLEDGE_SCHEMA_INVALID';
         structured=readKnowledge(parsed.knowledge,documents,drawingPages,sections.changes,traceVerification(trace,'knowledge'));

@@ -29,7 +29,7 @@ export function knowledgeSchema(citation){
 export function readKnowledge(value,documents,drawingPages=[],verifiedChanges=[],record=()=>{}){
   if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Missing structured case knowledge');
   const recognized=new Set(drawingPages.map(({page})=>page));
-  function item(row,fields,allowed,match,withoutOptional){
+  function item(row,fields,allowed,match,withoutOptional,useLayout=false){
     if(!row||typeof row!=='object'||!Array.isArray(row.citations))return null;
     const citations=[];
     const proposed=proposedReferences(row.citations);
@@ -58,7 +58,7 @@ export function readKnowledge(value,documents,drawingPages=[],verifiedChanges=[]
       }
     }
     const review=candidate=>markOrdinaryFact(proposed,citations,documents,ref=>
-      factBlocks(ref,documents,(block,lines)=>match(candidate,block,lines)));
+      factBlocks(ref,documents,(block,lines)=>match(candidate,block,lines),3,useLayout));
     const verification=review(result);
     if(verification.referenceEligible||!withoutOptional)return {...result,...verification};
     const supportedFields=withoutOptional(result);
@@ -125,7 +125,7 @@ export function readKnowledge(value,documents,drawingPages=[],verifiedChanges=[]
     changeNet:value.changeNet==null?null:track('changeNet',0,total(value.changeNet,'change')),
     ...Object.fromEntries(Object.entries(LISTS).map(([key,fields])=>[
       key,(Array.isArray(value[key])?value[key]:[]).map((row,index)=>index>=8?track(key,index,null,'SECTION_LIMIT')
-        :track(key,index,item(row,fields,allowed[key],matchList[key],withoutOptional[key]))).filter(Boolean),
+        :track(key,index,item(row,fields,allowed[key],matchList[key],withoutOptional[key],key!=='spaces'))).filter(Boolean),
     ])),
     changes:verifiedChanges.map(({item,text,...change})=>({
       ...change,name:item,description:change.evidence?.[0]?.quote??text,tax:'unknown',

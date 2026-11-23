@@ -109,7 +109,7 @@ export async function saveCaseKnowledge({caseId,caseUpdatedAt,token,uid,runId,st
       sourceId:drawingSource.fileId,summary:cited(sections.drawings),
     }:null,
   };
-  const verified=rows=>sourcedItems(rows,EVIDENCE_POLICY_VERSION,sources).map(({unverifiedFields,...row})=>row);
+  const verified=rows=>sourcedItems(rows,EVIDENCE_POLICY_VERSION,sources).map(({unverifiedFields,summaryText,...row})=>row);
   const latestKnowledge={
     ...knowledge,
     publicationPolicyVersion:KNOWLEDGE_PUBLICATION_VERSION,
