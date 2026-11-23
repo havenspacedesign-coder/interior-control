@@ -1,4 +1,5 @@
-import {factBlocks,factTextMatches,locateCitation,markOrdinaryFact,proposedReferences,wrappedRowMatches} from './ai-case-evidence.js';
+import {evidenceTableRows,factBlocks,factTextMatches,locateCitation,markOrdinaryFact,normalizeFact,proposedReferences,sameEvidenceNumber,wrappedRowMatches} from './ai-case-evidence.js';
+import {readCompactProduct} from './ai-case-summary-claims.js';
 
 const string={type:'string'};
 const nullableString={type:['string','null']};
@@ -29,7 +30,7 @@ export function knowledgeSchema(citation){
 export function readKnowledge(value,documents,drawingPages=[],verifiedChanges=[],record=()=>{}){
   if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Missing structured case knowledge');
   const recognized=new Set(drawingPages.map(({page})=>page));
-  function item(row,fields,allowed,match,withoutOptional,useLayout=false){
+  function item(row,fields,allowed,match,withoutOptional,useLayout=false,matchTable=false){
     if(!row||typeof row!=='object'||!Array.isArray(row.citations))return null;
     const citations=[];
     const proposed=proposedReferences(row.citations);
@@ -57,8 +58,23 @@ export function readKnowledge(value,documents,drawingPages=[],verifiedChanges=[]
         if(schema.type==='string'&&result[key]===null)return null;
       }
     }
-    const review=candidate=>markOrdinaryFact(proposed,citations,documents,ref=>
-      factBlocks(ref,documents,(block,lines)=>match(candidate,block,lines),3,useLayout));
+    const review=candidate=>{
+      const failures=new Map();
+      return markOrdinaryFact(proposed,citations,documents,ref=>{
+        const table=matchTable?evidenceTableRows(ref,documents).filter(entry=>normalizeFact(entry.item)===normalizeFact(candidate.name)):[];
+        if(table.length){
+          const details=table.filter(entry=>!candidate.category&&(!candidate.description||
+            [entry.item,entry.description].some(text=>normalizeFact(text)===normalizeFact(candidate.description))));
+          const compatible=details.filter(entry=>candidate.tax==='unknown'&&(!candidate.currency||entry.currency===candidate.currency)&&
+            (candidate.amount===null||entry.currency!==null));
+          const excerpt=compatible.find(entry=>candidate.amount===null||sameEvidenceNumber(String(candidate.amount),entry.amount));
+          if(!excerpt)failures.set(ref.source+':'+ref.page,compatible.length?'EVIDENCE_NUMBER_MISMATCH'
+            :details.length?'EVIDENCE_FIELD_FORMAT':'EVIDENCE_VALUE_MISMATCH');
+          return excerpt?.quote??null;
+        }
+        return factBlocks(ref,documents,(block,lines,excerpt)=>match(candidate,block,lines,excerpt),3,useLayout);
+      },ref=>failures.get(ref.source+':'+ref.page));
+    };
     const verification=review(result);
     if(verification.referenceEligible||!withoutOptional)return {...result,...verification};
     const supportedFields=withoutOptional(result);
@@ -92,7 +108,10 @@ export function readKnowledge(value,documents,drawingPages=[],verifiedChanges=[]
       const withoutName=block.replace(/[a-z]+[0-9][a-z0-9-]*/gu,'');
       return (withoutName.match(/[+-]?\d+(?:\.\d+)?/gu)??[]).length===1;
     },
-    materials:(row,block,lines)=>{
+    materials:(row,block,lines,excerpt)=>{
+      const product=readCompactProduct(row.name,excerpt);
+      if(product)return (!row.brand||normalizeFact(row.brand)===product.brand)&&
+        (!row.model||normalizeFact(row.model)===product.model)&&includes(block,[row.material,row.specification]);
       const fields=[row.name,row.material,row.brand,row.model,row.specification];
       return includes(block,fields)&&(lines===1||wrappedRowMatches(block,fields,
         /(?:品名|材料|品牌|廠牌|型號|規格|設備|\b(?:item|name|material|brand|model|specification|spec)\b)/gu));
@@ -125,7 +144,7 @@ export function readKnowledge(value,documents,drawingPages=[],verifiedChanges=[]
     changeNet:value.changeNet==null?null:track('changeNet',0,total(value.changeNet,'change')),
     ...Object.fromEntries(Object.entries(LISTS).map(([key,fields])=>[
       key,(Array.isArray(value[key])?value[key]:[]).map((row,index)=>index>=8?track(key,index,null,'SECTION_LIMIT')
-        :track(key,index,item(row,fields,allowed[key],matchList[key],withoutOptional[key],key!=='spaces'))).filter(Boolean),
+        :track(key,index,item(row,fields,allowed[key],matchList[key],withoutOptional[key],key!=='spaces',key==='workItems'))).filter(Boolean),
     ])),
     changes:verifiedChanges.map(({item,text,...change})=>({
       ...change,name:item,description:change.evidence?.[0]?.quote??text,tax:'unknown',

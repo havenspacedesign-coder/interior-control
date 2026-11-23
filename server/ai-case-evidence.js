@@ -1,6 +1,7 @@
 import {createRequire} from 'node:module';
 import {dirname,join} from 'node:path';
 import {pathToFileURL} from 'node:url';
+import {readEvidenceTableRows} from './ai-case-evidence-table.js';
 
 const require=createRequire(import.meta.url);
 const string={type:'string'};
@@ -148,8 +149,8 @@ export async function inspectPdfEvidence(pdfBytes,output,sources,loadParser=load
       });
       deadline.addEventListener('abort',abort,{once:true});
       const document=await loading.promise;
-      const texts=new Map(),layoutRows=new Map();
-      result.set(source.kind,{...source,pageCount:document.numPages,texts,layoutRows});
+      const texts=new Map(),layoutRows=new Map(),tableRows=new Map();
+      result.set(source.kind,{...source,pageCount:document.numPages,texts,layoutRows,tableRows});
       for(const number of requested.get(source.kind)??[]){
         if(number>document.numPages){report(source,'PAGE_OUT_OF_RANGE',number);continue;}
         if(deadline.aborted){report(source,'INDEX_TIMEOUT',number);continue;}
@@ -166,7 +167,10 @@ export async function inspectPdfEvidence(pdfBytes,output,sources,loadParser=load
           if(line.length)lines.push(clean(line.join(' ')));
           const original=lines.filter(Boolean).join('\n');
           texts.set(number,original);
-          layoutRows.set(number,readLayoutRows(items));
+          const financial=['quote','change'].includes(source.kind);
+          const layout=readLayoutRows(items,financial);
+          layoutRows.set(number,layout.rows);
+          if(financial)tableRows.set(number,layout.table);
           if(!original)report(source,'NO_TEXT_LAYER',number);
         }catch(error){
           texts.set(number,null);
@@ -199,7 +203,20 @@ export function normalizeFact(value){
     .replace(/\s+/gu,' ').trim().toLowerCase();
 }
 
-function readLayoutRows(items){
+export function evidenceNumber(value){
+  const match=normalizeFact(value).match(/^([+-]?)(\d+)(?:\.(\d+))?$/u);
+  if(!match||Math.abs(Number(match[0]))>Number.MAX_SAFE_INTEGER)return null;
+  const digits=match[2].replace(/^0+(?=\d)/u,'');
+  const fraction=(match[3]??'').replace(/0+$/u,'');
+  return (match[1]==='-'&&(digits!=='0'||fraction)?'-':'')+digits+(fraction?'.'+fraction:'');
+}
+
+export function sameEvidenceNumber(expected,actual){
+  const canonical=evidenceNumber(expected);
+  return canonical!==null&&canonical===evidenceNumber(actual);
+}
+
+function readLayoutRows(items,financial){
   const cells=items.flatMap(({str,transform,width})=>{
     if(typeof str!=='string'||!str.trim()||!Array.isArray(transform)||!Number.isFinite(width)||width<=0)return [];
     const [a,b,c,d,x,y]=transform;
@@ -220,12 +237,13 @@ function readLayoutRows(items){
     const key=signature(row);
     signatures.set(key,(signatures.get(key)??0)+1);
   }
-  return rows.flatMap(row=>{
+  const visual=rows.flatMap(row=>{
     if(row.length<2||row.some((cell,index)=>index>0&&cell.x<row[index-1].end-0.75))return [];
     const splitColumns=row.some((cell,index)=>index>0&&cell.x-row[index-1].end>36);
     if(splitColumns&&signatures.get(signature(row))<2)return [];
     return [row.map(cell=>cell.text).join(' ')];
   });
+  return {rows:visual,table:financial?readEvidenceTableRows(rows,normalizeFact):[]};
 }
 
 function factContains(original,value){
@@ -239,22 +257,32 @@ function factContains(original,value){
 const originalLines=(reference,documents)=>documents.get(reference.source)?.texts.get(reference.page)?.split('\n')??[];
 export function factBlocks(reference,documents,check,maxLines=3,useLayout=false){
   const lines=originalLines(reference,documents);
+  if(!lines.some(Boolean))return null;
   const visualRows=useLayout?documents.get(reference.source)?.layoutRows?.get(reference.page)??[]:[];
   for(const row of visualRows){
-    if(row.length<=1600&&check(normalizeFact(row),2))return row;
+    if(row.length<=1600&&check(normalizeFact(row),2,row))return row;
   }
   for(let length=1;length<=Math.min(maxLines,lines.length);length++){
     for(let start=0;start<=lines.length-length;start++){
       const excerpt=lines.slice(start,start+length).join('\n');
       if(excerpt.length>1600)continue;
       const normalized=normalizeFact(excerpt);
-      if(check(normalized,length))return excerpt;
+      if(check(normalized,length,excerpt))return excerpt;
     }
   }
   return null;
 }
 
 export function factTextMatches(original,value){return factContains(original,value);}
+
+export function evidenceTableRows(reference,documents){
+  const document=documents.get(reference.source);
+  return document?.texts.get(reference.page)?document.tableRows?.get(reference.page)??[]:[];
+}
+
+export function matchesTableQuote(row,literal){
+  return normalizeFact(row.quote)===literal||normalizeFact(row.quote.split('\n')[0])===literal;
+}
 
 // A wrapped row must account for its text with the proposed fields and known column
 // labels. Otherwise adjacent items could lend each other a brand or an amount.
@@ -265,7 +293,7 @@ export function wrappedRowMatches(block,fields,columnLabels){
   return !remaining.replace(columnLabels,' ').replace(/[\s()./+\-$]+/gu,'');
 }
 
-export function markOrdinaryFact(proposed,citations,documents,findEvidence){
+export function markOrdinaryFact(proposed,citations,documents,findEvidence,explain=()=>null){
   const evidence=citations.flatMap(reference=>{
     if(reference.source==='basic')return [];
     const excerpt=findEvidence(reference);
@@ -278,10 +306,10 @@ export function markOrdinaryFact(proposed,citations,documents,findEvidence){
     const diagnostic=documents.diagnostics?.find(entry=>entry.source===ref.source&&(entry.page===null||entry.page===ref.page));
     const doc=documents.get(ref.source);
     const located=citations.some(link=>link.source===ref.source&&link.page===ref.page);
-    const reason=diagnostic?.code??(ref.source==='basic'?'BASIC_PARAPHRASE_NOT_VERIFIED':!doc?'SOURCE_NOT_AVAILABLE'
-      :!locateCitation(ref,documents)?'PAGE_OUT_OF_RANGE':!located
+    const reason=doc&&!locateCitation(ref,documents)?'PAGE_OUT_OF_RANGE'
+      :diagnostic?.code??(ref.source==='basic'?'BASIC_PARAPHRASE_NOT_VERIFIED':!doc?'SOURCE_NOT_AVAILABLE':!located
         ?ref.source==='drawing'?'DRAWING_PAGE_NOT_RECOGNIZED':'SOURCE_NOT_ALLOWED'
-        :'SOURCE_CONTENT_NOT_CONFIRMED');
+        :!doc.texts.get(ref.page)?'PDF_EVIDENCE_UNAVAILABLE':explain(ref)??'SOURCE_CONTENT_NOT_CONFIRMED');
     return {...ref,reason};
   });
   const verificationReason=citationChecks[0]?.reason??'NO_VALID_CITATION';
@@ -362,15 +390,17 @@ export function verifyIssues(candidates,documents,drawingReview){
   });
 }
 
-export function verifyChanges(candidates,documents,verify=verifyQuote,readAmount=proof=>measured(proof,'金額')??measured(proof,'Amount')){
+export function verifyChanges(candidates,documents,verify=verifyQuote,readAmount=proof=>measured(proof,'金額')??measured(proof,'Amount'),
+  directionText=proof=>proof.quote){
   return candidates.slice(0,4).flatMap(candidate=>{
     if(!candidate)return [];
     const item=clean(candidate.item),proof=verify(candidate.evidence,documents);
     if(item.length<2||item.length>80||proof?.source!=='change'||!proof.quote.includes(item)||hypothetical.test(proof.quote))return [];
     const direction=candidate.direction;
-    const addition=/追加|加作|新增|增加|\+\s*\d/u.test(proof.quote);
-    const deduction=/減作|追減|減列|扣除|刪減|(?:^|[:：\s])[-−]\s*\d/u.test(proof.quote);
-    const neutral=/不增減|無增減|零元調整|等價變更/u.test(proof.quote);
+    const adjustment=directionText(proof);
+    const addition=/追加|加作|新增|增加|\+\s*\d/u.test(adjustment);
+    const deduction=/減作|追減|減列|扣除|刪減|(?:^|[:：\s])[-−]\s*\d/u.test(adjustment);
+    const neutral=/不增減|無增減|零元調整|等價變更/u.test(adjustment);
     if((direction==='addition'&&(!addition||deduction))||(direction==='deduction'&&(!deduction||addition))||
       (direction==='neutral'&&(!neutral||addition||deduction))||!['addition','deduction','neutral'].includes(direction))return [];
     const amountMatch=proof.value===null?null:readAmount(proof);
@@ -378,7 +408,7 @@ export function verifyChanges(candidates,documents,verify=verifyQuote,readAmount
     const amount=amountMatch===null?null:direction==='deduction'?-Math.abs(amountMatch):amountMatch;
     if(direction==='addition'&&amount!==null&&amount<0)return [];
     return [summaryPoint(`${item}｜原文：${proof.quote}`,[proof],{item,direction,amount,
-      currency:proof.unit==='NT$'||proof.unit==='新台幣'?'TWD':null,...status('verified',true)})];
+      currency:/^(?:nt\$|twd|新臺幣|新台幣)$/iu.test(proof.unit??'')?'TWD':null,...status('verified',true)})];
   });
 }
 
@@ -388,30 +418,40 @@ export function readOrdinaryChanges(candidates,documents){
     if(item.length<2||item.length>80||hypothetical.test(item)||!['addition','deduction','neutral'].includes(direction))return [];
     if(!documents.has('change')&&!documents.diagnostics?.some(row=>row.source==='change'))return [];
     const originalItem=clean(candidate.originalItem)||item;
+    let tableRow,reason='EVIDENCE_FIELD_FORMAT';
     const verified=verifyChanges([{...candidate,item:originalItem}],documents,(proof,index)=>{
       const hasOriginalItem=typeof candidate.originalItem==='string'&&!!candidate.originalItem.trim();
-      const strict=hasOriginalItem?null:verifyQuote(proof,index);
-      if(strict)return strict;
       const reference=locateCitation(proof,index);
       const quote=clean(proof?.quote);
       if(!reference||quote.length<4||quote.length>550)return null;
-      const original=factBlocks(reference,index,block=>hasOriginalItem?block===normalizeFact(quote):factContains(block,quote),3,hasOriginalItem);
+      const table=evidenceTableRows(reference,index).filter(row=>normalizeFact(row.item)===normalizeFact(originalItem));
+      tableRow=table.find(row=>matchesTableQuote(row,normalizeFact(quote)));
+      const strict=!table.length&&!hasOriginalItem?verifyQuote(proof,index):null;
+      if(strict)return strict;
+      const original=tableRow?.quote??(!table.length?factBlocks(reference,index,
+        block=>hasOriginalItem?block===normalizeFact(quote):factContains(block,quote),3,hasOriginalItem):null);
+      if(!original)reason='EVIDENCE_QUOTE_MISMATCH';
       return original?{...reference,quote:clean(original),value:clean(proof.value)||null,unit:clean(proof.unit)||null}:null;
     },proof=>{
       if(!proof.unit)return null;
       const raw=normalizeFact(proof.value);
-      if(!RAW_NUMBER.test(raw))return null;
+      if(!RAW_NUMBER.test(raw)||Math.abs(Number(raw))>Number.MAX_SAFE_INTEGER)return null;
+      reason='EVIDENCE_NUMBER_MISMATCH';
+      if(tableRow){
+        if(tableRow.currency!=='TWD'||!/^(?:nt\$|twd|新臺幣|新台幣)$/iu.test(proof.unit))return null;
+        return sameEvidenceNumber(raw,tableRow.amount)?Number(tableRow.amount):null;
+      }
       const value=(/^\d/u.test(raw)?'\\+?':'')+esc(raw),unit=esc(normalizeFact(proof.unit));
       const label='(?:金額|amount)';
       const numberEnd='(?![0-9.]|,\\d)';
       const pattern=new RegExp(label+'\\s*(?:'+unit+'\\s*'+value+numberEnd+'|'+value+numberEnd+'\\s*'+unit+')','u');
       return pattern.test(normalizeFact(proof.quote))?Number(raw):null;
-    });
+    },proof=>tableRow?tableRow.item+' '+tableRow.amount:proof.quote);
     if(verified.length)return verified.map(row=>({...row,summaryText:item}));
     const proposed=proposedReferences([candidate.evidence]);
     const reference=proposed[0]?.source==='change'?locateCitation(proposed[0],documents):null;
     const quote=clean(candidate.evidence?.quote).slice(0,550);
     return [{item,direction,amount:null,currency:null,text:quote||item,
-      ...markOrdinaryFact(proposed,reference?[reference]:[],documents,()=>null)}];
+      ...markOrdinaryFact(proposed,reference?[reference]:[],documents,()=>null,()=>reason)}];
   });
 }
