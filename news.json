@@ -1,126 +1,126 @@
 {
-  "date": "2026-11-24",
-  "updatedAt": "2026-11-24T05:54:21.529Z",
+  "date": "2026-11-25",
+  "updatedAt": "2026-11-25T04:51:15.340Z",
   "news": [
     {
-      "id": "e04df27f9c55a228",
+      "id": "b94781776f9aaa84",
       "source": "壹蘋",
       "category": "國際",
-      "title": "黃仁勳回鍋輝達！CNN：台灣「沸騰了」　力挺「自己人」歸隊",
-      "url": "https://news.nextapple.com/international/20261124/A19E7A96381DC56E226ECA36CCE3E94D",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A19E7A96381DC56E226ECA36CCE3E94D/a23e01c22fefce41dd8eb1e3ea1e300b_1280.webp",
-      "publishedAt": "2026-11-24T05:47:12.000Z",
-      "fetchedAt": "2026-11-24T05:54:21.529Z"
+      "title": "黃仁勳自爆每天「心理治療1小時」！最難面對是她",
+      "url": "https://news.nextapple.com/international/20261125/5961E06EC1488D8B4FC1280DB57659DE",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/5961E06EC1488D8B4FC1280DB57659DE/acdc969000e8ceec823584ba81783566_1280.webp",
+      "publishedAt": "2026-11-25T03:32:32.000Z",
+      "fetchedAt": "2026-11-25T04:51:15.340Z"
     },
     {
-      "id": "b242fc3ba46d9740",
+      "id": "054329699e9c0787",
       "source": "壹蘋",
       "category": "生活",
-      "title": "阮經天愛店「蕭家牛雜湯」　創始人死訊瞞1年！兒被罵不孝吐真相",
-      "url": "https://news.nextapple.com/life/20261124/50C0F8389D056403BF34B05553D931A5",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/50C0F8389D056403BF34B05553D931A5/2de16fe08f413007ded082f2c0412331_1280.webp",
-      "publishedAt": "2026-11-24T05:22:00.000Z",
-      "fetchedAt": "2026-11-24T05:54:21.529Z"
+      "title": "黃仁勳回歸行情沒了？鼎泰豐候位數掛零　2小時盛況消失",
+      "url": "https://news.nextapple.com/life/20261125/A4E03372417FDB4C56730F38E4B0E3C1",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A4E03372417FDB4C56730F38E4B0E3C1/d878326447f204c0fd2162adbfde9f54_1280.webp",
+      "publishedAt": "2026-11-25T03:53:09.000Z",
+      "fetchedAt": "2026-11-25T04:51:15.340Z"
     },
     {
-      "id": "ed96f7f3d6c2c077",
+      "id": "0cc2a856b117a2e9",
       "source": "壹蘋",
       "category": "社會",
-      "title": "中教大男大生大暴走！持刀抵女師頸部　揚言「滅了她」遭強制就醫",
-      "url": "https://news.nextapple.com/local/20261124/79FA18A313CEB02680F2DB8380BD60F9",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/79FA18A313CEB02680F2DB8380BD60F9/2520d845b52038575d5f9bdca60d0c1b_1280.webp",
-      "publishedAt": "2026-11-24T05:49:22.000Z",
-      "fetchedAt": "2026-11-24T05:54:21.529Z"
+      "title": "醫院組長盜載1.8萬筆乳篩個資寄私信箱　違反個資法判刑3月",
+      "url": "https://news.nextapple.com/local/20261125/3E67D63131CFD32448FB73049B1D2043",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/3E67D63131CFD32448FB73049B1D2043/447dfb5a67c856d228aa2a4fba155201_1280.webp",
+      "publishedAt": "2026-11-25T04:37:03.000Z",
+      "fetchedAt": "2026-11-25T04:51:15.340Z"
     },
     {
-      "id": "363d402ce060bcf8",
+      "id": "2b909c6455c3740f",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "蔡瑞雪無預警升格人妻！閃嫁醫美醫師「一家三口」幸福畫面曝光",
-      "url": "https://news.nextapple.com/entertainment/20261124/A25738EE1E4578A62D536AC7F22D401F",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A25738EE1E4578A62D536AC7F22D401F/0e266b5174abfddf68b898cbd10cb503_1280.webp",
-      "publishedAt": "2026-11-24T05:46:21.000Z",
-      "fetchedAt": "2026-11-24T05:54:21.529Z"
+      "title": "納豆傳授生子秘訣「用做的」　鬆口曝2年後二胎計劃",
+      "url": "https://news.nextapple.com/entertainment/20261125/CBEA6170113D2C4F96B61F76C5EB7F47",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/CBEA6170113D2C4F96B61F76C5EB7F47/b3347aaab85e548ae0f7377881207317_1280.webp",
+      "publishedAt": "2026-11-25T04:31:26.000Z",
+      "fetchedAt": "2026-11-25T04:51:15.340Z"
     },
     {
-      "id": "ee4c0573f6fda508",
+      "id": "569b5078ce914585",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "出國eSIM流量沒用完　下次換國家也能續用",
-      "url": "https://news.nextapple.com/aitech/20261124/EE7E0CE55DB56CDC417D6C76C9AD6B71",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/EE7E0CE55DB56CDC417D6C76C9AD6B71/14d84282fd75cd582d5bf05f94ede6cb_1280.webp",
-      "publishedAt": "2026-11-24T03:56:34.000Z",
-      "fetchedAt": "2026-11-24T05:54:21.529Z"
+      "title": "濕冷天電暖器怎麼挑　怕冷、怕吵先看這5種",
+      "url": "https://news.nextapple.com/aitech/20261125/4A76FB3FDCC4CA1F073A2320824AA1C2",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/4A76FB3FDCC4CA1F073A2320824AA1C2/4279d161da59cbcdab79daa6cc0ae98d_1280.webp",
+      "publishedAt": "2026-11-25T04:13:50.000Z",
+      "fetchedAt": "2026-11-25T04:51:15.340Z"
     },
     {
-      "id": "b6fa3034574f09b1",
+      "id": "0254818ab9da20fe",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "黃仁勳回歸點火！台股收漲3310點創史上最大漲點",
-      "url": "https://news.nextapple.com/finance/20261124/8672741BCC421DEF6C46E016841926BF",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/8672741BCC421DEF6C46E016841926BF/4ce463cd10227045c3f7e130de09ebb0_1280.webp",
-      "publishedAt": "2026-11-24T05:45:51.000Z",
-      "fetchedAt": "2026-11-24T05:54:21.529Z"
+      "title": "索羅斯從金融巨鱷到跨國金主！全球政治金援惹議　沈伯洋也拿135萬美元補助",
+      "url": "https://news.nextapple.com/finance/20261125/52ABE4A74005B04FAF664387A0061155",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/52ABE4A74005B04FAF664387A0061155/480e9798b5a11fc44e89b05025f0ec38_1280.webp",
+      "publishedAt": "2026-11-25T04:44:07.000Z",
+      "fetchedAt": "2026-11-25T04:51:15.340Z"
     },
     {
-      "id": "77295e9bd99e4530",
+      "id": "ca057e448ac4822a",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "黃仁勳閃辭11天　神秘人賺走2億美元！但最大贏家還是她",
-      "url": "https://news.nextapple.com/life/20261124/C194A1E125FC43F07ACB8BCE0FFC6DA8",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/C194A1E125FC43F07ACB8BCE0FFC6DA8/13d36077ed1b56a7e222bfa0f497d87a_1280.webp",
-      "publishedAt": "2026-11-24T05:19:31.000Z",
-      "fetchedAt": "2026-11-24T05:54:21.529Z"
+      "title": "羅智強「誤談民調」扯蘇巧慧　她指兩者不同之處譏諷：找人墊背？",
+      "url": "https://news.nextapple.com/politics/20261125/6DD845429DB4F42D7D56659E812A8732",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/6DD845429DB4F42D7D56659E812A8732/ec70eb61f15a589ee24c06bb487a62d8_1280.webp",
+      "publishedAt": "2026-11-25T04:11:24.000Z",
+      "fetchedAt": "2026-11-25T04:51:15.340Z"
     },
     {
-      "id": "8fbbc2d2e7e55f71",
+      "id": "6957a1a8b11c8fb6",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "川普再提台灣！讚魏哲家「天才」　揭台積電德州設廠進度",
-      "url": "https://news.nextapple.com/international/20261124/F87B0A6520FE8663C070DB3456101D65",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/F87B0A6520FE8663C070DB3456101D65/fdd9dfa30e9b6edf3d05d131c036e803_1280.webp",
-      "publishedAt": "2026-11-24T04:56:03.000Z",
-      "fetchedAt": "2026-11-24T05:54:21.529Z"
+      "title": "黃珊珊最新發文藏玄機　他揪「關鍵2字」：大家懂的",
+      "url": "https://news.nextapple.com/politics/20261125/6A2C140A929D562E345CE6E43C855673",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/6A2C140A929D562E345CE6E43C855673/d7eecd6b3b8123db61f6dc9f1e946ec1_1280.webp",
+      "publishedAt": "2026-11-25T04:09:33.000Z",
+      "fetchedAt": "2026-11-25T04:51:15.340Z"
     },
     {
-      "id": "6c51114d4d687f5f",
+      "id": "5d45bf63c48310cf",
       "source": "壹蘋",
       "category": "社會",
-      "title": "登山健行傳憾事！男子關嶺大凍山第一涼亭附近昏倒　搶救無效",
-      "url": "https://news.nextapple.com/local/20261124/384241B86302F0FE27B94C6E60EB5874",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/384241B86302F0FE27B94C6E60EB5874/82e0157d5dcc3640edc8da613418a662_1280.webp",
-      "publishedAt": "2026-11-24T05:40:20.000Z",
-      "fetchedAt": "2026-11-24T05:54:21.529Z"
+      "title": "茶室搜索意外揪出選舉賭盤！雙北市長選情成下注標的　組頭、操盤手遭逮交保",
+      "url": "https://news.nextapple.com/local/20261125/FBC2E1C39A9565D43AAE675DE391E19F",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/FBC2E1C39A9565D43AAE675DE391E19F/fdcd0d4d09c0438e56d44f35faa27cf1_1280.webp",
+      "publishedAt": "2026-11-25T04:36:24.000Z",
+      "fetchedAt": "2026-11-25T04:51:15.340Z"
     },
     {
-      "id": "622c5224427cf5a5",
+      "id": "4019840fc7d98a67",
+      "source": "壹蘋",
+      "category": "社會",
+      "title": "梁軒安遭控性侵簽約女藝人二審逆轉無罪　檢方上訴了！",
+      "url": "https://news.nextapple.com/local/20261125/B8CFCE2CFC8EC6502449004E692C73CD",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/B8CFCE2CFC8EC6502449004E692C73CD/531036d8896719ac49477076997c456b_1280.webp",
+      "publishedAt": "2026-11-25T04:34:02.000Z",
+      "fetchedAt": "2026-11-25T04:51:15.340Z"
+    },
+    {
+      "id": "2a1ae95cdcc983d8",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "翁立友失聯20年小師妹找到了！合唱新歌手狂抖笑虧「地震來了」",
-      "url": "https://news.nextapple.com/entertainment/20261124/D48E88033DA4FB72A60364D1F0DC23F4",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/D48E88033DA4FB72A60364D1F0DC23F4/e67bca9f01adfbd484003b69c3339585_1280.webp",
-      "publishedAt": "2026-11-24T05:33:53.000Z",
-      "fetchedAt": "2026-11-24T05:54:21.529Z"
+      "title": "陳美鳳身體亮紅燈！「耳石脫落」強烈天旋地轉　晚餐全吐光光",
+      "url": "https://news.nextapple.com/entertainment/20261125/BD6F5A5DAA82DC2D7D5EC06B9EDBFA2C",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/BD6F5A5DAA82DC2D7D5EC06B9EDBFA2C/8990271a5921656c2cbf4eb912f80929_1280.webp",
+      "publishedAt": "2026-11-25T04:10:37.000Z",
+      "fetchedAt": "2026-11-25T04:51:15.340Z"
     },
     {
-      "id": "8a45d818a2a42b50",
+      "id": "1af9711991a5f61d",
       "source": "壹蘋",
-      "category": "娛樂時尚",
-      "title": "11/28決戰日！鄭弘儀重磅回歸　攜手「一王三后」分析觀點",
-      "url": "https://news.nextapple.com/entertainment/20261124/5031A6CBBA63A286AB90A36A51399D63",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/5031A6CBBA63A286AB90A36A51399D63/cd34afc965d900ff66ac121d97ee7b42_1280.webp",
-      "publishedAt": "2026-11-24T05:13:55.000Z",
-      "fetchedAt": "2026-11-24T05:54:21.529Z"
-    },
-    {
-      "id": "afab8fb817e930b9",
-      "source": "壹蘋",
-      "category": "財經股市",
-      "title": "黃仁勳回鍋AI又活了？分析師曝「3點不確定、3現實瓶頸」",
-      "url": "https://news.nextapple.com/finance/20261124/0D79D0B64BC1C9010BEF52217FF581C8",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/0D79D0B64BC1C9010BEF52217FF581C8/76adf4fba27656a32bb6ad144c0ced87_1280.webp",
-      "publishedAt": "2026-11-24T05:11:39.000Z",
-      "fetchedAt": "2026-11-24T05:54:21.529Z"
+      "category": "社會",
+      "title": "雲林托嬰中心虐童風波延燒　監視器再揪多人動作粗魯、言語不當",
+      "url": "https://news.nextapple.com/local/20261125/DFB2759769968682F7E549BA4F9E221B",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/DFB2759769968682F7E549BA4F9E221B/7b59a77f890ecd8aa1e98455f481614e_1280.webp",
+      "publishedAt": "2026-11-25T04:06:37.000Z",
+      "fetchedAt": "2026-11-25T04:51:15.340Z"
     }
   ]
 }
