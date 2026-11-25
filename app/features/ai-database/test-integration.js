@@ -10,6 +10,8 @@ if (window.__APP_UNIFIED_TEST__ === true) {
   if(b1fNavigation)b1fNavigation.before(aiTab);else document.querySelector('.nav-tabs').append(aiTab);
   const aiController = aiModule.mountAiDatabase(aiPanel, {
     canManage: () => !!currentUser && isAdmin(),
+    canManageAnalysisRules: () => !!currentUser && isAdmin() &&
+      (localTestMode||S.members.some(member=>member.id===currentUser.uid&&member.role==='manager'&&(member.status??'active')==='active')),
     user: () => ({uid:currentUser?.uid || '',name:currentUser?.displayName || '管理員'}),
     getIdToken: async () => {
       if(localTestMode||!auth.currentUser)throw Error('本機展示帳號無法呼叫雲端 AI。請在已部署 API 的測試網站使用 Firebase 管理員帳號登入。');

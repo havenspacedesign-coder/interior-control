@@ -1,5 +1,6 @@
 import {initialState,applyCommand,assertManager} from './model.js';
 import {publishedKnowledgeRun} from './summary-format.js';
+import {createFirestoreAnalysisRules} from './analysis-rule-store.js';
 export const EMULATOR_PROJECT='demo-haven-ai';
 export const COLLECTIONS={categories:'aiDbTestCategories',cases:'aiDbTestCases',files:'aiDbTestFiles',knowledge:'aiDbTestKnowledge',analysisRuns:'aiDbTestAnalysisRuns',questions:'aiDbTestQuestions',answerRevisions:'aiDbTestAnswerRevisions'};
 const productionCollections={
@@ -73,6 +74,7 @@ function createFirebaseStore({db,auth,storage,fs,storageSdk,collections,metaColl
   }
   return {
     mode,label,load,filePath,identity,
+    analysisRules:createFirestoreAnalysisRules({db,auth,fs,identity,categories:collections.categories}),
     ...(mode==='production'?{async listCaseAnalysis(caseId,cursor=null){
       const {uid}=await identity();
       const path=[collections.cases,caseId];

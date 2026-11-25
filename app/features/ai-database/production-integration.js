@@ -66,6 +66,7 @@
         controller=mountAiDatabase(panel,{
           canManage:()=>canManageAi()&&auth.currentUser?.uid===uid,
           canRunPdfSelfTest:()=>canRunPdfSelfTest(uid),
+          canManageAnalysisRules:()=>canRunPdfSelfTest(uid),
           user:()=>({uid,name:currentUser?.displayName||'管理員'}),
           getIdToken:()=>auth.currentUser?.uid===uid?auth.currentUser.getIdToken():Promise.reject(Error('登入已變更，請重新登入。')),
           createStore:()=>createProductionStore({db,auth,storage,...aiDatabaseSdk}),
@@ -93,6 +94,7 @@
       }
     }
     tab.hidden=!allowed||!!(controller&&!controller.canDisplay());
+    controller?.refreshRuleAccess();
     if(activePanel===panelName)return;
     if(openFromUrl&&allowed)void openAi();
     renderBeforeAi();

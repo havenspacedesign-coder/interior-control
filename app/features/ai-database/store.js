@@ -1,6 +1,7 @@
 import {initialState,applyCommand,assertManager} from './model.js';
+import {createLocalAnalysisRules} from './analysis-rule-store.js';
 // Local preview persists original Blob data, never a temporary object URL.
-export async function createLocalStore(identity){
+export async function createLocalStore(identity,rulesIdentity=identity){
   const request=indexedDB.open('havenAiDatabaseTestV1',1);
   request.onupgradeneeded=()=>{request.result.createObjectStore('state');request.result.createObjectStore('blobs');};
   const db=await new Promise((resolve,reject)=>{request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
@@ -10,6 +11,7 @@ export async function createLocalStore(identity){
   function writeBlob(path,blob){access();return new Promise((resolve,reject)=>{const tx=db.transaction('blobs','readwrite');tx.objectStore('blobs').put(blob,path);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error||Error('檔案無法保存，請檢查瀏覽器剩餘空間。'));tx.onerror=()=>{};});}
   const store={
     mode:'local',label:'本機預覽：資料與檔案保存在此瀏覽器；尚未連接管理員共用資料庫。',
+    analysisRules:createLocalAnalysisRules(db,rulesIdentity),
     async load(){return await read('state','main')||initialState();},
     async commit(command,expectedRevision){
       access();return new Promise((resolve,reject)=>{

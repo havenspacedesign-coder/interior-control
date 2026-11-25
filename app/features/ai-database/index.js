@@ -11,11 +11,19 @@ import {renderAnalysisDiagnostics,renderAnalysisHistory} from './analysis-diagno
 import {openThumbnailMaintenance} from './thumbnail-maintenance.js';
 import {observePhotoCards} from './photo-view.js';
 import {renderPdfSelfTest,requestPdfSelfTest} from './pdf-self-test.js';
+import {openAnalysisRules} from './analysis-rules-dialog.js';
 export function mountAiDatabase(root,session){
   const emulatorMode=!session.createStore&&new URL(location.href).searchParams.get('aiStore')==='emulator';
   if(!document.querySelector('[data-ai-database-style]')){const link=document.createElement('link');link.rel='stylesheet';link.href=new URL('./ai-database.css',import.meta.url);link.dataset.aiDatabaseStyle='true';document.head.append(link);}
   let selectedCategory='cases',selectedCase='',collapsed=new Set(),dirty=false,busy=false,initializing=null,notice='',generation=0,denied=false;
   let disposed=false,unsubscribe=null,thumbnailMaintenance=null,photoReadSession=null,photoCase='',stopPhotoView=null;
+  let ruleDialog=null;
+  const canManageRules=()=>!disposed&&!denied&&session.canManage()&&!!session.canManageAnalysisRules?.();
+  function refreshRuleAccess(){
+    if(canManageRules())return;
+    ruleDialog?.dispose();
+    root.querySelectorAll('[data-action="category.analysisRules"]').forEach(button=>button.remove());
+  }
   const photoLoader=createPhotoLoader(path=>context.store.getBlob(path));
   const captionDrafts=new Map();
   const analyses=new Map();
@@ -103,7 +111,7 @@ export function mountAiDatabase(root,session){
     if(!initializing)initializing=(async()=>{
       if(session.createStore)context.store=session.createStore();
       else if(emulatorMode){const {createEmulatorStore}=await import('./firebase-store.js');context.store=await createEmulatorStore();}
-      else context.store=await createLocalStore(identity);
+      else context.store=await createLocalStore(identity,()=>canManageRules()?identity():null);
       const state=await context.store.load();
       if(disposed||!session.canManage())return;
       context.state=state;
@@ -176,6 +184,8 @@ export function mountAiDatabase(root,session){
   }
   function render(){
     if(disposed)return;
+    refreshRuleAccess();
+    if(ruleDialog)return;
     if(thumbnailMaintenance){
       if(!denied&&session.canManage())return;
       thumbnailMaintenance.dispose();thumbnailMaintenance=null;
@@ -184,7 +194,7 @@ export function mountAiDatabase(root,session){
     generation++;
     if(denied||!session.canManage()){stopPhotoView?.();photoReadSession=null;photoLoader.dispose();root.innerHTML='<section class="card aidb-empty">沒有 AI 資料庫管理權限。</section>';return;}
     if(!context.state){root.innerHTML='<p class="aidb-loading">正在開啟 AI 資料庫…</p><p class="aidb-notice" role="status" hidden></p>';initialize();return;}
-    root.innerHTML=`<div class="aidb-header"><div><h1>AI 資料庫</h1><p class="aidb-muted">公司案件原始資料與設計知識管理</p></div><div class="aidb-actions"><button class="btn btn-sm" data-action="thumbnails.manage">照片縮圖工具</button><button class="btn btn-sm" data-action="reload">重新載入</button></div></div><p class="aidb-environment">${esc(context.store.label)}</p><p class="aidb-notice" role="status" ${notice?'':'hidden'}>${esc(notice)}</p>${context.state.cleanupPaths.length?'<p class="aidb-update-note">部分原始檔案尚待清理，資料已隱藏。<button class="btn btn-sm" data-action="cleanup">重試檔案清理</button></p>':''}<div class="aidb-layout"><aside class="aidb-sidebar card"><div class="aidb-sidebar-heading"><strong>知識分類</strong><button class="btn btn-sm" data-action="category.create">＋新增分類</button></div><nav aria-label="AI 資料庫分類與案件">${renderNavigation(context.state,{selectedCategory,selectedCase,collapsed})}</nav>${context.state.categories.some(c=>c.moduleType==='cases')?'':'<button class="btn btn-sm" data-action="category.restoreCases">建立案件資料庫</button>'}<p class="aidb-sort-hint">拖曳分類或案件可調整順序。<br>鍵盤：選取列後按 Alt＋↑／↓。</p></aside><main class="aidb-content">${renderCaseContent(context.state,{selectedCategory,selectedCase})}</main></div>`;
+    root.innerHTML=`<div class="aidb-header"><div><h1>AI 資料庫</h1><p class="aidb-muted">公司案件原始資料與設計知識管理</p></div><div class="aidb-actions"><button class="btn btn-sm" data-action="thumbnails.manage">照片縮圖工具</button><button class="btn btn-sm" data-action="reload">重新載入</button></div></div><p class="aidb-environment">${esc(context.store.label)}</p><p class="aidb-notice" role="status" ${notice?'':'hidden'}>${esc(notice)}</p>${context.state.cleanupPaths.length?'<p class="aidb-update-note">部分原始檔案尚待清理，資料已隱藏。<button class="btn btn-sm" data-action="cleanup">重試檔案清理</button></p>':''}<div class="aidb-layout"><aside class="aidb-sidebar card"><div class="aidb-sidebar-heading"><strong>知識分類</strong><button class="btn btn-sm" data-action="category.create">＋新增分類</button></div><nav aria-label="AI 資料庫分類與案件">${renderNavigation(context.state,{selectedCategory,selectedCase,collapsed,canManageRules:canManageRules()&&!!context.store.analysisRules})}</nav>${context.state.categories.some(c=>c.moduleType==='cases')?'':'<button class="btn btn-sm" data-action="category.restoreCases">建立案件資料庫</button>'}<p class="aidb-sort-hint">拖曳分類或案件可調整順序。<br>鍵盤：選取列後按 Alt＋↑／↓。</p></aside><main class="aidb-content">${renderCaseContent(context.state,{selectedCategory,selectedCase})}</main></div>`;
     updateAnalysis();
     void loadSavedAnalysis();
     if(session.canRunPdfSelfTest?.()){
@@ -281,6 +291,15 @@ export function mountAiDatabase(root,session){
   root.addEventListener('click',event=>{
     const button=event.target.closest('[data-action]');if(!button||busy||captionSaving||!session.canManage())return;
     const key=button.dataset.action,id=button.dataset.id;
+    if(key==='category.analysisRules'){
+      if(!canManageRules()||ruleDialog)return;
+      const category=context.state.categories.find(row=>row.id===id);
+      if(category)ruleDialog=openAnalysisRules(root,category,context.store.analysisRules,canManageRules,()=>{
+        ruleDialog=null;
+        if(canManageRules()&&button.isConnected)button.focus();
+      });
+      return;
+    }
     if(key==='thumbnails.manage'){
       if(dirty||captionDrafts.size){error(Error('請先儲存目前編輯內容，再開啟縮圖工具。'));return;}
       thumbnailMaintenance?.dispose();
@@ -322,18 +341,20 @@ export function mountAiDatabase(root,session){
   root.addEventListener('dragover',event=>{if(!event.dataTransfer.types.includes('application/x-haven-ai'))return;const row=event.target.closest('[data-drag-kind]');if(row){event.preventDefault();event.dataTransfer.dropEffect='move';}});
   root.addEventListener('drop',event=>{const row=event.target.closest('[data-drag-kind]');if(!row)return;event.preventDefault();try{const from=JSON.parse(event.dataTransfer.getData('application/x-haven-ai'));if(from.kind!==row.dataset.dragKind||(from.kind==='case'&&from.parent!==row.dataset.parent))return;reorder(from.kind,from.id,row.dataset.id,from.parent);}catch{/* Ignore unrelated drag data. */}});
   root.addEventListener('keydown',event=>{const row=event.target.closest('[data-drag-kind]');if(!row||!event.altKey||!['ArrowUp','ArrowDown'].includes(event.key))return;event.preventDefault();const kind=row.dataset.dragKind,parent=row.dataset.parent,rows=sorted(kind==='category'?context.state.categories:context.state.cases.filter(c=>c.categoryId===parent)),i=rows.findIndex(c=>c.id===row.dataset.id),other=rows[i+(event.key==='ArrowUp'?-1:1)];if(other)reorder(kind,row.dataset.id,other.id,parent);});
-  const warnBeforeUnload=event=>{if(dirty||captionSaving||captionDrafts.size){event.preventDefault();event.returnValue='';}};
+  const warnBeforeUnload=event=>{if(dirty||captionSaving||captionDrafts.size||ruleDialog?.isDirty()){event.preventDefault();event.returnValue='';}};
   window.addEventListener('beforeunload',warnBeforeUnload);
   return {
     render,
+    refreshRuleAccess,
     prepare(){if(emulatorMode&&!denied&&session.canManage())initialize();},
     canDisplay(){return !denied&&session.canManage()&&(!emulatorMode||!!context.state);},
-    leave(){if(!leaveDraft())return false;dirty=false;stopPhotoView?.();photoReadSession=null;return true;},
+    leave(){if(!leaveDraft()||(ruleDialog&&!ruleDialog.close()))return false;dirty=false;stopPhotoView?.();photoReadSession=null;return true;},
     dispose(){
       disposed=true;
       generation++;
       unsubscribe?.();
       thumbnailMaintenance?.dispose();
+      ruleDialog?.dispose();
       stopPhotoView?.();photoReadSession=null;
       window.removeEventListener('beforeunload',warnBeforeUnload);
       photoLoader.dispose();
