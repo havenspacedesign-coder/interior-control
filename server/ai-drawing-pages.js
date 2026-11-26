@@ -1,3 +1,5 @@
+import {withAnalysisRules} from './ai-case-analysis-rules.js';
+
 export const BATCH_SIZE=2;
 export const CONCURRENT_BATCHES=2;
 const PDF_LIMIT=50_000_000;
@@ -34,7 +36,7 @@ export function responseText(data){
 const failure=(page,reasonCode,reason)=>({page,status:'request_failed',reasonCode,reason});
 const timeout=page=>failure(page,'TIMEOUT','施工圖分析請求逾時。');
 
-export async function reviewBatch({PDFDocument,document},requested,ask,signal){
+export async function reviewBatch({PDFDocument,document},requested,ask,signal,rules=[]){
   const reviewed=[],input=[],included=new Set();
   let bytes=0;
   for(const page of requested){
@@ -46,7 +48,7 @@ export async function reviewBatch({PDFDocument,document},requested,ask,signal){
       const data=await pdf.save();
       if(data.length>=PDF_LIMIT){reviewed.push(failure(page,'PDF_TOO_LARGE','單頁 PDF 超過分析檔案大小上限。'));continue;}
       if(bytes+data.length>=PDF_LIMIT){
-        reviewed.push(...await sendPages(input,included,ask,signal));
+        reviewed.push(...await sendPages(input,included,ask,signal,rules));
         input.length=0;
         included.clear();
         bytes=0;
@@ -61,17 +63,17 @@ export async function reviewBatch({PDFDocument,document},requested,ask,signal){
       reviewed.push(failure(page,'PDF_SPLIT_FAILED','無法從施工圖取出這一頁。'));
     }
   }
-  return [...reviewed,...await sendPages(input,included,ask,signal)];
+  return [...reviewed,...await sendPages(input,included,ask,signal,rules)];
 }
 
-async function sendPages(input,included,ask,signal){
+async function sendPages(input,included,ask,signal,rules){
   if(!input.length)return [];
   const pagesRequested=[...included];
   const failAll=(code,reason)=>pagesRequested.map(page=>failure(page,code,reason));
   if(signal.aborted)return pagesRequested.map(timeout);
   try{
     const response=await ask({
-      instructions:PAGE_INSTRUCTIONS,input:[{role:'user',content:input}],
+      instructions:withAnalysisRules(PAGE_INSTRUCTIONS,rules),input:[{role:'user',content:input}],
       text:{format:pageFormat},max_output_tokens:3400,
     },signal);
     if(!response.ok){
@@ -132,7 +134,7 @@ export function drawingReport(pages){
     incompletePages,failedPages,isComplete:recognizedPages===pages.length,pages};
 }
 
-export async function reviewDrawing(bytes,ask,signal){
+export async function reviewDrawing(bytes,ask,signal,rules=[]){
   const drawing=await openDrawing(bytes);
   const {totalPages}=drawing;
   const pages=Array.from({length:totalPages},(_,index)=>({page:index+1,status:'unreviewed',reasonCode:'NOT_STARTED',reason:'本頁尚未送出分析。'}));
@@ -141,7 +143,7 @@ export async function reviewDrawing(bytes,ask,signal){
     while(next<totalPages&&!signal.aborted){
       const batch=pages.slice(next,next+BATCH_SIZE).map(({page})=>page);
       next+=BATCH_SIZE;
-      for(const result of await reviewBatch(drawing,batch,ask,signal))pages[result.page-1]=result;
+      for(const result of await reviewBatch(drawing,batch,ask,signal,rules))pages[result.page-1]=result;
     }
   }
   await Promise.all(Array.from({length:Math.min(CONCURRENT_BATCHES,Math.ceil(totalPages/BATCH_SIZE))},worker));

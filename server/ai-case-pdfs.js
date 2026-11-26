@@ -66,7 +66,7 @@ export async function readCasePdfs(caseId,token,signal,{drawingOnly=false,skipDr
       sha256:createHash('sha256').update(bytes).digest('hex'),
     });
   }
-  return {project,caseUpdatedAt:caseDocument.updateTime??null,content,sources,drawingBytes,pdfBytesByKind,
+  return {project,caseUpdatedAt:caseDocument.updateTime??null,content,sources,drawingBytes,pdfBytesByKind,documentTypes:[...kinds],
     missing:Object.entries(LABELS).filter(([kind])=>!kinds.has(kind)).map(([,label])=>label),
   };
 }

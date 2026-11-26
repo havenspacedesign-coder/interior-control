@@ -29,6 +29,7 @@ const REASONS={
   OPENAI_OUTPUT_INCOMPLETE:'AI 回覆未完成',SUMMARY_SCHEMA_INVALID:'摘要結構不完整',
   KNOWLEDGE_SCHEMA_INVALID:'案件知識結構不完整',PDF_INDEX_UNEXPECTED_ERROR:'PDF 索引發生錯誤',
   PDF_SOURCE_LOAD_FAILED:'案件 PDF 檔案讀取失敗',DRAWING_PREPARATION_FAILED:'施工圖分析準備失敗',
+  ANALYSIS_RULE_LOAD_FAILED:'無法讀取案件所屬分類的 AI 分析規則',ANALYSIS_RULES_CHANGED:'分析期間適用的規則或 PDF 類型已變更',
   PERMISSION_DENIED:'Firestore 權限不足',FIRESTORE_WRITE_FAILED:'Firestore 寫入失敗',
   FIRESTORE_LATEST_READ_FAILED:'Firestore 正式版本讀取失敗',FIRESTORE_PAYLOAD_TOO_LARGE:'紀錄總量超出儲存限制',
   FIRESTORE_COMMIT_FAILED:'Firestore 提交失敗',FIRESTORE_PRECONDITION_RETRY_LIMIT:'正式版本持續變動，寫入重試已達上限',
@@ -66,9 +67,13 @@ export function renderAnalysisDiagnostics(trace,modelOutput){
   const originals=trace?.json?.sections?Object.entries(trace.json.sections).map(([key,value])=>`${label(key)} ${value} 筆`).join('、'):'';
   const save=trace?.firestore;
   const written=Object.entries(save?.latestWritten?.bySource??{}).map(([key,count])=>`${fileLabel(key)} ${count} 筆`).join('、');
+  const ruleAudit=trace?.analysisRules;
+  const ruleRows=ruleAudit?.rules.map(({id,name,version,revisionId,documentTypes})=>`<li>${esc(name)}｜版本 ${esc(version)}｜ID ${esc(id)}<small>修訂 ID ${esc(revisionId)}｜${esc(documentTypes.map(fileLabel).join('、'))}</small></li>`).join('');
   return `<details class="aidb-analysis-block"><summary>分析診斷</summary>
     ${trace?`<p>分析編號 ${esc(trace.runId)}</p><p>OpenAI ${esc(state(trace.openAI.state))}｜JSON ${esc(state(trace.json.state))}</p>
     ${trace.failure?`<p>${esc(diagnosticReason(trace.failure))}</p>`:''}${originals?`<p>原始回覆 ${esc(originals)}</p>`:''}
+    ${ruleAudit?`<details><summary>${ruleAudit.summarySubmitted?'本次分析使用的分類規則':'分析準備階段選取的分類規則'}</summary>
+    ${ruleRows?`<ul>${ruleRows}</ul>`:'<p>本次沒有適用的已啟用規則。</p>'}</details>`:''}
     ${files.length?`<ul>${files.join('')}</ul>`:''}
     ${counts.length?`<table><thead><tr><th>分類</th><th>驗證前</th><th>保留</th><th>已驗證</th><th>待核對</th><th>排除</th></tr></thead><tbody>${counts.join('')}</tbody></table>`:''}
     ${review.length?`<ul>${review.join('')}</ul>`:''}

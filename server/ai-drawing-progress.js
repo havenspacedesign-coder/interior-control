@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import {ROOT,update} from './ai-case-knowledge.js';
 import {BATCH_SIZE,CONCURRENT_BATCHES,drawingReport,reviewBatch} from './ai-drawing-pages.js';
 
@@ -56,17 +57,19 @@ function store(token,budget){
   };
 }
 
-async function seedPages(storage,casePath,hash){
+async function seedPages(storage,casePath,hash,ruleFingerprint){
   const latest=await storage.get(casePath+'/aiKnowledge/latest');
-  const {sources,latestRunId}=unpackFields(latest?.fields);
+  const {sources,latestRunId,drawing}=unpackFields(latest?.fields);
+  if((drawing?.ruleFingerprint??null)!==ruleFingerprint)return [];
   if(!Array.isArray(sources)||!sources.some(source=>source.kind==='drawing'&&source.sha256===hash)||
     typeof latestRunId!=='string'||!/^[-\w]+$/.test(latestRunId))return [];
   return (await storage.list(casePath+'/aiKnowledgeRuns/'+latestRunId+'/drawingPages')).filter(canReuse);
 }
 
-export async function drawingProgress({caseId,source,drawing,sessionId,token,ask,step}){
+export async function drawingProgress({caseId,source,drawing,sessionId,token,ask,step,rules,ruleFingerprint}){
   const storage=store(token,AbortSignal.timeout(step?47_000:18_000)),casePath='aiDbCases/'+caseId;
-  const path=casePath+'/aiDrawingProgress/'+source.sha256;
+  const key=ruleFingerprint?createHash('sha256').update(source.sha256+':'+ruleFingerprint).digest('hex'):source.sha256;
+  const path=casePath+'/aiDrawingProgress/'+key;
   const collection=path+'/pages';
   const totalPages=drawing.totalPages;
   const started=Date.now();
@@ -74,7 +77,7 @@ export async function drawingProgress({caseId,source,drawing,sessionId,token,ask
   if(step&&unpackFields(saved?.fields).leaseUntil>started)return {busy:true};
   const current=await storage.list(collection);
   const byPage=new Map(current.map(row=>[row.page,row]));
-  const seeds=current.length===0?await seedPages(storage,casePath,source.sha256):[];
+  const seeds=current.length===0?await seedPages(storage,casePath,source.sha256,ruleFingerprint):[];
   for(const row of seeds)if(row.page>=1&&row.page<=totalPages)byPage.set(row.page,row);
   const pages=Array.from({length:totalPages},(_,index)=>byPage.get(index+1)??placeholder(index+1));
   if(!step){
@@ -96,7 +99,7 @@ export async function drawingProgress({caseId,source,drawing,sessionId,token,ask
     const size=fresh.length?BATCH_SIZE:1;
     const batches=[];
     for(let index=0;index<selected.length;index+=size)batches.push(selected.slice(index,index+size).map(({page})=>page));
-    const results=(await Promise.all(batches.map(batch=>reviewBatch(drawing,batch,ask,signal)))).flat();
+    const results=(await Promise.all(batches.map(batch=>reviewBatch(drawing,batch,ask,signal,rules)))).flat();
     const changed=new Map(seeds.map(row=>[row.page,row]));
     for(const row of results){
       const old=pages[row.page-1];

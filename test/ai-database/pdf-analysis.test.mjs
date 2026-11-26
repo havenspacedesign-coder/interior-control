@@ -34,28 +34,39 @@ const reviewedPage=page=>page===4
   ?{page,readable:true,complete:true,drawingType:'天花配置圖',content:'天花局部降板。'}
   :{page,readable:true,complete:true,drawingType:'平面配置圖',content:'客廳與餐廳相連。',spaceNames:['客廳'],dimensions:['走道 900 mm']};
 const fields=object=>Object.fromEntries(Object.entries(object).map(([key,value])=>[key,Array.isArray(value)?{arrayValue:{values:value.map(x=>({stringValue:x}))}}:{stringValue:String(value)}]));
+const categoryId='database-cases';
+const caseFields=fields({...basic,categoryId});
+const rule=(id,documentTypes,{version=1,enabled=true,archived=false,sortOrder=0}={})=>({document:{
+  name:'projects/have000/databases/(default)/documents/aiDbCategories/'+categoryId+'/analysisRuleConfig/current/rules/'+id,
+  fields:{...fields({id,name:'名稱 '+id,content:'公司專屬規則 '+id,documentTypes,revisionId:id+'-v'+version}),
+    enabled:{booleanValue:enabled},archived:{booleanValue:archived},sortOrder:{integerValue:String(sortOrder)},
+    version:{integerValue:String(version)}},
+}});
 const record=kind=>({document:{fields:fields({id:kind,caseId:'case',kind,storagePath:'aiDatabase/cases/case/'+kind,name:kind+'.pdf',size:fixture.length})}});
 const ok=value=>new Response(JSON.stringify(value),{headers:{'content-type':'application/json'}});
 const commitTime='2026-11-20T05:00:00.000Z';
 async function run({files=['drawing','quote','change'].map(record),mediaStatus=200,bytes=fixture,output=sections,
-  pageResults=pages=>pages.map(reviewedPage),saveFailed=false,readDenied=false,newerRun=false,rawOutput=null}={}){
-  const calls=[],pageRequests=[];let responseBody;
+  pageResults=pages=>pages.map(reviewedPage),saveFailed=false,readDenied=false,newerRun=false,rawOutput=null,
+  rules=[],role='manager',ruleStatus=200}={}){
+  const calls=[],pageRequests=[],pageInstructions=[];let responseBody;
   globalThis.fetch=async(url,options)=>{
     calls.push({url,options});
     if(url.includes('accounts:lookup'))return ok({users:[{localId:'manager'}]});
-    if(url.includes('/members/'))return ok({fields:fields({role:'manager',status:'active'})});
+    if(url.includes('/members/'))return ok({fields:fields({role,status:'active'})});
     if(url.endsWith('/aiKnowledge/latest')&&readDenied)return new Response(null,{status:403});
     if(url.endsWith('/aiKnowledge/latest'))return newerRun?ok({updateTime:commitTime,fields:{
       startedAt:{timestampValue:'2099-01-01T00:00:00Z'},latestRunId:{stringValue:'newer-run'},
     }}):new Response(null,{status:404});
     if(url.endsWith(':commit'))return saveFailed
       ?new Response(JSON.stringify({error:{status:'PERMISSION_DENIED'}}),{status:403}):ok({commitTime});
-    if(url.includes('/aiDbCases/'))return ok({fields:fields(basic)});
+    if(url.includes('/aiDbCases/'))return ok({fields:caseFields});
+    if(url.includes('/analysisRuleConfig/'))return ruleStatus===200?ok(rules):new Response(null,{status:ruleStatus});
     if(url.endsWith(':runQuery'))return ok(files);
     if(url.includes('firebasestorage.googleapis.com'))return new Response(bytes,{status:mediaStatus});
     assert.equal(url,'https://api.openai.com/v1/responses');
     const body=JSON.parse(options.body);
     if(body.text.format.name==='construction_drawing_pages'){
+      pageInstructions.push(body.instructions);
       const input=body.input[0].content;
       const pages=[];
       for(const item of input.filter(({type})=>type==='input_file')){
@@ -70,8 +81,9 @@ async function run({files=['drawing','quote','change'].map(record),mediaStatus=2
     return ok({status:'completed',output_text:rawOutput??JSON.stringify({knowledge,...output})});
   };
   const response={setHeader(){},status(code){this.code=code;return this;},json(data){this.data=data;return this;}};
-  await handler({method:'POST',headers:{authorization:'Bearer user-token'},body:{basic,caseId:'case',files:[{storagePath:'https://evil.invalid'}]}},response);
-  return{response,calls,responseBody,pageRequests};
+  await handler({method:'POST',headers:{authorization:'Bearer user-token'},body:{basic,caseId:'case',categoryId:'other-category',
+    rules:['CLIENT RULE'],files:[{storagePath:'https://evil.invalid'}]}},response);
+  return{response,calls,responseBody,pageRequests,pageInstructions};
 }
 
 async function checkSegmentedDrawing(){
@@ -96,12 +108,14 @@ async function checkSegmentedDrawing(){
   }
   const calls=[],pageAttempts=new Map();
   let canFinishLastPage=false;
+  let analysisRules=[];
   globalThis.fetch=async(url,options)=>{
     if(url.includes('accounts:lookup'))return ok({users:[{localId:'manager'}]});
     if(url.includes('/members/'))return ok({fields:fields({role:'manager',status:'active'})});
+    if(url.includes('/analysisRuleConfig/'))return ok(analysisRules);
     if(url.endsWith(':runQuery'))return ok([record('drawing')]);
     if(url.includes('firebasestorage.googleapis.com'))return new Response(bytes);
-    if(url===`https://firestore.googleapis.com/v1/${casePath}`)return ok({fields:fields(basic)});
+    if(url===`https://firestore.googleapis.com/v1/${casePath}`)return ok({fields:caseFields});
     if(url.endsWith(':commit')){
       const {writes}=JSON.parse(options.body);
       for(const {update,currentDocument} of writes){
@@ -142,10 +156,10 @@ async function checkSegmentedDrawing(){
     assert.ok(request.input[0].content.every(({type})=>type!=='input_file'),'summary must not reread drawings');
     return ok({status:'completed',output_text:JSON.stringify({...sections,knowledge})});
   };
-  const invoke=async(drawingMode,sessionId)=>{
+  const invoke=async(drawingMode,sessionId,ruleFingerprint,status=200)=>{
     const response={setHeader(){},status(code){this.code=code;return this;},json(data){this.data=data;return this;}};
-    await handler({method:'POST',headers:{authorization:'Bearer user-token'},body:{basic,caseId:'case',drawingMode,sessionId}},response);
-    assert.equal(response.code,200,JSON.stringify(response.data));
+    await handler({method:'POST',headers:{authorization:'Bearer user-token'},body:{basic,caseId:'case',drawingMode,sessionId,ruleFingerprint}},response);
+    assert.equal(response.code,status,JSON.stringify(response.data));
     return response.data;
   };
   async function runSession(sessionId){
@@ -180,6 +194,21 @@ async function checkSegmentedDrawing(){
   assert.equal(docs.get(nextRun).fields.status.stringValue,'complete');
   assert.equal(docs.get(nextRun+'/drawingPages/32').fields.materials.arrayValue.values[0].stringValue,'木皮');
   assert.equal(docs.get(firstRun).fields.status.stringValue,'partial');
+
+  // Newly enabled drawing rules must start with page 1, even with 32 already
+  // recognized pages in the previous ruleset's progress.
+  analysisRules=[rule('drawing-rule',['drawing'])];
+  const sessionId='55555555-5555-4555-8555-555555555555';
+  const startCalls=calls.length;
+  const start=await invoke('step',sessionId);
+  assert.ok(calls.slice(startCalls).some(batch=>batch.includes(1)));
+  assert.match(start.drawingStep.ruleFingerprint,/^[a-f0-9]{64}$/);
+  analysisRules=[rule('drawing-rule',['drawing'],{version:2})];
+  const callsBeforeConflict=calls.length;
+  const conflict=await invoke('finalize',sessionId,start.drawingStep.ruleFingerprint,409);
+  assert.equal(calls.length,callsBeforeConflict);
+  assert.equal(conflict.diagnostics.failure,'ANALYSIS_RULES_CHANGED');
+  assert.equal(conflict.diagnostics.firestore.latestUpdated,false);
 }
 try{
   process.env.OPENAI_API_KEY='mock-only';
@@ -306,17 +335,83 @@ try{
   assert.ok(reviewHtml.includes('Elevated ceiling<small class="aidb-muted">施工圖｜第 4 頁</small>'));
   const coverage=JSON.parse(mixed.responseBody.input[0].content[0].text).drawingPages;
   assert.deepEqual(coverage.map(({page})=>page),[1,4,5,6,7,8,9,10,11,12,13]);
-  const complete=await run({bytes:drawing,files:[record('drawing')],
+  const complete=await run({bytes:drawing,files:[record('drawing')],rules:[rule('drawing-only',['drawing'])],
     output:{...sections,drawings:[sections.drawings[0],extraPoint]},
   });
   const completeHtml=renderAnalysisResult(complete.response.data);
   assert.ok(completeHtml.includes('施工圖共 13 頁，已分析 13 頁'));
   assert.ok(completeHtml.includes('施工圖重點引用頁碼：4'));
+  assert.equal(complete.response.data.sections.drawings[1].verificationStatus,'verified');
+  assert.equal(complete.response.data.knowledgeSave.isLatest,true);
+  const rulePublished=JSON.parse(complete.calls.find(call=>call.url.endsWith(':commit')).options.body).writes
+    .find(write=>write.update.name.endsWith('/aiKnowledge/latest')).update.fields;
+  assert.equal(rulePublished.drawing.mapValue.fields.ruleFingerprint.stringValue,
+    complete.response.data.diagnostics.analysisRules.drawingFingerprint);
+  assert.equal(rulePublished.diagnostics,undefined);
   assert.equal(result.calls.filter(call=>call.url.includes('firebasestorage.googleapis.com')).length,3);
   assert.ok(result.calls.filter(call=>call.url.includes('firebasestorage.googleapis.com')).every(call=>call.options.headers.authorization==='Firebase user-token'&&!call.options.method));
   assert.ok(result.calls.every(call=>!['PATCH','DELETE','PUT'].includes(call.options.method)));
   const query=JSON.parse(result.calls.find(call=>call.url.endsWith(':runQuery')).options.body);
   assert.equal(query.structuredQuery.where.fieldFilter.value.stringValue,'case');
+  const applicableRules=[
+    rule('quote-only',['quote'],{version:3,sortOrder:2}),
+    rule('drawing-only',['drawing'],{sortOrder:1}),
+    rule('all-documents',['all'],{sortOrder:0}),
+    rule('multi-documents',['quote','change'],{sortOrder:3}),
+    rule('change-disabled',['change'],{enabled:false}),
+    rule('archived',['all'],{archived:true,enabled:false}),
+  ];
+  const logged=[];
+  const savedInfo=console.info;
+  let applied;
+  try{
+    console.info=(...entry)=>logged.push(entry);
+    applied=await run({rules:applicableRules});
+  }finally{console.info=savedInfo;}
+  assert.equal(applied.response.code,200);
+  const ruleQueries=applied.calls.filter(call=>call.url.includes('/analysisRuleConfig/'));
+  assert.equal(ruleQueries.length,1);
+  assert.ok(ruleQueries[0].url.endsWith('/aiDbCategories/'+categoryId+'/analysisRuleConfig/current:runQuery'));
+  assert.deepEqual(JSON.parse(ruleQueries[0].options.body).structuredQuery.from,[{collectionId:'rules'}]);
+  assert.equal(ruleQueries[0].options.headers.authorization,'Bearer user-token');
+  assert.equal(applied.pageInstructions.length,1);
+  assert.match(applied.pageInstructions[0],/公司專屬規則 all-documents.*公司專屬規則 drawing-only/);
+  assert.doesNotMatch(applied.pageInstructions[0],/quote-only|multi-documents|archived|change-disabled/);
+  assert.match(applied.responseBody.instructions,/公司專屬規則 all-documents.*公司專屬規則 drawing-only.*公司專屬規則 quote-only.*公司專屬規則 multi-documents/);
+  assert.match(applied.responseBody.instructions,/視覺標記.*待核對/);
+  assert.doesNotMatch(applied.responseBody.instructions,/archived|change-disabled|CLIENT RULE/);
+  const audit=applied.response.data.diagnostics.analysisRules;
+  assert.equal(audit.categoryId,categoryId);
+  assert.equal(audit.summarySubmitted,true);
+  assert.deepEqual(audit.rules.map(({id,documentTypes})=>[id,documentTypes]),[
+    ['all-documents',['quote','drawing','change']],['drawing-only',['drawing']],
+    ['quote-only',['quote']],['multi-documents',['quote','change']],
+  ]);
+  assert.deepEqual(audit.rules[2],{id:'quote-only',name:'名稱 quote-only',version:3,revisionId:'quote-only-v3',documentTypes:['quote']});
+  const appliedHistory=JSON.parse(applied.calls.find(call=>call.url.endsWith(':commit')).options.body).writes
+    .find(write=>write.update.name.endsWith('/aiKnowledgeRuns/'+applied.response.data.runId)).update.fields;
+  const storedAudit=appliedHistory.diagnostics.mapValue.fields.analysisRules.mapValue.fields;
+  assert.equal(storedAudit.rules.arrayValue.values[2].mapValue.fields.version.integerValue,'3');
+  assert.equal(storedAudit.rules.arrayValue.values[2].mapValue.fields.content,undefined);
+  assert.doesNotMatch(JSON.stringify(logged),/公司專屬規則|名稱 quote-only|user-token/);
+  assert.match(renderAnalysisResult(applied.response.data),/本次分析使用的分類規則.*\n.*名稱 quote-only｜版本 3/s);
+  assert.equal(applied.response.data.knowledgeSave.isLatest,false);
+  const quoteRules=await run({files:[record('quote')],rules:applicableRules});
+  assert.deepEqual(quoteRules.response.data.diagnostics.analysisRules.rules.map(row=>[row.id,row.documentTypes]),[
+    ['all-documents',['quote']],['quote-only',['quote']],['multi-documents',['quote']],
+  ]);
+  assert.doesNotMatch(quoteRules.responseBody.instructions,/drawing-only/);
+  for(const options of [{role:'admin'},{ruleStatus:403},{ruleStatus:503}]){
+    const rejected=await run(options);
+    assert.equal(rejected.response.code,options.ruleStatus===503?502:403);
+    assert.equal(rejected.response.data.diagnostics.failure,'ANALYSIS_RULE_LOAD_FAILED');
+    assert.equal(rejected.response.data.diagnostics.firestore.latestUpdated,false);
+    assert.ok(!rejected.calls.some(call=>call.url.includes('api.openai.com')));
+    const rejectedWrites=JSON.parse(rejected.calls.find(call=>call.url.endsWith(':commit')).options.body).writes;
+    assert.equal(rejectedWrites.length,1);
+    assert.ok(rejectedWrites[0].update.name.endsWith('/aiKnowledgeRuns/'+rejected.response.data.runId));
+  }
+  console.log('PASS: category rules reach the right AI requests, revisions are recorded, and rule failures stop before OpenAI.');
   const missing=await run({files:[record('quote'),record('photo')]});
   assert.equal(missing.response.code,200);assert.deepEqual(missing.response.data.missing,['施工圖','追加減工程']);assert.equal(missing.responseBody.input[0].content.filter(item=>item.type==='input_file').length,1);
   assert.deepEqual(missing.response.data.sections.drawings,[]);
@@ -325,6 +420,9 @@ try{
   assert.deepEqual(missing.response.data.sections.changes,[]);
   assert.ok(renderAnalysisResult(missing.response.data).includes('追加減工程｜未提供'));
   const none=await run({files:[]});assert.equal(none.response.code,200);assert.equal(none.calls.some(call=>call.url.includes('firebasestorage.googleapis.com')),false);
+  assert.ok(none.calls.every(call=>!call.url.includes('/analysisRuleConfig/')));
+  const supervisorWithoutFiles=await run({files:[],role:'admin'});
+  assert.equal(supervisorWithoutFiles.response.code,200);
   const gone=await run({mediaStatus:404});assert.equal(gone.response.code,404);assert.equal(gone.responseBody,undefined);
   const corrupt=await run({bytes:Buffer.from('not a PDF')});assert.equal(corrupt.response.code,422);assert.equal(corrupt.responseBody,undefined);
   const foreign=record('quote');foreign.document.fields.storagePath={stringValue:'aiDatabase/cases/other/private'};
@@ -335,5 +433,15 @@ try{
   globalThis.fetch=async(url,options)=>{sent=JSON.parse(options.body);return ok(missing.response.data);};
   const summary=await analyzeBasicCase({id:'case',...basic,files:['never supplied by frontend']},async()=>'user-token');
   assert.equal(sent.caseId,'case');assert.equal(sent.files,undefined);assert.deepEqual(summary,missing.response.data);
+  const requests=[];
+  globalThis.fetch=async(url,options)=>{
+    requests.push(JSON.parse(options.body));
+    return ok(requests.length===1?{drawingStep:{done:true,ruleFingerprint:'snapshot'}}:missing.response.data);
+  };
+  await analyzeBasicCase({id:'case',...basic},async()=>'user-token');
+  assert.deepEqual(requests.map(({drawingMode,ruleFingerprint})=>[drawingMode,ruleFingerprint]),[
+    ['step',undefined],['finalize','snapshot'],
+  ]);
+  assert.equal(requests[0].sessionId,requests[1].sessionId);
   console.log('PASS: PDFs, separate drawing page documents, structured case knowledge, retained latest version and save failures. OpenAI and Firebase requests mocked.');
 }finally{globalThis.fetch=savedFetch;if(savedKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=savedKey;}

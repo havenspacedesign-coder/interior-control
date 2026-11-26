@@ -107,6 +107,7 @@ export async function saveCaseKnowledge({caseId,caseUpdatedAt,token,uid,runId,st
       recognizedPages:drawingReview.recognizedPages,unreadablePages:drawingReview.unreadablePages,
       incompletePages:drawingReview.incompletePages,failedPages:drawingReview.failedPages,isComplete:drawingReview.isComplete,
       sourceId:drawingSource.fileId,summary:cited(sections.drawings),
+      ...(trace?.analysisRules?.drawingFingerprint?{ruleFingerprint:trace.analysisRules.drawingFingerprint}:{}),
     }:null,
   };
   const verified=rows=>sourcedItems(rows,EVIDENCE_POLICY_VERSION,sources).map(({unverifiedFields,summaryText,...row})=>row);

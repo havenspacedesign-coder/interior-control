@@ -10,6 +10,7 @@ import {finishValidation,logAnalysisTrace,recordParsedAnalysis,traceVerification
 import {evidenceInstructions,inspectPdfEvidence} from '../server/ai-case-evidence.js';
 import {EVIDENCE_POLICY_VERSION} from '../app/features/ai-database/summary-format.js';
 import {runPdfParserSelfTest} from '../server/ai-pdf-self-test.js';
+import {loadCaseAnalysisRules,withAnalysisRules} from '../server/ai-case-analysis-rules.js';
 const PROJECT='have000';
 const WEB_API_KEY='AIzaSyA6W_C2H84heiVwDe_a6ElMwuEjvbR0aRo';
 export const maxDuration=180;
@@ -59,7 +60,7 @@ export default async function handler(request,response){
     }
     let basic=basicText(request.body),pdfs=null;
     const startedAt=new Date().toISOString();
-    const {drawingMode,sessionId}=request.body;
+    const {drawingMode,sessionId,ruleFingerprint}=request.body;
     const step=drawingMode==='step';
     const segmented=step||drawingMode==='finalize';
     if(segmented&&(!request.body.caseId||typeof sessionId!=='string'||!/^[\da-f-]{36}$/i.test(sessionId))){
@@ -74,6 +75,13 @@ export default async function handler(request,response){
       basic=basicText({basic:pdfs.project});
       if(trace)historyTarget={caseId:request.body.caseId,token,uid,startedAt};
     }
+    if(trace)trace.failure='ANALYSIS_RULE_LOAD_FAILED';
+    const rulePlan=await loadCaseAnalysisRules(pdfs?.project.categoryId,pdfs?.documentTypes??[],token,fields.role.stringValue);
+    if(segmented&&ruleFingerprint!==undefined&&ruleFingerprint!==rulePlan.fingerprint){
+      if(trace)trace.failure='ANALYSIS_RULES_CHANGED';
+      throw failure(409,'分析期間適用的 AI 規則或 PDF 類型已變更，請重新按「開始 AI 分析」。');
+    }
+    if(trace&&pdfs)trace.analysisRules={...rulePlan.audit,drawingFingerprint:rulePlan.drawingFingerprint,summarySubmitted:false};
     const model=process.env.AI_CASE_MODEL||'gpt-4o-mini';
     const sources=pdfs?.sources??[],missing=pdfs?.missing??Object.values(PDF_LABELS);
     const budget=AbortSignal.timeout(segmented?75000:pdfs?.drawingBytes?110000:pdfs?100000:40000);
@@ -83,13 +91,13 @@ export default async function handler(request,response){
       body:JSON.stringify({model,store:false,...requestBody}),
     });
     let drawingReview;
-    if(step&&!pdfs?.drawingBytes)return response.status(200).json({drawingStep:{done:true}});
+    if(step&&!pdfs?.drawingBytes)return response.status(200).json({drawingStep:{done:true,ruleFingerprint:rulePlan.fingerprint}});
     if(trace)trace.failure='DRAWING_PREPARATION_FAILED';
     if(pdfs?.drawingBytes){
       let drawing;
       try{
         if(segmented)drawing=await openDrawing(pdfs.drawingBytes);
-        else drawingReview=await reviewDrawing(pdfs.drawingBytes,ask,AbortSignal.any([budget,AbortSignal.timeout(60000)]));
+        else drawingReview=await reviewDrawing(pdfs.drawingBytes,ask,AbortSignal.any([budget,AbortSignal.timeout(60000)]),rulePlan.drawing);
       }catch(error){
         if(['ERR_MODULE_NOT_FOUND','MODULE_NOT_FOUND'].includes(error.code)){
           throw failure(503,'施工圖 PDF 分頁模組未能載入，請聯繫管理員。');
@@ -98,10 +106,10 @@ export default async function handler(request,response){
       }
       if(segmented){
         const review=await drawingProgress({caseId:request.body.caseId,source:sources.find(item=>item.kind==='drawing'),
-          drawing,sessionId,token,ask,step,
+          drawing,sessionId,token,ask,step,rules:rulePlan.drawing,ruleFingerprint:rulePlan.drawingFingerprint,
         });
-        if(step)return response.status(200).json({drawingStep:review});
-        if(review.needsStep){trace=null;return response.status(200).json({drawingStep:{done:false}});}
+        if(step)return response.status(200).json({drawingStep:{...review,ruleFingerprint:rulePlan.fingerprint}});
+        if(review.needsStep){trace=null;return response.status(200).json({drawingStep:{done:false,ruleFingerprint:rulePlan.fingerprint}});}
         drawingReview=review;
       }
     }
@@ -117,8 +125,9 @@ export default async function handler(request,response){
       :summaryInstructions;
     trace.openAI={state:'requested'};
     trace.failure=null;
+    if(trace.analysisRules)trace.analysisRules.summarySubmitted=true;
     const upstream=await ask({max_output_tokens:pdfs?6800:1800,
-      instructions:`${instructions}\n${evidenceInstructions}${pdfs?`\n${knowledgeInstructions}`:''}`,input,
+      instructions:withAnalysisRules(`${instructions}\n${evidenceInstructions}${pdfs?`\n${knowledgeInstructions}`:''}`,rulePlan.rules),input,
       text:{format:summaryFormat(sources,!!pdfs)},
     },budget);
     trace.openAI={state:upstream.ok?'received':'http_error',httpStatus:upstream.status??null};

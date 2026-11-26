@@ -9,19 +9,20 @@ export async function analyzeBasicCase(project,getIdToken){
   const basic=Object.fromEntries(['name','area','amount','year','houseType','scopes','url','note'].map(key=>[key,project[key]??(key==='scopes'?[]:'')]));
   const sessionId=project.id?crypto.randomUUID():null;
   let mode=sessionId?'step':null;
-  let data;
+  let data,ruleFingerprint;
   for(;;){
     let response;
     try{
       response=await fetch('/api/ai-case-analyze',{
       method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${token}`},
-        body:JSON.stringify({basic,...(sessionId?{caseId:project.id,drawingMode:mode,sessionId}:{})}),signal:AbortSignal.timeout(185000),
+        body:JSON.stringify({basic,...(sessionId?{caseId:project.id,drawingMode:mode,sessionId,ruleFingerprint}:{})}),signal:AbortSignal.timeout(185000),
       });
     }catch(error){throw Error(['TimeoutError','AbortError'].includes(error.name)?'AI 分析逾時，請重試。':'無法連線 AI 分析服務，請檢查網路後重試。');}
     try{data=await response.json();}catch{throw Error('AI 分析 API 尚未啟用或回覆格式不正確。');}
     if(!response.ok)throw Object.assign(Error(data.message||'AI 分析失敗，請稍後重試。'),{analysisDiagnostics:data.diagnostics});
     if(!data.drawingStep)break;
     if(data.drawingStep.busy)throw Error('這份施工圖的分析正在進行，請稍後再按「開始 AI 分析」接續。');
+    ruleFingerprint=data.drawingStep.ruleFingerprint??ruleFingerprint;
     mode=data.drawingStep.done?'finalize':'step';
   }
   if(!Object.keys(SUMMARY_SECTIONS).every(key=>Array.isArray(data.sections?.[key]))||
