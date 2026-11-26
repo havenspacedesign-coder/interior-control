@@ -1,126 +1,126 @@
 {
-  "date": "2026-11-25",
-  "updatedAt": "2026-11-25T04:51:15.340Z",
+  "date": "2026-11-26",
+  "updatedAt": "2026-11-26T04:04:40.835Z",
   "news": [
     {
-      "id": "b94781776f9aaa84",
+      "id": "5d72355735a6cec4",
       "source": "壹蘋",
       "category": "國際",
-      "title": "黃仁勳自爆每天「心理治療1小時」！最難面對是她",
-      "url": "https://news.nextapple.com/international/20261125/5961E06EC1488D8B4FC1280DB57659DE",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/5961E06EC1488D8B4FC1280DB57659DE/acdc969000e8ceec823584ba81783566_1280.webp",
-      "publishedAt": "2026-11-25T03:32:32.000Z",
-      "fetchedAt": "2026-11-25T04:51:15.340Z"
+      "title": "才罵台灣搶走晶片生意！川普證實下周與魏哲家同框",
+      "url": "https://news.nextapple.com/international/20261126/AC0278FBCCCF2F9DC66EE2BEDE1F86D2",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/AC0278FBCCCF2F9DC66EE2BEDE1F86D2/f587c9c3e2c0bf40472f71f7ca3e6f81_1280.webp",
+      "publishedAt": "2026-11-26T03:54:03.000Z",
+      "fetchedAt": "2026-11-26T04:04:40.835Z"
     },
     {
-      "id": "054329699e9c0787",
+      "id": "e548f234592bb3c0",
       "source": "壹蘋",
       "category": "生活",
-      "title": "黃仁勳回歸行情沒了？鼎泰豐候位數掛零　2小時盛況消失",
-      "url": "https://news.nextapple.com/life/20261125/A4E03372417FDB4C56730F38E4B0E3C1",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/A4E03372417FDB4C56730F38E4B0E3C1/d878326447f204c0fd2162adbfde9f54_1280.webp",
-      "publishedAt": "2026-11-25T03:53:09.000Z",
-      "fetchedAt": "2026-11-25T04:51:15.340Z"
+      "title": "沈伯洋選前之夜卡死！蔣萬安團隊遭批　北市府回應了",
+      "url": "https://news.nextapple.com/life/20261126/504064912747481B037A923858810238",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/504064912747481B037A923858810238/412f0f2fd50e4e8a972201cfdda77a20_1280.webp",
+      "publishedAt": "2026-11-26T03:21:14.000Z",
+      "fetchedAt": "2026-11-26T04:04:40.835Z"
     },
     {
-      "id": "0cc2a856b117a2e9",
+      "id": "1cc68c4f3baf6978",
       "source": "壹蘋",
       "category": "社會",
-      "title": "醫院組長盜載1.8萬筆乳篩個資寄私信箱　違反個資法判刑3月",
-      "url": "https://news.nextapple.com/local/20261125/3E67D63131CFD32448FB73049B1D2043",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/3E67D63131CFD32448FB73049B1D2043/447dfb5a67c856d228aa2a4fba155201_1280.webp",
-      "publishedAt": "2026-11-25T04:37:03.000Z",
-      "fetchedAt": "2026-11-25T04:51:15.340Z"
+      "title": "暴力色警性侵女同事　掐脖、摑掌還拍裸照！將入監",
+      "url": "https://news.nextapple.com/local/20261126/068996283C63B20CD57A0775D7948063",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/068996283C63B20CD57A0775D7948063/c2b0b8c8a1b2a29b105514a6afc03bfc_1280.webp",
+      "publishedAt": "2026-11-26T04:00:06.000Z",
+      "fetchedAt": "2026-11-26T04:04:40.835Z"
     },
     {
-      "id": "2b909c6455c3740f",
+      "id": "076b500ee5a8106e",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "納豆傳授生子秘訣「用做的」　鬆口曝2年後二胎計劃",
-      "url": "https://news.nextapple.com/entertainment/20261125/CBEA6170113D2C4F96B61F76C5EB7F47",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/CBEA6170113D2C4F96B61F76C5EB7F47/b3347aaab85e548ae0f7377881207317_1280.webp",
-      "publishedAt": "2026-11-25T04:31:26.000Z",
-      "fetchedAt": "2026-11-25T04:51:15.340Z"
+      "title": "孔鏘與女伴聚餐後親暱離去　本人揭2人真實關係",
+      "url": "https://news.nextapple.com/entertainment/20261126/DD5DB6FD7E7067942813F3DE16BBE355",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/DD5DB6FD7E7067942813F3DE16BBE355/89d1e57df09cacfc15828d7c0c5370e7_1280.webp",
+      "publishedAt": "2026-11-26T03:56:54.000Z",
+      "fetchedAt": "2026-11-26T04:04:40.835Z"
     },
     {
-      "id": "569b5078ce914585",
+      "id": "1e3625ee7dfa2277",
       "source": "壹蘋",
       "category": "AI科技／3C",
-      "title": "濕冷天電暖器怎麼挑　怕冷、怕吵先看這5種",
-      "url": "https://news.nextapple.com/aitech/20261125/4A76FB3FDCC4CA1F073A2320824AA1C2",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/4A76FB3FDCC4CA1F073A2320824AA1C2/4279d161da59cbcdab79daa6cc0ae98d_1280.webp",
-      "publishedAt": "2026-11-25T04:13:50.000Z",
-      "fetchedAt": "2026-11-25T04:51:15.340Z"
+      "title": "Apple耶誕禮物13款一次看　耳機4490元起、摺疊機也入列",
+      "url": "https://news.nextapple.com/aitech/20261126/B63756DFC06FADE0FAA202E3BA8067B7",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/B63756DFC06FADE0FAA202E3BA8067B7/90658119cd6339b89d2211f8ff881307_1280.webp",
+      "publishedAt": "2026-11-25T16:03:00.000Z",
+      "fetchedAt": "2026-11-26T04:04:40.835Z"
     },
     {
-      "id": "0254818ab9da20fe",
+      "id": "b3a5954f3bbcf9a2",
       "source": "壹蘋",
       "category": "財經股市",
-      "title": "索羅斯從金融巨鱷到跨國金主！全球政治金援惹議　沈伯洋也拿135萬美元補助",
-      "url": "https://news.nextapple.com/finance/20261125/52ABE4A74005B04FAF664387A0061155",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/52ABE4A74005B04FAF664387A0061155/480e9798b5a11fc44e89b05025f0ec38_1280.webp",
-      "publishedAt": "2026-11-25T04:44:07.000Z",
-      "fetchedAt": "2026-11-25T04:51:15.340Z"
+      "title": "綠電需求大　經部預估2035年逾740億度",
+      "url": "https://news.nextapple.com/finance/20261126/3D581780459448CCA216562504980489",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/3D581780459448CCA216562504980489/64313b178fa0ac43fb6eab710dd9321e_1280.webp",
+      "publishedAt": "2026-11-26T03:40:11.000Z",
+      "fetchedAt": "2026-11-26T04:04:40.835Z"
     },
     {
-      "id": "ca057e448ac4822a",
+      "id": "d9b848decef42d31",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "羅智強「誤談民調」扯蘇巧慧　她指兩者不同之處譏諷：找人墊背？",
-      "url": "https://news.nextapple.com/politics/20261125/6DD845429DB4F42D7D56659E812A8732",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/6DD845429DB4F42D7D56659E812A8732/ec70eb61f15a589ee24c06bb487a62d8_1280.webp",
-      "publishedAt": "2026-11-25T04:11:24.000Z",
-      "fetchedAt": "2026-11-25T04:51:15.340Z"
+      "title": "蔣萬安願讓市府路　沈伯洋陣營拒絕：神也是你，鬼也是你！",
+      "url": "https://news.nextapple.com/politics/20261126/B41E50658966EAAE8938B1D807610313",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/B41E50658966EAAE8938B1D807610313/bc4fda3ceb29bb258a1a8e6cefaedd21_1280.webp",
+      "publishedAt": "2026-11-26T03:52:32.000Z",
+      "fetchedAt": "2026-11-26T04:04:40.835Z"
     },
     {
-      "id": "6957a1a8b11c8fb6",
+      "id": "ba34d734022c3c05",
       "source": "壹蘋",
       "category": "推薦／熱門",
-      "title": "黃珊珊最新發文藏玄機　他揪「關鍵2字」：大家懂的",
-      "url": "https://news.nextapple.com/politics/20261125/6A2C140A929D562E345CE6E43C855673",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/6A2C140A929D562E345CE6E43C855673/d7eecd6b3b8123db61f6dc9f1e946ec1_1280.webp",
-      "publishedAt": "2026-11-25T04:09:33.000Z",
-      "fetchedAt": "2026-11-25T04:51:15.340Z"
+      "title": "前派出所長逆風發文！批沈伯洋取消選前之夜　陪葬基層警尊嚴",
+      "url": "https://news.nextapple.com/politics/20261126/658279BA00346F566F5C9F1161A3093A",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/658279BA00346F566F5C9F1161A3093A/bc4fda3ceb29bb258a1a8e6cefaedd21_1280.webp",
+      "publishedAt": "2026-11-26T03:42:59.000Z",
+      "fetchedAt": "2026-11-26T04:04:40.835Z"
     },
     {
-      "id": "5d45bf63c48310cf",
-      "source": "壹蘋",
-      "category": "社會",
-      "title": "茶室搜索意外揪出選舉賭盤！雙北市長選情成下注標的　組頭、操盤手遭逮交保",
-      "url": "https://news.nextapple.com/local/20261125/FBC2E1C39A9565D43AAE675DE391E19F",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/FBC2E1C39A9565D43AAE675DE391E19F/fdcd0d4d09c0438e56d44f35faa27cf1_1280.webp",
-      "publishedAt": "2026-11-25T04:36:24.000Z",
-      "fetchedAt": "2026-11-25T04:51:15.340Z"
-    },
-    {
-      "id": "4019840fc7d98a67",
-      "source": "壹蘋",
-      "category": "社會",
-      "title": "梁軒安遭控性侵簽約女藝人二審逆轉無罪　檢方上訴了！",
-      "url": "https://news.nextapple.com/local/20261125/B8CFCE2CFC8EC6502449004E692C73CD",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/B8CFCE2CFC8EC6502449004E692C73CD/531036d8896719ac49477076997c456b_1280.webp",
-      "publishedAt": "2026-11-25T04:34:02.000Z",
-      "fetchedAt": "2026-11-25T04:51:15.340Z"
-    },
-    {
-      "id": "2a1ae95cdcc983d8",
+      "id": "18ae4e9a65412372",
       "source": "壹蘋",
       "category": "娛樂時尚",
-      "title": "陳美鳳身體亮紅燈！「耳石脫落」強烈天旋地轉　晚餐全吐光光",
-      "url": "https://news.nextapple.com/entertainment/20261125/BD6F5A5DAA82DC2D7D5EC06B9EDBFA2C",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/BD6F5A5DAA82DC2D7D5EC06B9EDBFA2C/8990271a5921656c2cbf4eb912f80929_1280.webp",
-      "publishedAt": "2026-11-25T04:10:37.000Z",
-      "fetchedAt": "2026-11-25T04:51:15.340Z"
+      "title": "言承旭暖男指數破表！彩妝師行李箱壞掉　他竟默默送上名貴新品",
+      "url": "https://news.nextapple.com/entertainment/20261126/5BE27A649E1FA9F4155675DB23885905",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/5BE27A649E1FA9F4155675DB23885905/352e9778621c246818bc00ae0990497f_1280.webp",
+      "publishedAt": "2026-11-26T03:45:05.000Z",
+      "fetchedAt": "2026-11-26T04:04:40.835Z"
     },
     {
-      "id": "1af9711991a5f61d",
+      "id": "7f8b9d3ac5de7bbf",
       "source": "壹蘋",
-      "category": "社會",
-      "title": "雲林托嬰中心虐童風波延燒　監視器再揪多人動作粗魯、言語不當",
-      "url": "https://news.nextapple.com/local/20261125/DFB2759769968682F7E549BA4F9E221B",
-      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/DFB2759769968682F7E549BA4F9E221B/7b59a77f890ecd8aa1e98455f481614e_1280.webp",
-      "publishedAt": "2026-11-25T04:06:37.000Z",
-      "fetchedAt": "2026-11-25T04:51:15.340Z"
+      "category": "娛樂時尚",
+      "title": "「億級千金」狠酸國民黨如「逆境菩薩」　不斷給沈伯洋舞台",
+      "url": "https://news.nextapple.com/entertainment/20261126/5961169E4CDB5C7600238B1E0BEC7ADE",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/5961169E4CDB5C7600238B1E0BEC7ADE/63fdf8c06681e403147d0d2282ed37c0_1280.webp",
+      "publishedAt": "2026-11-26T03:40:55.000Z",
+      "fetchedAt": "2026-11-26T04:04:40.835Z"
+    },
+    {
+      "id": "a91f62cc49465906",
+      "source": "壹蘋",
+      "category": "娛樂時尚",
+      "title": "沈伯洋取消選前之夜！台八女星氣到失眠　凌晨4點發文湧2.2萬人取暖",
+      "url": "https://news.nextapple.com/entertainment/20261126/37D443F7161EB7C029391EBB06459314",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/37D443F7161EB7C029391EBB06459314/a37137abec5ff52854e6f02bd94619b3_1280.webp",
+      "publishedAt": "2026-11-26T03:37:24.000Z",
+      "fetchedAt": "2026-11-26T04:04:40.835Z"
+    },
+    {
+      "id": "2783cf77711124db",
+      "source": "壹蘋",
+      "category": "娛樂時尚",
+      "title": "Threads爆料林心如私下兇　合作20年御用彩妝師揭她真面目",
+      "url": "https://news.nextapple.com/entertainment/20261126/D337CF1A78F51A6ECAC556B8F19529A2",
+      "imageUrl": "https://static-cdn.nextapple.tw/prod/2026-11/D337CF1A78F51A6ECAC556B8F19529A2/0678aa611f87b00be19f859e47a0906d_1280.webp",
+      "publishedAt": "2026-11-26T03:34:52.000Z",
+      "fetchedAt": "2026-11-26T04:04:40.835Z"
     }
   ]
 }
