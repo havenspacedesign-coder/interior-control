@@ -16,6 +16,11 @@
 .hscroll-sync.is-pointer-dragging,.horizontal-card-list.is-pointer-dragging{cursor:grabbing!important;user-select:none}
 .mobile-progress-date-sticky{display:none}
 .progress-horizontal-viewport{display:contents}
+.progress-month-drag-edge{position:fixed;width:20px;z-index:70;pointer-events:none;background:color-mix(in srgb,var(--purple) 22%,transparent);box-shadow:inset 0 0 0 1px var(--purple)}
+.progress-month-drag-edge>span{position:absolute;left:26px;white-space:nowrap;padding:5px 9px;border-radius:6px;background:var(--purple);color:#fff;font-size:12px;box-shadow:0 3px 12px #0002}
+.progress-month-drag-edge[data-side="right"]>span{left:auto;right:26px}
+.progress-month-move-notice{position:fixed;right:16px;bottom:30px;z-index:70;max-width:calc(100vw - 32px);padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:13px;box-shadow:0 3px 14px #0002}
+.progress-month-move-notice[role="alert"]{color:var(--red)}
 .progress-week-content{position:sticky;top:calc(49px + var(--progress-controls-height,0px));z-index:24;background:var(--bg);box-shadow:0 1px 0 var(--border)}
 @media(min-width:769px){#panel-progress .progress-layout>.global-notes-panel{margin-top:101px}}
 .global-notes-panel{box-sizing:border-box;transition:width .2s ease,padding .2s ease}

@@ -15,7 +15,7 @@ function renderMobileProgressDateHeader(days){
 }
 function renderProgress(force){
   // 連續拖曳時，前一次儲存／撤銷記錄的完成通知不能替換目前的拖曳來源。
-  if(pnPointerHeld||pnDragSrc||meetingPointerHeld||meetingDragSrc||document.getElementById('meeting-color-palette')){pendingProgressRender=true;return;}
+  if(pnPointerHeld||pnDragSrc||meetingPointerHeld||meetingDragSrc||evDragSrc||document.getElementById('meeting-color-palette')){pendingProgressRender=true;return;}
   var af=document.activeElement;
   var menuOpen=false;
   var typingInProgress=!!(af&&af.matches&&af.matches('input,textarea,[contenteditable="true"]')&&af.closest&&af.closest('#panel-progress'));
@@ -147,6 +147,7 @@ window.saveGlobalNote=async function(viewMonth,text){
 }
 
 function renderWeekView(viewMonth){
+  function meetingItemIsVisible(item){return !!(String(item?.text||'').trim()||item?.link||item?.mentions?.length);}
   const readOnly=!progressCanEditDate(viewMonth);
   const days=getWeekDates();const td=progressCalendarToday();
   const WD=['日','一','二','三','四','五','六'];
@@ -163,7 +164,7 @@ function renderWeekView(viewMonth){
         const isSel=selectedTag&&selectedTag.projId===p.id&&selectedTag.ds===ds&&selectedTag.ei===ei;
         return`<div class="ev-row">
           <span class="ev-chip${isSel?' sel':''}" style="background:${ev.bg||sc(pi)};color:${ev.completed?'#E24B4A':(ev.color||tc(pi))};${ev.strike?'text-decoration:line-through;':''}"
-            ${readOnly?'':`draggable="true" ondragstart="evDragStart(event,'${p.id}','${ds}',${ei})" ondragend="evDragSrc=null"`}
+              ${readOnly?'':`draggable="true" ondragstart="evDragStart(event,'${p.id}','${ds}',${ei})" ondragend="evDragEnd()"`}
             onclick="event.stopPropagation();handleChipClick(event,'${p.id}','${ds}',${ei},'${resolvedStage}')">${displayStageName(ev.label||ev.stage||'?')}${ev.completed?'<span class="progress-item-check">✓</span>':''}${pendBadge(p.id,resolvedStage,viewMonth)}</span>
           <span class="ev-field excel-cell ${!readOnly&&scheduleCellIsSelected(p.id,ds,ei)?'excel-selected':''} ${!readOnly&&scheduleCellIsEditing(p.id,ds,ei)?'excel-editing':''}" data-proj="${p.id}" data-ds="${ds}" data-ei="${ei}" data-field="note" contenteditable="${!readOnly&&scheduleCellIsEditing(p.id,ds,ei)?'true':'false'}"
             style="${ev.bg?'background:'+ev.bg+';':''}${ev.completed?'color:#E24B4A;':(ev.color?'color:'+ev.color+';':'')}${ev.strike?'text-decoration:line-through;':''}" ${readOnly?'':`onclick="event.stopPropagation();selectScheduleCell(this)" ondblclick="event.stopPropagation();startFieldEdit(this)" onblur="saveScheduleCell(this)" onkeydown="scheduleCellKeyDown(event,this)"`}>${escAttr(ev.note||'')}</span>
@@ -231,7 +232,7 @@ function renderWeekView(viewMonth){
         var isT=isSameDay(d,td);
         var key=row.id+'_'+ds;
         var items=(S.meetingLogs[key]&&S.meetingLogs[key].items)||[];
-        var hasVisibleItem=items.length>0&&(String(items[0]?.text||'').trim()!==''||(items[0].mentions||[]).length>0);
+        var hasVisibleItem=items.some(meetingItemIsVisible);
         var selKey=row.id+'|'+ds;
         var selIdx=(meetingSelected[selKey]!=null)?meetingSelected[selKey]:-1;
         var h='<td data-meeting-cell="'+row.id+'|'+ds+'" style="vertical-align:top;height:30px;padding:2px;border:1px solid var(--border);'+(isT?'background:#fff8f8':'')+'"'
@@ -258,45 +259,47 @@ function renderWeekView(viewMonth){
             +' onmousedown="mPointerSelect(event,\''+row.id+'\',\''+ds+'\',0)" onclick="mSelectEmpty(\''+row.id+'\',\''+ds+'\')" ondblclick="event.stopPropagation();mStartEdit(\''+row.id+'\',\''+ds+'\',0)"></div>';
           }
         }else{
-          var item=items[0];
-          var color=item.color||'';var bg=item.bg||'';var linkedItem=normalizeLinkedItem(item);
-          var mentions=(item.mentions||[]).filter(function(uid){var member=S.members.find(function(x){return x.uid===uid;});return member&&member.role!=='manager';});
-          var isSel=selIdx===0;
-          var border=isSel?'2px solid var(--purple)':'1.5px solid var(--border)';
-          var textStyle=(item.completed?'color:#E24B4A;font-weight:500;':(color?'color:'+color+';font-weight:500;':'color:var(--text);'))+(bg?'background:'+bg+';':'background:var(--surface);')+(item.strike?'text-decoration:line-through;':'');
-          var markable=markableMembersList();
-          var allMarked=markable.length>0&&markable.every(function(member){return mentions.indexOf(member.uid)>=0;});
-          var dots=allMarked
-            ?'<span title="已標記全部成員" style="height:18px;border-radius:3px;background:var(--purple);color:#fff;font-size:9px;font-weight:700;letter-spacing:.3px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">ALL</span>'
-            :mentions.map(function(uid){
-            var m=S.members.find(function(x){return x.uid===uid;});
-            var nm=memberDisplayName(m);
-            return'<span title="'+nm+'" style="width:18px;height:18px;border-radius:50%;background:var(--purple);color:#fff;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+memberTag(m)+'</span>';
-          }).join('');
-          var isEdit=meetingEditing&&meetingEditing.rowId===row.id&&meetingEditing.ds===ds&&meetingEditing.idx===0;
-          if(isEdit&&!readOnly){
-            h+='<div style="border:'+border+';padding:3px 8px;border-radius:5px;display:flex;align-items:center;gap:5px;min-height:30px;font-size:13px;line-height:1.3;'+textStyle+'">'
-              +'<input type="text" class="pn-box-input meet-chip" id="meetbox-'+row.id+'-'+ds+'-0" value="'+escAttr(linkedItem.text)+'" data-link-url="'+escAttr(linkedItem.link?.url||'')+'" data-link-label="'+escAttr(linkedItem.link?.label||'')+'" autocomplete="off" spellcheck="false"'
-              +' style="flex:1;min-width:0;box-sizing:border-box;border:none;padding:0;font-size:13px;line-height:1.3;font-family:inherit;background:transparent;color:inherit"'
-              +' onblur="mBoxBlur(this,\''+row.id+'\',\''+ds+'\',0)"'
-              +' onkeydown="mEditKeyDown(event,this,\''+row.id+'\',\''+ds+'\',0)"'
-              +' oncontextmenu="return insertUrlForSelection(event,this)"'
-              +' onclick="event.stopPropagation()"'
-              +'>'
-              +'<div style="display:flex;gap:3px;align-items:center;flex-shrink:0">'+dots
-              +'<span class="meet-tag-btn" title="標記成員" onmousedown="event.preventDefault()" onmouseenter="mOpenMentionPicker(event,\''+row.id+'\',\''+ds+'\',0)" onmouseleave="mScheduleCloseMention(\''+row.id+'\',\''+ds+'\')" onclick="event.stopPropagation()" style="font-size:11px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:50%;width:18px;height:18px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap">+</span>'
-              +'</div></div>';
-          }else{
-            h+='<div class="meet-chip '+(isSel?'excel-selected':'')+'" style="border:'+border+';padding:3px 8px;border-radius:5px;font-size:13px;min-height:30px;line-height:1.3;position:relative;'+textStyle+(readOnly?'':'cursor:pointer;user-select:none;')+'"'
-            +(readOnly?'':' onmousedown="mPointerSelect(event,\''+row.id+'\',\''+ds+'\',0)" onclick="mSelect(\''+row.id+'\',\''+ds+'\',0)"'
-              +' ondblclick="event.stopPropagation();mStartEdit(\''+row.id+'\',\''+ds+'\',0)"'
-              +' draggable="true"'
-              +' ondragstart="mDragStart(event,\''+row.id+'\',\''+ds+'\',0)"'
-              +' ondragend="mDragEnd(event)"')
-              +'>'+renderItemText(item)+(item.completed?'<span class="progress-item-check">✓</span>':'')
-              +(dots?'<span style="position:absolute;top:2px;right:2px;display:flex;gap:2px">'+dots+'</span>':'')
-              +'</div>';
-          }
+          items.forEach(function(item,idx){
+            if(!meetingItemIsVisible(item))return;
+            var color=item.color||'';var bg=item.bg||'';var linkedItem=normalizeLinkedItem(item);
+            var mentions=(item.mentions||[]).filter(function(uid){var member=S.members.find(function(x){return x.uid===uid;});return member&&member.role!=='manager';});
+            var isSel=selIdx===idx;
+            var border=isSel?'2px solid var(--purple)':'1.5px solid var(--border)';
+            var textStyle=(item.completed?'color:#E24B4A;font-weight:500;':(color?'color:'+color+';font-weight:500;':'color:var(--text);'))+(bg?'background:'+bg+';':'background:var(--surface);')+(item.strike?'text-decoration:line-through;':'');
+            var markable=markableMembersList();
+            var allMarked=markable.length>0&&markable.every(function(member){return mentions.indexOf(member.uid)>=0;});
+            var dots=allMarked
+              ?'<span title="已標記全部成員" style="height:18px;border-radius:3px;background:var(--purple);color:#fff;font-size:9px;font-weight:700;letter-spacing:.3px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">ALL</span>'
+              :mentions.map(function(uid){
+              var m=S.members.find(function(x){return x.uid===uid;});
+              var nm=memberDisplayName(m);
+              return'<span title="'+nm+'" style="width:18px;height:18px;border-radius:50%;background:var(--purple);color:#fff;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+memberTag(m)+'</span>';
+            }).join('');
+            var isEdit=meetingEditing&&meetingEditing.rowId===row.id&&meetingEditing.ds===ds&&meetingEditing.idx===idx;
+            if(isEdit&&!readOnly){
+              h+='<div style="border:'+border+';padding:3px 8px;border-radius:5px;display:flex;align-items:center;gap:5px;min-height:30px;font-size:13px;line-height:1.3;'+textStyle+'">'
+                +'<input type="text" class="pn-box-input meet-chip" id="meetbox-'+row.id+'-'+ds+'-'+idx+'" value="'+escAttr(linkedItem.text)+'" data-link-url="'+escAttr(linkedItem.link?.url||'')+'" data-link-label="'+escAttr(linkedItem.link?.label||'')+'" autocomplete="off" spellcheck="false"'
+                +' style="flex:1;min-width:0;box-sizing:border-box;border:none;padding:0;font-size:13px;line-height:1.3;font-family:inherit;background:transparent;color:inherit"'
+                +' onblur="mBoxBlur(this,\''+row.id+'\',\''+ds+'\','+idx+')"'
+                +' onkeydown="mEditKeyDown(event,this,\''+row.id+'\',\''+ds+'\','+idx+')"'
+                +' oncontextmenu="return insertUrlForSelection(event,this)"'
+                +' onclick="event.stopPropagation()"'
+                +'>'
+                +'<div style="display:flex;gap:3px;align-items:center;flex-shrink:0">'+dots
+                +'<span class="meet-tag-btn" title="標記成員" onmousedown="event.preventDefault()" onmouseenter="mOpenMentionPicker(event,\''+row.id+'\',\''+ds+'\','+idx+')" onmouseleave="mScheduleCloseMention(\''+row.id+'\',\''+ds+'\')" onclick="event.stopPropagation()" style="font-size:11px;color:var(--purple);cursor:pointer;border:1px dashed var(--purple);border-radius:50%;width:18px;height:18px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap">+</span>'
+                +'</div></div>';
+            }else{
+              h+='<div data-meeting-index="'+idx+'" class="meet-chip '+(isSel?'excel-selected':'')+'" style="border:'+border+';padding:3px 8px;border-radius:5px;font-size:13px;min-height:30px;line-height:1.3;position:relative;'+(idx?'margin-top:2px;':'')+textStyle+(readOnly?'':'cursor:pointer;user-select:none;')+'"'
+              +(readOnly?'':' onmousedown="mPointerSelect(event,\''+row.id+'\',\''+ds+'\','+idx+')" onclick="mSelect(\''+row.id+'\',\''+ds+'\','+idx+')"'
+                +' ondblclick="event.stopPropagation();mStartEdit(\''+row.id+'\',\''+ds+'\','+idx+')"'
+                +' draggable="true"'
+                +' ondragstart="mDragStart(event,\''+row.id+'\',\''+ds+'\','+idx+')"'
+                +' ondragend="mDragEnd(event)"')
+                +'>'+renderItemText(item)+(item.completed?'<span class="progress-item-check">✓</span>':'')
+                +(dots?'<span style="position:absolute;top:2px;right:2px;display:flex;gap:2px">'+dots+'</span>':'')
+                +'</div>';
+            }
+          });
         }
         h+='<div class="pn-mention-menu" id="meet-mention-'+row.id+'-'+ds+'" style="display:none" onmouseenter="mCancelCloseMention()" onmouseleave="mScheduleCloseMention(\''+row.id+'\',\''+ds+'\')"></div>';
         h+='</td>';

@@ -29,8 +29,8 @@ function mRefreshSelectionOutline(selectedEl){
   document.querySelectorAll('.meet-chip.meet-chip-sel,.meet-chip.excel-selected').forEach(function(el){
     el.classList.remove('meet-chip-sel','excel-selected');
     const cell=el.closest('[data-meeting-cell]'),parts=(cell?.dataset.meetingCell||'').split('|');
-    const item=((S.meetingLogs[parts[0]+'_'+parts[1]]||{}).items||[])[0];
-    const filled=!!item&&(String(item.text||'').trim()!==''||(item.mentions||[]).length>0);
+    const item=((S.meetingLogs[parts[0]+'_'+parts[1]]||{}).items||[])[Number(el.dataset.meetingIndex||0)];
+    const filled=!!(String(item?.text||'').trim()||item?.link||item?.mentions?.length);
     el.style.border='1.5px '+(filled?'solid':'dashed')+' var(--border)';
   });
   if(selectedEl){selectedEl.classList.add('meet-chip-sel');selectedEl.style.border='2px solid var(--purple)';}
@@ -92,7 +92,7 @@ window.mSetCellText=async function(rowId,ds,text){
   const key=rowId+'_'+ds,items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
   if(!String(text||'').trim()&&items.length){
     setSyncing();await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items:items.slice(1),updatedAt:serverTimestamp()});
-    for(const uid of (items[0].mentions||[]))await mRemoveFromDailyLog(rowId,ds,0,uid);
+    await progressRestoreMeetingDailyLogs({rowId,ds},items,items.slice(1));
     meetingEditing=null;meetingSelected={};updateFormulaBar(null);setSynced();if(activePanel==='progress')renderProgress();return;
   }
   if(!items.length&&text===''){mSelectEmpty(rowId,ds);return;}while(items.length<1)items.push({text:'',color:'',bg:'',mentions:[]});items[0]=Object.assign({},items[0],{text:text,link:null});
@@ -190,15 +190,12 @@ window.mDelete=async function(rowId,ds,idx){
   const items=(S.meetingLogs[key]&&S.meetingLogs[key].items)?[...S.meetingLogs[key].items]:[];
   const removed=items[idx];
   if(!removed)return;
+  const before=[...items];
   items.splice(idx,1);
   meetingSelected={};meetingEditing=null;updateFormulaBar(null);
   setSyncing();
   await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
-  if(removed&&removed.mentions&&removed.mentions.length){
-    for(const uid of removed.mentions){
-      await mRemoveFromDailyLog(rowId,ds,idx,uid);
-    }
-  }
+  await progressRestoreMeetingDailyLogs({rowId,ds},before,items);
   setSynced();
 }
 window.mDragStart=function(e,rowId,ds,idx){
@@ -207,10 +204,67 @@ window.mDragStart=function(e,rowId,ds,idx){
   e.currentTarget.classList.add('meet-dragging');
   e.dataTransfer.effectAllowed='copyMove';
   e.dataTransfer.setData('text/plain','meet|'+rowId+'|'+ds+'|'+idx);
+  const item=S.meetingLogs?.[rowId+'_'+ds]?.items?.[idx];
+  if(item)startProgressMonthDrag(e.currentTarget,{...meetingDragSrc,item:progressClone(item)},'meeting');
 }
 window.mDragOver=function(e){if(!meetingDragSrc)return;e.preventDefault();e.dataTransfer.dropEffect=e.ctrlKey?'copy':'move';e.currentTarget.classList.add('meet-drop-active');}
 window.mDragLeave=function(e){if(!e.currentTarget.contains(e.relatedTarget))e.currentTarget.classList.remove('meet-drop-active');}
 window.mDragEnd=function(){document.querySelectorAll('.meet-dragging').forEach(el=>el.classList.remove('meet-dragging'));document.querySelectorAll('.meet-drop-active').forEach(el=>el.classList.remove('meet-drop-active'));meetingDragSrc=null;meetingPointerHeld=false;setTimeout(mResumeProgressRender,0);}
+async function moveMeetingAcrossMonth(from,date){
+  if(!currentUser||!progressCanEditDate(from.ds)||!progressCanEditDate(date))throw new Error('這個月份的工程進度為唯讀。');
+  const {rowId,ds,idx}=from;
+  const records=[ds,date].map(day=>{
+    const key=rowId+'_'+day;
+    return {kind:'meeting',rowId,ds:day,key,ref:doc(db,'meetingLogs',key)};
+  });
+  async function move(reader,write){
+    const days=await Promise.all(records.map(({ref})=>reader(ref).then(snapshot=>snapshot.data()||{})));
+    const before=days.map(day=>day.items||[]);
+    const item=before[0][idx];
+    if(!progressSame(item,from.item))throw new Error('事項已被更新，請重新拖曳。');
+    const after=[before[0].filter((_,index)=>index!==idx),[...before[1],item]];
+    const linked=await Promise.all(records.flatMap((record,i)=>{
+      const start=i===0?idx:before[i].length;
+      const indexes=Array.from({length:Math.max(before[i].length,after[i].length)-start},(_,index)=>start+index);
+      const uids=new Set(indexes.flatMap(index=>[...(before[i][index]?.mentions||[]),...(after[i][index]?.mentions||[])]));
+      return [...uids].map(async uid=>{
+        const key=uid+'_'+record.ds,ref=doc(db,'dailyLogs',key);
+        const snapshot=await reader(ref);
+        const original=snapshot.data()||{};
+        let next=original;
+        for(const index of indexes){
+          const replacement=after[i][index];
+          if(replacement?.mentions?.includes(uid)&&String(replacement.text||'').trim()){
+            next=meetingDailyLogWithItem(next,rowId,index,replacement);
+          }else if(before[i][index]?.mentions?.includes(uid)){
+            next=meetingDailyLogWithoutItem(next,rowId,index);
+          }
+        }
+        return {ref,key,after:{...next,uid,date:record.ds,updatedAt:serverTimestamp()}};
+      });
+    }));
+    records.forEach((record,i)=>write(record.ref,{...days[i],rowId,date:record.ds,items:after[i],updatedAt:serverTimestamp()}));
+    for(const entry of linked)write(entry.ref,entry.after);
+    return records.map(({ref,...record},i)=>({...record,before:before[i],after:after[i]}));
+  }
+  setSyncing();
+  let targets;
+  if(localTestMode){
+    const writes=[];
+    targets=await move(getDoc,(ref,data)=>writes.push({ref,data}));
+    const meetings=S.meetingLogs,logs=S.dailyLogs;
+    S.meetingLogs={...meetings};S.dailyLogs={...logs};
+    try{
+      for(const {ref,data} of writes){const {collection,id}=localParts(ref);localWrite(collection,id,data);}
+      saveLocalPreviewState(true);
+    }catch(error){S.meetingLogs=meetings;S.dailyLogs=logs;throw error;}
+  }else{
+    targets=await fbRunTransaction(db,tx=>move(ref=>tx.get(ref),(ref,data)=>tx.set(ref,data)));
+  }
+  meetingSelected={};meetingEditing=null;
+  if(formulaBarState?.type==='meeting')updateFormulaBar(null);
+  progressUndoPush({action:'mDrop',label:'移動會議事項',targets});
+}
 function mCaptureDropContext(e){
   if(e._meetingDropContext)return e._meetingDropContext;
   e.preventDefault();e.stopPropagation();e.currentTarget?.classList.remove('meet-drop-active');
@@ -228,6 +282,7 @@ window.mDrop=async function(e,toRowId,toDs){
   if(toItems.length>=1){meetingDragSrc=null;return;} // target cell already has an entry
   const fromKey=from.rowId+'_'+from.ds;
   const fromItems=(S.meetingLogs[fromKey]&&S.meetingLogs[fromKey].items)?[...S.meetingLogs[fromKey].items]:[];
+  const before=[...fromItems];
   const item=fromItems[from.idx];
   if(!item){meetingDragSrc=null;return;}
   const movedItem=Object.assign({},item,{mentions:[...(item.mentions||[])]});
@@ -242,9 +297,8 @@ window.mDrop=async function(e,toRowId,toDs){
   }
   await writes.commit();
   for(const uid of movedItem.mentions)await mSyncDailyLog(toRowId,toDs,toIdx,uid,movedItem);
-  if(!context.copy){
-    for(const uid of movedItem.mentions)await mRemoveFromDailyLog(from.rowId,from.ds,from.idx,uid);
-  }
+  if(!context.copy)await progressRestoreMeetingDailyLogs({rowId:from.rowId,ds:from.ds},
+    before,fromItems);
   meetingSelected={};meetingSelected[toRowId+'|'+toDs]=toIdx;
   updateFormulaBar('meeting',toDs,toIdx,movedItem.text||'',toRowId,movedItem.link||null);
   meetingDragSrc=null;
@@ -277,6 +331,7 @@ function mEffectiveMentions(rowId,ds,idx){
 }
 function mRefreshMentionMenu(rowId,ds,idx){
   const menu=document.getElementById('meet-mention-'+rowId+'-'+ds);if(!menu)return;
+  if(menu.dataset.meetingIndex!==String(idx))return;
   const mentions=mEffectiveMentions(rowId,ds,idx);
   menu.querySelectorAll('.meeting-mention-option').forEach(function(option){
     const checked=mentions.includes(option.dataset.memberUid);
@@ -318,6 +373,7 @@ window.mOpenMentionPicker=function(e,rowId,ds,idx){
   clearTimeout(mCloseTimer);
   const menuEl=document.getElementById('meet-mention-'+rowId+'-'+ds);
   if(!menuEl)return;
+  menuEl.dataset.meetingIndex=String(idx);
   const rect=e.currentTarget.getBoundingClientRect();
   menuEl.style.cssText='display:block;position:fixed;top:'+(rect.bottom+4)+'px;left:'+rect.left+'px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:500;min-width:150px;max-height:200px;overflow-y:auto';
   menuEl.innerHTML=mMentionMenuHTML(rowId,ds,idx);
@@ -363,6 +419,14 @@ async function mSyncDailyLog(rowId,ds,idx,uid,item){
   const logKey=`${m.uid}_${ds}`;
   const logSnap=await getDoc(doc(db,'dailyLogs',logKey));
   const cur=logSnap.exists()?logSnap.data():{};
+  const next=meetingDailyLogWithItem(cur,rowId,idx,item);
+  try{
+    await setDoc(doc(db,'dailyLogs',logKey),{...next,uid:m.uid,date:ds,updatedAt:serverTimestamp()});
+  }catch(err){
+    console.error('無法自動寫入 '+memberDisplayName(m)+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
+  }
+}
+function meetingDailyLogWithItem(cur,rowId,idx,item){
   const autoLines=Object.assign({},cur.autoLines||{});
   const trackKey=rowId+'_'+idx;
   const oldLine=autoLines[trackKey];
@@ -378,11 +442,7 @@ async function mSyncDailyLog(rowId,ds,idx,uid,item){
   const existing=existingIndex>=0?assigned[existingIndex]:{};
   const synced=Object.assign({},existing,{id:sourceId,text:(item&&item.text)||'',authorUid:existing.authorUid||(currentUser&&currentUser.uid)||'',sourceType:'meeting',sourceRowId:rowId,sourceIndex:idx,color:(item&&item.color)||'',bg:(item&&item.bg)||''});
   if(existingIndex>=0)assigned[existingIndex]=synced;else assigned.push(synced);
-  try{
-    await setDoc(doc(db,'dailyLogs',logKey),Object.assign({},cur,{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,assigned,updatedAt:serverTimestamp()}));
-  }catch(err){
-    console.error('無法自動寫入 '+memberDisplayName(m)+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
-  }
+  return {...cur,text:lines.join('\n'),autoLines,assigned};
 }
 async function mRemoveFromDailyLog(rowId,ds,idx,uid){
   const m=S.members.find(x=>x.uid===uid);
@@ -390,6 +450,14 @@ async function mRemoveFromDailyLog(rowId,ds,idx,uid){
   const logKey=`${m.uid}_${ds}`;
   const logSnap=await getDoc(doc(db,'dailyLogs',logKey));
   const cur=logSnap.exists()?logSnap.data():{};
+  const next=meetingDailyLogWithoutItem(cur,rowId,idx);
+  try{
+    await setDoc(doc(db,'dailyLogs',logKey),{...next,uid:m.uid,date:ds,updatedAt:serverTimestamp()});
+  }catch(err){
+    console.error('無法自動移除 '+memberDisplayName(m)+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
+  }
+}
+function meetingDailyLogWithoutItem(cur,rowId,idx){
   const autoLines=Object.assign({},cur.autoLines||{});
   const trackKey=rowId+'_'+idx;
   const oldLine=autoLines[trackKey];
@@ -397,11 +465,7 @@ async function mRemoveFromDailyLog(rowId,ds,idx,uid){
   if(oldLine!=null){const pos=lines.indexOf(oldLine);if(pos>=0)lines.splice(pos,1);delete autoLines[trackKey];}
   const sourceId='meeting:'+rowId+':'+idx;
   const assigned=(cur.assigned||[]).filter(function(entry){return entry.id!==sourceId&&!(entry.sourceType==='meeting'&&entry.sourceRowId===rowId&&entry.sourceIndex===idx);});
-  try{
-    await setDoc(doc(db,'dailyLogs',logKey),Object.assign({},cur,{uid:m.uid,date:ds,text:lines.join('\n'),autoLines,assigned,updatedAt:serverTimestamp()}));
-  }catch(err){
-    console.error('無法自動移除 '+memberDisplayName(m)+' 的每日日誌（可能需要調整 Firebase 權限規則）',err);
-  }
+  return {...cur,text:lines.join('\n'),autoLines,assigned};
 }
 window.mBoxBlur=function(el,rowId,ds,idx){mSaveBox(el,rowId,ds,idx);}
 window.mSaveBox=async function(el,rowId,ds,idx){
@@ -414,6 +478,7 @@ window.mSaveBox=async function(el,rowId,ds,idx){
   const previousItem=items[idx]||{},previousMentions=previousItem.mentions||[];
   const isBlank=!text.trim()&&!link;
   const keepTaggedDraft=isBlank&&previousMentions.length>0&&!String(previousItem.text||'').trim()&&!previousItem.link;
+  const before=[...items];
   if(isBlank&&!keepTaggedDraft){items.splice(idx,1);}else{
     while(items.length<=idx)items.push({text:'',color:'',bg:'',mentions:[]});
     items[idx]=Object.assign({},items[idx],{text,link});
@@ -422,7 +487,9 @@ window.mSaveBox=async function(el,rowId,ds,idx){
   await setDoc(doc(db,'meetingLogs',key),{rowId,date:ds,items,updatedAt:serverTimestamp()});
   // keep already-tagged members' daily logs in sync with the latest text
   if(isBlank){
-    for(const uid of previousMentions)await mRemoveFromDailyLog(rowId,ds,idx,uid);
+    if(keepTaggedDraft){
+      for(const uid of previousMentions)await mRemoveFromDailyLog(rowId,ds,idx,uid);
+    }else await progressRestoreMeetingDailyLogs({rowId,ds},before,items);
   }else{
     const mentions=items[idx].mentions||[];
     for(const uid of mentions)await mSyncDailyLog(rowId,ds,idx,uid,items[idx]);

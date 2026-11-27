@@ -454,7 +454,7 @@ function mergeProgressSchedule(stored,before,after,conflict){
 
 // Each mutation carries the field value the editor saw. Compare it against the
 // latest document and merge only the edited dates or note, including on retries.
-async function writeProgressMonths(changes){
+async function writeProgressMonths(changes,{strictLocal=false}={}){
   const byProject=new Map();
   for(const change of changes){
     if(!progressCanEditDate(change.month))throw new Error('這個月份的工程進度為唯讀。');
@@ -483,6 +483,16 @@ async function writeProgressMonths(changes){
   if(localTestMode){
     const snapshots=await Promise.all(writes.map(({ref})=>getDoc(ref)));
     const results=writes.map((write,index)=>prepare(snapshots[index],write));
+    if(strictLocal){
+      const active=S.projects,archived=S.progressArchivedProjects;
+      const patches=new Map(writes.map(({entries},index)=>[entries[0].projectId,results[index].patch]));
+      const apply=projects=>projects.map(project=>patches.has(project.id)?{...project,...patches.get(project.id)}:project);
+      S.projects=apply(active);
+      S.progressArchivedProjects=apply(archived);
+      try{saveLocalPreviewState(true);}
+      catch(error){S.projects=active;S.progressArchivedProjects=archived;throw error;}
+      return results.flatMap(result=>result.saved);
+    }
     for(let index=0;index<writes.length;index++)await updateDoc(writes[index].ref,results[index].patch);
     return results.flatMap(result=>result.saved);
   }

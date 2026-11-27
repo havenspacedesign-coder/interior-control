@@ -83,9 +83,13 @@ window.confirmClearDesignStage=function(projId,col,label){
   $('modal').style.display='flex';setTimeout(()=>$('mo-confirm-btn')?.focus(),50);
 }
 window.addEventListener('resize',function(){alignProgressBottomScrollbar();alignDesignBottomScrollbar();});
+function progressSharedScrollMax(source,scrollers){
+  return Math.min(Math.max(0,source.scrollWidth-source.clientWidth),
+    ...scrollers.filter(other=>other.clientWidth>0).map(other=>Math.max(0,other.scrollWidth-other.clientWidth)));
+}
 function syncHScrollPosition(source,left){
   const scrollers=Array.from(document.querySelectorAll('.hscroll-sync'));
-  const max=Math.min(Math.max(0,source.scrollWidth-source.clientWidth),...scrollers.filter(other=>other.clientWidth>0).map(other=>Math.max(0,other.scrollWidth-other.clientWidth)));
+  const max=progressSharedScrollMax(source,scrollers);
   const next=Math.max(0,Math.min(max,left));
   if(Math.abs(source.scrollLeft-next)>.5)source.scrollLeft=next;
   lastHScrollLeft=next;
@@ -459,11 +463,11 @@ function progressScheduleChange(projId,ds,edit){
   const after=edit(before);
   return after?{projectId:projId,month,field:'schedule',before,after}:null;
 }
-async function saveProgressSchedule(changes){
+async function saveProgressSchedule(changes,options){
   if(!changes.length)return;
   const observed=new Map(changes.map(change=>[change.projectId,findProgressProject(change.projectId)]));
   setSyncing();
-  try{return await writeProgressMonths(changes);}
+  try{return await writeProgressMonths(changes,options);}
   catch(error){
     const latest=error.progressLatest;
     if(latest&&findProgressProject(latest.projectId)===observed.get(latest.projectId)){
@@ -516,11 +520,174 @@ window.copyTagToCell=async function(toProjId,toDs){
   if(change){const saved=await saveProgressSchedule([change]);selectedTag=null;return saved;}
 }
 var evDragSrc=null;
+const progressMonthEdgeWidth=20;
+let progressMonthDrag=null,progressMonthDragFrame=0,progressMonthDragHint=null;
+let progressMonthMoveBusy=false,progressMonthMoveNotice=null,progressMonthMoveTimer=0;
+
+function progressAdjacentMonthDate(month,side){
+  const [year,number]=month.split('-').map(Number);
+  return fmtDay(side==='left'?new Date(year,number-1,0):new Date(year,number,1));
+}
+function startProgressMonthDrag(element,source,kind){
+  if(activePanel!=='progress'||calMode!=='month'||progressMonthMoveBusy||source.ds.slice(0,7)!==progressMonthKey())return;
+  const viewport=document.getElementById('progress-horizontal-viewport');
+  const scroller=viewport?.clientWidth?viewport:element.closest('.hscroll-sync');
+  if(!scroller)return;
+  stopHorizontalInertia();
+  progressMonthDrag={source,kind,scroller,month:progressMonthKey(),point:null};
+}
+function clearProgressMonthDragHint(){
+  progressMonthDragHint?.remove();
+  progressMonthDragHint=null;
+}
+function endProgressMonthDrag(){
+  progressMonthDrag=null;
+  clearProgressMonthDragHint();
+  if(progressMonthDragFrame)cancelAnimationFrame(progressMonthDragFrame);
+  progressMonthDragFrame=0;
+}
+function progressMonthDragBounds(drag,x,y){
+  if(activePanel!=='progress'||calMode!=='month'||drag.month!==progressMonthKey()||!drag.scroller.isConnected)return null;
+  const rect=drag.scroller.getBoundingClientRect();
+  if(x<rect.left-progressMonthEdgeWidth||x>rect.right+progressMonthEdgeWidth||
+    y<Math.max(0,rect.top)||y>Math.min(window.innerHeight,rect.bottom))return null;
+  return rect;
+}
+function progressMonthDropTarget(drag,x,y){
+  const rect=progressMonthDragBounds(drag,x,y);
+  if(!rect)return null;
+  const {scrollLeft,scrollWidth,clientWidth}=drag.scroller;
+  const max=drag.scroller.classList.contains('hscroll-sync')
+    ?progressSharedScrollMax(drag.scroller,[...document.querySelectorAll('#panel-progress .hscroll-sync')])
+    :scrollWidth-clientWidth;
+  const side=rect.left>=0&&scrollLeft<=1&&Math.abs(x-rect.left)<=progressMonthEdgeWidth?'left':
+    rect.right<=document.documentElement.clientWidth+1&&max-scrollLeft<=1&&Math.abs(rect.right-x)<=progressMonthEdgeWidth?'right':null;
+  if(!side)return null;
+  const date=progressAdjacentMonthDate(drag.month,side);
+  if(drag.kind!=='private'&&!progressCanEditDate(date))return null;
+  if(drag.kind==='schedule'){
+    const project=findProgressProject(drag.source.projId);
+    if(!project||!progressProjectVisible(project,date.slice(0,7)))return null;
+  }
+  return {rect,side,date};
+}
+function showProgressMonthDragHint(target,y){
+  if(!target){clearProgressMonthDragHint();return;}
+  if(!progressMonthDragHint){
+    const edge=document.createElement('div');
+    edge.className='progress-month-drag-edge';
+    edge.append(document.createElement('span'));
+    document.body.append(edge);
+    progressMonthDragHint=edge;
+  }
+  const {rect,side,date}=target;
+  const top=Math.max(0,rect.top);
+  const tip=progressMonthDragHint.firstElementChild;
+  progressMonthDragHint.dataset.side=side;
+  progressMonthDragHint.style.left=(side==='left'?rect.left:rect.right-progressMonthEdgeWidth)+'px';
+  progressMonthDragHint.style.top=top+'px';
+  progressMonthDragHint.style.height=(Math.min(window.innerHeight,rect.bottom)-top)+'px';
+  tip.style.top=Math.max(0,Math.min(y-top+16,Math.min(window.innerHeight,rect.bottom)-top-34))+'px';
+  tip.textContent='移至 '+date.replaceAll('-','/')+'，放開即可移動';
+}
+function scrollProgressMonthDrag(){
+  progressMonthDragFrame=0;
+  const drag=progressMonthDrag,point=drag?.point;
+  if(!point)return;
+  const rect=progressMonthDragBounds(drag,point.x,point.y);
+  if(!rect)return;
+  const target=progressMonthDropTarget(drag,point.x,point.y);
+  showProgressMonthDragHint(target,point.y);
+  if(target){if(drag.kind==='private')pnStopDragAutoScroll();return;}
+  if(drag.kind==='private'||point.x<rect.left||point.x>rect.right)return;
+  const edge=Math.min(72,rect.width/3);
+  const x=point.x-rect.left;
+  const delta=x<edge?-22*(1-x/edge):rect.width-x<edge?22*(1-(rect.width-x)/edge):0;
+  if(!delta)return;
+  const before=drag.scroller.scrollLeft;
+  const after=setHorizontalScrollPosition(drag.scroller,before+delta);
+  if(Math.abs(after-before)>.25)progressMonthDragFrame=requestAnimationFrame(scrollProgressMonthDrag);
+}
+document.addEventListener('dragover',function(event){
+  const drag=progressMonthDrag;
+  if(!drag)return;
+  drag.point={x:event.clientX,y:event.clientY};
+  const target=progressMonthDropTarget(drag,event.clientX,event.clientY);
+  showProgressMonthDragHint(target,event.clientY);
+  if(target){
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    event.dataTransfer.dropEffect='move';
+    pnStopDragAutoScroll();
+    document.querySelectorAll('.meet-drop-active').forEach(el=>el.classList.remove('meet-drop-active'));
+  }else if(!progressMonthDragFrame){
+    progressMonthDragFrame=requestAnimationFrame(scrollProgressMonthDrag);
+  }
+},true);
+document.addEventListener('scroll',function(event){
+  const drag=progressMonthDrag,point=drag?.point;
+  if(point&&event.target===drag.scroller)showProgressMonthDragHint(progressMonthDropTarget(drag,point.x,point.y),point.y);
+},true);
+document.addEventListener('dragleave',function(event){
+  if(!progressMonthDrag||event.relatedTarget)return;
+  if(event.target===document.documentElement||event.target===document||
+    !progressMonthDragBounds(progressMonthDrag,event.clientX,event.clientY)){
+    progressMonthDrag.point=null;
+    clearProgressMonthDragHint();
+  }
+},true);
+document.addEventListener('dragend',endProgressMonthDrag,true);
+window.addEventListener('blur',endProgressMonthDrag);
+function showProgressMonthMoveNotice(message,failed=false){
+  progressMonthMoveNotice?.remove();
+  clearTimeout(progressMonthMoveTimer);
+  const notice=document.createElement('div');
+  notice.className='progress-month-move-notice';
+  notice.setAttribute('role',failed?'alert':'status');
+  notice.textContent=message;
+  document.body.append(notice);
+  progressMonthMoveNotice=notice;
+  progressMonthMoveTimer=setTimeout(()=>notice.remove(),2600);
+}
+document.addEventListener('drop',async function(event){
+  const drag=progressMonthDrag;
+  const target=drag&&progressMonthDropTarget(drag,event.clientX,event.clientY);
+  endProgressMonthDrag();
+  if(!target)return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  pnStopDragAutoScroll();
+  progressMonthMoveBusy=true;
+  try{
+    const {source,kind}=drag,{date}=target;
+    if(kind==='private')await movePrivateNoteAcrossMonth(source,date);
+    else if(kind==='meeting')await moveMeetingAcrossMonth(source,date);
+    else{
+      const moved=await moveScheduleEntry(source,source.projId,date,false);
+      if(!moved?.length)throw new Error('找不到要移動的工程項目。');
+      progressUndoPush({action:'evDrop',label:'移動工程項目',targets:moved});
+    }
+    showProgressMonthMoveNotice('已移至 '+date.replaceAll('-','/'));
+  }catch(error){
+    showProgressMonthMoveNotice('移動未儲存：'+error.message,true);
+  }finally{
+    progressMonthMoveBusy=false;
+    setSynced();
+    if(activePanel==='progress')renderProgress();
+  }
+},true);
 window.evDragStart=function(e,projId,ds,ei){
   if(!progressCanEditDate(ds)){e.preventDefault();return;}
   evDragSrc={projId,ds,ei};
   e.dataTransfer.effectAllowed='copyMove';
   e.dataTransfer.setData('text/plain','ev|'+projId+'|'+ds+'|'+ei);
+  const project=findProgressProject(projId);
+  const item=project&&progressMonthSchedule(project,ds.slice(0,7)).filter(entry=>entry.date===ds)[ei];
+  if(item)startProgressMonthDrag(e.currentTarget,{...evDragSrc,item:progressClone(item)},'schedule');
+}
+window.evDragEnd=function(){
+  evDragSrc=null;
+  if(pendingProgressRender&&activePanel==='progress')setTimeout(renderProgress,0);
 }
 function captureScheduleDrop(event){
   if(event.progressScheduleDrop)return event.progressScheduleDrop;
@@ -532,13 +699,16 @@ function captureScheduleDrop(event){
 window.evDrop=async function(e,toProjId,toDs){
   const {from,copy}=captureScheduleDrop(e);
   evDragSrc=null;
+  return moveScheduleEntry(from,toProjId,toDs,copy);
+}
+async function moveScheduleEntry(from,toProjId,toDs,copy){
   if(!from||!progressCanEditDate(from.ds)||!progressCanEditDate(toDs))return;
   if(from.projId===toProjId&&from.ds===toDs)return;
   const project=findProgressProject(from.projId);
   if(!project)return;
   const source=progressMonthSchedule(project,from.ds.slice(0,7));
   const entry=source.filter(item=>item.date===from.ds)[from.ei];
-  if(!entry)return;
+  if(!entry||(from.item&&!progressSame(from.item,entry)))return;
   const moved={...entry,date:toDs,...(copy?{_progressItemId:progressItemId()}:{})};
   const sameBucket=from.projId===toProjId&&from.ds.slice(0,7)===toDs.slice(0,7);
   const target=progressScheduleChange(toProjId,toDs,items=>[
@@ -547,7 +717,7 @@ window.evDrop=async function(e,toProjId,toDs){
   if(!target)return;
   if(copy||sameBucket)return saveProgressSchedule([target]);
   const remove=progressScheduleChange(from.projId,from.ds,items=>items.filter(item=>item!==entry));
-  if(remove)return saveProgressSchedule([target,remove]);
+  if(remove)return saveProgressSchedule([target,remove],from.item?{strictLocal:true}:undefined);
 }
 window.removeEv=async function(projId,ds,ei){
   const change=progressScheduleChange(projId,ds,items=>{
@@ -757,6 +927,7 @@ async function progressRestoreMeetingDailyLogs(target,currentItems,restoredItems
   var max=Math.max(currentItems.length,restoredItems.length);
   for(var idx=0;idx<max;idx++){
     var current=currentItems[idx]||{},restored=restoredItems[idx]||{};
+    if(progressSame(current,restored))continue;
     for(const uid of (current.mentions||[])){if(!(restored.mentions||[]).includes(uid))await mRemoveFromDailyLog(target.rowId,target.ds,idx,uid);}
     for(const uid of (restored.mentions||[]))await mSyncDailyLog(target.rowId,target.ds,idx,uid,restored);
   }

@@ -56,6 +56,30 @@ window.progressTestFixture = {
     S.projectTradeSelections=Object.fromEntries(S.projects.map(project=>[project.id,{'qa-trade':{none:true}}]));
     renderActive(); saveLocalPreviewState();
   },
+  seedCrossMonth({from,to,start,previous,workNote,personalNote,event,meeting}){
+    S.projects[0].schedule.push(event,{...event,date:to,note:'目的日原排程',_progressItemId:'qa-existing'});
+    S.privateNotes={work:{[from]:[workNote],[to]:[{text:'目的日原記事'}]},personal:{[start]:[personalNote]}};
+    S.meetingLogs['meet1_'+from]={rowId:'meet1',date:from,items:[meeting]};
+    S.meetingLogs['meet1_'+to]={rowId:'meet1',date:to,items:[{text:'目的日原會議',mentions:[]}]};
+    S.dailyLogs['qa-staff_'+from]={uid:'qa-staff',date:from,text:'既有日誌',assigned:[{id:'meeting:meet1:0',text:meeting.text}]};
+    S.dailyLogs['qa-staff_'+to]={uid:'qa-staff',date:to,text:'目的日日誌',assigned:[]};
+    S.privateNotes.personal[previous]=[{text:'上個月原記事'}];
+    saveLocalPreviewState();
+    renderProgress(true);
+  },
+  scrollCrossMonth(scroller,position){
+    const max=Math.max(0,scroller.scrollWidth-scroller.clientWidth);
+    syncHScrollPosition(scroller,position==='end'?max:position==='start'?0:max/2);
+  },
+  adjacentMonthDate(month,side){return progressAdjacentMonthDate(month,side);},
+  failCrossMonthLocalSave(){
+    const original=saveLocalPreviewState;
+    saveLocalPreviewState=function(strict){
+      if(!strict)return original(strict);
+      saveLocalPreviewState=original;
+      throw new Error('模擬本機無法寫入');
+    };
+  },
   seedCompletedFilters(){
     const closed=[['未簽約分類案',['未簽約']],['設計終止分類案',['設計終止']],['設計完成分類案',['設計完成']],
       ['工程完成分類案',['工程完成']],['缺結案類型案'],['未知結案類型案',['舊類型']],
@@ -107,8 +131,8 @@ window.progressTestFixture = {
   }
 };`;
 
-async function open(browser, role, mobile = false) {
-  const context = await browser.newContext({ timezoneId: 'Asia/Taipei', viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 950 } });
+async function open(browser, role, mobile = false, viewport) {
+  const context = await browser.newContext({ timezoneId: 'Asia/Taipei', viewport: viewport??(mobile ? { width: 390, height: 844 } : { width: 1440, height: 950 }) });
   await context.route('**/*', async route => {
     const url = new URL(route.request().url());
     if (url.origin !== origin) return route.abort();
@@ -797,6 +821,217 @@ async function rapidChecklist(browser){
   }finally{await context.close();}
 }
 
+async function nativeCrossMonthDrag(browser,viewport) {
+  const {page,context,errors}=await open(browser,'manager',false,viewport);
+  const from='2026-11-30',to='2026-12-01',start='2026-11-01',previous='2026-10-31';
+  await page.evaluate(data=>window.progressTestFixture.seedCrossMonth(data),{
+    from,to,start,previous,workNote:{text:'132'},personalNote:{text:'左側驗證'},
+    event:{date:from,stage,label:stage,note:'測試排程'},meeting:{text:'測試會議',mentions:[]},
+  });
+  try{
+    const hint=page.locator('.progress-month-drag-edge');
+    const notice=page.locator('.progress-month-move-notice');
+    const chip=(type,date,text)=>page.locator('[data-pn-cell="'+type+'|'+date+'"] .pn-chip').filter({hasText:text});
+    async function startAtMonthEnd(source,side){
+      await source.evaluate(el=>el.closest('tr').scrollIntoView({block:'center',inline:'nearest'}));
+      const area=await source.evaluate(el=>{
+        const rect=el.closest('.hscroll-sync').getBoundingClientRect();
+        return {x:(rect.left+rect.right)/2,y:Math.max(0,rect.top)+12};
+      });
+      await page.mouse.move(area.x,area.y);
+      await page.mouse.wheel(side==='left'?-12000:12000,0);
+      await page.waitForFunction(({side})=>{
+        const host=document.querySelector('[data-pn-cell]').closest('.hscroll-sync');
+        const bar=document.querySelector('#progress-bottom-hscroll');
+        return side==='left'?host.scrollLeft<=1:host.scrollLeft>=bar.scrollWidth-bar.clientWidth-1;
+      },{side});
+      const point=await source.evaluate(el=>{
+        const chipBox=el.getBoundingClientRect(),table=el.closest('.hscroll-sync').getBoundingClientRect();
+        return {x:chipBox.left+24,y:chipBox.top+chipBox.height/2,right:table.right,left:table.left};
+      });
+      assert.ok(point.x>=point.left&&point.x<=point.right,JSON.stringify(point));
+      await page.mouse.move(point.x,point.y);
+      await page.mouse.down();
+      return point;
+    }
+    const before=(await read(page)).notes;
+    const source=chip('work',from,'132');
+    let point=await startAtMonthEnd(source,'right');
+    await page.mouse.move(point.right-8,point.y,{steps:18});
+    await visible(hint.getByText('移至 2026/12/01，放開即可移動'));
+    await page.mouse.move(point.right+6,point.y,{steps:5});
+    await visible(hint.getByText('移至 2026/12/01，放開即可移動'));
+    assert.deepEqual((await read(page)).notes,before);
+    await page.mouse.move(point.right-65,point.y,{steps:7});
+    await hint.waitFor({state:'hidden'});
+    await page.mouse.up();
+    assert.deepEqual((await read(page)).notes,before);
+    point=await startAtMonthEnd(source,'right');
+    await page.mouse.move(point.right+6,point.y,{steps:20});
+    await visible(hint.getByText('移至 2026/12/01，放開即可移動'));
+    await page.mouse.up();
+    await visible(notice.getByText('已移至 2026/12/01'));
+    assert.deepEqual((await read(page)).notes.work[to],[{text:'目的日原記事'},{text:'132'}]);
+    assert.deepEqual((await read(page)).notes.work[from],[]);
+
+    point=await startAtMonthEnd(chip('personal',start,'左側驗證'),'left');
+    await page.mouse.move(point.left+100,point.y,{steps:10});
+    assert.equal(await hint.isVisible(),false);
+    await page.mouse.move(point.left-6,point.y,{steps:15});
+    await visible(hint.getByText('移至 2026/10/31，放開即可移動'));
+    await page.mouse.up();
+    await visible(notice.getByText('已移至 2026/10/31'));
+    assert.deepEqual((await read(page)).notes.personal[previous],[{text:'上個月原記事'},{text:'左側驗證'}]);
+    assert.match(await page.locator('.wk-lbl').textContent(),/2026年 11月/);
+    await page.reload();
+    await goToProgress(page);
+    assert.deepEqual((await read(page)).notes.work[to],[{text:'目的日原記事'},{text:'132'}]);
+    assert.deepEqual((await read(page)).notes.personal[previous],[{text:'上個月原記事'},{text:'左側驗證'}]);
+    assert.deepEqual(errors,[]);
+    console.log('PASS native mouse: '+viewport.width+'x'+viewport.height+', both outer edges, cancellation and reload.');
+  }finally{await context.close();}
+}
+
+async function crossMonthDrag(browser) {
+  const {page,context,errors}=await open(browser,'manager');
+  const from='2026-11-30',to='2026-12-01',previous='2026-10-31',start='2026-11-01';
+  const workNote={text:'跨月工地記事',color:'#228866',bg:'#ffef99',completed:true,strike:true};
+  const personalNote={text:'跨月私人記事',color:'#1166aa',link:{url:'https://example.com',label:'資料'}};
+  const event={date:from,stage,label:stage,note:'跨月排程',color:'#224488',completed:true,_progressItemId:'qa-schedule'};
+  const meeting={text:'跨月會議',color:'#446688',completed:true,mentions:['qa-staff']};
+  await page.evaluate(data=>window.progressTestFixture.seedCrossMonth(data),
+    {from,to,previous,start,workNote,personalNote,event,meeting});
+  const note=(type,date)=>page.locator('[data-pn-cell="'+type+'|'+date+'"] .pn-chip[draggable="true"]').first();
+  const hint=page.locator('.progress-month-drag-edge');
+  const notice=page.locator('.progress-month-move-notice');
+  async function begin(locator,position){
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    const element=await locator.elementHandle();
+    const drag=await element.evaluateHandle((chip,position)=>{
+      const scroller=chip.closest('.hscroll-sync');
+      window.progressTestFixture.scrollCrossMonth(scroller,position);
+      const data=new DataTransfer();
+      chip.dispatchEvent(new DragEvent('dragstart',{bubbles:true,cancelable:true,dataTransfer:data}));
+      return {chip,scroller,data};
+    },position);
+    return {
+      async send(type,side,offset=8){
+        await drag.evaluate(({scroller,data},{type,side,offset})=>{
+          const box=scroller.getBoundingClientRect();
+          scroller.dispatchEvent(new DragEvent(type,{bubbles:true,cancelable:true,dataTransfer:data,
+            clientX:side==='left'?box.left+offset:box.right-offset,clientY:Math.max(0,box.top)+12,ctrlKey:true}));
+        },{type,side,offset});
+      },
+      async end(){
+        await drag.evaluate(({chip,data})=>chip.dispatchEvent(new DragEvent('dragend',{bubbles:true,dataTransfer:data})));
+        await drag.dispose();await element.dispose();
+      },
+      async geometry(){return drag.evaluate(({scroller})=>({host:scroller.getBoundingClientRect().toJSON(),
+        table:scroller.querySelector('table')?.getBoundingClientRect().toJSON(),
+        scrollLeft:scroller.scrollLeft,width:scroller.scrollWidth,client:scroller.clientWidth,
+        scrollers:[...document.querySelectorAll('.hscroll-sync')].map(el=>[el.id,el.scrollWidth-el.clientWidth,el.scrollLeft])}));},
+    };
+  }
+  try{
+    const rollover=await page.evaluate(()=>[['2024-03','left'],['2025-03','left'],['2026-01','left'],
+      ['2026-12','right'],['2026-05','left']].map(([month,side])=>window.progressTestFixture.adjacentMonthDate(month,side)));
+    assert.deepEqual(rollover,['2024-02-29','2025-02-28','2025-12-31','2027-01-01','2026-04-30']);
+
+    const middle=await begin(note('personal',start),'middle');
+    const before=await read(page);
+    await middle.send('dragover','left');
+    assert.equal(await hint.isVisible(),false);
+    await middle.send('drop','left');
+    await middle.end();
+    assert.deepEqual((await read(page)).notes,before.notes);
+
+    const personal=await begin(note('personal',start),'start');
+    await personal.send('dragover','left',100);
+    assert.equal(await hint.isVisible(),false);
+    await personal.send('dragover','left');
+    await visible(hint.getByText('移至 2026/10/31，放開即可移動'));
+    assert.deepEqual((await read(page)).notes,before.notes);
+    await personal.send('dragover','left',100);
+    assert.equal(await hint.isVisible(),false);
+    await personal.send('drop','left',100);
+    await personal.end();
+    assert.deepEqual((await read(page)).notes,before.notes);
+
+    for(const [locator,position,side,message] of [
+      [note('personal',start),'start','left','2026/10/31'],
+      [note('work',from),'end','right','2026/12/01'],
+      [meet(page,from).locator('.meet-chip'),'end','right','2026/12/01'],
+      [work(page,from).locator('.ev-chip'),'end','right','2026/12/01'],
+    ]){
+      const drag=await begin(locator,position);
+      await drag.send('dragover',side);
+      try{await visible(hint.getByText('移至 '+message+'，放開即可移動'));}
+      catch(error){throw new Error(locator+': '+JSON.stringify(await drag.geometry()),{cause:error});}
+      await drag.send('drop',side);await drag.end();
+      await visible(notice.getByText('已移至 '+message,{exact:true}));
+      assert.match(await page.locator('.wk-lbl').textContent(),/2026年 11月/);
+    }
+    const moved=await read(page);
+    assert.deepEqual(moved.notes.work[to],[{text:'目的日原記事'},workNote]);
+    assert.deepEqual(moved.notes.personal[previous],[{text:'上個月原記事'},personalNote]);
+    assert.deepEqual(moved.notes.work[from],[]);assert.deepEqual(moved.notes.personal[start],[]);
+    assert.deepEqual(moved.meetings['meet1_'+from].items,[]);
+    assert.deepEqual(moved.meetings['meet1_'+to].items,[{text:'目的日原會議',mentions:[]},meeting]);
+    assert.equal(moved.logs['qa-staff_'+from].assigned.length,0);
+    assert.equal(moved.logs['qa-staff_'+from].text,'既有日誌');
+    assert.equal(moved.logs['qa-staff_'+to].assigned[0].id,'meeting:meet1:1');
+    assert.equal(moved.logs['qa-staff_'+to].text,'目的日日誌');
+    assert.deepEqual(moved.project.progressMonths['2026-12'].schedule.filter(item=>item.date===to)
+      .map(({note,_progressItemId})=>[note,_progressItemId]),[['目的日原排程','qa-existing'],['跨月排程','qa-schedule']]);
+    assert.ok(!moved.project.progressMonths['2026-11'].schedule.some(item=>item._progressItemId==='qa-schedule'));
+
+    await page.reload();await goToProgress(page);await month(page,1,12);
+    assert.equal(await meet(page,to).locator('.meet-chip').count(),2);
+    await visible(meet(page,to).locator('.meet-chip').filter({hasText:'跨月會議'}));
+    assert.deepEqual((await read(page)).notes,moved.notes);
+    const deniedMeeting=await begin(meet(page,to).locator('.meet-chip').filter({hasText:'跨月會議'}),'start');
+    await page.evaluate(()=>window.progressTestFixture.failCrossMonthLocalSave());
+    await deniedMeeting.send('drop','left');await deniedMeeting.end();
+    await visible(notice.getByText(/移動未儲存.*模擬本機無法寫入/));
+    assert.deepEqual((await read(page)).meetings,moved.meetings);
+    assert.deepEqual((await read(page)).logs,moved.logs);
+    const scheduleSource=work(page,to).locator('.ev-row').filter({hasText:'跨月排程'}).locator('.ev-chip');
+    const failure=await begin(scheduleSource,'start');
+    const beforeFailure=(await read(page)).project;
+    await page.evaluate(()=>window.progressTestFixture.failCrossMonthLocalSave());
+    await failure.send('drop','left');await failure.end();
+    await visible(notice.getByText(/移動未儲存.*模擬本機無法寫入/));
+    assert.deepEqual((await read(page)).project,beforeFailure);
+
+    const originalNote=note('work',to);
+    const deniedNote=await begin(originalNote,'start');
+    await page.evaluate(()=>window.progressTestFixture.failCrossMonthLocalSave());
+    await deniedNote.send('drop','left');await deniedNote.end();
+    await visible(notice.getByText(/移動未儲存.*模擬本機無法寫入/));
+    assert.deepEqual((await read(page)).notes,moved.notes);
+    await originalNote.evaluate(chip=>{
+      chip.closest('tr').scrollIntoView({block:'center'});
+      window.progressTestFixture.scrollCrossMonth(chip.closest('.hscroll-sync'),'start');
+    });
+    const pos=await originalNote.evaluate(chip=>{
+      const bounds=chip.getBoundingClientRect();
+      const edge=chip.closest('.hscroll-sync').getBoundingClientRect().left;
+      return {x:bounds.left+25,y:bounds.top+bounds.height/2,edge};
+    });
+    await page.mouse.move(pos.x,pos.y);
+    await page.mouse.down();
+    await page.mouse.move(pos.x-18,pos.y,{steps:4});
+    await page.mouse.move(pos.edge+8,pos.y,{steps:12});
+    await visible(hint.getByText('移至 2026/11/30，放開即可移動'));
+    assert.deepEqual((await read(page)).notes,moved.notes);
+    await page.mouse.up();
+    await visible(notice.getByText('已移至 2026/11/30',{exact:true}));
+    assert.deepEqual((await read(page)).notes.work[from],[{text:'目的日原記事'}]);
+    assert.deepEqual(errors,[]);
+    console.log('PASS browser: month boundaries, no write before drop, preserve occupied cells, confirmed moves for all date drags, failure and reload.');
+  }finally{await context.close();}
+}
+
 (async () => {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
@@ -805,8 +1040,12 @@ async function rapidChecklist(browser){
       ['staff mobile', b => employee(b, 'staff', true)],
       ['supervisor desktop', b => employee(b, 'supervisor', false)],
       ['supervisor mobile', b => employee(b, 'supervisor', true)], ['administrator', administrator],
-      ['rapid checklist',rapidChecklist], ['schedule save and conflict retry',scheduleSave]
+      ['rapid checklist',rapidChecklist], ['schedule save and conflict retry',scheduleSave], ['cross month drag',crossMonthDrag],
+      ['native cross month drag',async browser=>{
+        for(const viewport of [{width:1627,height:901},{width:1050,height:800}])await nativeCrossMonthDrag(browser,viewport);
+      }]
     ]) {
+      if(process.env.PROGRESS_BROWSER_CASE&&label!==process.env.PROGRESS_BROWSER_CASE)continue;
       try{await test(browser);}
       catch(error){console.error(label, error);process.exitCode=1;}
     }
