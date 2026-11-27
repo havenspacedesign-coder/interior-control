@@ -221,7 +221,7 @@ async function moveMeetingAcrossMonth(from,date){
     const days=await Promise.all(records.map(({ref})=>reader(ref).then(snapshot=>snapshot.data()||{})));
     const before=days.map(day=>day.items||[]);
     const item=before[0][idx];
-    if(!progressSame(item,from.item))throw new Error('事項已被更新，請重新拖曳。');
+    if(!progressCheckDataEqual(progressClone(item),from.item))throw new Error('事項已被更新，請重新拖曳。');
     const after=[before[0].filter((_,index)=>index!==idx),[...before[1],item]];
     const linked=await Promise.all(records.flatMap((record,i)=>{
       const start=i===0?idx:before[i].length;

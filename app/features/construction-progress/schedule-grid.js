@@ -708,7 +708,7 @@ async function moveScheduleEntry(from,toProjId,toDs,copy){
   if(!project)return;
   const source=progressMonthSchedule(project,from.ds.slice(0,7));
   const entry=source.filter(item=>item.date===from.ds)[from.ei];
-  if(!entry||(from.item&&!progressSame(from.item,entry)))return;
+  if(!entry||(from.item&&!progressCheckDataEqual(from.item,progressClone(entry))))return;
   const moved={...entry,date:toDs,...(copy?{_progressItemId:progressItemId()}:{})};
   const sameBucket=from.projId===toProjId&&from.ds.slice(0,7)===toDs.slice(0,7);
   const target=progressScheduleChange(toProjId,toDs,items=>[

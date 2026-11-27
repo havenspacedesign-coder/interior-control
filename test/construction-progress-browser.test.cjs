@@ -823,10 +823,11 @@ async function rapidChecklist(browser){
 
 async function nativeCrossMonthDrag(browser,viewport) {
   const {page,context,errors}=await open(browser,'manager',false,viewport);
-  const from='2026-11-30',to='2026-12-01',start='2026-11-01',previous='2026-10-31';
+  const from='2026-11-30',to='2026-12-01';
   await page.evaluate(data=>window.progressTestFixture.seedCrossMonth(data),{
-    from,to,start,previous,workNote:{text:'132'},personalNote:{text:'左側驗證'},
-    event:{date:from,stage,label:stage,note:'測試排程'},meeting:{text:'測試會議',mentions:[]},
+    from,to,start:from,previous:'2026-10-31',workNote:{text:'13212123'},personalNote:{text:'測試私人記事'},
+    event:{date:from,stage,label:stage,note:'測試排程',_progressItemId:'qa-native-schedule'},
+    meeting:{text:'測試會議',mentions:[]},
   });
   try{
     const hint=page.locator('.progress-month-drag-edge');
@@ -839,7 +840,8 @@ async function nativeCrossMonthDrag(browser,viewport) {
         return {x:(rect.left+rect.right)/2,y:Math.max(0,rect.top)+12};
       });
       await page.mouse.move(area.x,area.y);
-      await page.mouse.wheel(side==='left'?-12000:12000,0);
+      if(side==='right')await page.mouse.wheel(12000,0);
+      else await source.evaluate(el=>window.progressTestFixture.scrollCrossMonth(el.closest('.hscroll-sync'),'start'));
       await page.waitForFunction(({side})=>{
         const host=document.querySelector('[data-pn-cell]').closest('.hscroll-sync');
         const bar=document.querySelector('#progress-bottom-hscroll');
@@ -847,7 +849,7 @@ async function nativeCrossMonthDrag(browser,viewport) {
       },{side});
       const point=await source.evaluate(el=>{
         const chipBox=el.getBoundingClientRect(),table=el.closest('.hscroll-sync').getBoundingClientRect();
-        return {x:chipBox.left+24,y:chipBox.top+chipBox.height/2,right:table.right,left:table.left};
+        return {x:chipBox.left+Math.min(24,chipBox.width/2),y:chipBox.top+chipBox.height/2,right:table.right,left:table.left};
       });
       assert.ok(point.x>=point.left&&point.x<=point.right,JSON.stringify(point));
       await page.mouse.move(point.x,point.y);
@@ -855,8 +857,8 @@ async function nativeCrossMonthDrag(browser,viewport) {
       return point;
     }
     const before=(await read(page)).notes;
-    const source=chip('work',from,'132');
-    let point=await startAtMonthEnd(source,'right');
+    const source=chip('work',from,'13212123');
+    const point=await startAtMonthEnd(source,'right');
     await page.mouse.move(point.right-8,point.y,{steps:18});
     await visible(hint.getByText('移至 2026/12/01，放開即可移動'));
     await page.mouse.move(point.right+6,point.y,{steps:5});
@@ -866,29 +868,36 @@ async function nativeCrossMonthDrag(browser,viewport) {
     await hint.waitFor({state:'hidden'});
     await page.mouse.up();
     assert.deepEqual((await read(page)).notes,before);
-    point=await startAtMonthEnd(source,'right');
-    await page.mouse.move(point.right+6,point.y,{steps:20});
-    await visible(hint.getByText('移至 2026/12/01，放開即可移動'));
-    await page.mouse.up();
-    await visible(notice.getByText('已移至 2026/12/01'));
-    assert.deepEqual((await read(page)).notes.work[to],[{text:'目的日原記事'},{text:'132'}]);
-    assert.deepEqual((await read(page)).notes.work[from],[]);
-
-    point=await startAtMonthEnd(chip('personal',start,'左側驗證'),'left');
-    await page.mouse.move(point.left+100,point.y,{steps:10});
-    assert.equal(await hint.isVisible(),false);
-    await page.mouse.move(point.left-6,point.y,{steps:15});
-    await visible(hint.getByText('移至 2026/10/31，放開即可移動'));
-    await page.mouse.up();
-    await visible(notice.getByText('已移至 2026/10/31'));
-    assert.deepEqual((await read(page)).notes.personal[previous],[{text:'上個月原記事'},{text:'左側驗證'}]);
-    assert.match(await page.locator('.wk-lbl').textContent(),/2026年 11月/);
+    const entries=[
+      date=>chip('work',date,'13212123'),
+      date=>chip('personal',date,'測試私人記事'),
+      date=>meet(page,date).locator('.meet-chip').filter({hasText:'測試會議'}),
+      date=>work(page,date).locator('.ev-row').filter({hasText:'測試排程'}).locator('.ev-chip'),
+    ];
+    async function dropAtMonthEnd(item,side,date){
+      const point=await startAtMonthEnd(item,side);
+      if(side==='left'){
+        await page.mouse.move(point.left+100,point.y,{steps:10});
+        assert.equal(await hint.isVisible(),false);
+      }
+      await page.mouse.move(side==='left'?point.left+8:point.right+6,point.y,{steps:20});
+      await visible(hint.getByText('移至 '+date+'，放開即可移動'));
+      await page.mouse.up();
+      await item.waitFor({state:'hidden'});
+      await visible(notice.getByText('已移至 '+date));
+    }
+    for(const entry of entries)await dropAtMonthEnd(entry(from),'right','2026/12/01');
+    assert.deepEqual((await read(page)).notes.work[to],[{text:'目的日原記事'},{text:'13212123'}]);
+    await month(page,1,12);
+    for(const entry of entries)await dropAtMonthEnd(entry(to),'left','2026/11/30');
+    assert.match(await page.locator('.wk-lbl').textContent(),/2026年 12月/);
+    assert.deepEqual((await read(page)).notes.work[to],[{text:'目的日原記事'}]);
+    await month(page,-1,11);
     await page.reload();
     await goToProgress(page);
-    assert.deepEqual((await read(page)).notes.work[to],[{text:'目的日原記事'},{text:'132'}]);
-    assert.deepEqual((await read(page)).notes.personal[previous],[{text:'上個月原記事'},{text:'左側驗證'}]);
+    for(const entry of entries)await visible(entry(from));
     assert.deepEqual(errors,[]);
-    console.log('PASS native mouse: '+viewport.width+'x'+viewport.height+', both outer edges, cancellation and reload.');
+    console.log('PASS native mouse: '+viewport.width+'x'+viewport.height+', four types round trip, edge cancellation and reload.');
   }finally{await context.close();}
 }
 

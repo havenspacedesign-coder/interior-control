@@ -691,7 +691,7 @@ async function movePrivateNoteAcrossMonth(from,date){
   function prepare(before){
     const notes=before[from.type]||{};
     const source=[...(notes[from.ds]||[])];
-    if(!progressSame(source[from.idx],from.item))throw new Error('記事已被更新，請重新拖曳。');
+    if(!progressCheckDataEqual(progressClone(source[from.idx]),from.item))throw new Error('記事已被更新，請重新拖曳。');
     const [item]=source.splice(from.idx,1);
     const target=[...(notes[date]||[]),privateNoteAtNewDate(item,before,from.type,date)];
     return {before,after:{...before,[from.type]:{...notes,[from.ds]:source,[date]:target}}};

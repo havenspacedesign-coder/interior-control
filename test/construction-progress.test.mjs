@@ -166,6 +166,48 @@ try {
     });
     await setDoc(doc(db, 'meetingLogs', 'meet1_' + pastDate), meeting(pastDate, '舊會議'));
   });
+  {
+    const { db, uid } = accounts.get('manager');
+    const ref = doc(db, 'privateNotes', uid);
+    const noteSource = await read('app/features/construction-progress/private-notes.js');
+    const scheduleSource = await read('app/features/construction-progress/schedule-grid.js');
+    const bindings = {
+      db, doc, fbRunTransaction: runTransaction, localTestMode: false, currentUser: { uid },
+      S: {}, formulaBarState: null, setSyncing() {}, progressUndoPush() {},
+    };
+    const moveNote = new Function(...Object.keys(bindings), dataSource +
+      scheduleSource.match(/^function progressClone.+$/m)[0] + '\n' +
+      noteSource.slice(noteSource.indexOf('function privateNoteAtNewDate'), noteSource.indexOf('window.pnDrop=')) +
+      '\nreturn movePrivateNoteAcrossMonth;')(...Object.values(bindings));
+    const first = '2026-11-30', second = '2026-12-01';
+    const original = { text: 'Cross-month note', color: '#5070aa', completed: true,
+      link: { url: 'https://example.com', label: 'details' } };
+    const occupied = { text: 'Existing note' };
+    const reordered = value => Object.fromEntries(Object.entries(value).reverse()
+      .map(([key, field]) => [key, field && typeof field === 'object' ? reordered(field) : field]));
+    for (const type of ['work', 'personal']) {
+      await setDoc(ref, { [type]: { [first]: [original], [second]: [occupied] } });
+      const stored = (await getDocFromServer(ref)).data()[type][first][0];
+      await moveNote({ type, ds: first, idx: 0, item: stored }, second);
+      const forward = (await getDocFromServer(ref)).data()[type];
+      assert.deepEqual(forward, { [first]: [], [second]: [occupied, original] });
+
+      const seen = reordered(forward[second][1]);
+      assert.notEqual(JSON.stringify(seen), JSON.stringify(forward[second][1]));
+      await moveNote({ type, ds: second, idx: 1, item: seen }, first);
+      assert.deepEqual((await getDocFromServer(ref)).data()[type], {
+        [first]: [original], [second]: [occupied],
+      });
+
+      const edited = { ...original, color: '#ee1122' };
+      await updateDoc(ref, { [type + '.' + first]: [edited] });
+      await assert.rejects(moveNote({ type, ds: first, idx: 0, item: original }, second), /記事已被更新/);
+      assert.deepEqual((await getDocFromServer(ref)).data()[type], {
+        [first]: [edited], [second]: [occupied],
+      });
+    }
+    console.log('PASS: Firestore cross-month work and personal note round trips survive map key reordering and reject concurrent edits.');
+  }
   for (const role of roles) {
     const { db, uid } = accounts.get(role);
     const historical = doc(db, 'meetingLogs', 'meet1_' + pastDate);
